@@ -1,0 +1,1 @@
+rm ./draw/*.gch ./initial/checkBoundsOfBounds/checkBoundsOfBounds.h.gch ./initial/collapse/*.gch ./initial/load/loadASCIIFile.h.gch ./io/inputHandlerNonBlock.h.gch ./physics/levelInteractionHandler.h.gch ./physics/physics.h.gch ./sprite/player/direction.h.gch ./sprite/player/player.h.gch ./sprite/sprite.h.gch
