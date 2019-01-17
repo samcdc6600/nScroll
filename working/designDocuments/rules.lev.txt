@@ -1,0 +1,47 @@
+(02:34 18/02/19)
+This file contains a loose specification for what a rules.lev file should contain.
+I will endever to update this file when I have a more concreat idea of how the file should be layed out.
+
+
+*Header
+	rules.lev files must contain a header. At this time nothing need be and in fact nothing should be
+	in the header. The header is terminated by the symble "#".
+
+
+*Coordinates
+	rules.lev files can contain any number of coordineates after the header (note that the coordinates
+	should fallwithin the boundarys of the background.lev file. In charachters.) No two SINGLE character
+	type coordinates should have the same coordinate values. SINGLE character and STRING type coordinates are
+	explained below.
+	coordinates should have the following form:
+		(Y,X(C))
+		Where Y and X are the y and x coordinate numbers of the coordinate and C is a SINGLE character or a
+		STRING.
+		If C is a single character it is interpreted as a rule character. Rule characters help define where
+		the player sprite can go as well as other things of a simmilar nature. If C is a string it is the
+		name of an enimy sprite file. If it is a string the coordinate should actually have the following
+		form (Y,X(C(R)), where Y X and C are as before (C is of course a STRING in this case) and R is a rule
+		for the sprite.
+		There is currently no definition for the form R and so it may be left blank. In this case the sprite
+		will not move
+		(relative to the background) and the player sprite will not be able to interact with it.
+
+
+*How are coordinates accesed
+	To avoid waisting memory with a probably sparce array of coordinates but to still keep things relatively
+	efficient coordinates should be stored in an std::map with the coordinates acting as the key and C acting as
+	the value.
+		NOTE: single rule character coordinates should be stored in a separate map to string
+		coordinates and since string coordinates can have overlapping coordinate values for different sprites
+		the value of the map for them should be a vector that will hold each corrosponding sprite and it's
+		rule.
+
+
+*CHARACTER coordinate character definitions
+	The following is a list of the supported single character coordinate types:
+		"b"	- A boarder type coordinate. This coordinate cannot be crossed by the player sprite
+		"k"	- A kill type coordinate. If the player sprite comes into contact with this coordinate they
+				will be killed (or at least lose life.)
+		"e"	- A end type coordinate. If the player sprite comes into contact with one of these coordinates
+				they will exit the level and it will be considered that they have compleated the
+				level.
