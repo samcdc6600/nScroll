@@ -3,14 +3,16 @@
 #include <vector>
 #include "../common.h"
 #include "../sprite/sprite.h"
+#include "../physics/physics.h"
 
 
 #define DRAW_NO_OP 10176	/* This character should be skipped */
 extern const int yHeight;
 
 
-void draw(const std::vector<int> & buff, const std::vector<sprite *> spArray, const yx maxyx,
-	  const unsigned long offset); /* Draws all that is visible :) */
+void draw(const std::vector<int> & buff,
+	  const std::map<std::string, std::vector<rules::spriteInfo>> & nonPlayerSprites,
+	  player * playerSprite, const yx maxyx, const unsigned long offset); /* Draws all that is visible :) */
 /* Places curser at (0,0) and iterates over the current background slice, calling draw for each character. */
 void drawBackground(const std::vector<int> & buff, const yx maxyx, const unsigned long offset);
 /* Checks that y and x are in range and then calls mvprintw(y, x, "") */

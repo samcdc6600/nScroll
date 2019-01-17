@@ -14,12 +14,25 @@
 setColorMode colorMode{56}; //If argument to object constructor is changed it must also be changed in main.cpp.
 
 
-void draw(const std::vector<int> & buff, const std::vector<sprite *> spArray, const yx maxyx,
-	  const unsigned long offset)
+
+void draw(const std::vector<int> & buff,
+	  const std::map<std::string, std::vector<rules::spriteInfo>> & nonPlayerSprites,
+	  player * playerSprite, const yx maxyx, const unsigned long offset)
 {
   drawBackground(buff, maxyx, offset);
-  for(sprite * sp: spArray)
-    sp->draw(true);
+  /*
+    /* Draw non player sprites. All this should be needed to be able to uncomment this and have it compile and work is
+    to add in a check to make sure that the sprite "it" is in a visible part of the screen (to make sure we're not
+    doing useless work!) * /
+  for(MapType::iterator it = nonPlayerSprites.begin(); it != nonPlayerSprites.end; ++it)
+    {
+      if(it.second.in_range(maxyx, iter);
+	 it.second->draw(true);
+    }
+  */
+  /* The physics functions should ensure that the palyer should never be out of the visible range, so no check should
+     be required. */
+  playerSprite->draw(true);
   refresh();
 }
 

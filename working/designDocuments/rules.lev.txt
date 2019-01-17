@@ -10,7 +10,7 @@ I will endever to update this file when I have a more concreat idea of how the f
 
 *Coordinates
 	rules.lev files can contain any number of coordineates after the header (note that the coordinates
-	should fallwithin the boundarys of the background.lev file. In charachters.) No two SINGLE character
+	should fall within the boundarys of the background.lev file. In charachters.) No two SINGLE character
 	type coordinates should have the same coordinate values. SINGLE character and STRING type coordinates are
 	explained below.
 	coordinates should have the following form:
@@ -29,8 +29,9 @@ I will endever to update this file when I have a more concreat idea of how the f
 
 *How are coordinates accesed
 	To avoid waisting memory with a probably sparce array of coordinates but to still keep things relatively
-	efficient coordinates should be stored in an std::map with the coordinates acting as the key and C acting as
-	the value.
+	efficient coordinates should be stored in an std::map with the coordinates acting as the key (in the form of
+	a string "Y,X", we need to make sure that for example 12,1 and 1,21 arn't interprited as the same thing) and
+	C acting as the value.
 		NOTE: single rule character coordinates should be stored in a separate map to string
 		coordinates and since string coordinates can have overlapping coordinate values for different sprites
 		the value of the map for them should be a vector that will hold each corrosponding sprite and it's

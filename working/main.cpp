@@ -26,31 +26,22 @@ constexpr int yHeight {33}, xWidth{125};	// The window must be these dimensions
 
 void initialiseCurses(yx & maxyx);
 void initColorPairs();
-/* This function should return via the references that it is passed two array's, one that hold's the enemy characters
-   and another that hold's the background sprites. It should also return in the same fashion the player and the 
-   background. */
-void loadAssets(yx maxyx, std::vector<int> & background, std::string & bounds,
-		std::vector<sprite *> & spArray);
-void menu(const std::string bounds, const std::vector<sprite *> spArray, const std::vector<int> background,
-	      const yx maxyx);	// Game menu
-// Where the magic (that's glues together with cheap craft glue) happens (returns a game menu switch option.) :)
-int gameLoop(const std::string bounds, const std::vector<sprite *> spArray, const std::vector<int> background,
-	      const yx maxyx);
-void freeResources(std::vector<sprite *> & spArray);
+void menu(const yx maxyx); // Game menu
+/* This function should initialise the background variable (it's second argument), which should then contain the
+   "grphical data" of the level. It should initialise and return the levelRules variable (it's third argument),
+   which should then contain the "rules and non player sprites" as well as the player sprite of the level. */
+void loadAssets(const yx maxyx, std::vector<int> & background, rules & levelRules);
+// Where the magic (thats glued together with cheap craft glue) happens (returns a game menu switch option.) :)
+int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelRules);
+//void freeResources(std::vector<sprite *> & spArray);
 
 
 int main()
 {
   yx maxyx;		// Holds the window size.
   initialiseCurses(maxyx);	// Start and setup ncurses
-  std::vector<sprite *> spArray;	// Hold's the sprites
-  std::vector<int> background {};	// Hold's the background
-  // Hold's the level bound's that define interaction with the level.
-  std::string bounds {};// Also hold's sprite position's and movement paterns.
-  loadAssets(maxyx, background, bounds, spArray);   	// Load game files.
-  menu(bounds, spArray, background, maxyx);
-
-  freeResources(spArray);
+  menu(maxyx);
+  
   endwin();//end curses mode!
   return 0;
 }
@@ -148,11 +139,7 @@ void initColorPairs()
 }
 
 
-/* This function should return in the form of references that it is passed two array's, one that hold's the enemy 
-   characters and another that hold's the background sprites. It should also return in the same fashion the player
-   and the background. */
-void loadAssets(yx maxyx, std::vector<int> & background, std::string & bounds,
-		std::vector<sprite *> & spArray)
+void loadAssets(const yx maxyx, std::vector<int> & background, rules & levelRules)
 {
   try
     {   
@@ -167,35 +154,12 @@ void loadAssets(yx maxyx, std::vector<int> & background, std::string & bounds,
 	  }
 	collapse(levelBackGround, background); //collapse nonColor escape sequences.
       }
-      // Initialise bounds---------------------------------------------------------------------------------
-      /* The border file should be loaded first before any sprite's that are not associated with the player and should
-	 say how many sprite files there are (not including palyer files). NOTE: LATER IT MAY BE DESIARABLE TO HAVE 
-	 THE BORDER FILE ALSO DEFINE WHITCH SPRITES TO USE FOR THE PLAYER SO THAT IT'S SPRITE MAY HAVE A DIFFERENT
-	 LOOK FOR DIFFERENT LEVELS. */
-      /*      {
-	std::string boundsFile {"assets/level1/level1.bounds.lev"};
-	if(!loadASCIIFile(boundsFile, bounds))
-	  {
-	    std::stringstream errorMsg;
-	    errorMsg<<"\" ./assets/level1/level1.bounds.lev\" not found!\n";
-	    throw std::logic_error(errorMsg.str());
-	  }
-	int diff {checkBoundsOfBounds(bounds, background)};
-	if(diff != 0)
-	  {
-	    std::stringstream errorMsg;
-	    errorMsg<<"ERROR \"assets/level1/level1.bounds.lev\" is not eqal to "
-	      "\"assets/level1/level1.backgound.lev\"";
-	    errorMsg<<" after level1.background.lev has been collapsed. The diffecrence is "<<diff;
-	    throw std::logic_error(errorMsg.str());
-	  }
-	  }*/
-      yx spritePos {10, 10}; // THIS SHOULD BE SPECIFIED IN THE BACKGOURND FILE!!!!!!!!!!!!!!!1
-      // Initialise spArray[0] (player sprite)---------------------------------------------
-      spArray.push_back(new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
-				   "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
-				   maxyx, spritePos, 5, DIR_RIGHT));
-      
+
+      // THESE SHOULD BE SPECIFIED IN THE HEADER OF THE RULES FILE!!!!!!!!!!!!!!!1
+      yx spritePos = {10, 10}; // Set inital position for player.
+      levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
+				      "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
+				      maxyx, spritePos, 5, DIR_RIGHT)); // Set sprite for player      
     }
   catch(std::logic_error errorMsg)
     {     
@@ -208,13 +172,20 @@ void loadAssets(yx maxyx, std::vector<int> & background, std::string & bounds,
 }
 
 
-void menu(const std::string bounds, const std::vector<sprite *> spArray, const std::vector<int> background,
-	      const yx maxyx)	// Game menu
+void menu(const yx maxyx)
 {
+  std::vector<int> background {};	// Hold's the background
+  // Hold's the "rules" for the current level. (see physics.h and rules.lev.txt.)
+  rules levelRules {};
+  /* Note this should be done in the menu or loop or some subfunction
+     called from within it since multiple level's can be played. It is
+     placed here right now only for testing and development purposes. */
+  loadAssets(maxyx, background, levelRules);   	// Load game files.
+  
   bool run = true;
   while(run)
     {
-      switch(gameLoop(bounds, spArray, background, maxyx))
+      switch(gameLoop(maxyx, background, levelRules))
 	{
 	case M_QUIT_GAME:
 	run = false;
@@ -224,12 +195,12 @@ void menu(const std::string bounds, const std::vector<sprite *> spArray, const s
 	break;
 	}
     }
-  drawExit(maxyx);
+  //  freeResources(levelRules);
+  drawExit(maxyx);  
 }
 
 
-int gameLoop(const std::string bounds, const std::vector<sprite *> spArray, const std::vector<int> background,
-	      const yx maxyx)
+int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelRules)
 {  
   for(int iter{}; iter < 126; ++iter)
     {
@@ -240,7 +211,7 @@ int gameLoop(const std::string bounds, const std::vector<sprite *> spArray, cons
 	    < 225)
 	{
 	  		  std::stringstream errorMsg;
-	  physics(bounds, spArray);
+	  physics(levelRules);
 	  if((input = inputHandlerNonBlock()))
 	    {
 	      switch((int)input)
@@ -248,24 +219,24 @@ int gameLoop(const std::string bounds, const std::vector<sprite *> spArray, cons
 			   should be faught. */
 		case 'w':
 		case 'W':
-		  spArray[0]->updatePosRel('w');
+		  levelRules.gamePlayer->updatePosRel('w');
 		  break;
 		case 'a':
 		case 'A':
-		  spArray[0]->updatePosRel('a');
+		  levelRules.gamePlayer->updatePosRel('a');
 		  break;
 		case 's':
 		case 'S':
-		  spArray[0]->updatePosRel('s');
+		  levelRules.gamePlayer->updatePosRel('s');
 		  break;
 		case 'd':
 		case 'D':
-		  spArray[0]->updatePosRel('d');
+		  levelRules.gamePlayer->updatePosRel('d');
 		  break;
 		case 27:	// Esc.
 		  return M_QUIT_GAME;
 		}
-	      draw(background, spArray, maxyx, iter);
+	      draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, iter);
 	      refresh();      
 
 	      sleep(32);
@@ -276,10 +247,7 @@ int gameLoop(const std::string bounds, const std::vector<sprite *> spArray, cons
   return M_LEVEL_COMPLEAT;
 }
 
-void freeResources(std::vector<sprite *> & spArray)
+/*void freeResources(rules & levelRules)
 {
-  for(sprite * sp: spArray)
-    {
-      delete(sp);
-    }
-}
+  delete(levelRules.gamePlayer);
+  }*/
