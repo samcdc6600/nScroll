@@ -6,7 +6,7 @@
 #include <string>
 #include "common.h"
 #include "io/inputHandlerNonBlock.h"
-#include "initial/load/loadASCIIFile.h"
+#include "initial/load/loadAssets.h"
 #include "initial/collapse/collapse.h"
 #include "initial/checkBoundsOfBounds/checkBoundsOfBounds.h"
 #include "physics/physics.h"
@@ -177,7 +177,7 @@ void menu(const yx maxyx)
   std::vector<int> background {};	// Hold's the background
   // Hold's the "rules" for the current level. (see physics.h and rules.lev.txt.)
   rules levelRules {};
-  /* Note this should be done in the menu or loop or some subfunction
+  /* Note this should be done in the menu or loop or some sub function
      called from within it since multiple level's can be played. It is
      placed here right now only for testing and development purposes. */
   loadAssets(maxyx, background, levelRules);   	// Load game files.

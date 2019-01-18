@@ -4,7 +4,6 @@
 #include <thread>
 #include <chrono>
 #include "player.h"
-#include "../../initial/load/loadASCIIFile.h"
 #include "../../draw/colorS.h"
 #include "../../draw/draw.h"
 

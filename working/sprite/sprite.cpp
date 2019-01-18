@@ -3,7 +3,7 @@
 #include <curses.h>
 #include <iostream>
 #include "sprite.h"
-#include "../initial/load/loadASCIIFile.h"
+#include "../initial/load/loadAssets.h"
 #include "../initial/collapse/collapse.h"// For second phase
 #include "../draw/draw.h"
 

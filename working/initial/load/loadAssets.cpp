@@ -1,4 +1,4 @@
-#include "loadASCIIFile.h"
+#include "loadAssets.h"
 #include <iostream>
 
 bool loadASCIIFile(const std::string & name, std::string & buff)
