@@ -14,14 +14,8 @@ void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & bac
       exit("Error unable to open: \"./assets/level1/level1.background.lev\"", ERROR_OPENING_FILE);
     }
   collapse(levelBackGround, background); //collapse nonColor escape sequences.
-  // Initialise non-player sprites.
-  
-  // Initialise player.
-  // THESE SHOULD BE SPECIFIED IN THE HEADER OF THE RULES FILE!!!!!!!!!!!!!!!1 
-  yx spritePos = {10, 10}; // Set inital position for player.
-  levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
-                                      "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
-                                      maxyx, spritePos, 5, DIR_RIGHT)); // Set sprite for player 
+  // Initialise player and non-player sprites (rules file).
+  parseAndInitialiseRules(maxyx, rulesFileName, levelRules);
 }
 
 
@@ -43,6 +37,12 @@ bool loadASCIIFile(const char name [], std::string & buff)
   return true;
 }
 
-void handleRulesFile(const char rulesFileName)
+void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules & levelRules)
 {
+    // Initialise player.
+  // THESE SHOULD BE SPECIFIED IN THE HEADER OF THE RULES FILE!!!!!!!!!!!!!!!1 
+  yx spritePos = {10, 10}; // Set inital position for player.
+  levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
+                                      "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
+                                      maxyx, spritePos, 5, DIR_RIGHT)); // Set sprite for player 
 }
