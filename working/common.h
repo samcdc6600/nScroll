@@ -13,7 +13,8 @@ enum errorsCodes
     ERROR_OPENING_FILE,	// Error opening file.
     ERROR_CHARACTER_RANGE,	// Character out of range.
     ERROR_COLOR_CODE_RANGE,	// Color code out of range.
-    ERROR_GENERIC_RANGE_ERROR
+    ERROR_GENERIC_RANGE_ERROR,
+    ERROR_RULES_LEV_HEADER	// Header of .level.rules file is malformed.
   };
 
 

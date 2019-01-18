@@ -25,6 +25,8 @@ bool loadASCIIFile(const char name [], std::string & buff);
    When a sprite coordinate, sprite and rule triple has been extracted add sprite and rule using sprite coordinate as
    key to a vector in the spriteCoords map in the form of a spriteInfo struct */
 void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules & levelRules);
+/* Extract and parse header info in buff. */
+void parseRulesHeader(const std::string & buff, const char rulesFileName [], rules & levelRules);
 
 
 #endif
