@@ -24,8 +24,8 @@ sprite's is used), health (should hold the health of the player),
   virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
  public:
   //read's sprite files and converts them so they may be used with the classes draw function/s
- player(const std::string & spriteFileOneName, const std::string & spriteFileTwoName,
-	const std::string & spriteFileThreeName, const std::string & spriteFileFourName, const yx max, const yx pos, const int h, const int d)
+ player(const char spriteFileOneName [], const char spriteFileTwoName [], const char spriteFileThreeName [],
+	const char spriteFileFourName [], const yx max, const yx pos, const int h, const int d)
    : sprite(max, pos, spriteFileOneName), health(h), direction(d)
   {
     if(d != DIR_LEFT && d != DIR_RIGHT)

@@ -26,10 +26,10 @@ void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & bac
 
 
 
-bool loadASCIIFile(const std::string & name, std::string & buff)
+bool loadASCIIFile(const char name [], std::string & buff)
 {
   std::ifstream file;
-  file.open(name.c_str());
+  file.open(name);
   if(!file.is_open())
     {				// Couldn't open file.
       file.close();
@@ -42,3 +42,7 @@ bool loadASCIIFile(const std::string & name, std::string & buff)
   
   return true;
 }
+
+/*void handleRulesFile(cosnt )
+{
+}*/

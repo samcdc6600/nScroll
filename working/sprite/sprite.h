@@ -68,7 +68,7 @@ class sprite
   std::vector<spriteData> spriteS;
   
   /* Initialises sD_base */
-  void getSprite(const std::string & spriteFileName, spriteData & sD);
+  void getSprite(const char spriteFileName [], spriteData & sD);
   /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated from the tallest spriteSlice and
      longest sliceLine in sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left 
      of position. These values are used for possible collision detection and bounds checking. */
@@ -97,7 +97,7 @@ class sprite
  public://----------------------------------------------------------------------------------------------------------
   
   //constructor reads spriteFile and converts it to the internal object structure
-  sprite(const yx max, const yx pos, const std::string & spriteFileName);
+  sprite(const yx max, const yx pos, const char spriteFileName []);
   virtual void updatePosAbs(int y, int x);	/* update's position of sprite in an absoulte fashion with reference
 						   to the background */
   virtual void updatePosRel(const char ch);	/* update's position of sprite in a relative fashion with reference to

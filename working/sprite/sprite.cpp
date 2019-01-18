@@ -9,7 +9,7 @@
 #include "../common.h"
 
 
-sprite::sprite(const yx max, const yx pos, const std::string & spriteFileName)
+sprite::sprite(const yx max, const yx pos, const char spriteFileName [])
   : maxyx(max), position(pos), currentSliceNumber(0),
     startTime(std::chrono::high_resolution_clock::now()),
     currentTime(std::chrono::high_resolution_clock::now())
@@ -19,13 +19,13 @@ sprite::sprite(const yx max, const yx pos, const std::string & spriteFileName)
 }
 
 
-void sprite::getSprite(const std::string & spriteFileName, spriteData & sD)
+void sprite::getSprite(const char spriteFileName [], spriteData & sD)
 {
   try
     {
       // Load sprite asset--------------------------------------------------------------------------------      
       std::string rawSprite {};// Holds raw contents of sprite file.
-      if(!loadASCIIFile(spriteFileName.c_str(), rawSprite))
+      if(!loadASCIIFile(spriteFileName, rawSprite))
 	{
 	  std::stringstream errorMsg;
 	  errorMsg<<"In \"sprite::sprite(const std::string & spriteFile)\", in sprite/sprite.cpp. Error opening ";
@@ -44,7 +44,7 @@ void sprite::getSprite(const std::string & spriteFileName, spriteData & sD)
     }
   catch(std::logic_error errorMsg)
     {	     /* adds spriteFileName.c_str() to exception and rethrows. */
-      mvprintw(0, 0, "spriteFileName.c_str() = %s", spriteFileName.c_str());
+      mvprintw(0, 0, "spriteFileName.c_str() = %s", spriteFileName);
       throw errorMsg;
     }
 }
