@@ -6,6 +6,7 @@
 #include "../initial/load/loadAssets.h"
 #include "../initial/collapse/collapse.h"// For second phase
 #include "../draw/draw.h"
+#include "../common.h"
 
 
 sprite::sprite(const yx max, const yx pos, const std::string & spriteFileName)
@@ -320,12 +321,9 @@ void sprite::updatePosRel(const char ch)
 	  throw std::logic_error(e.str());
 	}
     }
-  catch(std::logic_error eMsg)
+  catch(std::logic_error e)
     {
-      endwin();
-      std::cerr<<"In \"void sprite::updatePosRel(char ch)\", in sprite/sprite.cpp.\n"
-	       <<eMsg.what()<<std::endl;
-      exit(ERR_POS_CH_RANGE);
+      exit(e.what(), ERROR_POS_CH_RANGE);
     }
 }
 

@@ -61,20 +61,16 @@ void setCursor(const int y, const int x, const yx maxyx)
 	    mvprintw(y, x, "");
 	  else
 	    {
-	      std::stringstream eMsg;
-	      eMsg<<"Y and x "
-		  <<"out of range. Range = ("<<maxyx.y<<"(y),"<<maxyx.x<<"(x)). Y and x given = "<<y<<", "<<x
-		  <<" respectively.";
-	      throw std::logic_error(eMsg.str());
+	      std::stringstream e;
+	      e<<"In setCursor(), y and or x out of range. Range = ("<<maxyx.y<<"(y),"<<maxyx.x
+		  <<"(x)). Y and x given = "<<y<<", "<<x<<" respectively.";
+	      throw std::logic_error(e.str());
 	    }
 	}
     }
-  catch(std::logic_error eMsg)
-    {
-      endwin();
-      std::cerr<<"In \"void setCursor(const int y, const int x, const yx maxyx)\" in draw/draw.cpp.\n"<<eMsg.what()
-	       <<std::endl;
-      exit(ERR_CURSOR_PARAM);
+  catch(std::logic_error e)
+    {      
+      exit(e.what(), ERROR_CURSOR_PARAM);
     }
       
 }
@@ -198,10 +194,10 @@ inline void drawCh(int ch)
 	    case DRAW_NO_OP:
 	      break;	      
 	    default:
-	      std::stringstream eMsg;
-	      eMsg<<"in draw.cpp void draw(const std::vector<int> & buff, const int offSet, "
+	      std::stringstream e;
+	      e<<"in draw.cpp void draw(const std::vector<int> & buff, const int offSet, "
 		"const int winWidth). Case = default. Ch = "<<ch;
-	      throw std::logic_error(eMsg.str());
+	      exit(e.str(), ERROR_CHARACTER_RANGE);
 	      break;
 	    }
 	}
@@ -311,10 +307,10 @@ inline void drawCh(int ch)
 	    case DRAW_NO_OP:
 	      break;	      
 	    default:
-	      std::stringstream eMsg;
-	      eMsg<<"in draw.cpp void draw(const std::vector<int> & buff, const int offSet, "
+	      std::stringstream e;
+	      e<<"in draw.cpp void draw(const std::vector<int> & buff, const int offSet, "
 		"const int winWidth). Case = default (no colour.). Ch = "<<ch;
-		throw std::logic_error(eMsg.str());
+	      exit(e.str(), ERROR_CHARACTER_RANGE);
 	      break;
 	    }
 	}
@@ -334,8 +330,9 @@ int getColor(const int ch)
     return color;
 
   // If the color code is out of range
-  std::string eMsg {"in draw.cpp->getColor(const int ch). color = "};
-  eMsg += color;
-  eMsg += "\n";
-  throw std::logic_error(eMsg);  
+  std::string e {"in draw.cpp->getColor(const int ch). color = "};
+  e += color;
+  e += "\n";
+  exit(e, ERROR_COLOR_CODE_RANGE);
+  throw std::logic_error(e);
 }

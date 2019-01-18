@@ -1,5 +1,7 @@
 #include <chrono>
 #include <thread>
+#include <ncurses.h>
+#include <iostream>
 #include "common.h"
 
 
@@ -13,4 +15,12 @@ bool checkRange(const int a, const int coord)
 {
   bool ret = (a >= 0 && a < coord) ? true : false;
   return ret;
+}
+
+/* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
+void exit(const std::string & e, const int status)
+{
+  endwin();
+  std::cerr<<e<<'\n';
+  exit(status);
 }

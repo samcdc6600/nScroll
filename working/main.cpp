@@ -1,13 +1,13 @@
 #include <ncurses.h>
 #include <sstream>
-#include <iostream>
+//#include <iostream>
 #include <system_error>
 #include <stdexcept>
 #include <string>
 #include "common.h"
 #include "io/inputHandlerNonBlock.h"
 #include "initial/load/loadAssets.h"
-#include "initial/collapse/collapse.h"
+//#include "initial/collapse/collapse.h"
 #include "initial/checkBoundsOfBounds/checkBoundsOfBounds.h"
 #include "physics/physics.h"
 #include "draw/draw.h"
@@ -27,10 +27,6 @@ constexpr int yHeight {33}, xWidth{125};	// The window must be these dimensions
 void initialiseCurses(yx & maxyx);
 void initColorPairs();
 void menu(const yx maxyx); // Game menu
-/* This function should initialise the background variable (it's second argument), which should then contain the
-   "grphical data" of the level. It should initialise and return the levelRules variable (it's third argument),
-   which should then contain the "rules and non player sprites" as well as the player sprite of the level. */
-void loadAssets(const yx maxyx, std::vector<int> & background, rules & levelRules);
 // Where the magic (thats glued together with cheap craft glue) happens (returns a game menu switch option.) :)
 int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelRules);
 //void freeResources(std::vector<sprite *> & spArray);
@@ -52,16 +48,14 @@ void initialiseCurses(yx & maxyx)
   getmaxyx(stdscr, maxyx.y, maxyx.x); // Screen size in characters
   if(maxyx.y != yHeight || maxyx.x != xWidth) // Check the window size.
     {
-      endwin();
-      std::cerr<<"error windows must be "<<yHeight<<" characters high and "<<xWidth<<" characters wide. "
+      std::stringstream e {};
+      e<<"error windows must be "<<yHeight<<" characters high and "<<xWidth<<" characters wide. "
 	"The current height is "<<maxyx.y<<" characters and the current width is "<<maxyx.x<<" characters.\n";
-      exit(ERR_WIN_PARAM);
+      exit(e.str(), ERROR_WIN_PARAM);
     }   
   if(has_colors() == FALSE)  // If the terminal does not support colors
     {
-      endwin();
-      std::cerr<<"error your terminal does not support colour :'(\n";
-      exit(ERR_WIN_PARAM);
+      exit("Error your terminal does not support colour :'(\n", ERROR_WIN_PARAM);
     }
   raw();		     // To disable line buffering
   curs_set(0);		     // Make the cursor invisible
@@ -136,39 +130,6 @@ void initColorPairs()
   init_pair(61, COLOR_WHITE, COLOR_MAGENTA);
   init_pair(62, COLOR_WHITE, COLOR_CYAN);
   init_pair(63, COLOR_WHITE, COLOR_WHITE);
-}
-
-
-void loadAssets(const yx maxyx, std::vector<int> & background, rules & levelRules)
-{
-  try
-    {   
-      {				// Initialise background.
-	std::string backgroundFileName {"assets/level1/level1.backgound.lev"};
-	std::string levelBackGround {};
-	if(!loadASCIIFile(backgroundFileName, levelBackGround))
-	  {
-	    std::stringstream errorMsg;
-	    errorMsg<<"\"./assets/level1/level1.background.lev\" not found!\n";
-	    throw std::logic_error(errorMsg.str());
-	  }
-	collapse(levelBackGround, background); //collapse nonColor escape sequences.
-      }
-
-      // THESE SHOULD BE SPECIFIED IN THE HEADER OF THE RULES FILE!!!!!!!!!!!!!!!1
-      yx spritePos = {10, 10}; // Set inital position for player.
-      levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
-				      "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
-				      maxyx, spritePos, 5, DIR_RIGHT)); // Set sprite for player      
-    }
-  catch(std::logic_error errorMsg)
-    {     
-      mvprintw(0, 0, "%s", errorMsg.what());
-      refresh();
-      sleep(20000);
-      endwin();
-      exit(-1);
-    }
 }
 
 
