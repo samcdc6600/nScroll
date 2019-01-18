@@ -3,29 +3,25 @@
 #include "../collapse/collapse.h"
 
 
-void loadAssets(const yx maxyx, std::vector<int> & background, rules & levelRules)
+void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & background,
+		const char rulesFileName [], rules & levelRules)
 {
-  try
+  // Initialise background.
+  //constexpr char backgroundFileName [] = "assets/level1/level1.backgound.lev";
+  std::string levelBackGround {};
+  if(!loadASCIIFile(bgFileName, levelBackGround))
     {
-      {                         // Initialise background.
-        std::string backgroundFileName {"assets/level1/level1.backgound.lev"};
-        std::string levelBackGround {};
-        if(!loadASCIIFile(backgroundFileName, levelBackGround))
-          {
-            throw std::logic_error("Error unable to open: \"./assets/level1/level1.background.lev\"");
-          }
-        collapse(levelBackGround, background); //collapse nonColor escape sequences.
-      }
-      // THESE SHOULD BE SPECIFIED IN THE HEADER OF THE RULES FILE!!!!!!!!!!!!!!!1 
-      yx spritePos = {10, 10}; // Set inital position for player.
-      levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
+      exit("Error unable to open: \"./assets/level1/level1.background.lev\"", ERROR_OPENING_FILE);
+    }
+  collapse(levelBackGround, background); //collapse nonColor escape sequences.
+  // Initialise non-player sprites.
+  
+  // Initialise player.
+  // THESE SHOULD BE SPECIFIED IN THE HEADER OF THE RULES FILE!!!!!!!!!!!!!!!1 
+  yx spritePos = {10, 10}; // Set inital position for player.
+  levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
                                       "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
                                       maxyx, spritePos, 5, DIR_RIGHT)); // Set sprite for player 
-    }
-  catch(std::logic_error errorMsg)
-    {
-      exit(errorMsg.what(), ERROR_OPENING_FILE);
-    }
 }
 
 

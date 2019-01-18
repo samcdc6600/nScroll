@@ -8,10 +8,13 @@
 #include "../../physics/physics.h" // For rules.
 
 
-/* This function should initialise the background variable (it's second argument), which should then contain the 
-   "grphical data" of the level. It should initialise and return the levelRules variable (it's third argument),
-   which should then contain the "rules and non player sprites" as well as the player sprite of the level. */
-void loadAssets(const yx maxyx, std::vector<int> & background, rules & levelRules);
+/* This function should initialise the argument background that is passed to it. This variable should then contain
+   the "grphical data" of the level. It should initialise the levelRules argument that is passed to it, This variable
+   should then contain the "rules and non player sprites" as well as the player sprite of the level. The bgFileName
+   and rulesFileName are the names of the files that should be read in and parsed to initialise the background and
+   levelRules arguments. */
+void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & background,
+		const char rulesFileName [], rules & levelRules);
 /* Opens file "name" and copies it's content's into buff. If there is an error opening the file returns false.
    Return's true otherwise. */
 bool loadASCIIFile(const std::string & name, std::string & buff);

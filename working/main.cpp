@@ -141,7 +141,8 @@ void menu(const yx maxyx)
   /* Note this should be done in the menu or loop or some sub function
      called from within it since multiple level's can be played. It is
      placed here right now only for testing and development purposes. */
-  loadAssets(maxyx, background, levelRules);   	// Load game files.
+  loadAssets(maxyx, "assets/level1/level1.backgound.lev", background,
+	     "assets/level1/level1.rules.lev", levelRules);   	// Load game files.
   
   bool run = true;
   while(run)
