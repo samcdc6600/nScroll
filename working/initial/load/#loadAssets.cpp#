@@ -43,6 +43,6 @@ bool loadASCIIFile(const char name [], std::string & buff)
   return true;
 }
 
-void handleRulesFile(const char rulesFileName)
+void handleRulesFile(const char rulesFileName [],)
 {
 }

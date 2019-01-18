@@ -20,9 +20,11 @@ void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & bac
 bool loadASCIIFile(const char name [], std::string & buff);
 /* Load rules file, parse header, extract sprite coordinates and sprite name/s and process sprites. extract sprite
    rule after processing each sprite.
+   Header should contain file location and starting position of player sprite and the player should be initialised
+   using this info. The header may also contain other information. 
    When a sprite coordinate, sprite and rule triple has been extracted add sprite and rule using sprite coordinate as
    key to a vector in the spriteCoords map in the form of a spriteInfo struct */
-void handleRulesFile();
+void handleRulesFile(const char rulesFileName []);
 
 
 #endif

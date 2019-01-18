@@ -1,12 +1,24 @@
 (02:34 18/02/19)
+updated:
+(05:14 19/02/19)
 This file contains a loose specification for what a rules.lev file should contain.
 I will endever to update this file when I have a more concreat idea of how the file should be layed out.
 
 
 *Header
-	rules.lev files must contain a header. At this time nothing need be and in fact nothing should be
-	in the header. The header is terminated by the symble "#".
+	rules.lev files must contain a header. The header should contain the name of the player sprite file along
+	with it's initial position in the level in character's (as all references to positions and coordinates are
+	assumend to be.) The format of this information should have the following form:
+		(p("STRING")(Y,X))
+		Where (p simply identifies this part of the header as the player sprite info section, STRING is the
+		path to the player sprite file and Y and X are the initial position in the level of the sprite.
+	The header is terminated by the symble "#".
 
+*NOTE ON "(" and ")"
+	The characters "(" and ")" are assumed to have special interpritation within the rules.lev file.
+	That is they denote the start and end of some information such as a coordinate and SHOULD NOT be used in a
+	string such as a file name unless escaped by "(". That is to represent "(" in a path name you must use "(("
+	and to use "(p" you must use "((p".
 
 *Coordinates
 	rules.lev files can contain any number of coordineates after the header (note that the coordinates
