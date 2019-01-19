@@ -7,6 +7,9 @@
 #include <fstream>
 #include "../../physics/physics.h" // For rules.
 
+constexpr char STRING_DENOTATION {'\"'}; // This character denotes the start of a sting
+constexpr char ESCAPE_CHAR {'\''}; // The character used for escape sequences (within a string) in .rules.lev file's.
+
 
 /* This function should initialise the argument background that is passed to it. This variable should then contain
    the "grphical data" of the level. It should initialise the levelRules argument that is passed to it, This variable
@@ -26,7 +29,20 @@ bool loadASCIIFile(const char name [], std::string & buff);
    key to a vector in the spriteCoords map in the form of a spriteInfo struct */
 void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules & levelRules);
 /* Extract and parse header info in buff. */
-void parseRulesHeader(const std::string & buff, const char rulesFileName [], rules & levelRules);
+void parse(const std::string & buff, const char rulesFileName [], rules & levelRules);
+/* Branch to differnt parsing function's depending on the values of current and peek. string may be modified to hold
+   the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
+   InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
+void switchOnChars(const std::string::const_iterator & current, const std::string::const_iterator & peek,
+		   bool inHeader, std::string & string);
+/* Called when we encounter the STRING_DENOTATION character. Extract's and returns string (dealing with escape
+   character's.) Call's exit if there is an error */
+std::string getString(const std::string::const_iterator & current, const std::string::const_iterator & peek);
+/* Return true if we encounter the sequence "ESCAPE_CHAR ESCAPE_CHAR", where ESCAPE_CHAR is the escape sequence
+   character and there is no space */
+bool checkForDoubleEscape(const std::string::const_iterator current, const std::string::const_iterator peek);
+/* Return true if peek points to the character ESCAPE_CHAR */
+bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek);
 
 
 #endif

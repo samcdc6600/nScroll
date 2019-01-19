@@ -13,14 +13,12 @@ I will endever to update this file when I have a more concreat idea of how the f
 		Where (p simply identifies this part of the header as the player sprite info section, STRING is the
 		path to the player sprite file and Y and X are the initial position in the level of the sprite.
 		Additionally this should be the first thing in the header. So a .rules.leve file should always start
-		with (p(
+		with (p(.
 	The header is terminated by the symble "#".
 
-*NOTE ON "(" and ")"
-	The characters "(" and ")" are assumed to have special interpritation within the rules.lev file.
-	That is they denote the start and end of some information such as a coordinate and SHOULD NOT be used in a
-	string such as a file name unless escaped by "(". That is to represent "(" in a path name you must use "(("
-	and to use "(p" you must use "((p".
+*NOTE ON """. The character " denotes the start or end of a string (except for when it is escapted by the character
+	"\". The escaping of " with \ can only be done inside a string. To represent \ in a string simply use two \'s
+	in a row.
 
 *Coordinates
 	rules.lev files can contain any number of coordineates after the header (note that the coordinates
