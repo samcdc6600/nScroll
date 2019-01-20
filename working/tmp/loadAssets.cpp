@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <cstring>
-//#include <locale>
 #include "loadAssets.h"
 #include "../collapse/collapse.h"
 
@@ -143,16 +142,4 @@ bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek)
   if(*peek == ESCAPE_CHAR)
     return true;
   return false;
-}
-
-
-bool skipSpace(std::string::const_iterator & current, const std::string::const_iterator & peek)
-{
-  while(!std::isspace(*current))
-    {
-      ++current;
-      if(current == peek)
-	return false;
-    }
-  return true;
 }

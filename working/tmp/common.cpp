@@ -1,0 +1,26 @@
+#include <chrono>
+#include <thread>
+#include <ncurses.h>
+#include <iostream>
+#include "common.h"
+
+
+void sleep(const unsigned long long t)
+{
+  std::this_thread::sleep_for(std::chrono::milliseconds(t));
+}
+
+
+bool checkRange(const int a, const int coord)
+{
+  bool ret = (a >= 0 && a < coord) ? true : false;
+  return ret;
+}
+
+/* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
+void exit(const std::string & e, const int status)
+{
+  endwin();
+  std::cerr<<e<<'\n';
+  exit(status);
+}

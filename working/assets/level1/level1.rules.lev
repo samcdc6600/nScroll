@@ -1,1 +1,6 @@
-(p("I am the path to a sprite file :)"
+(p("../../assets/sprites/sprite(0).sprite",
+   "../../assets/sprites/sprite(0).sprite",
+   "../../assets/sprites/sprite(0).sprite",
+   "../../assets/sprites/sprite(0).sprite")(10,10))
+   #
+

@@ -43,9 +43,6 @@ std::string getString(const std::string::const_iterator & current, const std::st
 bool checkForDoubleEscape(const std::string::const_iterator current, const std::string::const_iterator peek);
 /* Return true if peek points to the character ESCAPE_CHAR */
 bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek);
-/* Increment's current untill it encounter's a non white space character. If current is equal to peek at any point
-   return false. */
-bool skipSpace(std::string::const_iterator & current, const std::string::const_iterator & peek);
 
 
 #endif
