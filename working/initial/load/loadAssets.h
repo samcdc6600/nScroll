@@ -7,8 +7,13 @@
 #include <fstream>
 #include "../../physics/physics.h" // For rules.
 
-constexpr char STRING_DENOTATION {'\"'}; // This character denotes the start of a sting
-constexpr char ESCAPE_CHAR {'\''}; // The character used for escape sequences (within a string) in .rules.lev file's.
+
+constexpr char FIELD_DENOTATION {'('};	 // Marks the start of a new field or section of the file.
+constexpr char HEADER_END_DENOTATION {'#'}; // Marks the end of the header sectino of the file.
+constexpr char STRING_DENOTATION {'"'}; // This character denotes the start of a sting
+ // This character denotes the presence of another string when used after a string.
+constexpr char STRINGS_SEPERATION {','};
+constexpr char ESCAPE_CHAR {'\\'}; // The character used for escape sequences (within a string) in .rules.lev file's.
 
 
 /* This function should initialise the argument background that is passed to it. This variable should then contain
@@ -33,19 +38,21 @@ void parse(const std::string & buff, const char rulesFileName [], rules & levelR
 /* Branch to differnt parsing function's depending on the values of current and peek. string may be modified to hold
    the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
    InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
-void switchOnChars(const std::string::const_iterator & current, const std::string::const_iterator & peek,
-		   bool inHeader, std::string & string);
+int switchOnChars(std::string::const_iterator & current, std::string::const_iterator & peek,
+		   const std::string::const_iterator & max, bool inHeader);
 /* Called when we encounter the STRING_DENOTATION character. Extract's and returns string (dealing with escape
    character's.) Call's exit if there is an error */
-std::string getString(const std::string::const_iterator & current, const std::string::const_iterator & peek);
+std::string getString(std::string::const_iterator & current, std::string::const_iterator & peek,
+		      const std::string::const_iterator max);
 /* Return true if we encounter the sequence "ESCAPE_CHAR ESCAPE_CHAR", where ESCAPE_CHAR is the escape sequence
    character and there is no space */
-bool checkForDoubleEscape(const std::string::const_iterator current, const std::string::const_iterator peek);
+//bool checkForDoubleEscape(const std::string::const_iterator current, const std::string::const_iterator peek);
 /* Return true if peek points to the character ESCAPE_CHAR */
-bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek);
-/* Increment's current untill it encounter's a non white space character. If current is equal to peek at any point
-   return false. */
-bool skipSpace(std::string::const_iterator & current, const std::string::const_iterator & peek);
+//bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek);
+/* Increment's current untill it encounter's a non white space character (also increment's peak.) If current is
+   equal to max at any point return false. */
+bool skipSpace(std::string::const_iterator & current, std::string::const_iterator & peek,
+	       const std::string::const_iterator max);
 
 
 #endif

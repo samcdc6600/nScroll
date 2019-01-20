@@ -26,14 +26,14 @@
 	type coordinates should have the same coordinate values. SINGLE character and STRING type coordinates are
 	explained below.
 	coordinates should have the following form:
-		(Y,X(C))
+		((C)Y,X)
 		Where Y and X are the y and x coordinate numbers of the coordinate and C is a SINGLE character or a
 		STRING.
 		If C is a single character it is interpreted as a rule character. Rule characters help define where
 		the player sprite can go as well as other things of a simmilar nature. If C is a string it is the
 		name of an enimy sprite file. If it is a string the coordinate should actually have the following
-		form (Y,X(C(R)), where Y X and C are as before (C is of course a STRING in this case) and R is a rule
-		for the sprite.
+		form ((C)(R)Y,X), where Y X and C are as before (C is of course a STRING in this case) and R is a
+		rule for the sprite.
 		There is currently no definition for the form R and so it may be left blank. In this case the sprite
 		will not move
 		(relative to the background) and the player sprite will not be able to interact with it.

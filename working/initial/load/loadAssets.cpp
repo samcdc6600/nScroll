@@ -2,14 +2,15 @@
 #include <sstream>
 #include <cstring>
 //#include <locale>
+#include <ncurses.h>// test code
 #include "loadAssets.h"
 #include "../collapse/collapse.h"
 
 
-/* Increment's (advances) i by n, if i equals iEnd before being incremented n times we throw an exception. */
+/* Increment's (advances) i by (n -1), if i equals iEnd before being incremented n times we throw an exception. */
 template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, const size_t n) -> T_A
 {
-  for(int iter {}; iter < n; ++iter)
+  for(int iter {}; iter < (n -1); ++iter)
     {
       i++;
       if(*i == *iEnd)
@@ -87,9 +88,16 @@ void parse(const std::string & buff, const char rulesFileName [], rules & levelR
 
   try
     {
-      for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(headerStart))},
+      endwin();
+      for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(headerStart) -1)},
 	    current {peek++}; *peek != '\0'; ++peek, ++current)
-	{	  
+	{
+	  bool inHeader {true};	  
+	  switch(switchOnChars(current, peek, buff.end(), inHeader))
+	    {
+	    default:
+	      break;
+	    }
 	}
     }
   catch (std::out_of_range & e)
@@ -104,31 +112,99 @@ void parse(const std::string & buff, const char rulesFileName [], rules & levelR
   // I'll have to think about!
 }
 
-void switchOnChars(const std::string::const_iterator & current, const std::string::const_iterator & peek,
-		   bool inHeader, std::string & string)
+
+int switchOnChars(std::string::const_iterator & current, std::string::const_iterator & peek,
+		   const std::string::const_iterator & max, bool inHeader)
 {
+  std::string str {};
   switch(*current)
     {
-    case '(':		// Handle start of new field or section.
+    case FIELD_DENOTATION:    // Handle start of new field or section.
+      if(*peek != STRING_DENOTATION) // Likely path!
+	{			// We have a coordinate character
+	  // Char c = validateCoordCharacter()
+	  // Call function to get the coordinate's.
+	  // Add info to coordinate rules map.
+	}
+      else
+      	{			// We have a sprite	  
+	  // Call function to the the rule.
+	  // Call function to get the coordinate's.
+	  do
+	    {
+	      if(*peek != STRING_DENOTATION)
+		exit("Error encountered the character ',' after a string but did not encounter another sting!",
+		     ERROR_MALFORMED_STRING);
+	      str = getString(++current, ++peek, max); // Get the sprite path.
+	      std::cout<<"str = "<<str<<std::endl;
+	      skipSpace(current, peek, max); // There can be spaces inbetween the ',' characters.
+	      if(*current != STRINGS_SEPERATION)
+		break;
+	      else
+		if(*peek == STRING_DENOTATION)
+		  continue;
+		else
+		  {
+		    skipSpace(++current, ++peek, max);
+		    --current, --peek; // Peek should point to STRING_DENOTATION character.
+		  }
+	      // Initalise sprite and add info to sprite map.
+	    }
+	  while(*current == STRINGS_SEPERATION); // There can be more then one sprite
+	}
       break;
-    case '\"':		// Handle string.
-      string = getString(current, peek);
-      break;
-    case '\\':			// Start of escape (if in string.)
-      break;
+      
     default:
-      if(*peek == '#')// We've reached the end of the header (or file is malformed.) We've already checked for != '\\'
-	{}	
+      if(*peek == HEADER_END_DENOTATION) // We've reached the end of the header (or file is malformed.)
+	{}
+    }
+  return 0;
+}
+
+
+std::string getString(std::string::const_iterator & current, std::string::const_iterator & peek,
+		      const std::string::const_iterator max)
+{
+  std::string ret {};
+  ++current, ++peek;		// Skip inital STRING_DENOTATION character.
+  while(true)
+    {
+      if(peek == max)
+	exit("Error parsing string, (peek equals max.) A rules.lev file cannot end with \"X\"\" or \"XY\", where X"
+	     " and Y are arbitrary characters and where XY is not the sequence \"\")\". If the last peice of"
+	     " information in the file is a string it must end \"\")\"",
+	     ERROR_MALFORMED_STRING);
+      switch(*current)
+	{
+	case ESCAPE_CHAR:
+	  if(*peek == ESCAPE_CHAR)
+	    {			// The ESCAPE_CHAR character has been escaped.
+	      ret.push_back(ESCAPE_CHAR);
+	      ++current, ++peek;
+	    }
+	  else
+	    if(*peek == STRING_DENOTATION)
+	      {			// The STRING_DENOTATION character has been escaped.
+		ret.push_back(STRING_DENOTATION);
+		++current, ++peek;
+	      }
+	    else
+	      exit("Error parsing string, encountered \\ but did not encounter \\ or \" following it.",
+		   ERROR_MALFORMED_STRING);
+	  break;
+	  
+	case STRING_DENOTATION:	// We've reached the end of the string :^).
+		++current, ++peek;		// Current should be after the STRING_DENOTATION character.
+	  return ret;
+	
+	default:
+	  ret.push_back(*current);	  
+	}
+      ++current, ++peek;
     }
 }
 
-
-std::string getString(const std::string::const_iterator & current, const std::string::const_iterator & peek)
-{
-  return std::string {};	// just to compile.
-}
-
-
+/*
 bool checkForDoubleEscape(const std::string::const_iterator current, const std::string::const_iterator peek)
 {
   if(*current == ESCAPE_CHAR)
@@ -143,15 +219,16 @@ bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek)
   if(*peek == ESCAPE_CHAR)
     return true;
   return false;
-}
+  }*/
 
 
-bool skipSpace(std::string::const_iterator & current, const std::string::const_iterator & peek)
+bool skipSpace(std::string::const_iterator & current, std::string::const_iterator & peek,
+	       const std::string::const_iterator max)
 {
-  while(!std::isspace(*current))
+  while(std::isspace(*current))
     {
-      ++current;
-      if(current == peek)
+      ++current, ++peek;
+      if(current >= max)
 	return false;
     }
   return true;
