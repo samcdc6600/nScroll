@@ -34,12 +34,12 @@ bool loadASCIIFile(const char name [], std::string & buff);
    key to a vector in the spriteCoords map in the form of a spriteInfo struct */
 void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules & levelRules);
 /* Extract and parse header info in buff. */
-void parse(const std::string & buff, const char rulesFileName [], rules & levelRules);
+void parse(std::string & buff, const char rulesFileName [], rules & levelRules);
 /* Branch to differnt parsing function's depending on the values of current and peek. string may be modified to hold
    the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
    InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
-int switchOnChars(std::string::const_iterator & current, std::string::const_iterator & peek,
-		   const std::string::const_iterator & max, bool inHeader);
+int switchOnChars(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
+		  const std::string::const_iterator & max, bool inHeader);
 /* Called when we encounter the STRING_DENOTATION character. Extract's and returns string (dealing with escape
    character's.) Call's exit if there is an error */
 std::string getString(std::string::const_iterator & current, std::string::const_iterator & peek,
@@ -51,7 +51,7 @@ std::string getString(std::string::const_iterator & current, std::string::const_
 //bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek);
 /* Increment's current untill it encounter's a non white space character (also increment's peak.) If current is
    equal to max at any point return false. */
-bool skipSpace(std::string::const_iterator & current, std::string::const_iterator & peek,
+bool skipSpace(std::string buff, std::string::const_iterator & current, std::string::const_iterator & peek,
 	       const std::string::const_iterator max);
 
 
