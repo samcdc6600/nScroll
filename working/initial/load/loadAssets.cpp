@@ -136,8 +136,11 @@ int switchOnChars(std::string::const_iterator & current, std::string::const_iter
 		exit("Error encountered the character ',' after a string but did not encounter another sting!",
 		     ERROR_MALFORMED_STRING);
 	      str = getString(++current, ++peek, max); // Get the sprite path.
-	      std::cout<<"str = "<<str<<std::endl;
+	      //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
+	      //std::cout<<"str = "<<str<<std::endl;
+	      //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
 	      skipSpace(current, peek, max); // There can be spaces inbetween the ',' characters.
+	      //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
 	      if(*current != STRINGS_SEPERATION)
 		break;
 	      else
@@ -145,7 +148,9 @@ int switchOnChars(std::string::const_iterator & current, std::string::const_iter
 		  continue;
 		else
 		  {
+		    std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
 		    skipSpace(++current, ++peek, max);
+		    std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
 		    --current, --peek; // Peek should point to STRING_DENOTATION character.
 		  }
 	      // Initalise sprite and add info to sprite map.
