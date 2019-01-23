@@ -7,19 +7,6 @@
 #include "../collapse/collapse.h"
 
 
-/* Increment's (advances) i by (n -1), if i equals iEnd before being incremented n times we throw an exception. */
-template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, const size_t n) -> T_A
-{
-  for(int iter {}; iter < (n -1); ++iter)
-    {
-      i++;
-      if(*i == *iEnd)
-	throw std::out_of_range ("range error");
-    }
-  return i;
-}
-
-
 void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & background,
 		const char rulesFileName [], rules & levelRules)
 {
