@@ -35,6 +35,17 @@ bool loadASCIIFile(const char name [], std::string & buff);
 void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules & levelRules);
 /* Extract and parse header info in buff. */
 void parse(std::string & buff, const char rulesFileName [], rules & levelRules);
+/* Increment's (advances) i by (n -1), if i equals iEnd before being incremented n times we throw an exception. */
+template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, const size_t n) -> T_A
+{
+  for(int iter {}; iter < (n -1); ++iter)
+    {
+      i++;
+      if(*i == *iEnd)
+	throw std::out_of_range ("range error");
+    }
+  return i;
+}
 /* Branch to differnt parsing function's depending on the values of current and peek. string may be modified to hold
    the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
    InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
