@@ -106,7 +106,7 @@ int switchOnChars(std::string & buff, std::string::const_iterator & current, std
   switch(*current)
     {
     case FIELD_DENOTATION:    // Handle start of new field or section.
-      if(*peek != STRING_DENOTATION) // Likely path!
+      if(*peek != STRING_DENOTATION)
 	{			// We have a coordinate character
 	  // Char c = validateCoordCharacter()
 	  // Call function to get the coordinate's.
@@ -123,10 +123,14 @@ int switchOnChars(std::string & buff, std::string::const_iterator & current, std
 		     ERROR_MALFORMED_STRING);
 	      
 	      str = getString(++current, ++peek, max); // Get the sprite path.
-	      std::cout<<"str = "<<str<<std::endl;
-	      std::cout<<"*current = "<<*current<<"\n*peek = "<<*peek<<std::endl;
-	      rubOutSpace(buff, current, peek, max); // There can be spaces inbetween the ',' characters.
-	      std::cout<<"*current = "<<*current<<"\n*peek = "<<*peek<<std::endl<<std::endl;
+	      std::cout<<"-----str = "<<str<<std::endl;
+	      if(std::isspace(*current))
+		{
+		  --current, --peek;
+		  rubOutSpace(buff, current, peek, max); // Remove leading space before STRINGS_SEPERATION.
+		  ++current, ++peek; // Set current to STRINGS_SEPERATION.
+		}
+	      rubOutSpace(buff, current, peek, max); // Remove trailing space after STRINGS_SEPERATION.
 	      
 	      if(*current != STRINGS_SEPERATION)
 		break;
@@ -151,7 +155,7 @@ int switchOnChars(std::string & buff, std::string::const_iterator & current, std
 	{}
     }
 
-  sleep(6000);
+  sleep(10000);
   exit("\n\nwe are free!\n", -1);
   return 0;
 }

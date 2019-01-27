@@ -5,3 +5,21 @@
    #
 ((b)25,0)
 
+
+*current = ,
+*peek = "
+we are free!
+-----str = ../../assets/sprites/sprite(1).sprite
+cayn@CrayXMP:~/SoftDev/projects/repos/nScroll/working$ 
+*peek =  
+*current = "
+*peek = ,
+
+*current = ,
+*peek = "
+
+*current = ,
+*peek = "
+
+*current = )
+*peek = (
