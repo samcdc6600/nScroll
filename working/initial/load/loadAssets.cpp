@@ -101,6 +101,7 @@ void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
 int switchOnChars(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
 		  std::string::const_iterator max, bool inHeader)
 {
+  endwin();
   std::string str {};
   switch(*current)
     {
@@ -120,12 +121,13 @@ int switchOnChars(std::string & buff, std::string::const_iterator & current, std
 	      if(*peek != STRING_DENOTATION)
 		exit("Error encountered the character ',' after a string but did not encounter another sting!",
 		     ERROR_MALFORMED_STRING);
+	      
 	      str = getString(++current, ++peek, max); // Get the sprite path.
-	      //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
-	      //std::cout<<"str = "<<str<<std::endl;
-	      //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
+	      std::cout<<"str = "<<str<<std::endl;
+	      std::cout<<"*current = "<<*current<<"\n*peek = "<<*peek<<std::endl;
 	      rubOutSpace(buff, current, peek, max); // There can be spaces inbetween the ',' characters.
-	      //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
+	      std::cout<<"*current = "<<*current<<"\n*peek = "<<*peek<<std::endl<<std::endl;
+	      
 	      if(*current != STRINGS_SEPERATION)
 		break;
 	      else
@@ -148,6 +150,9 @@ int switchOnChars(std::string & buff, std::string::const_iterator & current, std
       if(*peek == HEADER_END_DENOTATION) // We've reached the end of the header (or file is malformed.)
 	{}
     }
+
+  sleep(6000);
+  exit("\n\nwe are free!\n", -1);
   return 0;
 }
 
@@ -206,15 +211,13 @@ bool rubOutSpace(std::string & buff, std::string::const_iterator & current, std:
       if(peek >= max)
 	return false;
     }
-    
-  if(foundSp)			// Only erase if we found space.
-    {
-      std::cout<<"before"<<std::endl;
-      current = buff.erase(++current, peek); // Why ++current? Erases the sequnece in the range [first, last).
-      std::cout<<"After"<<std::endl<<std::endl;
-    }
-  peek = current, ++peek;
-  max = buff.end();		// Reset max.
+   if(foundSp)			// Only erase if we found space.
+     {
+       current = buff.erase(++current, peek); // Why ++current? Erases the sequnece in the range [first, last).
+       --current; // Set current to element it was pointing to uppon entering function.
+       peek = current, ++peek;	// Reset peak.
+       max = buff.end();		// Reset max.
+     }
   
   return true;
 }
