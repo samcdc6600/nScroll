@@ -51,16 +51,16 @@ template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, cons
    the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
    InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
 int switchOnChars(std::string & buff, std::string::iterator & current, std::string::iterator & peek,
-		  const std::string::const_iterator & max, bool inHeader);
+		  std::string::const_iterator max, bool inHeader);
 /* Called when we encounter the STRING_DENOTATION character. Extract's and returns string (dealing with escape
    character's.) Call's exit if there is an error */
-std::string getString(std::string::const_iterator & current, std::string::const_iterator & peek,
+std::string getString(std::string::iterator & current, std::string::iterator & peek,
 		      const std::string::const_iterator max);
 /* Increment's peek untill it point's to a non white space character. At which point proceeds to delete
    character's [current, peek) if (++current != peek). Return's false if peek becomes >= max while incrementing.
    It is assumed that current and peek point to consecutive elment's */
-bool rubOutSpace(std::string buff, std::string::iterator & current, std::string::iterator & peek,
-	       const std::string::const_iterator max);
+bool rubOutSpace(std::string & buff, std::string::iterator & current, std::string::iterator & peek,
+	       std::string::const_iterator & max);
 
 
 #endif

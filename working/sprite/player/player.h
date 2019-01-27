@@ -8,10 +8,10 @@
 
 class player: public sprite
 {/*this class should expand on the ABC sprite by adding the following member's and methods:
-spriteSliceS1 (shold hold the slices that make up the sprite), cycleSpeed1 (should hold the cycle speed of the second sprite), 
-direction (should hold the direction that the player is moving in. The direction should also dictate whitch of the two
-sprite's is used), health (should hold the health of the player),
------------------METHODS FOR THIS CLASS SHOULD BE LISTED HEAR----------------------*/
+   spriteSliceS1 (shold hold the slices that make up the sprite), cycleSpeed1 (should hold the cycle speed of the
+   second sprite), direction (should hold the direction that the player is moving in. The direction should also
+   dictate whitch of the two sprite's is used), health (should hold the health of the player),
+   -----------------METHODS FOR THIS CLASS SHOULD BE LISTED HERE----------------------*/
 
   //these objects hold the slices that make up the 2nd, 3rd and 4th sprites
   spriteData sD_player1;

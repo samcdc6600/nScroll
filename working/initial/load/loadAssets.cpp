@@ -99,7 +99,7 @@ void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
 
 
 int switchOnChars(std::string & buff, std::string::iterator & current, std::string::iterator & peek,
-		   const std::string::const_iterator & max, bool inHeader)
+		  std::string::const_iterator max, bool inHeader)
 {
   std::string str {};
   switch(*current)
@@ -152,7 +152,7 @@ int switchOnChars(std::string & buff, std::string::iterator & current, std::stri
 }
 
 
-std::string getString(std::string::const_iterator & current, std::string::const_iterator & peek,
+std::string getString(std::string::iterator & current, std::string::iterator & peek,
 		      const std::string::const_iterator max)
 {
   std::string ret {};
@@ -194,30 +194,12 @@ std::string getString(std::string::const_iterator & current, std::string::const_
     }
 }
 
-/*
-bool checkForDoubleEscape(const std::string::const_iterator current, const std::string::const_iterator peek)
-{
-  if(*current == ESCAPE_CHAR)
-    if(checkPeekForESCAPE_CHAR(peek))
-      return true;
-  return false;
-}
 
-
-bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek)
-{
-  if(*peek == ESCAPE_CHAR)
-    return true;
-  return false;
-  }*/
-
-#include <iterator>
-
-bool rubOutSpace(std::string buff, std::string::iterator & current, std::string::iterator & peek,
-	       const std::string::const_iterator max)
+bool rubOutSpace(std::string & buff, std::string::iterator & current, std::string::iterator & peek,
+	       std::string::const_iterator & max)
 {
   bool foundSp {false};
-   while(std::isspace(*peek));
+   while(std::isspace(*peek))
     {
       ++peek;
       foundSp = true;
@@ -226,8 +208,13 @@ bool rubOutSpace(std::string buff, std::string::iterator & current, std::string:
     }
     
   if(foundSp)			// Only erase if we found space.
-    current = buff.erase(++current, peek); // Why ++current? Erases the sequnece in the range [first, last).
+    {
+      std::cout<<"before"<<std::endl;
+      current = buff.erase(++current, peek); // Why ++current? Erases the sequnece in the range [first, last).
+      std::cout<<"After"<<std::endl<<std::endl;
+    }
   peek = current, ++peek;
+  max = buff.end();		// Reset max.
   
   return true;
 }
