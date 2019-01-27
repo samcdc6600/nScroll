@@ -161,11 +161,7 @@ std::vector<std::string> handleStringDenotationAfterFieldDenotation(std::string 
 {
   std::vector<std::string> ret {};
         do
-	{
-	  if(*peek != STRING_DENOTATION)
-	    exit("Error encountered the character ',' after a string but did not encounter another sting!",
-		 ERROR_MALFORMED_STRING);
-	  
+	{	  
 	  ret.push_back(std::string {getString(++current, ++peek, max)}); // Get the sprite path.
 	  
 	  if(std::isspace(*current)) // Check for spaces after string
@@ -175,19 +171,32 @@ std::vector<std::string> handleStringDenotationAfterFieldDenotation(std::string 
 	      ++current, ++peek; // Set current to STRINGS_SEPERATION.
 	    }
 	  rubOutSpace(buff, current, peek, max); // Remove trailing space after STRINGS_SEPERATION.
-	      
+
+	  
 	  if(*current != STRINGS_SEPERATION)
 	    {
 	      if(*current == FIELD_END_DENOTATION)
 		break;		// We've read all the little stringy wingy's in :).
-	      std::stringstream e {};
-	      e<<"Error encountered a character other then '";
-	      //	      exit(,
-	      //		   ERROR_MALFORMED_STRING);
+	      else
+		{			  // Didn't encounter STRING_SEPERATION or FIELD_END_DENOTATION.
+		  std::stringstream e {}; // We encountered was a syntax error.
+		  e<<"Error encountered a character other then '"<<STRING_DENOTATION<<"' or '"<<FIELD_END_DENOTATION
+		   <<"' when reading string's and between string's";
+		  exit(e.str().c_str(), ERROR_RULES_STRING_FIELDS);
+		}
 	    }
 	  else
-	    if(*peek == STRING_DENOTATION)
-	      continue;
+	    {
+	      if(*peek == STRING_DENOTATION)
+		continue;
+	      else
+		{			// Encounterd STRING_SEPERATION but no STRING_DENOTATION.
+		  std::stringstream e {};
+		  e<<"Error in field containig string/s found '"<<STRINGS_SEPERATION
+		   <<"' that was not followed by '"<<STRING_DENOTATION<<'\'';
+		  exit(e.str().c_str(), ERROR_RULES_STRING_FIELDS);
+		}
+	    }
 	  // Initalise sprite and add info to sprite map.
 	}
       while(*current == STRINGS_SEPERATION); // There can be more then one sprite
@@ -204,10 +213,13 @@ std::string getString(std::string::const_iterator & current, std::string::const_
   while(true)
     {
       if(peek == max)
-	exit("Error parsing string, (peek equals max.) A rules.lev file cannot end with \"X\"\" or \"XY\", where X"
-	     " and Y are arbitrary characters and where XY is not the sequence \"\")\". If the last peice of"
-	     " information in the file is a string it must end \"\")\"",
-	     ERROR_MALFORMED_STRING);
+	{
+	  std::stringstream e {};
+	  e<<"Error parsing string, we have reached the end of the file but have not encountred the appropriate"
+	    "character's. A rules.lev file must end with the character's \""<<STRING_DENOTATION<<FIELD_END_DENOTATION
+	   <<"\", if the last peice of information in the last field in the file is a string.";
+	  exit(e.str().c_str(), ERROR_MALFORMED_STRING);
+	}
       switch(*current)
 	{
 	case ESCAPE_CHAR:
@@ -223,8 +235,12 @@ std::string getString(std::string::const_iterator & current, std::string::const_
 		++current, ++peek;
 	      }
 	    else
-	      exit("Error parsing string, encountered \\ but did not encounter \\ or \" following it.",
-		   ERROR_MALFORMED_STRING);
+	      {
+		std::stringstream e {};
+		e<<"Error parsing string, encountered '"<<ESCAPE_CHAR<<"' but did not encounter '"<<ESCAPE_CHAR<<
+		  "' or '"<<STRING_DENOTATION<<"' following it.";
+		exit(e.str().c_str(), ERROR_MALFORMED_STRING);
+	      }
 	  break;
 	  
 	case STRING_DENOTATION:	// We've reached the end of the string :^).
