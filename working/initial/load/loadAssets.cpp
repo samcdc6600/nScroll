@@ -64,8 +64,7 @@ void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules 
 
 void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
 {
-  constexpr char headerStart [] = "(p("; // The header shuld always start with me.
-  if(strncmp(buff.c_str(), headerStart, sizeof(headerStart) -1) != 0)
+  if(strncmp(buff.c_str(), HEADER_START, sizeof(HEADER_START) -1) != 0)
     {
       std::stringstream e {};
       e<<"Error header of the .rules.lev file \""<<rulesFileName<<"\" is malformed!";
@@ -75,8 +74,7 @@ void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
 
   try
     {
-      endwin();
-      for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(headerStart) -1)},
+      for(std::string::iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(HEADER_START) -1)},
 	    current {peek++}; *peek != '\0'; ++peek, ++current)
 	{
 	  bool inHeader {true};	  
@@ -100,7 +98,7 @@ void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
 }
 
 
-int switchOnChars(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
+int switchOnChars(std::string & buff, std::string::iterator & current, std::string::iterator & peek,
 		   const std::string::const_iterator & max, bool inHeader)
 {
   std::string str {};
@@ -126,7 +124,7 @@ int switchOnChars(std::string & buff, std::string::const_iterator & current, std
 	      //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
 	      //std::cout<<"str = "<<str<<std::endl;
 	      //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
-	      skipSpace(buff, current, peek, max); // There can be spaces inbetween the ',' characters.
+	      rubOutSpace(buff, current, peek, max); // There can be spaces inbetween the ',' characters.
 	      //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
 	      if(*current != STRINGS_SEPERATION)
 		break;
@@ -135,9 +133,9 @@ int switchOnChars(std::string & buff, std::string::const_iterator & current, std
 		  continue;
 		else
 		  {
-		    std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
-		    skipSpace(buff, ++current, ++peek, max);
-		    std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
+		    //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
+		    rubOutSpace(buff, ++current, ++peek, max);
+		    //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
 		    --current, --peek; // Peek should point to STRING_DENOTATION character.
 		  }
 	      // Initalise sprite and add info to sprite map.
@@ -213,18 +211,23 @@ bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek)
   return false;
   }*/
 
+#include <iterator>
 
-bool skipSpace(std::string buff, std::string::const_iterator & current, std::string::const_iterator & peek,
+bool rubOutSpace(std::string buff, std::string::iterator & current, std::string::iterator & peek,
 	       const std::string::const_iterator max)
 {
-  do
+  bool foundSp {false};
+   while(std::isspace(*peek));
     {
       ++peek;
+      foundSp = true;
       if(peek >= max)
 	return false;
     }
-  while(std::isspace(*peek));
-  current = buff.erase(current, peek);
-  peek = current, ++peek;  
+    
+  if(foundSp)			// Only erase if we found space.
+    current = buff.erase(++current, peek); // Why ++current? Erases the sequnece in the range [first, last).
+  peek = current, ++peek;
+  
   return true;
 }
