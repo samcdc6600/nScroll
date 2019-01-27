@@ -74,7 +74,7 @@ void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
 
   try
     {
-      for(std::string::iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(HEADER_START) -1)},
+      for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(HEADER_START) -1)},
 	    current {peek++}; *peek != '\0'; ++peek, ++current)
 	{
 	  bool inHeader {true};	  
@@ -98,7 +98,7 @@ void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
 }
 
 
-int switchOnChars(std::string & buff, std::string::iterator & current, std::string::iterator & peek,
+int switchOnChars(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
 		  std::string::const_iterator max, bool inHeader)
 {
   std::string str {};
@@ -152,7 +152,7 @@ int switchOnChars(std::string & buff, std::string::iterator & current, std::stri
 }
 
 
-std::string getString(std::string::iterator & current, std::string::iterator & peek,
+std::string getString(std::string::const_iterator & current, std::string::const_iterator & peek,
 		      const std::string::const_iterator max)
 {
   std::string ret {};
@@ -195,7 +195,7 @@ std::string getString(std::string::iterator & current, std::string::iterator & p
 }
 
 
-bool rubOutSpace(std::string & buff, std::string::iterator & current, std::string::iterator & peek,
+bool rubOutSpace(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
 	       std::string::const_iterator & max)
 {
   bool foundSp {false};
