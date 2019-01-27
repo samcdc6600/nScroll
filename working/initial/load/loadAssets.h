@@ -9,7 +9,8 @@
 
 
 constexpr char HEADER_START [] = {"(p("}; // The header should always start with me.
-constexpr char FIELD_DENOTATION {'('};	 // Marks the start of a new field or section of the file.
+constexpr char FIELD_START_DENOTATION {'('};	 // Marks the start of a new field or section of the current file.
+constexpr char FIELD_END_DENOTATION {')'};	 // Marks the end of the current field or section of the current file.
 constexpr char HEADER_END_DENOTATION {'#'}; // Marks the end of the header sectino of the file.
 constexpr char STRING_DENOTATION {'"'}; // This character denotes the start of a sting
  // This character denotes the presence of another string when used after a string.
@@ -50,8 +51,19 @@ template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, cons
 /* Branch to differnt parsing function's depending on the values of current and peek. string may be modified to hold
    the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
    InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
-int switchOnChars(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
+int switchOnCurrent(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
 		  std::string::const_iterator max, bool inHeader);
+/* This function should be called from switchOnCurrent when *current == FIELD_DENOTATION. 
+   It despatches a function based on the value of *peek */
+void handleCurrentIsFieldDenotation(std::string & buff, std::string::const_iterator & current,
+				    std::string::const_iterator & peek, std::string::const_iterator max,
+				    const bool inHeader);
+/* Read's in a number of string's separated by the STRING_SEPERATION character. Stop when current reaches the
+  character where a STRING_SEPERATION character is expected. Returns each string read in a vector. */
+std::vector<std::string> handleStringDenotationAfterFieldDenotation(std::string & buff,
+							       std::string::const_iterator & current,
+							       std::string::const_iterator & peek,
+							       std::string::const_iterator max);
 /* Called when we encounter the STRING_DENOTATION character. Extract's and returns string (dealing with escape
    character's.) Call's exit if there is an error */
 std::string getString(std::string::const_iterator & current, std::string::const_iterator & peek,

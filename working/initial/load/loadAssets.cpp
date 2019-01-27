@@ -54,7 +54,6 @@ void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules 
     }
   parse(buff, rulesFileName, levelRules);
     // Initialise player.
-  // THESE SHOULD BE SPECIFIED IN THE HEADER OF THE RULES FILE!!!!!!!!!!!!!!!1 
   yx spritePos = {10, 10}; // Set inital position for player.
   levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
                                       "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
@@ -78,7 +77,7 @@ void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
 	    current {peek++}; *peek != '\0'; ++peek, ++current)
 	{
 	  bool inHeader {true};	  
-	  switch(switchOnChars(buff, current, peek, buff.end(), inHeader))
+	  switch(switchOnCurrent(buff, current, peek, buff.end(), inHeader))
 	    {
 	    default:
 	      break;
@@ -98,56 +97,16 @@ void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
 }
 
 
-int switchOnChars(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
+int switchOnCurrent(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
 		  std::string::const_iterator max, bool inHeader)
-{
-  endwin();
-  std::string str {};
+{	    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  endwin();			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TEST CODE
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
   switch(*current)
     {
-    case FIELD_DENOTATION:    // Handle start of new field or section.
-      if(*peek != STRING_DENOTATION)
-	{			// We have a coordinate character
-	  // Char c = validateCoordCharacter()
-	  // Call function to get the coordinate's.
-	  // Add info to coordinate rules map.
-	}
-      else
-      	{			// We have a sprite	  
-	  // Call function to the the rule.
-	  // Call function to get the coordinate's.
-	  do
-	    {
-	      if(*peek != STRING_DENOTATION)
-		exit("Error encountered the character ',' after a string but did not encounter another sting!",
-		     ERROR_MALFORMED_STRING);
-	      
-	      str = getString(++current, ++peek, max); // Get the sprite path.
-	      std::cout<<"-----str = "<<str<<std::endl;
-	      if(std::isspace(*current))
-		{
-		  --current, --peek;
-		  rubOutSpace(buff, current, peek, max); // Remove leading space before STRINGS_SEPERATION.
-		  ++current, ++peek; // Set current to STRINGS_SEPERATION.
-		}
-	      rubOutSpace(buff, current, peek, max); // Remove trailing space after STRINGS_SEPERATION.
-	      
-	      if(*current != STRINGS_SEPERATION)
-		break;
-	      else
-		if(*peek == STRING_DENOTATION)
-		  continue;
-		else
-		  {
-		    //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
-		    rubOutSpace(buff, ++current, ++peek, max);
-		    //std::cout<<"*current = "<<*current<<", peek = "<<(int)*peek<<std::endl;
-		    --current, --peek; // Peek should point to STRING_DENOTATION character.
-		  }
-	      // Initalise sprite and add info to sprite map.
-	    }
-	  while(*current == STRINGS_SEPERATION); // There can be more then one sprite
-	}
+    case FIELD_START_DENOTATION:    // Handle start of new field or section.
+      handleCurrentIsFieldDenotation(buff, current, peek, max, inHeader);
       break;
       
     default:
@@ -155,9 +114,85 @@ int switchOnChars(std::string & buff, std::string::const_iterator & current, std
 	{}
     }
 
-  sleep(10000);
-  exit("\n\nwe are free!\n", -1);
+    sleep(10000);
+    exit("\n\nwe are free!\n", -1);
   return 0;
+}
+
+
+void handleCurrentIsFieldDenotation(std::string & buff, std::string::const_iterator & current,
+				    std::string::const_iterator & peek, std::string::const_iterator max,
+				    const bool inHeader)
+{
+  if(*peek != STRING_DENOTATION)
+    {			// We have a coordinate character
+      // Char c = validateCoordCharacter()
+      // Call function to get the coordinate's.
+      // Add info to coordinate rules map.
+    }
+  else
+    {			// We have a sprite
+      if(!inHeader)
+	{
+	  // Call function to get the the rule.
+	  // Call function to get the coordinate's.
+	}
+      else
+	{		   // We read in the player sprite info.
+	  // Init player sprite with string's from next func.
+	  for(auto a: handleStringDenotationAfterFieldDenotation(buff, current, peek, max))
+	    std::cout<<a<<std::endl;
+	  // Init player with coord from next fun.
+
+	  /*
+  yx spritePos = {10, 10}; // Set inital position for player.
+  levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
+                                      "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
+                                      maxyx, spritePos, 5, DIR_RIGHT)); // Set sprite for player  */
+	}
+    }
+}
+
+
+std::vector<std::string> handleStringDenotationAfterFieldDenotation(std::string & buff,
+							       std::string::const_iterator & current,
+							       std::string::const_iterator & peek,
+							       std::string::const_iterator max)
+{
+  std::vector<std::string> ret {};
+        do
+	{
+	  if(*peek != STRING_DENOTATION)
+	    exit("Error encountered the character ',' after a string but did not encounter another sting!",
+		 ERROR_MALFORMED_STRING);
+	  
+	  ret.push_back(std::string {getString(++current, ++peek, max)}); // Get the sprite path.
+	  
+	  if(std::isspace(*current)) // Check for spaces after string
+	    {
+	      --current, --peek;
+	      rubOutSpace(buff, current, peek, max); // Remove leading space before STRINGS_SEPERATION.
+	      ++current, ++peek; // Set current to STRINGS_SEPERATION.
+	    }
+	  rubOutSpace(buff, current, peek, max); // Remove trailing space after STRINGS_SEPERATION.
+	      
+	  if(*current != STRINGS_SEPERATION)
+	    {
+	      if(*current == FIELD_END_DENOTATION)
+		break;		// We've read all the little stringy wingy's in :).
+	      std::stringstream e {};
+	      e<<"Error encountered a character other then '";
+	      //	      exit(,
+	      //		   ERROR_MALFORMED_STRING);
+	    }
+	  else
+	    if(*peek == STRING_DENOTATION)
+	      continue;
+	  // Initalise sprite and add info to sprite map.
+	}
+      while(*current == STRINGS_SEPERATION); // There can be more then one sprite
+
+  return ret;
 }
 
 
