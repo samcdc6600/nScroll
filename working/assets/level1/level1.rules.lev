@@ -3,7 +3,7 @@
 	"../../assets/sprites/sprite(2).sprite",
 	"../../assets/sprites/sprite(3).sprite")(10,10))
    #
-((b)25,0)
+(b(25,0))
 
 
 *current = ,

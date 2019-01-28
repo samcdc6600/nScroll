@@ -52,7 +52,7 @@ void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules 
       e<<"Error unable to open: \""<<rulesFileName<<"\"";
       exit(e.str(), ERROR_OPENING_FILE);
     }
-  parse(buff, rulesFileName, levelRules);
+parse(maxyx, buff, rulesFileName, levelRules);
     // Initialise player.
   yx spritePos = {10, 10}; // Set inital position for player.
   levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
@@ -61,7 +61,7 @@ void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules 
 }
 
 
-void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
+void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rules & levelRules)
 {
   if(strncmp(buff.c_str(), HEADER_START, sizeof(HEADER_START) -1) != 0)
     {
@@ -76,9 +76,9 @@ void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
       for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(HEADER_START) -1)},
 	    current {peek++}; *peek != '\0'; ++peek, ++current)
 	{
-	  bool inHeader {true};	  
-	  switch(switchOnCurrent(buff, current, peek, buff.end(), inHeader))
-	    {
+	 bool inHeader {true};
+	 switch(switchOnCurrent(maxyx, buff, current, peek, buff.end(), inHeader))
+	   {
 	    default:
 	      break;
 	    }
@@ -97,8 +97,8 @@ void parse(std::string & buff, const char rulesFileName [], rules & levelRules)
 }
 
 
-int switchOnCurrent(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
-		  std::string::const_iterator max, bool inHeader)
+int switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+		      std::string::const_iterator & peek, std::string::const_iterator max, bool inHeader)
 {	    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   endwin();			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TEST CODE
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -106,7 +106,7 @@ int switchOnCurrent(std::string & buff, std::string::const_iterator & current, s
   switch(*current)
     {
     case FIELD_START_DENOTATION:    // Handle start of new field or section.
-      handleCurrentIsFieldDenotation(buff, current, peek, max, inHeader);
+      handleCurrentIsFieldDenotation(maxyx, buff, current, peek, max, inHeader);
       break;
       
     default:
@@ -120,7 +120,10 @@ int switchOnCurrent(std::string & buff, std::string::const_iterator & current, s
 }
 
 
-void handleCurrentIsFieldDenotation(std::string & buff, std::string::const_iterator & current,
+// FUNCTIONS TO BE DISPATCHED BY SWITCHONCURRENT -START- ------------------------------- -----------------------------
+
+
+void handleCurrentIsFieldDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
 				    std::string::const_iterator & peek, std::string::const_iterator max,
 				    const bool inHeader)
 {
@@ -137,22 +140,133 @@ void handleCurrentIsFieldDenotation(std::string & buff, std::string::const_itera
 	  // Call function to get the the rule.
 	  // Call function to get the coordinate's.
 	}
-      else
-	{		   // We read in the player sprite info.
-	  // Init player sprite with string's from next func.
-	  for(auto a: handleStringDenotationAfterFieldDenotation(buff, current, peek, max))
-	    std::cout<<a<<std::endl;
-	  // Init player with coord from next fun.
+      else			// Read in the player sprite info.
+	initPlayerSprite(maxyx, buff, current, peek, max);
+    }
+}
+
+
+// FUNCTIONS TO BE DISPATCHED BY SWITCHONCURRENT -END- ------------------------------- -----------------------------
+
+
+void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+		      std::string::const_iterator & peek, std::string::const_iterator & max)
+{
+  std::vector<std::string> sprites {handleStringDenotationAfterFieldDenotation(buff, current, peek, max)};
+  rubOutSpace(buff, current, peek, max);
+  current++, peek++;
+  
+  if(*current == FIELD_START_DENOTATION)
+    {				/* Currently maxyx hold's coordinates that can allow the player sprite to be
+				   somewhat offscreen. This should be fixed at some point :3. */
+      std::stringstream coordsSS {getCoords(maxyx, buff, current, peek, max)};
+
+      // ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+      // ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+      // ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+      char c {};
+      yx coords {};
+      coordsSS>>c;
+      coords.y = (c - ASCII_NUMBER_OFFSET);
+      while((coordsSS>>c) != COORD_SEPERATION)
+	{
+	  coords.y *= 10;
+	  coords.y = (c - ASCII_NUMBER_OFFSET);
+	}
+      ++current, ++peek;
+      coordsSS>>c;
+      coords.x = (c - ASCII_NUMBER_OFFSET);
+      while((coordsSS>>c) != COORD_SEPERATION)
+	{
+	  coords.x *= 10;
+	  coords.x = (c - ASCII_NUMBER_OFFSET);
+	}
+	// ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+	// ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+	// ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+	
+      // We are ready to initialise the payer :).
+    }
+  else
+    {
+      std::stringstream e {};
+      e<<"Error in rules.lev file header, encountered end of string field (denoted by \""<<FIELD_END_DENOTATION
+       <<"\") after string. But did not then encounter sprite coordinates (denoted by \""<<FIELD_START_DENOTATION
+       <<".\"";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+     // Init player with coord from next fun.
 
 	  /*
   yx spritePos = {10, 10}; // Set inital position for player.
   levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
                                       "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
                                       maxyx, spritePos, 5, DIR_RIGHT)); // Set sprite for player  */
-	}
-    }
 }
 
+
+/* Check's for coordinate of the form "(Y,X)" and return's "Y,X" (discarding "(" and ")") if Y and X are valid
+   integer number's that do not falloutside of the X and Y values in maxYX and are greater or equal to zero.  */
+std::string getCoords(const yx maxyx, const std::string & buff, std::string::const_iterator & current,
+		      std::string::const_iterator & peek, const std::string::const_iterator & max)
+{
+  std::string ret;  
+  ++current, ++peek;		// Advance current to first digit.
+
+  if(!inSingleDigitRange(*current, ASCII_NUMBER_OFFSET))
+    {				// Error!
+      std::stringstream e {};
+      e<<"Error parsing coordinate, Y coordinate malformed! Coordinats must be of the form \"Y"<<COORD_SEPERATION
+       <<"X\", where Y and X are integer numbers.";
+	exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
+    }
+  
+  while(inSingleDigitRange(*current, ASCII_NUMBER_OFFSET))
+    {				// Get Y coordinate.
+      ret.push_back(*current);
+      ++current, ++peek;	// Next character.
+    }
+  
+  if(*current == COORD_SEPERATION)
+    {
+      ret.push_back(*current);	// COORD_SEPERATION is part of our coords.
+      ++current, ++peek;
+      
+      if(!inSingleDigitRange(*current, ASCII_NUMBER_OFFSET))
+	{				// Error!
+	  std::stringstream e {};
+	  e<<"Error parsing coordinate, X coordinate malformed! Coordinats must be of the form \"Y"<<COORD_SEPERATION
+	   <<"X\", where Y and X are integer numbers.";
+	  	exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
+	}
+      
+      while(inSingleDigitRange(*current, ASCII_NUMBER_OFFSET))
+	{			// Get X coordinate.
+	  ret.push_back(*current);
+	  ++current, ++peek;
+	}
+    }
+  else
+    {				// Error!
+      std::stringstream e {};
+      e<<"Error parsing coordinate, missing \""<<COORD_SEPERATION<<"\" character or non integer character before"
+	" \""<<COORD_SEPERATION<<"\" character.";
+      exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
+    }
+
+  if(*current != FIELD_END_DENOTATION)
+    {	  
+      std::stringstream e {};
+      e<<"Error in rules.lev file. Encountered character other then \""<<FIELD_END_DENOTATION
+       <<"\" or integer character while parsing X coordinate.";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+
+  std::cout<<ret<<std::endl;
+  return ret;
+}
 
 std::vector<std::string> handleStringDenotationAfterFieldDenotation(std::string & buff,
 							       std::string::const_iterator & current,

@@ -16,6 +16,7 @@ constexpr char STRING_DENOTATION {'"'}; // This character denotes the start of a
  // This character denotes the presence of another string when used after a string.
 constexpr char STRINGS_SEPERATION {','};
 constexpr char ESCAPE_CHAR {'\\'}; // The character used for escape sequences (within a string) in .rules.lev file's.
+constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
 
 
 /* This function should initialise the argument background that is passed to it. This variable should then contain
@@ -36,7 +37,7 @@ bool loadASCIIFile(const char name [], std::string & buff);
    key to a vector in the spriteCoords map in the form of a spriteInfo struct */
 void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules & levelRules);
 /* Extract and parse header info in buff. */
-void parse(std::string & buff, const char rulesFileName [], rules & levelRules);
+void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rules & levelRules);
 /* Increment's (advances) i by (n -1), if i equals iEnd before being incremented n times we throw an exception. */
 template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, const size_t n) -> T_A
 {
@@ -51,13 +52,21 @@ template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, cons
 /* Branch to differnt parsing function's depending on the values of current and peek. string may be modified to hold
    the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
    InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
-int switchOnCurrent(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
-		  std::string::const_iterator max, bool inHeader);
+int switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+		    std::string::const_iterator & peek, std::string::const_iterator max, bool inHeader);
 /* This function should be called from switchOnCurrent when *current == FIELD_DENOTATION. 
    It despatches a function based on the value of *peek */
-void handleCurrentIsFieldDenotation(std::string & buff, std::string::const_iterator & current,
+void handleCurrentIsFieldDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
 				    std::string::const_iterator & peek, std::string::const_iterator max,
 				    const bool inHeader);
+/* Calls handleStringDenotationAfterFieldDenotation to read in string's. Then calls getCoords to read in coordinates.
+Then initialises player */
+void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+		      std::string::const_iterator & peek, std::string::const_iterator & max);
+/* Check's for coordinate of the form "(Y,X)" and return's "Y,X" (discarding "(" and ")") if Y and X are valid
+   integer number's that do not falloutside of the X and Y values in maxyx and are greater or equal to zero.  */
+std::string getCoords(const yx maxyx, const std::string & buff, std::string::const_iterator & current,
+		      std::string::const_iterator & peek, const std::string::const_iterator & max);
 /* Read's in a number of string's separated by the STRING_SEPERATION character. Stop when current reaches the
   character where a STRING_SEPERATION character is expected. Returns each string read in a vector. */
 std::vector<std::string> handleStringDenotationAfterFieldDenotation(std::string & buff,
