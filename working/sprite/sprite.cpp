@@ -21,32 +21,24 @@ sprite::sprite(const yx max, const yx pos, const char spriteFileName [])
 
 void sprite::getSprite(const char spriteFileName [], spriteData & sD)
 {
-  try
+  // Load sprite asset--------------------------------------------------------------------------------      
+  std::string rawSprite {};// Holds raw contents of sprite file.
+  if(!loadASCIIFile(spriteFileName, rawSprite))
     {
-      // Load sprite asset--------------------------------------------------------------------------------      
-      std::string rawSprite {};// Holds raw contents of sprite file.
-      if(!loadASCIIFile(spriteFileName, rawSprite))
-	{
-	  std::stringstream errorMsg;
-	  errorMsg<<"In \"sprite::sprite(const std::string & spriteFile)\", in sprite/sprite.cpp. Error opening ";
-	  throw std::logic_error(errorMsg.str());
-	}
-      // Call parserPhaseOne------------------------------------------------------------------------------
-      std::vector<std::vector<partiallyProcessedSliceLine>> pPSpriteSliceS {parserPhaseOne(rawSprite, sD)};
-      // Call parserPhaseTwo------------------------------------------------------------------------------
-      // Call collapse on each slice as a whole and then store slices back into container.      
-      parserPhaseTwo(pPSpriteSliceS, sD);
-      // Append sD to spriteS vector.
-      spriteS.push_back(sD);
-      /* Set currentSliceNumber to 0. This veriable should only take on values between 0 and
-	 (spriteSlices.size() -1) */
-      currentSliceNumber = 0;
+      std::stringstream e {};
+      e<<"Error opening sprite file \""<<spriteFileName<<"\" :'( .";
+      exit(e.str().c_str(), ERROR_OPENING_FILE);
     }
-  catch(std::logic_error errorMsg)
-    {	     /* adds spriteFileName.c_str() to exception and rethrows. */
-      mvprintw(0, 0, "spriteFileName.c_str() = %s", spriteFileName);
-      throw errorMsg;
-    }
+  // Call parserPhaseOne------------------------------------------------------------------------------
+  std::vector<std::vector<partiallyProcessedSliceLine>> pPSpriteSliceS {parserPhaseOne(rawSprite, sD)};
+  // Call parserPhaseTwo------------------------------------------------------------------------------
+  // Call collapse on each slice as a whole and then store slices back into container.      
+  parserPhaseTwo(pPSpriteSliceS, sD);
+  // Append sD to spriteS vector.
+  spriteS.push_back(sD);
+  /* Set currentSliceNumber to 0. This veriable should only take on values between 0 and
+     (spriteSlices.size() -1) */
+  currentSliceNumber = 0;
 }
 
   /* returns the maximum yOffset and xOffset as calculated from the tallest spriteSlice and longest sliceLine in

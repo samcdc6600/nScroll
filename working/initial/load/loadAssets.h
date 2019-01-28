@@ -53,19 +53,20 @@ template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, cons
    the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
    InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
 int switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-		    std::string::const_iterator & peek, std::string::const_iterator max, bool inHeader);
+		    std::string::const_iterator & peek, std::string::const_iterator max, bool inHeader,
+		    rules & levelRules);
 /* This function should be called from switchOnCurrent when *current == FIELD_DENOTATION. 
    It despatches a function based on the value of *peek */
 void handleCurrentIsFieldDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
 				    std::string::const_iterator & peek, std::string::const_iterator max,
-				    const bool inHeader);
+				    const bool inHeader, rules & levelRules);
 /* Calls handleStringDenotationAfterFieldDenotation to read in string's. Then calls getCoords to read in coordinates.
 Then initialises player */
 void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-		      std::string::const_iterator & peek, std::string::const_iterator & max);
+		      std::string::const_iterator & peek, std::string::const_iterator & max, rules & levelRules);
 /* Check's for coordinate of the form "(Y,X)" and return's "Y,X" (discarding "(" and ")") if Y and X are valid
    integer number's that do not falloutside of the X and Y values in maxyx and are greater or equal to zero.  */
-std::string getCoords(const yx maxyx, const std::string & buff, std::string::const_iterator & current,
+std::string getCoords(const std::string & buff, std::string::const_iterator & current,
 		      std::string::const_iterator & peek, const std::string::const_iterator & max);
 /* Read's in a number of string's separated by the STRING_SEPERATION character. Stop when current reaches the
   character where a STRING_SEPERATION character is expected. Returns each string read in a vector. */

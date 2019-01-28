@@ -54,10 +54,10 @@ void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules 
     }
 parse(maxyx, buff, rulesFileName, levelRules);
     // Initialise player.
-  yx spritePos = {10, 10}; // Set inital position for player.
+/*  yx spritePos = {10, 10}; // Set inital position for player.
   levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
                                       "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
-                                      maxyx, spritePos, 5, DIR_RIGHT)); // Set sprite for player 
+                                      maxyx, spritePos, 5, DIR_RIGHT)); // Set sprite for player */
 }
 
 
@@ -77,7 +77,7 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rule
 	    current {peek++}; *peek != '\0'; ++peek, ++current)
 	{
 	 bool inHeader {true};
-	 switch(switchOnCurrent(maxyx, buff, current, peek, buff.end(), inHeader))
+	 switch(switchOnCurrent(maxyx, buff, current, peek, buff.end(), inHeader, levelRules))
 	   {
 	    default:
 	      break;
@@ -98,15 +98,16 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rule
 
 
 int switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-		      std::string::const_iterator & peek, std::string::const_iterator max, bool inHeader)
+		    std::string::const_iterator & peek, std::string::const_iterator max, bool inHeader,
+		      rules & levelRules)
 {	    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  endwin();			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TEST CODE
+//  endwin();			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TEST CODE
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  
   switch(*current)
     {
     case FIELD_START_DENOTATION:    // Handle start of new field or section.
-      handleCurrentIsFieldDenotation(maxyx, buff, current, peek, max, inHeader);
+      handleCurrentIsFieldDenotation(maxyx, buff, current, peek, max, inHeader, levelRules);
       break;
       
     default:
@@ -114,8 +115,8 @@ int switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_itera
 	{}
     }
 
-    sleep(10000);
-    exit("\n\nwe are free!\n", -1);
+//sleep(10000);
+//    exit("\n\nwe are free!\n", -1);
   return 0;
 }
 
@@ -125,7 +126,7 @@ int switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_itera
 
 void handleCurrentIsFieldDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
 				    std::string::const_iterator & peek, std::string::const_iterator max,
-				    const bool inHeader)
+				      const bool inHeader, rules & levelRules)
 {
   if(*peek != STRING_DENOTATION)
     {			// We have a coordinate character
@@ -141,7 +142,7 @@ void handleCurrentIsFieldDenotation(const yx maxyx, std::string & buff, std::str
 	  // Call function to get the coordinate's.
 	}
       else			// Read in the player sprite info.
-	initPlayerSprite(maxyx, buff, current, peek, max);
+	initPlayerSprite(maxyx, buff, current, peek, max, levelRules);
     }
 }
 
@@ -150,44 +151,30 @@ void handleCurrentIsFieldDenotation(const yx maxyx, std::string & buff, std::str
 
 
 void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-		      std::string::const_iterator & peek, std::string::const_iterator & max)
+		      std::string::const_iterator & peek, std::string::const_iterator & max, rules & levelRules)
 {
   std::vector<std::string> sprites {handleStringDenotationAfterFieldDenotation(buff, current, peek, max)};
+
+  
   rubOutSpace(buff, current, peek, max);
   current++, peek++;
   
   if(*current == FIELD_START_DENOTATION)
     {				/* Currently maxyx hold's coordinates that can allow the player sprite to be
 				   somewhat offscreen. This should be fixed at some point :3. */
-      std::stringstream coordsSS {getCoords(maxyx, buff, current, peek, max)};
+      std::stringstream coordsSS {getCoords(buff, current, peek, max)};
 
       // ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
       // ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
       // ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
-      char c {};
-      yx coords {};
-      coordsSS>>c;
-      coords.y = (c - ASCII_NUMBER_OFFSET);
-      while((coordsSS>>c) != COORD_SEPERATION)
-	{
-	  coords.y *= 10;
-	  coords.y = (c - ASCII_NUMBER_OFFSET);
-	}
-      ++current, ++peek;
-      coordsSS>>c;
-      coords.x = (c - ASCII_NUMBER_OFFSET);
-      while((coordsSS>>c) != COORD_SEPERATION)
-	{
-	  coords.x *= 10;
-	  coords.x = (c - ASCII_NUMBER_OFFSET);
-	}
-	// ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
-	// ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
-	// ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-	
-      // We are ready to initialise the payer :).
+      yx initPos {};		// Initial sprite position.
+      coordsSS>>initPos.y;
+      {				// We are only using c to skip the COORD_SEPERATION character!
+	char c {};
+	coordsSS>>c;
+      }
+      coordsSS>>initPos.x;
+      levelRules.gamePlayer = (new player(sprites, maxyx, initPos, 25, DIR_RIGHT));
     }
   else
     {
@@ -209,7 +196,7 @@ void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_ite
 
 /* Check's for coordinate of the form "(Y,X)" and return's "Y,X" (discarding "(" and ")") if Y and X are valid
    integer number's that do not falloutside of the X and Y values in maxYX and are greater or equal to zero.  */
-std::string getCoords(const yx maxyx, const std::string & buff, std::string::const_iterator & current,
+std::string getCoords(const std::string & buff, std::string::const_iterator & current,
 		      std::string::const_iterator & peek, const std::string::const_iterator & max)
 {
   std::string ret;  
@@ -263,8 +250,7 @@ std::string getCoords(const yx maxyx, const std::string & buff, std::string::con
        <<"\" or integer character while parsing X coordinate.";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
-
-  std::cout<<ret<<std::endl;
+  
   return ret;
 }
 

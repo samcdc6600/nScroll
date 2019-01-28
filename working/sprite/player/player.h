@@ -4,7 +4,8 @@
 #include <sstream>
 #include "../sprite.h"
 #include "../../common.h"
-#include "direction.h"	//contains an enumberation with direction definitions
+#include "direction.h"	//contains an enumeration with direction definitions
+
 
 class player: public sprite
 {/*this class should expand on the ABC sprite by adding the following member's and methods:
@@ -14,31 +15,38 @@ class player: public sprite
    -----------------METHODS FOR THIS CLASS SHOULD BE LISTED HERE----------------------*/
 
   //these objects hold the slices that make up the 2nd, 3rd and 4th sprites
-  spriteData sD_player1;
-  spriteData sD_player2;
-  spriteData sD_player3;
+  static constexpr int NUM_PLAYER_SPRITES {4};
+  static constexpr int INITIAL_SPRITE_INDEX {0};
+  static constexpr int ADDITIONAL_SPRITES_OFFSET {1};
+  spriteData sD_player [NUM_PLAYER_SPRITES];
   int health;
   int direction;
-  //this function has intentional been left in a private section of this class and with an empty
+  //this function has intentionally been left in a private section of this class and with an empty
   //body because it is not intended for use.
   virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
  public:
   //read's sprite files and converts them so they may be used with the classes draw function/s
- player(const char spriteFileOneName [], const char spriteFileTwoName [], const char spriteFileThreeName [],
-	const char spriteFileFourName [], const yx max, const yx pos, const int h, const int d)
-   : sprite(max, pos, spriteFileOneName), health(h), direction(d)
+ player(std::vector<std::string> sprites, const yx max, const yx pos, const int h, const int d)
+   : sprite(max, pos, sprites[INITIAL_SPRITE_INDEX].c_str()), health(h), direction(d)
   {
-    if(d != DIR_LEFT && d != DIR_RIGHT)
+    if(!(d >= DIR_LEFT && d <= DIR_DOWN))
       {
-	std::stringstream errorMsg;
-	errorMsg<<"in \"player.h -> player(const std::string & spriteFileOneName, const std::string & "
-	  "spriteFileTwoName, yx max, yx pos, int h, int d)\", d is != DIR_LEFT or DIR_RIGHT. Out of range!"
-	  "d = "<<d;
-	throw std::logic_error(errorMsg.str());
+	std::stringstream e {};
+	e<<"Error when initialising player: direction ("<<d<<") out of range.";
+	exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
       }
-    getSprite(spriteFileTwoName, sD_player1);
-    getSprite(spriteFileThreeName, sD_player2);
-    getSprite(spriteFileFourName, sD_player3);
+    if(sprites.size() != NUM_PLAYER_SPRITES)
+      {
+	std::stringstream e {};
+	e<<"Error when initialising player: "<<sprites.size()<<" player sprites, but expected "
+	 <<NUM_PLAYER_SPRITES<<" sprites.";
+	exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
+      }
+
+    for(int iter {ADDITIONAL_SPRITES_OFFSET}; iter < NUM_PLAYER_SPRITES; ++iter)
+      {
+	getSprite(sprites[iter].c_str(), sD_player[iter]);
+      }
   }
   
   

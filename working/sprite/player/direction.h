@@ -1,6 +1,3 @@
-//this header should be included in any file that calls the constructor for player
-//as is requires one of these values in it's parameters. The header is included
-//in the player.h file.
 #ifndef DIRECTION_H_ 
 #define DIRECTION_H_
 

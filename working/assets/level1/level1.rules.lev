@@ -1,7 +1,7 @@
-(p("../../assets/sprites/sprite(0).sprite",
-	"../../assets/sprites/sprite(1).sprite",
-	"../../assets/sprites/sprite(2).sprite",
-	"../../assets/sprites/sprite(3).sprite")(10,10))
+(p("./assets/sprites/sprite(0).sprite",
+	"./assets/sprites/sprite(1).sprite",
+	"./assets/sprites/sprite(2).sprite",
+	"./assets/sprites/sprite(3).sprite")(10,12))
    #
 (b(25,0))
 

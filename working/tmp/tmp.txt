@@ -1,452 +1,3 @@
-/* should check that the bounds file that has been read in is the same length as the background file
-after it has been collapsed into int's. The length should be a comparison of number of char's to
-number of int's */
-#ifndef CHECKBOUNDSOFBOUNDS_H_
-#define CHECKBOUNDSOFBOUNDS_H_
-#include <string>
-#include <vector>
-
-/* should return an integer that represents the difference in "size" between the background file and
-the boarder file (relative to the boarder file */
-int checkBoundsOfBounds(const std::string boarder, const std::vector<int> background); 
-
-#endif
-#ifndef COLLAPS_H_
-#define COLLAPS_H_
-#include <string>
-#include <vector>
-#include <map>
-
-class chMap
-{
- private:
-  std::map<std::string, int> strMap;//stores special character types to int code mappings
-  std::vector<std::string> characters//special characters types
-    { "ACS_ULCORNER", "ACS_LLCORNER", "ACS_LRCORNER", "ACS_LTEE", "ACS_RTEE", "ACS_BTEE", "ACS_TTEE",
-	"ACS_HLINE", "ACS_VLINE", "ACS_PLUS", "ACS_S1", "ACS_S3", "ACS_S7", "ACS_S9", "ACS_DIAMOND",
-	"ACS_CKBOARD", "ACS_DEGREE", "ACS_PLMINUS", "ACS_BULLET", "ACS_LARROW", "ACS_RARROW",
-	"ACS_DARROW", "ACS_UARROW", "ACS_BOARD", "ACS_LANTERN", "ACS_BLOCK", "ACS_LEQUAL",
-	"ACS_GEQUAL", "ACS_PI", "ACS_NEQUAL", "ACS_STERLING" };
- public:
- chMap();
- int find(const std::string str);
-};
-//"Collapse's" buff and stores into ret. copies all characters not part of an escape sequence into
-//ret (one char goes into one int (thus ret may actually be larger then buff (but I say it is collapsed
-//for reasons explained shortly)). All escape sequences are not copied reather they are used as an
-//index into a chMap object and the return value (an int that should be unique) is stored into one value
-//of ret instead of all the characters that make up the escape sequence.
-//nonColor escape sequences start with /nc
-void collapse(const std::string & buffWithSpaces, std::vector<int> & ret);
-
-#endif
-#ifndef COLOUROFFSET_H_
-#define COLOUROFFSET_H_
-#include <map>
-#include <string>
-#include <vector>
-
-
-class colourMap//this classes main function is to help in converting the background input from char's to int's
-{
- private:
-  std::map<std::string, int> map;//stores color types to int offsets
-  std::vector<std::string> colorPairs
-    {//BLACK_WHITE is defined as pair zero and cannot be changed and thus must be first
-      //      "WHITE_BLACK",
-      "BLACK_BLACK", "BLACK_RED", "BLACK_GREEN", "BLACK_YELLOW", "BLACK_BLUE", "BLACK_MAGENTA", "BLACK_CYAN",
-      "BLACK_WHITE", "RED_BLACK", "RED_RED", "RED_GREEN", "RED_YELLOW", "RED_BLUE", "RED_MAGENTA", "RED_CYAN",
-      "RED_WHITE", "GREEN_BLACK", "GREEN_RED", "GREEN_GREEN", "GREEN_YELLOW", "GREEN_BLUE", "GREEN_MAGENTA",
-      "GREEN_CYAN", "GREEN_WHITE", "YELLOW_BLACK", "YELLOW_RED", "YELLOW_GREEN", "YELLOW_YELLOW", "YELLOW_BLUE",
-      "YELLOW_MAGENTA", "YELLOW_CYAN", "YELLOW_WHITE", "BLUE_BLACK", "BLUE_RED", "BLUE_GREEN", "BLUE_YELLOW",
-      "BLUE_BLUE", "BLUE_MAGENTA", "BLUE_CYAN", "BLUE_WHITE", "MAGENTA_BLACK", "MAGENTA_RED", "MAGENTA_GREEN",
-      "MAGENTA_YELLOW", "MAGENTA_BLUE", "MAGENTA_MAGENTA", "MAGENTA_CYAN", "MAGENTA_WHITE", "CYAN_BLACK",
-      "CYAN_RED", "CYAN_GREEN", "CYAN_YELLOW", "CYAN_BLUE", "CYAN_MAGENTA", "CYAN_CYAN", "CYAN_WHITE", "WHITE_RED",
-      "WHITE_GREEN", "WHITE_YELLOW", "WHITE_BLUE", "WHITE_MAGENTA", "WHITE_CYAN", "WHITE_WHITE"
-    };
- public:
-  colourMap();
-  int getRange(const std::string str)
-  {
-    return map.at(str);//return tange (offset)
-  }
-};
-
-class setColorMode//This class is used to change the color mode of Ncurses
-{
- private:
-  const int colorMax {63};
-  const int defaultColor {};
-  void setState(const int state);//set the color state in Ncurses
-  bool inRange(const int color);//is the color passed to this function in range?
- public:
-  setColorMode(const int color);
-  void setColor(const int color);//set color to color
-  void clearColor();//set color to default
-};
-
-#endif
-#ifndef COMMON_H_
-#define COMMON_H_
-#define MONO_CH_MAX 158
-#define COLOR_CH_MAX 63
-
-
-enum errorsCodes
-  {/* Error codes */
-    /* There was a problem with the window parameters and the window could not be initialised */
-    ERROR_WIN_PARAM, // Window not initialised - there was a problem with the window parameters.
-    ERROR_CURSOR_PARAM,	// Cursor parameters out of range.
-    ERROR_POS_CH_RANGE,	// Character position out of range.
-    ERROR_OPENING_FILE,	// Error opening file.
-    ERROR_CHARACTER_RANGE,	// Character out of range.
-    ERROR_COLOR_CODE_RANGE,	// Color code out of range.
-    ERROR_GENERIC_RANGE_ERROR,
-    ERROR_RULES_LEV_HEADER	// Header of .level.rules file is malformed.
-  };
-
-
-
-struct yx
-{
-  yx() {}  
-  yx(const int y, const int x)
-  {
-    this->y = y;
-    this->x = x;
-  }
-  int y;
-  int x;
-};
-
-
-void sleep(const unsigned long long t);
-/* Returns false if a is not range [0, coord). */
-bool checkRange(const int a, const int coord);
-/* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
-void exit(const std::string & e, const int status);
-
-#endif
-//this header should be included in any file that calls the constructor for player
-//as is requires one of these values in it's parameters. The header is included
-//in the player.h file.
-#ifndef DIRECTION_H_ 
-#define DIRECTION_H_
-
-//direction's that the sprite can move in
-enum {DIR_LEFT, DIR_RIGHT, DIR_UP, DIR_DOWN};
-
-#endif
-#ifndef DRAW_EXIT_H
-#define DRAW_EXIT_H
-
-
-void drawExit(const yx maxyx);
-
-
-#endif
-
-#ifndef DRAW_H_
-#define DRAW_H_
-#include <vector>
-#include "../common.h"
-#include "../sprite/sprite.h"
-#include "../physics/physics.h"
-
-
-#define DRAW_NO_OP 10176	/* This character should be skipped */
-extern const int yHeight;
-
-
-void draw(const std::vector<int> & buff,
-	  const std::map<std::string, std::vector<rules::spriteInfo>> & nonPlayerSprites,
-	  player * playerSprite, const yx maxyx, const unsigned long offset); /* Draws all that is visible :) */
-/* Places curser at (0,0) and iterates over the current background slice, calling draw for each character. */
-void drawBackground(const std::vector<int> & buff, const yx maxyx, const unsigned long offset);
-/* Checks that y and x are in range and then calls mvprintw(y, x, "") */
-void setCursor(const int y, const int x, const yx maxyx);
-/* Does the actual drawing (e.g. calls printw() or addch() and set's colour appropriately. 
-   NOTE: I had to rename this function "drawCh" from "draw" because I was getting a segmentation fault when
-   calling it from sprie::draw in sprite.cpp. Sprite does not contain a member function with the same signature as
-   this function, so I'm really not sure what the problem is. I suspect it has something to do with sprite::draw
-   being a memeber function and maybe I had unwittingly strayed into undefined behaviour :O. In any case I think
-   drawCh is a more apt name anway :)*/
-void drawCh(int ch);
-bool inColorRange(const int ch); /* Checks whethere ch is a colour character or not. */
-int getColor(const int ch);	 /* Returns colour code encoded in ch. */
-#endif
-#ifndef INPUTHANDLERNONBLOCK_H_
-#define INPUTHANDLERNONBLOCK_H_
-
-char inputHandlerNonBlock();
-
-#endif
-#ifndef LEVELINTERACTIONHANDLER_H_
-#define LEVELINTERACTIONHANDLER_H_
-#include <string>
-#include <vector>
-
-char intersection(const std::string & boundsInteraction, const std::vector<int> spChoords);//check level agains sprite
-char intersection(const std::vector<int> playerSpChoords, const std::vector<int> spChoords);//check player against sprite
-char nearPass(const std::string & boundsInteraction, const std::vector<int> spChoords);//check level against sprite
-char nearPass(const std::vector<int> playerSpChoords, const std::vector<int> spChoords);//check player against sprite
-
-#endif
-#ifndef LOADLEVEL_H_
-#define LOADLEVEL_H_
-
-
-#include <vector>
-#include <string>
-#include <fstream>
-#include "../../physics/physics.h" // For rules.
-
-constexpr char STRING_DENOTATION {'\"'}; // This character denotes the start of a sting
-constexpr char ESCAPE_CHAR {'\''}; // The character used for escape sequences (within a string) in .rules.lev file's.
-
-
-/* This function should initialise the argument background that is passed to it. This variable should then contain
-   the "grphical data" of the level. It should initialise the levelRules argument that is passed to it, This variable
-   should then contain the "rules and non player sprites" as well as the player sprite of the level. The bgFileName
-   and rulesFileName are the names of the files that should be read in and parsed to initialise the background and
-   levelRules arguments. */
-void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & background,
-		const char rulesFileName [], rules & levelRules);
-/* Opens file "name" and copies it's content's into buff. If there is an error opening the file returns false.
-   Return's true otherwise. */
-bool loadASCIIFile(const char name [], std::string & buff);
-/* Load rules file, parse header, extract sprite coordinates and sprite name/s and process sprites. extract sprite
-   rule after processing each sprite.
-   Header should contain file location and starting position of player sprite and the player should be initialised
-   using this info. The header may also contain other information. 
-   When a sprite coordinate, sprite and rule triple has been extracted add sprite and rule using sprite coordinate as
-   key to a vector in the spriteCoords map in the form of a spriteInfo struct */
-void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules & levelRules);
-/* Extract and parse header info in buff. */
-void parse(const std::string & buff, const char rulesFileName [], rules & levelRules);
-/* Branch to differnt parsing function's depending on the values of current and peek. string may be modified to hold
-   the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
-   InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
-void switchOnChars(const std::string::const_iterator & current, const std::string::const_iterator & peek,
-		   bool inHeader, std::string & string);
-/* Called when we encounter the STRING_DENOTATION character. Extract's and returns string (dealing with escape
-   character's.) Call's exit if there is an error */
-std::string getString(const std::string::const_iterator & current, const std::string::const_iterator & peek);
-/* Return true if we encounter the sequence "ESCAPE_CHAR ESCAPE_CHAR", where ESCAPE_CHAR is the escape sequence
-   character and there is no space */
-bool checkForDoubleEscape(const std::string::const_iterator current, const std::string::const_iterator peek);
-/* Return true if peek points to the character ESCAPE_CHAR */
-bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek);
-
-
-#endif
-#ifndef PHYSICS_H_
-#define PHYSICS_H_
-#include <map>
-#include <string>
-#include <vector>
-#include "../sprite/sprite.h"
-#include "../sprite/player/player.h"
-
-struct rules
-{
-  struct spriteInfo		/* For sprites (holds sprite data (slices) and the rule for the sprite. */
-  {
-    /* Sprite data to go here (when I do it.) */
-    sprite * sp {};		/* This has to be a pointer because sprite is an ABC. */
-    std::string rule {};
-  };
-  /* The key's for these maps should be of the form "Y,X" Where Y and X are numbers and the whole thing is a string */
-  std::map<std::string, char> charCoords {}; /* For coordinate rules. */
-   /* Sprites (multiple sprites can map to the same coord, thus the vector.) */
-  std::map<std::string, std::vector<spriteInfo>> spriteCoords {};
-  player * gamePlayer;		/* Info about user controlled sprite (AKA player.) */
-  ~rules()
-  {
-    delete(gamePlayer);
-  }
-};
-
-void physics(rules & levelRules);
-
-#endif
-#ifndef PLAYER_H_
-#define PLAYER_H_
-#include <stdexcept>
-#include <sstream>
-#include "../sprite.h"
-#include "../../common.h"
-#include "direction.h"	//contains an enumberation with direction definitions
-
-class player: public sprite
-{/*this class should expand on the ABC sprite by adding the following member's and methods:
-spriteSliceS1 (shold hold the slices that make up the sprite), cycleSpeed1 (should hold the cycle speed of the second sprite), 
-direction (should hold the direction that the player is moving in. The direction should also dictate whitch of the two
-sprite's is used), health (should hold the health of the player),
------------------METHODS FOR THIS CLASS SHOULD BE LISTED HEAR----------------------*/
-
-  //these objects hold the slices that make up the 2nd, 3rd and 4th sprites
-  spriteData sD_player1;
-  spriteData sD_player2;
-  spriteData sD_player3;
-  int health;
-  int direction;
-  //this function has intentional been left in a private section of this class and with an empty
-  //body because it is not intended for use.
-  virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
- public:
-  //read's sprite files and converts them so they may be used with the classes draw function/s
- player(const char spriteFileOneName [], const char spriteFileTwoName [], const char spriteFileThreeName [],
-	const char spriteFileFourName [], const yx max, const yx pos, const int h, const int d)
-   : sprite(max, pos, spriteFileOneName), health(h), direction(d)
-  {
-    if(d != DIR_LEFT && d != DIR_RIGHT)
-      {
-	std::stringstream errorMsg;
-	errorMsg<<"in \"player.h -> player(const std::string & spriteFileOneName, const std::string & "
-	  "spriteFileTwoName, yx max, yx pos, int h, int d)\", d is != DIR_LEFT or DIR_RIGHT. Out of range!"
-	  "d = "<<d;
-	throw std::logic_error(errorMsg.str());
-      }
-    getSprite(spriteFileTwoName, sD_player1);
-    getSprite(spriteFileThreeName, sD_player2);
-    getSprite(spriteFileFourName, sD_player3);
-  }
-  
-  
-  virtual ~player() {};
-  virtual void getHardBoundaryCoordinates(std::vector<int> & spCoords);
-  virtual void getSoftBoundaryCoordinates(std::vector<int> & spCoords);
-  virtual void updatePosRel(char ch);//update's position of sprite in a relative fashion with reference to the sprite.
-  virtual void draw(bool updateSlice);
-  //  virtual void draw() {draw(false);}
-  
-};
-
-#endif
-#ifndef SLICE_H_
-#define SLICE_H_
-#include <vector>
-
-//returns vector<int> or size y x at offset from buff. Note buff must be y hight and at least x long
-//(offset + x cannot go past end of (array / y) and offset should not be negative (however at the
-//current time offset is an unsigned long so there is no required check). This should be checked for
-//in the physics code and should cause an exception in this code.)
-std::vector<int> getSlice(const std::vector<int> buff, const unsigned long offset, const int y, const int x);
-
-#endif
-#ifndef SPRITE_H_
-#define SPRITE_H_
-#include <vector>
-#include <string>
-#include <chrono>
-#include "../common.h"
-
-// This class should be inherited by other classes such as
-// PlayerSprite and enimySprite and nonInterativeSprite
-class sprite
-{
- private:
-  
-  const yx maxyx;		// Window size.
-  
- protected:
-  
-    yx position;     // Position of sprite relative to background and top left corner of sprite object.
-    /* Holds the maximum bottom right offset. Calculated from all slices.*/
-    yx maxBottomRightOffset; /* Used for inital (possible) collision detection and bounds checking */
-    
- private://------------------------------------------------------------------------------------------------------
- 
-  // Holds the sprite animation (slice) that we are upto in the sequences.
-  // Should not go above spriteSlices.size(); and should wrappe back around to zero.  
-  int currentSliceNumber;
-  // These two veriables keep track of when sprites can be updates
-  std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-  std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
-    struct sliceLine
-  {
-    std::vector<int> sliceLine;	// Holds line of slice.
-    int offset;	// Horizontal offset of sliceLine from current curser position.
-  };
-  struct partiallyProcessedSliceLine
-  {
-    std::string sliceLine;	// Holds unprocessed slice line.
-    int offset;	// Horizontal offset of sliceLine from current curser position.
-  };
-  
- protected:
-  
-  struct spriteData
-  { /* Speed of sprite animation. */
-    int cycleSpeed;
-    /* Outer vector holds inner vectors that hold sliceLine objects
-       that make up the horizontal lines of slices.
-       This object holds the slices that make up the sprite. */
-    std::vector<std::vector<sliceLine>> spriteSlices {};
-  } sD_base;    // Hold's a single sprite instance that will be setup by this ABC in it's constructor.
-  
- private:  
-  
-  // Split up file into cycleSpeed and unprocessesd representation of sprite.
-  std::vector<std::vector<partiallyProcessedSliceLine>> parserPhaseOne(const std::string & spriteFile,
-								       spriteData & sD);
-  /* Extracts sprite slice lines by calling getSliceLine(const std::string &, int &) and pushing each slice line
-     onto a vector of partiallyProcessedSliceLine's which it then returnes. */
-  std::vector<std::vector<partiallyProcessedSliceLine>> getSliceLines(const std::string & spriteFile, int & iter);
-  /* Extracts sprite slice line for spriteFile and places in spriteSliceLine, if there are spaces to the left places 
-     in lSpace and finally spFIter udates iter to new position. */
-  partiallyProcessedSliceLine getSliceLine(const std::string & spriteFile, int & spFIter);
-  // Calls collaps on slice lines and stores the lines in a type corresponding to the return value
-  void parserPhaseTwo(const std::vector<std::vector<sprite::partiallyProcessedSliceLine>> & pPSL, spriteData & sD);
-  
- protected:
-  // This vector hold's the sprites (sprite slices and cycle speed's.)
-  std::vector<spriteData> spriteS;
-  
-  /* Initialises sD_base */
-  void getSprite(const char spriteFileName [], spriteData & sD);
-  /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated from the tallest spriteSlice and
-     longest sliceLine in sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left 
-     of position. These values are used for possible collision detection and bounds checking. */
-  void getMaxYXOffset();
-  void resetCurrentSliceNum(int sprite)
-  {
-    currentSliceNumber = 0;
-  }
-  /* Checks that y and x are in range (0 to screen height and width), by calling checkRange(const int, const int). */
-  inline bool inScreenBounds(const int y, const int x)
-  {     /* The reason for having to call checkRange twice is so that it may be a more generic function and we done
-	   have to change it or create another auxulary functino. The runtime overhead of calling it twice is seen as
-	   exceptible (given that is program is probably very far from optimal in many other dimensions. */
-    bool ret = ((checkRange(y, maxyx.y) && checkRange(x, maxyx.x)) ? true : false) &&
-      ((checkRange(y + maxBottomRightOffset.y, maxyx.y) && checkRange(x + maxBottomRightOffset.x, maxyx.x))
-       ? true : false);
-    return ret;
-  }
-  /* Checks if position.y and position.x are in range and if the spriteNum is in range. Throws and exception if 
-     there is an error */
-  void checkSpriteRanges(const int spriteNum);
-  /* We can get a const version of maxBottomRightOffset in a derived class (couldn't make maxBottomRightOffset in
-     sprite. At least we can force it for derived classes.) */
-  const yx getMaxBottomRightOffset();
-  
- public://----------------------------------------------------------------------------------------------------------
-  
-  //constructor reads spriteFile and converts it to the internal object structure
-  sprite(const yx max, const yx pos, const char spriteFileName []);
-  virtual void updatePosAbs(int y, int x);	/* update's position of sprite in an absoulte fashion with reference
-						   to the background */
-  virtual void updatePosRel(const char ch);	/* update's position of sprite in a relative fashion with reference to
-						   the sprite. The argument tell's witch direction to increment. */
-  virtual void draw(int spriteNum, bool updateSlice);	/* displays sprite (potentially more then one file's worth of
-							   sprite) */
-  virtual void draw(bool updateSlice) = 0; /* For sprites that only have one set of slices. */
-  virtual void draw() {draw(false);}	   /* Draw same sprite slice as before. */
-  virtual ~sprite() {};
-};
-
-#endif
 #include "checkBoundsOfBounds.h"
 
 
@@ -668,6 +219,17 @@ bool checkRange(const int a, const int coord)
   bool ret = (a >= 0 && a < coord) ? true : false;
   return ret;
 }
+
+
+bool inSingleDigitRange(const int a, const int offset)
+{
+  constexpr int SINGLE_DIGIT_MIN {};
+  constexpr int SINGLE_DIGIT_MAX {9};
+  if(((a - offset) < SINGLE_DIGIT_MIN) || ((a - offset) > SINGLE_DIGIT_MAX))
+    return false;
+  return true;
+}
+
 
 /* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
 void exit(const std::string & e, const int status)
@@ -1132,21 +694,10 @@ char nearPass(const std::vector<int> playerSpChoords, const std::vector<int> spC
 #include <iostream>
 #include <sstream>
 #include <cstring>
+//#include <locale>
+#include <ncurses.h>// test code
 #include "loadAssets.h"
 #include "../collapse/collapse.h"
-
-
-/* Increment's (advances) i by n, if i equals iEnd before being incremented n times we throw an exception. */
-template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, const size_t n) -> T_A
-{
-  for(int iter {}; iter < n; ++iter)
-    {
-      i++;
-      if(*i == *iEnd)
-	throw std::out_of_range ("range error");
-    }
-  return i;
-}
 
 
 void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & background,
@@ -1194,9 +745,8 @@ void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules 
       e<<"Error unable to open: \""<<rulesFileName<<"\"";
       exit(e.str(), ERROR_OPENING_FILE);
     }
-  parse(buff, rulesFileName, levelRules);
+parse(maxyx, buff, rulesFileName, levelRules);
     // Initialise player.
-  // THESE SHOULD BE SPECIFIED IN THE HEADER OF THE RULES FILE!!!!!!!!!!!!!!!1 
   yx spritePos = {10, 10}; // Set inital position for player.
   levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
                                       "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
@@ -1204,10 +754,9 @@ void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules 
 }
 
 
-void parse(const std::string & buff, const char rulesFileName [], rules & levelRules)
+void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rules & levelRules)
 {
-  constexpr char headerStart [] = "(p("; // The header shuld always start with me.
-  if(strncmp(buff.c_str(), headerStart, sizeof(headerStart) -1) != 0)
+  if(strncmp(buff.c_str(), HEADER_START, sizeof(HEADER_START) -1) != 0)
     {
       std::stringstream e {};
       e<<"Error header of the .rules.lev file \""<<rulesFileName<<"\" is malformed!";
@@ -1217,9 +766,15 @@ void parse(const std::string & buff, const char rulesFileName [], rules & levelR
 
   try
     {
-      for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(headerStart))},
+      for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(HEADER_START) -1)},
 	    current {peek++}; *peek != '\0'; ++peek, ++current)
-	{	  
+	{
+	 bool inHeader {true};
+	 switch(switchOnCurrent(maxyx, buff, current, peek, buff.end(), inHeader))
+	   {
+	    default:
+	      break;
+	    }
 	}
     }
   catch (std::out_of_range & e)
@@ -1234,45 +789,299 @@ void parse(const std::string & buff, const char rulesFileName [], rules & levelR
   // I'll have to think about!
 }
 
-void switchOnChars(const std::string::const_iterator & current, const std::string::const_iterator & peek,
-		   bool inHeader, std::string & string)
-{
+
+int switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+		      std::string::const_iterator & peek, std::string::const_iterator max, bool inHeader)
+{	    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  endwin();			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TEST CODE
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 
   switch(*current)
     {
-    case '(':		// Handle start of new field or section.
+    case FIELD_START_DENOTATION:    // Handle start of new field or section.
+      handleCurrentIsFieldDenotation(maxyx, buff, current, peek, max, inHeader);
       break;
-    case '\"':		// Handle string.
-      string = getString(current, peek);
-      break;
-    case '\\':			// Start of escape (if in string.)
-      break;
+      
     default:
-      if(*peek == '#')// We've reached the end of the header (or file is malformed.) We've already checked for != '\\'
-	{}	
+      if(*peek == HEADER_END_DENOTATION) // We've reached the end of the header (or file is malformed.)
+	{}
+    }
+
+    sleep(10000);
+    exit("\n\nwe are free!\n", -1);
+  return 0;
+}
+
+
+// FUNCTIONS TO BE DISPATCHED BY SWITCHONCURRENT -START- ------------------------------- -----------------------------
+
+
+void handleCurrentIsFieldDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+				    std::string::const_iterator & peek, std::string::const_iterator max,
+				    const bool inHeader)
+{
+  if(*peek != STRING_DENOTATION)
+    {			// We have a coordinate character
+      // Char c = validateCoordCharacter()
+      // Call function to get the coordinate's.
+      // Add info to coordinate rules map.
+    }
+  else
+    {			// We have a sprite
+      if(!inHeader)
+	{
+	  // Call function to get the the rule.
+	  // Call function to get the coordinate's.
+	}
+      else			// Read in the player sprite info.
+	initPlayerSprite(maxyx, buff, current, peek, max);
     }
 }
 
 
-std::string getString(const std::string::const_iterator & current, const std::string::const_iterator & peek)
+// FUNCTIONS TO BE DISPATCHED BY SWITCHONCURRENT -END- ------------------------------- -----------------------------
+
+
+void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+		      std::string::const_iterator & peek, std::string::const_iterator & max)
 {
-  return std::string {};	// just to compile.
+  std::vector<std::string> sprites {handleStringDenotationAfterFieldDenotation(buff, current, peek, max)};
+  rubOutSpace(buff, current, peek, max);
+  current++, peek++;
+  
+  if(*current == FIELD_START_DENOTATION)
+    {				/* Currently maxyx hold's coordinates that can allow the player sprite to be
+				   somewhat offscreen. This should be fixed at some point :3. */
+      std::stringstream coordsSS {getCoords(maxyx, buff, current, peek, max)};
+
+      // ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+      // ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+      // ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+      char c {};
+      yx coords {};
+      coordsSS>>c;
+      coords.y = (c - ASCII_NUMBER_OFFSET);
+      while((coordsSS>>c) != COORD_SEPERATION)
+	{
+	  coords.y *= 10;
+	  coords.y = (c - ASCII_NUMBER_OFFSET);
+	}
+      ++current, ++peek;
+      coordsSS>>c;
+      coords.x = (c - ASCII_NUMBER_OFFSET);
+      while((coordsSS>>c) != COORD_SEPERATION)
+	{
+	  coords.x *= 10;
+	  coords.x = (c - ASCII_NUMBER_OFFSET);
+	}
+	// ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+	// ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+	// ATTENTION!!! MOVE MOST OF THIS CODE INTO A GENERAL FUNCTION IN COMMON.CPP!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+	
+      // We are ready to initialise the payer :).
+    }
+  else
+    {
+      std::stringstream e {};
+      e<<"Error in rules.lev file header, encountered end of string field (denoted by \""<<FIELD_END_DENOTATION
+       <<"\") after string. But did not then encounter sprite coordinates (denoted by \""<<FIELD_START_DENOTATION
+       <<".\"";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+     // Init player with coord from next fun.
+
+	  /*
+  yx spritePos = {10, 10}; // Set inital position for player.
+  levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
+                                      "assets/sprites/sprite(2).sprite", "assets/sprites/sprite(3).sprite",
+                                      maxyx, spritePos, 5, DIR_RIGHT)); // Set sprite for player  */
 }
 
 
-bool checkForDoubleEscape(const std::string::const_iterator current, const std::string::const_iterator peek)
+/* Check's for coordinate of the form "(Y,X)" and return's "Y,X" (discarding "(" and ")") if Y and X are valid
+   integer number's that do not falloutside of the X and Y values in maxYX and are greater or equal to zero.  */
+std::string getCoords(const yx maxyx, const std::string & buff, std::string::const_iterator & current,
+		      std::string::const_iterator & peek, const std::string::const_iterator & max)
 {
-  if(*current == ESCAPE_CHAR)
-    if(checkPeekForESCAPE_CHAR(peek))
-      return true;
-  return false;
+  std::string ret;  
+  ++current, ++peek;		// Advance current to first digit.
+
+  if(!inSingleDigitRange(*current, ASCII_NUMBER_OFFSET))
+    {				// Error!
+      std::stringstream e {};
+      e<<"Error parsing coordinate, Y coordinate malformed! Coordinats must be of the form \"Y"<<COORD_SEPERATION
+       <<"X\", where Y and X are integer numbers.";
+	exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
+    }
+  
+  while(inSingleDigitRange(*current, ASCII_NUMBER_OFFSET))
+    {				// Get Y coordinate.
+      ret.push_back(*current);
+      ++current, ++peek;	// Next character.
+    }
+  
+  if(*current == COORD_SEPERATION)
+    {
+      ret.push_back(*current);	// COORD_SEPERATION is part of our coords.
+      ++current, ++peek;
+      
+      if(!inSingleDigitRange(*current, ASCII_NUMBER_OFFSET))
+	{				// Error!
+	  std::stringstream e {};
+	  e<<"Error parsing coordinate, X coordinate malformed! Coordinats must be of the form \"Y"<<COORD_SEPERATION
+	   <<"X\", where Y and X are integer numbers.";
+	  	exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
+	}
+      
+      while(inSingleDigitRange(*current, ASCII_NUMBER_OFFSET))
+	{			// Get X coordinate.
+	  ret.push_back(*current);
+	  ++current, ++peek;
+	}
+    }
+  else
+    {				// Error!
+      std::stringstream e {};
+      e<<"Error parsing coordinate, missing \""<<COORD_SEPERATION<<"\" character or non integer character before"
+	" \""<<COORD_SEPERATION<<"\" character.";
+      exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
+    }
+
+  if(*current != FIELD_END_DENOTATION)
+    {	  
+      std::stringstream e {};
+      e<<"Error in rules.lev file. Encountered character other then \""<<FIELD_END_DENOTATION
+       <<"\" or integer character while parsing X coordinate.";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+
+  std::cout<<ret<<std::endl;
+  return ret;
+}
+
+std::vector<std::string> handleStringDenotationAfterFieldDenotation(std::string & buff,
+							       std::string::const_iterator & current,
+							       std::string::const_iterator & peek,
+							       std::string::const_iterator max)
+{
+  std::vector<std::string> ret {};
+        do
+	{	  
+	  ret.push_back(std::string {getString(++current, ++peek, max)}); // Get the sprite path.
+	  
+	  if(std::isspace(*current)) // Check for spaces after string
+	    {
+	      --current, --peek;
+	      rubOutSpace(buff, current, peek, max); // Remove leading space before STRINGS_SEPERATION.
+	      ++current, ++peek; // Set current to STRINGS_SEPERATION.
+	    }
+	  rubOutSpace(buff, current, peek, max); // Remove trailing space after STRINGS_SEPERATION.
+
+	  
+	  if(*current != STRINGS_SEPERATION)
+	    {
+	      if(*current == FIELD_END_DENOTATION)
+		break;		// We've read all the little stringy wingy's in :).
+	      else
+		{			  // Didn't encounter STRING_SEPERATION or FIELD_END_DENOTATION.
+		  std::stringstream e {}; // We encountered was a syntax error.
+		  e<<"Error encountered a character other then '"<<STRING_DENOTATION<<"' or '"<<FIELD_END_DENOTATION
+		   <<"' when reading string's and between string's";
+		  exit(e.str().c_str(), ERROR_RULES_STRING_FIELDS);
+		}
+	    }
+	  else
+	    {
+	      if(*peek == STRING_DENOTATION)
+		continue;
+	      else
+		{			// Encounterd STRING_SEPERATION but no STRING_DENOTATION.
+		  std::stringstream e {};
+		  e<<"Error in field containig string/s found '"<<STRINGS_SEPERATION
+		   <<"' that was not followed by '"<<STRING_DENOTATION<<'\'';
+		  exit(e.str().c_str(), ERROR_RULES_STRING_FIELDS);
+		}
+	    }
+	  // Initalise sprite and add info to sprite map.
+	}
+      while(*current == STRINGS_SEPERATION); // There can be more then one sprite
+
+  return ret;
 }
 
 
-bool checkPeekForESCAPE_CHAR(const std::string::const_iterator peek)
+std::string getString(std::string::const_iterator & current, std::string::const_iterator & peek,
+		      const std::string::const_iterator max)
 {
-  if(*peek == ESCAPE_CHAR)
-    return true;
-  return false;
+  std::string ret {};
+  ++current, ++peek;		// Skip inital STRING_DENOTATION character.
+  while(true)
+    {
+      if(peek == max)
+	{
+	  std::stringstream e {};
+	  e<<"Error parsing string, we have reached the end of the file but have not encountred the appropriate"
+	    "character's. A rules.lev file must end with the character's \""<<STRING_DENOTATION<<FIELD_END_DENOTATION
+	   <<"\", if the last peice of information in the last field in the file is a string.";
+	  exit(e.str().c_str(), ERROR_MALFORMED_STRING);
+	}
+      switch(*current)
+	{
+	case ESCAPE_CHAR:
+	  if(*peek == ESCAPE_CHAR)
+	    {			// The ESCAPE_CHAR character has been escaped.
+	      ret.push_back(ESCAPE_CHAR);
+	      ++current, ++peek;
+	    }
+	  else
+	    if(*peek == STRING_DENOTATION)
+	      {			// The STRING_DENOTATION character has been escaped.
+		ret.push_back(STRING_DENOTATION);
+		++current, ++peek;
+	      }
+	    else
+	      {
+		std::stringstream e {};
+		e<<"Error parsing string, encountered '"<<ESCAPE_CHAR<<"' but did not encounter '"<<ESCAPE_CHAR<<
+		  "' or '"<<STRING_DENOTATION<<"' following it.";
+		exit(e.str().c_str(), ERROR_MALFORMED_STRING);
+	      }
+	  break;
+	  
+	case STRING_DENOTATION:	// We've reached the end of the string :^).
+		++current, ++peek;		// Current should be after the STRING_DENOTATION character.
+	  return ret;
+	
+	default:
+	  ret.push_back(*current);	  
+	}
+      ++current, ++peek;
+    }
+}
+
+
+bool rubOutSpace(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
+	       std::string::const_iterator & max)
+{
+  bool foundSp {false};
+   while(std::isspace(*peek))
+    {
+      ++peek;
+      foundSp = true;
+      if(peek >= max)
+	return false;
+    }
+   if(foundSp)			// Only erase if we found space.
+     {
+       current = buff.erase(++current, peek); // Why ++current? Erases the sequnece in the range [first, last).
+       --current; // Set current to element it was pointing to uppon entering function.
+       peek = current, ++peek;	// Reset peak.
+       max = buff.end();		// Reset max.
+     }
+  
+  return true;
 }
 #include <ncurses.h>
 #include <sstream>
@@ -2074,3 +1883,500 @@ void sprite::draw(int spriteNum, bool updateSlice)
 	}
     }
 }
+/* should check that the bounds file that has been read in is the same length as the background file
+after it has been collapsed into int's. The length should be a comparison of number of char's to
+number of int's */
+#ifndef CHECKBOUNDSOFBOUNDS_H_
+#define CHECKBOUNDSOFBOUNDS_H_
+#include <string>
+#include <vector>
+
+/* should return an integer that represents the difference in "size" between the background file and
+the boarder file (relative to the boarder file */
+int checkBoundsOfBounds(const std::string boarder, const std::vector<int> background); 
+
+#endif
+#ifndef COLLAPS_H_
+#define COLLAPS_H_
+#include <string>
+#include <vector>
+#include <map>
+
+class chMap
+{
+ private:
+  std::map<std::string, int> strMap;//stores special character types to int code mappings
+  std::vector<std::string> characters//special characters types
+    { "ACS_ULCORNER", "ACS_LLCORNER", "ACS_LRCORNER", "ACS_LTEE", "ACS_RTEE", "ACS_BTEE", "ACS_TTEE",
+	"ACS_HLINE", "ACS_VLINE", "ACS_PLUS", "ACS_S1", "ACS_S3", "ACS_S7", "ACS_S9", "ACS_DIAMOND",
+	"ACS_CKBOARD", "ACS_DEGREE", "ACS_PLMINUS", "ACS_BULLET", "ACS_LARROW", "ACS_RARROW",
+	"ACS_DARROW", "ACS_UARROW", "ACS_BOARD", "ACS_LANTERN", "ACS_BLOCK", "ACS_LEQUAL",
+	"ACS_GEQUAL", "ACS_PI", "ACS_NEQUAL", "ACS_STERLING" };
+ public:
+ chMap();
+ int find(const std::string str);
+};
+//"Collapse's" buff and stores into ret. copies all characters not part of an escape sequence into
+//ret (one char goes into one int (thus ret may actually be larger then buff (but I say it is collapsed
+//for reasons explained shortly)). All escape sequences are not copied reather they are used as an
+//index into a chMap object and the return value (an int that should be unique) is stored into one value
+//of ret instead of all the characters that make up the escape sequence.
+//nonColor escape sequences start with /nc
+void collapse(const std::string & buffWithSpaces, std::vector<int> & ret);
+
+#endif
+#ifndef COLOUROFFSET_H_
+#define COLOUROFFSET_H_
+#include <map>
+#include <string>
+#include <vector>
+
+
+class colourMap//this classes main function is to help in converting the background input from char's to int's
+{
+ private:
+  std::map<std::string, int> map;//stores color types to int offsets
+  std::vector<std::string> colorPairs
+    {//BLACK_WHITE is defined as pair zero and cannot be changed and thus must be first
+      //      "WHITE_BLACK",
+      "BLACK_BLACK", "BLACK_RED", "BLACK_GREEN", "BLACK_YELLOW", "BLACK_BLUE", "BLACK_MAGENTA", "BLACK_CYAN",
+      "BLACK_WHITE", "RED_BLACK", "RED_RED", "RED_GREEN", "RED_YELLOW", "RED_BLUE", "RED_MAGENTA", "RED_CYAN",
+      "RED_WHITE", "GREEN_BLACK", "GREEN_RED", "GREEN_GREEN", "GREEN_YELLOW", "GREEN_BLUE", "GREEN_MAGENTA",
+      "GREEN_CYAN", "GREEN_WHITE", "YELLOW_BLACK", "YELLOW_RED", "YELLOW_GREEN", "YELLOW_YELLOW", "YELLOW_BLUE",
+      "YELLOW_MAGENTA", "YELLOW_CYAN", "YELLOW_WHITE", "BLUE_BLACK", "BLUE_RED", "BLUE_GREEN", "BLUE_YELLOW",
+      "BLUE_BLUE", "BLUE_MAGENTA", "BLUE_CYAN", "BLUE_WHITE", "MAGENTA_BLACK", "MAGENTA_RED", "MAGENTA_GREEN",
+      "MAGENTA_YELLOW", "MAGENTA_BLUE", "MAGENTA_MAGENTA", "MAGENTA_CYAN", "MAGENTA_WHITE", "CYAN_BLACK",
+      "CYAN_RED", "CYAN_GREEN", "CYAN_YELLOW", "CYAN_BLUE", "CYAN_MAGENTA", "CYAN_CYAN", "CYAN_WHITE", "WHITE_RED",
+      "WHITE_GREEN", "WHITE_YELLOW", "WHITE_BLUE", "WHITE_MAGENTA", "WHITE_CYAN", "WHITE_WHITE"
+    };
+ public:
+  colourMap();
+  int getRange(const std::string str)
+  {
+    return map.at(str);//return tange (offset)
+  }
+};
+
+class setColorMode//This class is used to change the color mode of Ncurses
+{
+ private:
+  const int colorMax {63};
+  const int defaultColor {};
+  void setState(const int state);//set the color state in Ncurses
+  bool inRange(const int color);//is the color passed to this function in range?
+ public:
+  setColorMode(const int color);
+  void setColor(const int color);//set color to color
+  void clearColor();//set color to default
+};
+
+#endif
+#ifndef COMMON_H_
+#define COMMON_H_
+
+
+constexpr int MONO_CH_MAX {158};
+constexpr int COLOR_CH_MAX {63};
+constexpr int ASCII_NUMBER_OFFSET {48};
+
+
+enum errorsCodes
+  {/* Error codes */
+    /* There was a problem with the window parameters and the window could not be initialised */
+    ERROR_WIN_PARAM, // Window not initialised - there was a problem with the window parameters.
+    ERROR_CURSOR_PARAM,	// Cursor parameters out of range.
+    ERROR_POS_CH_RANGE,	// Character position out of range.
+    ERROR_OPENING_FILE,	// Error opening file.
+    ERROR_CHARACTER_RANGE,	// Character out of range.
+    ERROR_COLOR_CODE_RANGE,	// Color code out of range.
+    ERROR_GENERIC_RANGE_ERROR,
+    ERROR_RULES_LEV_HEADER,	// Header of .level.rules file is malformed.
+    ERROR_RULES_STRING_FIELDS,	// There was an error in a field containing string's.
+    ERROR_MALFORMED_STRING,	// We encountered a malformed string.
+    ERROR_MALFORMED_COORDINATE	// We have encountered a malformed coordinate.
+    //ERROR_BAD_LOGIC		// There was an error in the code.
+  };
+
+
+struct yx
+{
+  yx() {}  
+  yx(const int y, const int x)
+  {
+    this->y = y;
+    this->x = x;
+  }
+  int y;
+  int x;
+};
+
+
+void sleep(const unsigned long long t);
+/* Returns false if a is not range [0, coord). */
+bool checkRange(const int a, const int coord);
+/* return's true if a - offset is within the range [SINGLE_DIGIT_MIN, SINGLE_DIGIT_MAX].
+   return's false otherwise. */
+bool inSingleDigitRange(const int a, const int offset);
+/* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
+void exit(const std::string & e, const int status);
+
+#endif
+//this header should be included in any file that calls the constructor for player
+//as is requires one of these values in it's parameters. The header is included
+//in the player.h file.
+#ifndef DIRECTION_H_ 
+#define DIRECTION_H_
+
+//direction's that the sprite can move in
+enum {DIR_LEFT, DIR_RIGHT, DIR_UP, DIR_DOWN};
+
+#endif
+#ifndef DRAW_EXIT_H
+#define DRAW_EXIT_H
+
+
+void drawExit(const yx maxyx);
+
+
+#endif
+
+#ifndef DRAW_H_
+#define DRAW_H_
+#include <vector>
+#include "../common.h"
+#include "../sprite/sprite.h"
+#include "../physics/physics.h"
+
+
+#define DRAW_NO_OP 10176	/* This character should be skipped */
+extern const int yHeight;
+
+
+void draw(const std::vector<int> & buff,
+	  const std::map<std::string, std::vector<rules::spriteInfo>> & nonPlayerSprites,
+	  player * playerSprite, const yx maxyx, const unsigned long offset); /* Draws all that is visible :) */
+/* Places curser at (0,0) and iterates over the current background slice, calling draw for each character. */
+void drawBackground(const std::vector<int> & buff, const yx maxyx, const unsigned long offset);
+/* Checks that y and x are in range and then calls mvprintw(y, x, "") */
+void setCursor(const int y, const int x, const yx maxyx);
+/* Does the actual drawing (e.g. calls printw() or addch() and set's colour appropriately. 
+   NOTE: I had to rename this function "drawCh" from "draw" because I was getting a segmentation fault when
+   calling it from sprie::draw in sprite.cpp. Sprite does not contain a member function with the same signature as
+   this function, so I'm really not sure what the problem is. I suspect it has something to do with sprite::draw
+   being a memeber function and maybe I had unwittingly strayed into undefined behaviour :O. In any case I think
+   drawCh is a more apt name anway :)*/
+void drawCh(int ch);
+bool inColorRange(const int ch); /* Checks whethere ch is a colour character or not. */
+int getColor(const int ch);	 /* Returns colour code encoded in ch. */
+#endif
+#ifndef INPUTHANDLERNONBLOCK_H_
+#define INPUTHANDLERNONBLOCK_H_
+
+char inputHandlerNonBlock();
+
+#endif
+#ifndef LEVELINTERACTIONHANDLER_H_
+#define LEVELINTERACTIONHANDLER_H_
+#include <string>
+#include <vector>
+
+char intersection(const std::string & boundsInteraction, const std::vector<int> spChoords);//check level agains sprite
+char intersection(const std::vector<int> playerSpChoords, const std::vector<int> spChoords);//check player against sprite
+char nearPass(const std::string & boundsInteraction, const std::vector<int> spChoords);//check level against sprite
+char nearPass(const std::vector<int> playerSpChoords, const std::vector<int> spChoords);//check player against sprite
+
+#endif
+#ifndef LOADLEVEL_H_
+#define LOADLEVEL_H_
+
+
+#include <vector>
+#include <string>
+#include <fstream>
+#include "../../physics/physics.h" // For rules.
+
+
+constexpr char HEADER_START [] = {"(p("}; // The header should always start with me.
+constexpr char FIELD_START_DENOTATION {'('};	 // Marks the start of a new field or section of the current file.
+constexpr char FIELD_END_DENOTATION {')'};	 // Marks the end of the current field or section of the current file.
+constexpr char HEADER_END_DENOTATION {'#'}; // Marks the end of the header sectino of the file.
+constexpr char STRING_DENOTATION {'"'}; // This character denotes the start of a sting
+ // This character denotes the presence of another string when used after a string.
+constexpr char STRINGS_SEPERATION {','};
+constexpr char ESCAPE_CHAR {'\\'}; // The character used for escape sequences (within a string) in .rules.lev file's.
+constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
+
+
+/* This function should initialise the argument background that is passed to it. This variable should then contain
+   the "grphical data" of the level. It should initialise the levelRules argument that is passed to it, This variable
+   should then contain the "rules and non player sprites" as well as the player sprite of the level. The bgFileName
+   and rulesFileName are the names of the files that should be read in and parsed to initialise the background and
+   levelRules arguments. */
+void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & background,
+		const char rulesFileName [], rules & levelRules);
+/* Opens file "name" and copies it's content's into buff. If there is an error opening the file returns false.
+   Return's true otherwise. */
+bool loadASCIIFile(const char name [], std::string & buff);
+/* Load rules file, parse header, extract sprite coordinates and sprite name/s and process sprites. extract sprite
+   rule after processing each sprite.
+   Header should contain file location and starting position of player sprite and the player should be initialised
+   using this info. The header may also contain other information. 
+   When a sprite coordinate, sprite and rule triple has been extracted add sprite and rule using sprite coordinate as
+   key to a vector in the spriteCoords map in the form of a spriteInfo struct */
+void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules & levelRules);
+/* Extract and parse header info in buff. */
+void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rules & levelRules);
+/* Increment's (advances) i by (n -1), if i equals iEnd before being incremented n times we throw an exception. */
+template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, const size_t n) -> T_A
+{
+  for(int iter {}; iter < (n -1); ++iter)
+    {
+      i++;
+      if(*i == *iEnd)
+	throw std::out_of_range ("range error");
+    }
+  return i;
+}
+/* Branch to differnt parsing function's depending on the values of current and peek. string may be modified to hold
+   the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
+   InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
+int switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+		    std::string::const_iterator & peek, std::string::const_iterator max, bool inHeader);
+/* This function should be called from switchOnCurrent when *current == FIELD_DENOTATION. 
+   It despatches a function based on the value of *peek */
+void handleCurrentIsFieldDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+				    std::string::const_iterator & peek, std::string::const_iterator max,
+				    const bool inHeader);
+/* Calls handleStringDenotationAfterFieldDenotation to read in string's. Then calls getCoords to read in coordinates.
+Then initialises player */
+void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+		      std::string::const_iterator & peek, std::string::const_iterator & max);
+/* Check's for coordinate of the form "(Y,X)" and return's "Y,X" (discarding "(" and ")") if Y and X are valid
+   integer number's that do not falloutside of the X and Y values in maxyx and are greater or equal to zero.  */
+std::string getCoords(const yx maxyx, const std::string & buff, std::string::const_iterator & current,
+		      std::string::const_iterator & peek, const std::string::const_iterator & max);
+/* Read's in a number of string's separated by the STRING_SEPERATION character. Stop when current reaches the
+  character where a STRING_SEPERATION character is expected. Returns each string read in a vector. */
+std::vector<std::string> handleStringDenotationAfterFieldDenotation(std::string & buff,
+							       std::string::const_iterator & current,
+							       std::string::const_iterator & peek,
+							       std::string::const_iterator max);
+/* Called when we encounter the STRING_DENOTATION character. Extract's and returns string (dealing with escape
+   character's.) Call's exit if there is an error */
+std::string getString(std::string::const_iterator & current, std::string::const_iterator & peek,
+		      const std::string::const_iterator max);
+/* Increment's peek untill it point's to a non white space character. At which point proceeds to delete
+   character's [current, peek) if (++current != peek). Return's false if peek becomes >= max while incrementing.
+   It is assumed that current and peek point to consecutive elment's */
+bool rubOutSpace(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
+	       std::string::const_iterator & max);
+
+
+#endif
+#ifndef PHYSICS_H_
+#define PHYSICS_H_
+#include <map>
+#include <string>
+#include <vector>
+#include "../sprite/sprite.h"
+#include "../sprite/player/player.h"
+
+struct rules
+{
+  struct spriteInfo		/* For sprites (holds sprite data (slices) and the rule for the sprite. */
+  {
+    /* Sprite data to go here (when I do it.) */
+    sprite * sp {};		/* This has to be a pointer because sprite is an ABC. */
+    std::string rule {};
+  };
+  /* The key's for these maps should be of the form "Y,X" Where Y and X are numbers and the whole thing is a string */
+  std::map<std::string, char> charCoords {}; /* For coordinate rules. */
+   /* Sprites (multiple sprites can map to the same coord, thus the vector.) */
+  std::map<std::string, std::vector<spriteInfo>> spriteCoords {};
+  player * gamePlayer;		/* Info about user controlled sprite (AKA player.) */
+  ~rules()
+  {
+    delete(gamePlayer);
+  }
+};
+
+void physics(rules & levelRules);
+
+#endif
+#ifndef PLAYER_H_
+#define PLAYER_H_
+#include <stdexcept>
+#include <sstream>
+#include "../sprite.h"
+#include "../../common.h"
+#include "direction.h"	//contains an enumberation with direction definitions
+
+class player: public sprite
+{/*this class should expand on the ABC sprite by adding the following member's and methods:
+   spriteSliceS1 (shold hold the slices that make up the sprite), cycleSpeed1 (should hold the cycle speed of the
+   second sprite), direction (should hold the direction that the player is moving in. The direction should also
+   dictate whitch of the two sprite's is used), health (should hold the health of the player),
+   -----------------METHODS FOR THIS CLASS SHOULD BE LISTED HERE----------------------*/
+
+  //these objects hold the slices that make up the 2nd, 3rd and 4th sprites
+  spriteData sD_player1;
+  spriteData sD_player2;
+  spriteData sD_player3;
+  int health;
+  int direction;
+  //this function has intentional been left in a private section of this class and with an empty
+  //body because it is not intended for use.
+  virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
+ public:
+  //read's sprite files and converts them so they may be used with the classes draw function/s
+ player(const char spriteFileOneName [], const char spriteFileTwoName [], const char spriteFileThreeName [],
+	const char spriteFileFourName [], const yx max, const yx pos, const int h, const int d)
+   : sprite(max, pos, spriteFileOneName), health(h), direction(d)
+  {
+    if(d != DIR_LEFT && d != DIR_RIGHT)
+      {
+	std::stringstream errorMsg;
+	errorMsg<<"in \"player.h -> player(const std::string & spriteFileOneName, const std::string & "
+	  "spriteFileTwoName, yx max, yx pos, int h, int d)\", d is != DIR_LEFT or DIR_RIGHT. Out of range!"
+	  "d = "<<d;
+	throw std::logic_error(errorMsg.str());
+      }
+    getSprite(spriteFileTwoName, sD_player1);
+    getSprite(spriteFileThreeName, sD_player2);
+    getSprite(spriteFileFourName, sD_player3);
+  }
+  
+  
+  virtual ~player() {};
+  virtual void getHardBoundaryCoordinates(std::vector<int> & spCoords);
+  virtual void getSoftBoundaryCoordinates(std::vector<int> & spCoords);
+  virtual void updatePosRel(char ch);//update's position of sprite in a relative fashion with reference to the sprite.
+  virtual void draw(bool updateSlice);
+  //  virtual void draw() {draw(false);}
+  
+};
+
+#endif
+#ifndef SLICE_H_
+#define SLICE_H_
+#include <vector>
+
+//returns vector<int> or size y x at offset from buff. Note buff must be y hight and at least x long
+//(offset + x cannot go past end of (array / y) and offset should not be negative (however at the
+//current time offset is an unsigned long so there is no required check). This should be checked for
+//in the physics code and should cause an exception in this code.)
+std::vector<int> getSlice(const std::vector<int> buff, const unsigned long offset, const int y, const int x);
+
+#endif
+#ifndef SPRITE_H_
+#define SPRITE_H_
+#include <vector>
+#include <string>
+#include <chrono>
+#include "../common.h"
+
+// This class should be inherited by other classes such as
+// PlayerSprite and enimySprite and nonInterativeSprite
+class sprite
+{
+ private:
+  
+  const yx maxyx;		// Window size.
+  
+ protected:
+  
+    yx position;     // Position of sprite relative to background and top left corner of sprite object.
+    /* Holds the maximum bottom right offset. Calculated from all slices.*/
+    yx maxBottomRightOffset; /* Used for inital (possible) collision detection and bounds checking */
+    
+ private://------------------------------------------------------------------------------------------------------
+ 
+  // Holds the sprite animation (slice) that we are upto in the sequences.
+  // Should not go above spriteSlices.size(); and should wrappe back around to zero.  
+  int currentSliceNumber;
+  // These two veriables keep track of when sprites can be updates
+  std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+  std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
+    struct sliceLine
+  {
+    std::vector<int> sliceLine;	// Holds line of slice.
+    int offset;	// Horizontal offset of sliceLine from current curser position.
+  };
+  struct partiallyProcessedSliceLine
+  {
+    std::string sliceLine;	// Holds unprocessed slice line.
+    int offset;	// Horizontal offset of sliceLine from current curser position.
+  };
+  
+ protected:
+  
+  struct spriteData
+  { /* Speed of sprite animation. */
+    int cycleSpeed;
+    /* Outer vector holds inner vectors that hold sliceLine objects
+       that make up the horizontal lines of slices.
+       This object holds the slices that make up the sprite. */
+    std::vector<std::vector<sliceLine>> spriteSlices {};
+  } sD_base;    // Hold's a single sprite instance that will be setup by this ABC in it's constructor.
+  
+ private:  
+  
+  // Split up file into cycleSpeed and unprocessesd representation of sprite.
+  std::vector<std::vector<partiallyProcessedSliceLine>> parserPhaseOne(const std::string & spriteFile,
+								       spriteData & sD);
+  /* Extracts sprite slice lines by calling getSliceLine(const std::string &, int &) and pushing each slice line
+     onto a vector of partiallyProcessedSliceLine's which it then returnes. */
+  std::vector<std::vector<partiallyProcessedSliceLine>> getSliceLines(const std::string & spriteFile, int & iter);
+  /* Extracts sprite slice line for spriteFile and places in spriteSliceLine, if there are spaces to the left places 
+     in lSpace and finally spFIter udates iter to new position. */
+  partiallyProcessedSliceLine getSliceLine(const std::string & spriteFile, int & spFIter);
+  // Calls collaps on slice lines and stores the lines in a type corresponding to the return value
+  void parserPhaseTwo(const std::vector<std::vector<sprite::partiallyProcessedSliceLine>> & pPSL, spriteData & sD);
+  
+ protected:
+  // This vector hold's the sprites (sprite slices and cycle speed's.)
+  std::vector<spriteData> spriteS;
+  
+  /* Initialises sD_base */
+  void getSprite(const char spriteFileName [], spriteData & sD);
+  /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated from the tallest spriteSlice and
+     longest sliceLine in sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left 
+     of position. These values are used for possible collision detection and bounds checking. */
+  void getMaxYXOffset();
+  void resetCurrentSliceNum(int sprite)
+  {
+    currentSliceNumber = 0;
+  }
+  /* Checks that y and x are in range (0 to screen height and width), by calling checkRange(const int, const int). */
+  inline bool inScreenBounds(const int y, const int x)
+  {     /* The reason for having to call checkRange twice is so that it may be a more generic function and we done
+	   have to change it or create another auxulary functino. The runtime overhead of calling it twice is seen as
+	   exceptible (given that is program is probably very far from optimal in many other dimensions. */
+    bool ret = ((checkRange(y, maxyx.y) && checkRange(x, maxyx.x)) ? true : false) &&
+      ((checkRange(y + maxBottomRightOffset.y, maxyx.y) && checkRange(x + maxBottomRightOffset.x, maxyx.x))
+       ? true : false);
+    return ret;
+  }
+  /* Checks if position.y and position.x are in range and if the spriteNum is in range. Throws and exception if 
+     there is an error */
+  void checkSpriteRanges(const int spriteNum);
+  /* We can get a const version of maxBottomRightOffset in a derived class (couldn't make maxBottomRightOffset in
+     sprite. At least we can force it for derived classes.) */
+  const yx getMaxBottomRightOffset();
+  
+ public://----------------------------------------------------------------------------------------------------------
+  
+  //constructor reads spriteFile and converts it to the internal object structure
+  sprite(const yx max, const yx pos, const char spriteFileName []);
+  virtual void updatePosAbs(int y, int x);	/* update's position of sprite in an absoulte fashion with reference
+						   to the background */
+  virtual void updatePosRel(const char ch);	/* update's position of sprite in a relative fashion with reference to
+						   the sprite. The argument tell's witch direction to increment. */
+  virtual void draw(int spriteNum, bool updateSlice);	/* displays sprite (potentially more then one file's worth of
+							   sprite) */
+  virtual void draw(bool updateSlice) = 0; /* For sprites that only have one set of slices. */
+  virtual void draw() {draw(false);}	   /* Draw same sprite slice as before. */
+  virtual ~sprite() {};
+};
+
+#endif
