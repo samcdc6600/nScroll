@@ -17,6 +17,7 @@ constexpr char STRING_DENOTATION {'"'}; // This character denotes the start of a
 constexpr char STRINGS_SEPERATION {','};
 constexpr char ESCAPE_CHAR {'\\'}; // The character used for escape sequences (within a string) in .rules.lev file's.
 constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
+constexpr char NULL_BYTE {'\0'};
 
 
 /* This function should initialise the argument background that is passed to it. This variable should then contain
@@ -49,15 +50,14 @@ template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, cons
     }
   return i;
 }
-/* Branch to differnt parsing function's depending on the values of current and peek. string may be modified to hold
-   the value of a string if the STRING_DENOTATION character is encountered and we are not already in a sring.
-   InHeader tells whether we are in the header (parsing decisions may be different depending on it's state.) */
-int switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-		    std::string::const_iterator & peek, std::string::const_iterator max, bool inHeader,
+/* Branch to differnt parsing function's depending on the values of current and peek. InHeader tells whether we are in
+   the header (parsing decisions may be different depending on it's state.) */
+void switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+		    std::string::const_iterator & peek, std::string::const_iterator max, bool & inHeader,
 		    rules & levelRules);
 /* This function should be called from switchOnCurrent when *current == FIELD_DENOTATION. 
    It despatches a function based on the value of *peek */
-void handleCurrentIsFieldDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
+void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
 				    std::string::const_iterator & peek, std::string::const_iterator max,
 				    const bool inHeader, rules & levelRules);
 /* Calls handleStringDenotationAfterFieldDenotation to read in string's. Then calls getCoords to read in coordinates.

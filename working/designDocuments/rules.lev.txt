@@ -2,17 +2,14 @@
 	rules.lev files must contain a header. The header should contain the name of the player sprite file along
 	with it's initial position in the level in character's (as all references to positions and coordinates are
 	assumend to be.) The format of this information should have the following form:
-		(p(STRING)(Y,X))
-		Where (p simply identifies this part of the header as the player sprite info section, STRING is the
-		path to the player sprite file and Y and X are the initial position in the level of the sprite. Also
-		If the player sprite consist's of more then one sprite file (for differnt directions) then multiple
-		files can be specified like so:
-		(p(STRING,STRING,STRING,STRING)(Y,X))
-		Where string is the path to the player sprite file as before (except there is more then one.) and
-		a nother string can appear after the ',' character. White space is allowed between the ',' character
-		and the string's.
-		Additionally this should be the first thing in the header. So a .rules.leve file should always start
-		with (p(.
+		(p(STRING, STRING, STRING, STRING)(Y,X))
+		Where "(p" simply identifies this part of the header as the player sprite info section and STRING is
+		is the path to one of the player sprite files (each STRING can bedifferent) and Y and X are the
+		initial position in the level of the sprite. White space is allowed between the "," character
+		and strings.
+		Additionally the first thing in the header should always be "(p(". That is .rules.leve file should
+		always start with:
+		(p(
 	The header is terminated by the '#' character (unless it is found in a string, in which case it is
 	interprited as part of that string.)
 
@@ -22,7 +19,7 @@
 
 *Coordinates
 	rules.lev files can contain any number of coordineates after the header (note that the coordinates
-	should fall within the boundarys of the background.lev file. In charachters.) No two SINGLE character
+	should fall within the boundaries of the background.lev file. In charachters.) No two SINGLE character
 	type coordinates should have the same coordinate values. SINGLE character and STRING type coordinates are
 	explained below.
 	coordinates should have the following form:
@@ -34,9 +31,9 @@
 		name of an enimy sprite file. If it is a string the coordinate should actually have the following
 		form (C(R)(Y,X)), where Y X and C are as before (C is of course a STRING in this case) and R is a
 		rule for the sprite.
-		There is currently no definition for the form R and so it may be left blank. In this case the sprite
-		will not move
-		(relative to the background) and the player sprite will not be able to interact with it.
+		There is currently no definition for the form of R and so it must be left blank. In this case the
+		sprite will not move (relative to the background) and the player sprite will not be able to
+		interact with it.
 	There should be one coordinate per line.
 	That is after a coordinate there should be a new line followed by the next coordinate.
 	If the coordinate in question is the last coordinate there should be no characte's after it.

@@ -1,25 +1,14 @@
 (p("./assets/sprites/sprite(0).sprite",
 	"./assets/sprites/sprite(1).sprite",
 	"./assets/sprites/sprite(2).sprite",
-	"./assets/sprites/sprite(3).sprite")(10,12))
+	"./assets/sprites/sprite(3).sprite")(23,16))
    #
 (b(25,0))
-
-
-*current = ,
-*peek = "
-we are free!
------str = ../../assets/sprites/sprite(1).sprite
-cayn@CrayXMP:~/SoftDev/projects/repos/nScroll/working$ 
-*peek =  
-*current = "
-*peek = ,
-
-*current = ,
-*peek = "
-
-*current = ,
-*peek = "
-
-*current = )
-*peek = (
+(b(26,0))
+(b(27,0))
+(b(28,0))
+(b(29,0))
+(b(30,0))
+(b(31,0))
+(b(32,0))
+(b(33,0))
