@@ -15,7 +15,7 @@ struct rules
     std::string rule {};
   };
   /* The key's for these maps should be of the form "Y,X" Where Y and X are numbers and the whole thing is a string */
-  std::map<std::string, char> charCoords {}; /* For coordinate rules. */
+  std::map<std::string, char> coordChars {}; /* For coordinate rules. */
    /* Sprites (multiple sprites can map to the same coord, thus the vector.) */
   std::map<std::string, std::vector<spriteInfo>> spriteCoords {};
   player * gamePlayer;		/* Info about user controlled sprite (AKA player.) */

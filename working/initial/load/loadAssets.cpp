@@ -151,7 +151,8 @@ void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std
 	     || *peek == END_LEV_CHAR			||	*peek == END_LEV_CHAR_UPPER
 	     || *peek == LIFE_POWER_UP_CHAR		||	*peek == LIFE_POWER_UP_CHAR_UPPER)
 	    {	      // Call function to handle coordinate character's character
-	      //handleBoarderCharacter();
+	      ++current, ++peek;
+	      handleBoarderCharacter(buff, current, peek, max, levelRules);
 	    }
 	  break;
 	}
@@ -164,6 +165,37 @@ void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std
 
 
 // FUNCTIONS TO BE DISPATCHED BY SWITCHONCURRENT -END- ------------------------------- -----------------------------
+
+
+/* Read in the character *current (which should already have been checked for it's validity), then read in
+   the coordinate pair, finally the function should check to see that this coordinate pair is unique in the object
+   levelRules.charCoords and if it is use the coordinates as a key to store the character (which is to be interprited
+   as a Coordinate character */
+void handleBoarderCharacter(std::string & buff, std::string::const_iterator & current,
+			    std::string::const_iterator & peek, std::string::const_iterator & max,
+			    rules & levelRules)
+{
+  const char c {*current};	// Get coordinate char (should be pre checked for validity.)
+  // Make sure there is no space between coordinate char and FIELD_START_DENOTATION.
+  rubOutSpace(buff, current, peek, max);
+  if(*peek != FIELD_START_DENOTATION)
+    {				// error encountered boarder character but did not encounter ( character
+    }
+  ++current, ++peek;		// Set current to FIELD_START_DENOTATION character position.
+  std::string key {getCoords(buff, current, peek, max)};
+  if(levelRules.coordChars.find(key) == levelRules.coordChars.end())// Key not found
+    {
+      endwin();
+      std::cout<<"Added to map :) \n"<<c<<"\n"<<key<<std::endl<<std::endl;
+      sleep(3432);
+      exit("", -1);
+      levelRules.coordChars[key] = c; // Add our beautiful key, boarder character pair to the coordChars map :).
+    }
+  else
+    {				// Error duplicate key's in rules.lev file.
+    }
+  
+}
 
 
 void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_iterator & current,

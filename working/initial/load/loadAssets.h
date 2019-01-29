@@ -68,11 +68,20 @@ template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, cons
 void switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
 		    std::string::const_iterator & peek, std::string::const_iterator max, bool & inHeader,
 		    rules & levelRules);
-/* This function should be called from switchOnCurrent when *current == FIELD_DENOTATION. 
-   It despatches a function based on the value of *peek */
 void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
 				    std::string::const_iterator & peek, std::string::const_iterator max,
-				    const bool inHeader, rules & levelRules);
+					 const bool inHeader, rules & levelRules);
+/* This function should be called from switchOnCurrent when *current == FIELD_DENOTATION. 
+   It despatches a function based on the value of *peek */
+void handleBoarderCharacter(std::string & buff, std::string::const_iterator & current,
+			    std::string::const_iterator & peek, std::string::const_iterator & max,
+			    rules & levelRules);
+/* Read in the character *current (which should already have been checked for it's validity), then read in
+   the coordinate pair, finally the function should check to see that this coordinate pair is unique in the object
+   levelRules.charCoords and if it is use the coordinates as a key to store the character (which is to be interprited
+   as a Coordinate character */
+void handleBoarderCharacter(std::string::const_iterator & current, std::string::const_iterator & peek,
+			    std::string::const_iterator & max, const rules & levelRules);
 /* Calls handleStringDenotationAfterFieldDenotation to read in string's. Then calls getCoords to read in coordinates.
 Then initialises player */
 void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_iterator & current,
