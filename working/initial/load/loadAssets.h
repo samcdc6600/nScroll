@@ -13,11 +13,24 @@ constexpr char FIELD_START_DENOTATION {'('};	 // Marks the start of a new field 
 constexpr char FIELD_END_DENOTATION {')'};	 // Marks the end of the current field or section of the current file.
 constexpr char HEADER_END_DENOTATION {'#'}; // Marks the end of the header sectino of the file.
 constexpr char STRING_DENOTATION {'"'}; // This character denotes the start of a sting
- // This character denotes the presence of another string when used after a string.
+// This character denotes the presence of another string when used after a string.
 constexpr char STRINGS_SEPERATION {','};
 constexpr char ESCAPE_CHAR {'\\'}; // The character used for escape sequences (within a string) in .rules.lev file's.
 constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
 constexpr char NULL_BYTE {'\0'};
+/* Coordinate character's. I have decided to add an uppercase alternative for each character. This is so that rules.lev file's will be more forgiving of "mistakes." */
+constexpr char BOARDER_CHAR {'b'}; // Player character's cannot pass through coordinate's marked as this.
+constexpr char BOARDER_CHAR_UPPER {'B'};
+constexpr char KILL_CHAR {'k'};	// Player character's are killed uppon intersection with coordinate's marked as this.
+constexpr char KILL_CHAR_UPPER {'K'};
+constexpr char DEGRADE_HEALTH_CHAR {'d'}; // Player character's loose health uppon intersection with coordinate's
+constexpr char DEGRADE_HEALTH_CHAR_UPPER {'D'}; // marked as this.
+constexpr char DEGRADE_HEALTH_BOARDER_CHAR {'i'}; // Combination of DEGRADE_HEALTH_CHAR and BOARDER_CHAR.
+constexpr char DEGRADE_HEALTH_BOARDER_CHAR_UPPER {'I'};
+constexpr char END_LEV_CHAR {'e'}; // Player character's "win" the level uppon intersection with coordinate's marked
+constexpr char END_LEV_CHAR_UPPER {'E'}; // as this.
+constexpr char LIFE_POWER_UP_CHAR {'l'}; // Player character's gain health point's when comming into contact
+constexpr char LIFE_POWER_UP_CHAR_UPPER {'L'};
 
 
 /* This function should initialise the argument background that is passed to it. This variable should then contain

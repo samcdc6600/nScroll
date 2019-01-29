@@ -73,14 +73,17 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rule
 
   try
     {
+      bool inHeader {true};
       for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(HEADER_START) -1)},
 	    current {peek++}; *peek != NULL_BYTE; ++peek, ++current)
 	{
-	  bool inHeader {true};
-
-	  endwin();
-	  std::cout<<"*current = "<<*current<<std::endl;
-	  sleep(1000);
+	  // endwin();
+	  //	  std::cout<<"*current = "<<*current<<std::endl;
+	  //	  std::cout<<"*peek = "<<*peek<<std::endl;
+	  //	  std::cout<<"inHeader = "<<inHeader<<std::endl<<std::endl;
+	  //	  char ch {};
+	  //	  std::cin>>ch;
+	  //	  sleep(1000);
 	  
 	  switchOnCurrent(maxyx, buff, current, peek, buff.end(), inHeader, levelRules);
 	}
@@ -98,7 +101,7 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rule
 void switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
 		    std::string::const_iterator & peek, std::string::const_iterator max, bool & inHeader,
 		    rules & levelRules)
-{  
+{
   switch(*current)
     {
     case FIELD_START_DENOTATION:    // Handle start of new field or section.
@@ -136,26 +139,26 @@ void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std
     {
       switch(*peek)
 	{
-	case '"':
+	case STRING_DENOTATION:
 	  std::cout<<"\" character encountered."<<std::endl;
 	  sleep(20000);
 	  break;
-	case 'b':
-	  std::cout<<"boarder character encountered."<<std::endl;
-	  sleep(20000);
-	  break;
 	default:
-	  std::cout<<"unknown character encountered."<<std::endl;
-	  sleep(20000);
+	  if(*peek == BOARDER_CHAR			||	*peek == BOARDER_CHAR_UPPER
+	     || *peek == KILL_CHAR			||	*peek == KILL_CHAR_UPPER
+	     || *peek == DEGRADE_HEALTH_CHAR		||	*peek == DEGRADE_HEALTH_CHAR_UPPER
+	     || *peek == DEGRADE_HEALTH_BOARDER_CHAR	||	*peek == DEGRADE_HEALTH_BOARDER_CHAR_UPPER
+	     || *peek == END_LEV_CHAR			||	*peek == END_LEV_CHAR_UPPER
+	     || *peek == LIFE_POWER_UP_CHAR		||	*peek == LIFE_POWER_UP_CHAR_UPPER)
+	    {	      // Call function to handle coordinate character's character
+	      //handleBoarderCharacter();
+	    }
 	  break;
 	}
-      std::cout<<"hello I love you :')"<<std::endl;
-      sleep(20000);
-      // Call function to get the the rule.
-      // Call function to get the coordinate's.
     }
   else			// Read in the player sprite info.
     initPlayerSprite(maxyx, buff, current, peek, max, levelRules);
+  
   rubOutSpace(buff, current, peek, max);
 }
 
