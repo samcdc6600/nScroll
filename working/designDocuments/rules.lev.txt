@@ -51,6 +51,7 @@
 
 
 *CHARACTER coordinate character definitions
+	Note: each coordinate character can also be used in it's upper case form to the same affect.
 	The following is a list of the supported single character coordinate types:
 		"b"	- A boarder type coordinate. This coordinate cannot be crossed by the player sprite
 		"k"	- A kill type coordinate. If the player sprite comes into contact with this coordinate they
