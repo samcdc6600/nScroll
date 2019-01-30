@@ -1,4 +1,4 @@
-#include "checkBoundsOfBounds.h++"
+#include "checkBoundsOfBounds.h"
 
 
 /* should return an integer that represents the difference in "size" between the background file and

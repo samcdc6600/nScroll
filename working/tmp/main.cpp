@@ -4,18 +4,18 @@
 #include <system_error>
 #include <stdexcept>
 #include <string>
-#include "common.h++"
-#include "io/inputHandlerNonBlock.h++"
-#include "initial/load/loadAssets.h++"
+#include "common.h"
+#include "io/inputHandlerNonBlock.h"
+#include "initial/load/loadAssets.h"
 //#include "initial/collapse/collapse.h"
-#include "initial/checkBoundsOfBounds/checkBoundsOfBounds.h++"
-#include "physics/physics.h++"
-#include "draw/draw.h++"
-#include "draw/colorS.h++"
-#include "draw/drawExit.h++"
-#include "sprite/sprite.h++"
-#include "sprite/player/player.h++"
-#include "sprite/player/direction.h++"
+#include "initial/checkBoundsOfBounds/checkBoundsOfBounds.h"
+#include "physics/physics.h"
+#include "draw/draw.h"
+#include "draw/colorS.h"
+#include "draw/drawExit.h"
+#include "sprite/sprite.h"
+#include "sprite/player/player.h"
+#include "sprite/player/direction.h"
 
 
 // Game menu switch options (to be returned by gameLoop.)

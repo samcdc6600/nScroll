@@ -1,5 +1,5 @@
 #include <ncurses.h>
-#include "colorS.h++"
+#include "colorS.h"
 
 colourMap::colourMap()
 {

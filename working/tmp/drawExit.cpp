@@ -2,9 +2,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <ncurses.h>
-#include "../common.h++"
-#include "drawExit.h++"
-#include "draw.h++"
+#include "../common.h"
+#include "drawExit.h"
+#include "draw.h"
 
 
 void drawExit(const yx maxyx)

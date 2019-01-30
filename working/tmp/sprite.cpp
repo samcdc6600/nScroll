@@ -2,11 +2,11 @@
 #include <sstream>
 #include <curses.h>
 #include <iostream>
-#include "sprite.h++"
-#include "../initial/load/loadAssets.h++"
-#include "../initial/collapse/collapse.h++"// For second phase
-#include "../draw/draw.h++"
-#include "../common.h++"
+#include "sprite.h"
+#include "../initial/load/loadAssets.h"
+#include "../initial/collapse/collapse.h"// For second phase
+#include "../draw/draw.h"
+#include "../common.h"
 
 
 sprite::sprite(const yx max, const yx pos, const char spriteFileName [])

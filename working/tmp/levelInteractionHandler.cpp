@@ -1,4 +1,4 @@
-#include "levelInteractionHandler.h++"
+#include "levelInteractionHandler.h"
 
 //test level agains sprite's
 char intersection(const std::string & boundsInteraction, const std::vector<int> spChoords)

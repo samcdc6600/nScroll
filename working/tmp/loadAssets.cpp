@@ -1,12 +1,10 @@
 #include <iostream>
 #include <sstream>
 #include <cstring>
-#include "loadAssets.h++"
-#include "../collapse/collapse.h++"
-
-
-
+//#include <locale>
 #include <ncurses.h>// test code
+#include "loadAssets.h"
+#include "../collapse/collapse.h"
 
 
 void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & background,

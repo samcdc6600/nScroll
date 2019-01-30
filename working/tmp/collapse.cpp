@@ -1,6 +1,6 @@
 #include <stdexcept>
-#include "collapse.h++"
-#include "../../draw/colorS.h++"
+#include "collapse.h"
+#include "../../draw/colorS.h"
 #include <ncurses.h>
 //#include <sstream>
 

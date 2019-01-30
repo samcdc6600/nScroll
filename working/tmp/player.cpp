@@ -3,9 +3,9 @@
 #include <curses.h>
 #include <thread>
 #include <chrono>
-#include "player.h++"
-#include "../../draw/colorS.h++"
-#include "../../draw/draw.h++"
+#include "player.h"
+#include "../../draw/colorS.h"
+#include "../../draw/draw.h"
 
 extern setColorMode colorMode;//must be included for the draw function
 

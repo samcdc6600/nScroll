@@ -1,5 +1,5 @@
+#include "inputHandlerNonBlock.h"
 #include <ncurses.h>
-#include "inputHandlerNonBlock.h++"
 
 char inputHandlerNonBlock(void)
 {

@@ -2,7 +2,7 @@
 #include <thread>
 #include <ncurses.h>
 #include <iostream>
-#include "common.h++"
+#include "common.h"
 
 
 void sleep(const unsigned long long t)
