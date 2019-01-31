@@ -13,12 +13,14 @@ constexpr char FIELD_START_DENOTATION {'('};	 // Marks the start of a new field 
 constexpr char FIELD_END_DENOTATION {')'};	 // Marks the end of the current field or section of the current file.
 constexpr char HEADER_END_DENOTATION {'#'}; // Marks the end of the header sectino of the file.
 constexpr char STRING_DENOTATION {'"'}; // This character denotes the start of a sting
+constexpr int SHOW_COUNT {45};		// How many characters to print in printN function.
 // This character denotes the presence of another string when used after a string.
 constexpr char STRINGS_SEPERATION {','};
 constexpr char ESCAPE_CHAR {'\\'}; // The character used for escape sequences (within a string) in .rules.lev file's.
 constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
 constexpr char NULL_BYTE {'\0'};
-/* Coordinate character's. I have decided to add an uppercase alternative for each character. This is so that rules.lev file's will be more forgiving of "mistakes." */
+/* Coordinate character's. I have decided to add an uppercase alternative for each character. This is so that
+   rules.lev file's will be more forgiving of "mistakes." */
 constexpr char BOARDER_CHAR {'b'}; // Player character's cannot pass through coordinate's marked as this.
 constexpr char BOARDER_CHAR_UPPER {'B'};
 constexpr char KILL_CHAR {'k'};	// Player character's are killed uppon intersection with coordinate's marked as this.
@@ -66,21 +68,23 @@ template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, cons
 /* Branch to differnt parsing function's depending on the values of current and peek. InHeader tells whether we are in
    the header (parsing decisions may be different depending on it's state.) */
 void switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-		    std::string::const_iterator & peek, std::string::const_iterator max, bool & inHeader,
-		    rules & levelRules);
+		    std::string::const_iterator & peek, std::string::const_iterator max, rules & levelRules);
+// Dispatches functions based on the value of *peek. Should only be called when *current == FIELD_START_DENOTATION
 void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-				    std::string::const_iterator & peek, std::string::const_iterator max,
-					 const bool inHeader, rules & levelRules);
-/* This function should be called from switchOnCurrent when *current == FIELD_DENOTATION. 
-   It despatches a function based on the value of *peek */
-void handleBoarderCharacter(std::string & buff, std::string::const_iterator & current,
+					 std::string::const_iterator & peek, std::string::const_iterator max,
+					 rules & levelRules);
+/* Read in the character *current (which should already have been checked for validity), then read in
+   the coordinate pair, finally the function should check to see that this coordinate pair is unique in the object
+   levelRules.charCoords and if it is use the coordinates as a key to store the character (which is to be interprited
+   as a Coordinate character */
+void handleCoordinateCharacter(std::string & buff, std::string::const_iterator & current,
 			    std::string::const_iterator & peek, std::string::const_iterator & max,
 			    rules & levelRules);
 /* Read in the character *current (which should already have been checked for it's validity), then read in
    the coordinate pair, finally the function should check to see that this coordinate pair is unique in the object
    levelRules.charCoords and if it is use the coordinates as a key to store the character (which is to be interprited
    as a Coordinate character */
-void handleBoarderCharacter(std::string::const_iterator & current, std::string::const_iterator & peek,
+void handleCoordinateCharacter(std::string::const_iterator & current, std::string::const_iterator & peek,
 			    std::string::const_iterator & max, const rules & levelRules);
 /* Calls handleStringDenotationAfterFieldDenotation to read in string's. Then calls getCoords to read in coordinates.
 Then initialises player */
@@ -105,6 +109,7 @@ std::string getString(std::string::const_iterator & current, std::string::const_
    It is assumed that current and peek point to consecutive elment's */
 bool rubOutSpace(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
 	       std::string::const_iterator & max);
+void printCurrent(std::string::const_iterator & current, const int SHOW_COUNT, std::stringstream & e);
 
 
 #endif

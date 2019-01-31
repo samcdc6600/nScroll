@@ -20,7 +20,9 @@ enum errorsCodes
     ERROR_RULES_LEV_HEADER,	// Header of .level.rules file is malformed.
     ERROR_RULES_STRING_FIELDS,	// There was an error in a field containing string's.
     ERROR_MALFORMED_STRING,	// We encountered a malformed string.
-    ERROR_MALFORMED_COORDINATE	// We have encountered a malformed coordinate.
+    ERROR_MALFORMED_COORDINATE,	// We have encountered a malformed coordinate.
+    ERROR_DUPLICATE_COORDINATE,	// We have encountered a duplicate coordinate.
+    ERROR_MALFORMED_COORDINATE_CHAR_FIELD // We have encountered a coordinate character field that is malformed.
     //ERROR_BAD_LOGIC		// There was an error in the code.
   };
 
