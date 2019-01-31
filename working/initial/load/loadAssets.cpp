@@ -76,14 +76,6 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rule
       for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(HEADER_START) -1)},
 	    current {peek++}; *peek != NULL_BYTE; ++peek, ++current)
 	{
-	  // endwin();
-	  //	  std::cout<<"*current = "<<*current<<std::endl;
-	  //	  std::cout<<"*peek = "<<*peek<<std::endl;
-	  //	  std::cout<<"inHeader = "<<inHeader<<std::endl<<std::endl;
-	  //	  char ch {};
-	  //	  std::cin>>ch;
-	  //	  sleep(1000);
-	  
 	  switchOnCurrent(maxyx, buff, current, peek, buff.end(), levelRules);
 	}
     }
@@ -129,8 +121,9 @@ void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std
       switch(*peek)
 	{
 	case STRING_DENOTATION:
-	  std::cout<<"\" character encountered."<<std::endl;
-	  sleep(20000);
+	  endwin();
+	  std::cout<<"String denotation character encountered after start denotation (not in header.)"<<std::endl;
+	  sleep(10000);
 	  break;
 	default:
 	  if(*peek == BOARDER_CHAR			||	*peek == BOARDER_CHAR_UPPER
@@ -202,11 +195,7 @@ void handleCoordinateCharacter(std::string & buff, std::string::const_iterator &
   // Make sure there's no space between the end of the coordinate field and the end of the coordinate character field.
   rubOutSpace(buff, current, peek, max);
   if(levelRules.coordChars.find(key) == levelRules.coordChars.end())// Key not found
-    {
       levelRules.coordChars[key] = c; // Add our beautiful key, coordinate character pair to the coordChars map :).
-      std::cout<<"key = "<<key<<std::endl;
-      sleep(3000);
-    }
   else
     {				// Error duplicate key's in rules.lev file.
       std::stringstream e {};

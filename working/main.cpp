@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <string>
 #include "common.h++"
-#include "io/inputHandlerNonBlock.h++"
 #include "initial/load/loadAssets.h++"
 //#include "initial/collapse/collapse.h"
 #include "initial/checkBoundsOfBounds/checkBoundsOfBounds.h++"
@@ -61,6 +60,7 @@ void initialiseCurses(yx & maxyx)
   curs_set(0);		     // Make the cursor invisible
   noecho();		     // Turn echoing off on the terminal
   start_color();	     // Start color and initialise color pairs!
+  nodelay(stdscr, TRUE);     // Dissable blocking while waiting for input (use non blocking sys call.)
   initColorPairs();	     // Initialise the color pairs
 }
 
@@ -174,7 +174,7 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
 	{
 	  		  std::stringstream errorMsg;
 	  physics(levelRules);
-	  if((input = inputHandlerNonBlock()))
+	  if((input = getch()))
 	    {
 	      switch((int)input)
 		{	/* I've added these because I can. Although less code is probably optimal and feature bloat
