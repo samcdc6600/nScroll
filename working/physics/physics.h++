@@ -25,6 +25,7 @@ struct rules
   }
 };
 
+
 void physics(rules & levelRules);
 
 #endif
