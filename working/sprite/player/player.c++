@@ -9,16 +9,6 @@
 
 extern setColorMode colorMode;//must be included for the draw function
 
-
-void player::getHardBoundaryCoordinates(std::vector<int> & spCoords)
-{
-  
-}
-
-void player::getSoftBoundaryCoordinates(std::vector<int> & spCoords)
-{
-}
-
 /*Direction's that ch can take on
 Q---W---E
 |...^...|
@@ -38,6 +28,7 @@ void player::updatePosRel(char ch)
 	     {			// Reposition if we've gone out of bounds.
 	       ++position.y;
 	       ++position.x;
+	       //	       resetCurrentSliceNum(DIR_RIGHT);
 	     }
 	   else
 	     if(direction != DIR_LEFT)//if we are changind the direction
@@ -52,6 +43,7 @@ void player::updatePosRel(char ch)
 	   if(!inScreenBounds(--position.y, position.x))
 	     {
 	       ++position.y;
+	       //resetCurrentSliceNum(DIR_LEFT);
 	     }
 	   else
 	     if(direction != DIR_UP)
@@ -68,6 +60,7 @@ void player::updatePosRel(char ch)
 	     {
 	       ++position.y;
 	       --position.x;
+	       //resetCurrentSliceNum(DIR_LEFT);
 	     }
 	   else
 	     if(direction != DIR_RIGHT)
@@ -82,6 +75,7 @@ void player::updatePosRel(char ch)
 	   if(!inScreenBounds(position.y, --position.x))
 	     {
 	       ++position.x;
+	       //resetCurrentSliceNum(DIR_RIGHT);
 	     }
 	   else
 	     if(direction != DIR_LEFT)
@@ -96,6 +90,7 @@ void player::updatePosRel(char ch)
 	   if(!inScreenBounds(position.y, ++position.x))
 	     {
 	       --position.x;
+	       //resetCurrentSliceNum(DIR_LEFT);
 	     }
 	   else
 	     if(direction != DIR_RIGHT)
@@ -112,6 +107,7 @@ void player::updatePosRel(char ch)
 	     {
 	       --position.y;
 	       ++position.y;
+	       //resetCurrentSliceNum(DIR_RIGHT);
 	     }
 	   else
 	     if(direction != DIR_LEFT)
@@ -126,6 +122,7 @@ void player::updatePosRel(char ch)
 	   if(!inScreenBounds(++position.y, position.x))
 	     {
 	       --position.y;
+	       //resetCurrentSliceNum(DIR_DOWN);
 	     }
 	   else
 	     if(direction != DIR_DOWN)
@@ -142,6 +139,7 @@ void player::updatePosRel(char ch)
 	     {
 	       --position.y;
 	       --position.x;
+	       //resetCurrentSliceNum(DIR_LEFT);
 	     }
 	   else
 	     if(direction != DIR_RIGHT)

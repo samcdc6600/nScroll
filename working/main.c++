@@ -175,10 +175,10 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
 	  		  std::stringstream errorMsg;
 	  physics(levelRules);
 	  /* Getch() is supposed to return ERR if noblock() has been called and no character's are entered, however
-	     I will not test it agains ERR because doing so seems to negate the effect of calling noblock() for some
+	     I will not test it against ERR because doing so seems to negate the effect of calling noblock() for some
 	     reason that I cannot wrap my head around an cannot find any good documentation on. So am assuming that
 	     ERR is some sort of macro (idk.) I am also assuming that it contains a negative value. */
-	  if((input = getch()))
+	  if((input = getch()))	// Brackets inhibit compiler warining.
 	    {
 	      switch((int)input)
 		{	/* I've added these because I can. Although less code is probably optimal and feature bloat

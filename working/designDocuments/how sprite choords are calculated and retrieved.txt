@@ -1,0 +1,23 @@
+When a sprite object is created the constructor will call a function (after the sprite slices have been processed) that will
+set up a list (not necessarily an actual list) of boundry coordinates of the sprite for each sprite slice. That is any sprite
+character that is entirely surrounded by other sprite character's will not have it's coordinate put in the list. The positioning
+system is cartesian (with 0,0 being at the top left.) Also there can be no character in position 0,0. That is the positioning
+will be done as if the sprite slices character's are positioned in a rectangular shape. The positioning will be of the form (y,x)
+not (x,y).
+
+So for example in the following diagram X and the lines that make up the rectangle around the character are not considered to be part of the sprite and are only there for illustrative purposes, X would be considered to be at position 0,0 and the '(' character
+would be at position (0,2). E would be at position (1,8), etc...
+
+__________
+|X (0<0)  |
+|J--|||--E|
+|   | |   |
+|   J L   |
+|---------|
+
+The sprite class will provide a function that will return the list of coordinates (with the position (0,0) of the sprite added to
+each coordiante in the list) for the current sprite slice.
+In this way (with the exception of adding the offset) the sprite edge coordinates will be computed upon initialising a sprite
+object.
+The coordinates can then be converted to a string of the form "(Y,X)" (where Y and X make up one of the boundry coordinates in the
+list) and then this can be used as an index into the coordChars map to see if we have a collision.
