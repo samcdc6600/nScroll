@@ -5,6 +5,7 @@
 constexpr int MONO_CH_MAX {158};
 constexpr int COLOR_CH_MAX {63};
 constexpr int ASCII_NUMBER_OFFSET {48};
+constexpr char ESC_CHAR {27};
 
 
 enum errorsCodes

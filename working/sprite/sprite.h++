@@ -62,17 +62,18 @@ class sprite
   partiallyProcessedSliceLine getSliceLine(const std::string & spriteFile, int & spFIter);
   // Calls collaps on slice lines and stores the lines in a type corresponding to the return value
   void parserPhaseTwo(const std::vector<std::vector<sprite::partiallyProcessedSliceLine>> & pPSL, spriteData & sD);
+    /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated from the tallest spriteSlice and
+     longest sliceLine in sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left 
+     of position. These values are used for possible collision detection and bounds checking. */
+  void getMaxYXOffset();
+  void setUpBoundryCoordsVector();
   
  protected:
   // This vector hold's the sprites (sprite slices and cycle speed's.)
   std::vector<spriteData> spriteS;
-  
-  /* Initialises sD_base */
+
+    /* Initialises sD_base */
   void getSprite(const char spriteFileName [], spriteData & sD);
-  /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated from the tallest spriteSlice and
-     longest sliceLine in sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left 
-     of position. These values are used for possible collision detection and bounds checking. */
-  void getMaxYXOffset();
   void resetCurrentSliceNum(int sprite)
   {
     currentSliceNumber = 0;

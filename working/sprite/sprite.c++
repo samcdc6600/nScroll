@@ -16,6 +16,7 @@ sprite::sprite(const yx max, const yx pos, const char spriteFileName [])
 {
   getSprite(spriteFileName, sD_base);
   getMaxYXOffset();
+  //  get
 }
 
 
@@ -41,12 +42,10 @@ void sprite::getSprite(const char spriteFileName [], spriteData & sD)
   currentSliceNumber = 0;
 }
 
-  /* returns the maximum yOffset and xOffset as calculated from the tallest spriteSlice and longest sliceLine in
-     sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left of position. These
-     values are used for possible collision detection and bounds checking. */
+
 void sprite::getMaxYXOffset()
 { /* I tried my best to make maxBottomRightOffset const, however I was thwarted by a seg fault that would occur when
-     calling resize() on a vector in getSprite() when getSprite() was called in the constructors membor initializer
+     calling resize() on a vector in getSprite() when getSprite() was called in the constructors member initializer
      list >:'( */
   int max {};
   for(std::vector<sliceLine> slice: sD_base.spriteSlices) // Get y offset.
@@ -57,6 +56,13 @@ void sprite::getMaxYXOffset()
     for(sliceLine sl: slice)
       max = sl.sliceLine.size() > max ? sl.sliceLine.size() : max;
   maxBottomRightOffset.x = max -1;
+}
+
+
+/*  */
+void setUpBoundryCoordsVector()
+{
+  
 }
 
 

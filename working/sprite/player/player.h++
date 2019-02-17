@@ -51,8 +51,6 @@ class player: public sprite
   
   
   virtual ~player() {};
-  virtual void getHardBoundaryCoordinates(std::vector<int> & spCoords);
-  virtual void getSoftBoundaryCoordinates(std::vector<int> & spCoords);
   virtual void updatePosRel(char ch);//update's position of sprite in a relative fashion with reference to the sprite.
   virtual void draw(bool updateSlice);
   //  virtual void draw() {draw(false);}
