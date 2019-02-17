@@ -40,7 +40,6 @@ void sprite::getSprite(const char spriteFileName [], spriteData & sD)
   /* Set currentSliceNumber to 0. This veriable should only take on values between 0 and
      (spriteSlices.size() -1) */
   currentSliceNumber = 0;
-
   setUpBoundryCoordsVector(sD);
 }
 
@@ -58,41 +57,55 @@ void sprite::getMaxYXOffset()
     for(sliceLine sl: s.slice)
       max = sl.sliceLine.size() > max ? sl.sliceLine.size() : max;
   maxBottomRightOffset.x = max -1;
-  
-  /*  int max {};
-  for(std::vector<sliceLine> slice: sD_base.spriteSlices) // Get y offset.
-    max = slice.size() > max ? slice.size() : max;
-  maxBottomRightOffset.y = max -1; // The offset is from the upper left of the sprite. So we account for that with -1.
-  max = 0;
-  for(std::vector<sliceLine> slice: sD_base.spriteSlices) // Get x offset.
-    for(sliceLine sl: slice)
-      max = sl.sliceLine.size() > max ? sl.sliceLine.size() : max;
-      maxBottomRightOffset.x = max -1;*/
 }
 
 
 /*  */
 void sprite::setUpBoundryCoordsVector(spriteData & sD)
 {				// std::vector<std::vector<std::vector<int>>>
-  /*  for(auto slice: sD.spriteSlices)
+  for(auto s: sD.spriteSlices)
     {
-      switch(slice.size())
+      switch(s.slice.size())
 	{
 	case 0:
 	  continue;		// Nothing to do
 	  break;
 	case 1:			// Only one line in slice.
-	  
+	  getBoundryCoordsForSingleSliceLine(s.slice.front(), 0, s.sliceBoundryCoords);
+	  endwin();
+	  for(auto a: s.sliceBoundryCoords)
+	    {
+	      std::cout<<a.y<<"(a,y), "<<a.x<<"(a.x)\n"; 
+	    }
+	  std::cout<<std::endl;
+	  sleep(10000);
+	  exit("", -1);
 	  break;
 	case 2:			// Only two lines in slice.
 	  break;
-	default;    		// More then two lines (general case.)
+	default:     		// More then two lines (general case.)
+	  {}
 	// All coordis in first slice line are to be added.
 	//Now loop over all slice line's except for first and last and only add coords at start and end of slice line.
 	// Now add all coords in last slice line.
 	}
-	}*/
-    //  spriteSlicesBoundryCoords
+    }
+  //  spriteSlicesBoundryCoords
+}
+
+
+/* Addes the index plus offset of every character in sl.sliceLine that is not equal to TRANS_SP (not a transperant
+   space.) */
+void sprite::getBoundryCoordsForSingleSliceLine(sliceLine & sl, const int y, std::vector<yx> & sliceBoundryCoords)
+{
+  for(int iter {}; iter < sl.sliceLine.size(); ++iter)
+    {
+      if(sl.sliceLine[iter] != TRANS_SP)
+	{
+	  yx c {y, iter + sl.offset};
+	sliceBoundryCoords.push_back(c);
+	}
+    }
 }
 
 

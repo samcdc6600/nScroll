@@ -18,6 +18,11 @@ class chMap
  chMap();
  int find(const std::string str);
 };
+
+
+// Code for 
+//Value of transparent space is 1 higher then 159 * 64 which is above the space of all ACS and ASCII characters whether colored or not.
+constexpr int TRANS_SP {10176};
 //"Collapse's" buff and stores into ret. copies all characters not part of an escape sequence into
 //ret (one char goes into one int (thus ret may actually be larger then buff (but I say it is collapsed
 //for reasons explained shortly)). All escape sequences are not copied reather they are used as an

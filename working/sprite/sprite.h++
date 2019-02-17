@@ -12,6 +12,7 @@ class sprite
  private:
   
   const yx maxyx;		// Window size.
+  const int SLICE_LINE_ONE {0};	// Used as index into sliceLine vector.
   
  protected:
   
@@ -37,7 +38,7 @@ class sprite
   struct sliceData
   {
     std::vector<sliceLine> slice {};    
-    std::vector<int> sliceBoundryCoords {}; // Hold's a list of boundry coordinates for the slice.
+    std::vector<yx> sliceBoundryCoords {}; // Hold's a list of boundry coordinates for the slice.
   };
 
   struct partiallyProcessedSliceLine
@@ -75,6 +76,9 @@ class sprite
      of position. These values are used for possible collision detection and bounds checking. */
   void getMaxYXOffset();  
   void setUpBoundryCoordsVector(spriteData & sD);
+  /* Addes the index plus offset of every character in sl.sliceLine that is not equal to TRANS_SP (not a transperant
+     space.) */
+  void getBoundryCoordsForSingleSliceLine(sliceLine & sl, const int y, std::vector<yx> & sliceBoundryCoords);
   
  protected:
   // This vector hold's the sprites (sprite slices and cycle speed's.)
