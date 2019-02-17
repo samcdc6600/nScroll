@@ -40,6 +40,8 @@ void sprite::getSprite(const char spriteFileName [], spriteData & sD)
   /* Set currentSliceNumber to 0. This veriable should only take on values between 0 and
      (spriteSlices.size() -1) */
   currentSliceNumber = 0;
+
+  setUpBoundryCoordsVector(sD);
 }
 
 
@@ -48,6 +50,16 @@ void sprite::getMaxYXOffset()
      calling resize() on a vector in getSprite() when getSprite() was called in the constructors member initializer
      list >:'( */
   int max {};
+  for(sliceData s: sD_base.spriteSlices) // Get y offset :).
+    max = s.slice.size() > max ? s.slice.size() : s.slice.size();
+  maxBottomRightOffset.y = max -1; // The upper left of the sprite is (0,0) so we need size -1 :).
+  max = 0;
+  for(sliceData s: sD_base.spriteSlices)
+    for(sliceLine sl: s.slice)
+      max = sl.sliceLine.size() > max ? sl.sliceLine.size() : max;
+  maxBottomRightOffset.x = max -1;
+  
+  /*  int max {};
   for(std::vector<sliceLine> slice: sD_base.spriteSlices) // Get y offset.
     max = slice.size() > max ? slice.size() : max;
   maxBottomRightOffset.y = max -1; // The offset is from the upper left of the sprite. So we account for that with -1.
@@ -55,14 +67,32 @@ void sprite::getMaxYXOffset()
   for(std::vector<sliceLine> slice: sD_base.spriteSlices) // Get x offset.
     for(sliceLine sl: slice)
       max = sl.sliceLine.size() > max ? sl.sliceLine.size() : max;
-  maxBottomRightOffset.x = max -1;
+      maxBottomRightOffset.x = max -1;*/
 }
 
 
 /*  */
-void setUpBoundryCoordsVector()
-{
-  
+void sprite::setUpBoundryCoordsVector(spriteData & sD)
+{				// std::vector<std::vector<std::vector<int>>>
+  /*  for(auto slice: sD.spriteSlices)
+    {
+      switch(slice.size())
+	{
+	case 0:
+	  continue;		// Nothing to do
+	  break;
+	case 1:			// Only one line in slice.
+	  
+	  break;
+	case 2:			// Only two lines in slice.
+	  break;
+	default;    		// More then two lines (general case.)
+	// All coordis in first slice line are to be added.
+	//Now loop over all slice line's except for first and last and only add coords at start and end of slice line.
+	// Now add all coords in last slice line.
+	}
+	}*/
+    //  spriteSlicesBoundryCoords
 }
 
 
@@ -213,11 +243,12 @@ void sprite::parserPhaseTwo(const std::vector<std::vector<sprite::partiallyProce
     {				// Iterate throught slice lines.
       for(int sliceLineIter{}; sliceLineIter < pPSL[sliceIter].size(); ++sliceLineIter)
 	{ // Make slice at sliceIter the right size (number of slice lines).
-	  sD.spriteSlices[sliceIter].resize(pPSL[sliceIter].size());
+	  sD.spriteSlices[sliceIter].slice.resize(pPSL[sliceIter].size());
 	  // Collapse and copy slice line.
-	  collapse(pPSL[sliceIter][sliceLineIter].sliceLine, sD.spriteSlices[sliceIter][sliceLineIter].sliceLine);
+	  collapse(pPSL[sliceIter][sliceLineIter].sliceLine,
+		   sD.spriteSlices[sliceIter].slice[sliceLineIter].sliceLine);
 	  // Copy offset value over.
-	  sD.spriteSlices[sliceIter][sliceLineIter].offset = pPSL[sliceIter][sliceLineIter].offset;
+	  sD.spriteSlices[sliceIter].slice[sliceLineIter].offset = pPSL[sliceIter][sliceLineIter].offset;
 	}
     }
   refresh();
@@ -329,16 +360,16 @@ void sprite::updatePosRel(const char ch)
 void sprite::draw(int spriteNum, bool updateSlice)
 {
   //  checkSpriteRanges(spriteNum);
-  for(int sliceLine{}; sliceLine < spriteS[spriteNum].spriteSlices[currentSliceNumber].size(); ++sliceLine)
+  for(int sliceLine{}; sliceLine < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice.size(); ++sliceLine)
     {      
       for(int sliceLineIter{};
-	  sliceLineIter < spriteS[spriteNum].spriteSlices[currentSliceNumber][sliceLine].sliceLine.size();
+	  sliceLineIter < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine.size();
 	  ++sliceLineIter)
 	{ // Move curser to the right position.
 	  setCursor(position.y + sliceLine, position.x +
-		    spriteS[spriteNum].spriteSlices[currentSliceNumber][sliceLine].offset + sliceLineIter, maxyx);
+		    spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].offset + sliceLineIter, maxyx);
 	  // Get the character.
-	  int ch {spriteS[spriteNum].spriteSlices[currentSliceNumber][sliceLine].sliceLine[sliceLineIter]};
+	  int ch {spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine[sliceLineIter]};
 	  drawCh(ch);
 	}
   

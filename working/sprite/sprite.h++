@@ -27,11 +27,19 @@ class sprite
   // These two veriables keep track of when sprites can be updates
   std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
   std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
-    struct sliceLine
+  
+  struct sliceLine
   {
     std::vector<int> sliceLine;	// Holds line of slice.
     int offset;	// Horizontal offset of sliceLine from current curser position.
   };
+  
+  struct sliceData
+  {
+    std::vector<sliceLine> slice {};    
+    std::vector<int> sliceBoundryCoords {}; // Hold's a list of boundry coordinates for the slice.
+  };
+
   struct partiallyProcessedSliceLine
   {
     std::string sliceLine;	// Holds unprocessed slice line.
@@ -46,7 +54,7 @@ class sprite
     /* Outer vector holds inner vectors that hold sliceLine objects
        that make up the horizontal lines of slices.
        This object holds the slices that make up the sprite. */
-    std::vector<std::vector<sliceLine>> spriteSlices {};
+    std::vector<sliceData> spriteSlices {};
   } sD_base;    // Hold's a single sprite instance that will be setup by this ABC in it's constructor.
   
  private:  
@@ -65,8 +73,8 @@ class sprite
     /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated from the tallest spriteSlice and
      longest sliceLine in sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left 
      of position. These values are used for possible collision detection and bounds checking. */
-  void getMaxYXOffset();
-  void setUpBoundryCoordsVector();
+  void getMaxYXOffset();  
+  void setUpBoundryCoordsVector(spriteData & sD);
   
  protected:
   // This vector hold's the sprites (sprite slices and cycle speed's.)
