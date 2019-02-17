@@ -69,9 +69,9 @@ void sprite::setUpBoundryCoordsVector(spriteData & sD)
 	{
 	case 0:
 	  continue;		// Nothing to do
-	  break;
 	case 1:			// Only one line in slice.
-	  getBoundryCoordsForSingleSliceLine(s.slice.front(), 0, s.sliceBoundryCoords);
+	  getBoundryCoordsForSingleSliceLine(s.slice, SLICE_LINE_ONE, s.sliceBoundryCoords);
+
 	  endwin();
 	  for(auto a: s.sliceBoundryCoords)
 	    {
@@ -80,8 +80,22 @@ void sprite::setUpBoundryCoordsVector(spriteData & sD)
 	  std::cout<<std::endl;
 	  sleep(10000);
 	  exit("", -1);
+      
 	  break;
 	case 2:			// Only two lines in slice.
+	  getBoundryCoordsForSingleSliceLine(s.slice, SLICE_LINE_ONE, s.sliceBoundryCoords);
+	  getBoundryCoordsForSingleSliceLine(s.slice, SLICE_LINE_TWO, s.sliceBoundryCoords);
+
+	  endwin();
+	  for(auto a: s.sliceBoundryCoords)
+	    {
+	      std::cout<<a.y<<"(.a,y), "<<a.x<<"(a.x)\n"; 
+	    }
+	  std::cout<<std::endl;
+	  sleep(10000);
+	  exit("", -1);
+	  endwin();
+	  
 	  break;
 	default:     		// More then two lines (general case.)
 	  {}
@@ -96,14 +110,15 @@ void sprite::setUpBoundryCoordsVector(spriteData & sD)
 
 /* Addes the index plus offset of every character in sl.sliceLine that is not equal to TRANS_SP (not a transperant
    space.) */
-void sprite::getBoundryCoordsForSingleSliceLine(sliceLine & sl, const int y, std::vector<yx> & sliceBoundryCoords)
+void sprite::getBoundryCoordsForSingleSliceLine(std::vector<sliceLine> & s, const int y,
+						std::vector<yx> & sliceBoundryCoords)
 {
-  for(int iter {}; iter < sl.sliceLine.size(); ++iter)
+  for(int iter {}; iter < s[y].sliceLine.size(); ++iter)
     {
-      if(sl.sliceLine[iter] != TRANS_SP)
+      if(s[y].sliceLine[iter] != TRANS_SP)
 	{
-	  yx c {y, iter + sl.offset};
-	sliceBoundryCoords.push_back(c);
+	  yx c {y, iter + s[y].offset};
+	  sliceBoundryCoords.push_back(c);
 	}
     }
 }

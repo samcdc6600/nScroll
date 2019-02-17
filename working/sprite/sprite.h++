@@ -12,7 +12,11 @@ class sprite
  private:
   
   const yx maxyx;		// Window size.
-  const int SLICE_LINE_ONE {0};	// Used as index into sliceLine vector.
+  enum sliceLineIndex
+    {				// Used as index into sliceLine vector.
+      SLICE_LINE_ONE,
+      SLICE_LINE_TWO
+    };
   
  protected:
   
@@ -78,7 +82,8 @@ class sprite
   void setUpBoundryCoordsVector(spriteData & sD);
   /* Addes the index plus offset of every character in sl.sliceLine that is not equal to TRANS_SP (not a transperant
      space.) */
-  void getBoundryCoordsForSingleSliceLine(sliceLine & sl, const int y, std::vector<yx> & sliceBoundryCoords);
+  void getBoundryCoordsForSingleSliceLine(std::vector<sliceLine> & s, const int y,
+					  std::vector<yx> & sliceBoundryCoords);
   
  protected:
   // This vector hold's the sprites (sprite slices and cycle speed's.)
