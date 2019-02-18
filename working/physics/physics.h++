@@ -26,6 +26,6 @@ struct rules
 };
 
 
-void physics(rules & levelRules);
+void physics(rules & levelRules, const int input);
 
 #endif

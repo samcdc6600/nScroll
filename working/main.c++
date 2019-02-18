@@ -26,8 +26,6 @@ enum gameFuncRetCodes
 void menu(const yx maxyx); // Game menu
 // Where the magic (thats glued together with cheap craft glue) happens (returns a game menu switch option.) :)
 int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelRules);
-gameFuncRetCodes branchOnInput(rules & levelRules);
-//void freeResources(std::vector<sprite *> & spArray);
 
 
 int main()
@@ -80,11 +78,15 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
 	    < 225)
 	{
 	  char input {};
-	  std::stringstream errorMsg;
-	  physics(levelRules);
-	  input = branchOnInput(levelRules);
-	  if(input == M_QUIT_GAME)
+	  
+	  input = getch();	  
+	  if(input == ESC_CHAR)
 	    return M_QUIT_GAME;
+	  else
+	    if(input == ERR)
+	      exit("Error reading input from keyboard", input); // Input hold's the error.
+
+	  physics(levelRules, input);
 	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, iter);
 	  refresh();      
 
@@ -93,40 +95,4 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
 	}
     }
   return LEVEL_COMPLEAT;
-}
-
-
-gameFuncRetCodes branchOnInput(rules & levelRules)
-{ /* Getch() is supposed to return ERR if noblock() has been called and no character's are entered, however I will not
-     test it against ERR because doing so seems to negate the effect of calling noblock() for some reason that I
-     cannot wrap my head around an cannot find any good documentation on. So am assuming that ERR contains a negative
-     value. */
-  char input{};
-  if((input = getch()))	// Brackets inhibit compiler warining.
-    {
-      switch((int)input)
-	{	/* I've added these because I can. Although less code is probably optimal and feature bloat
-		   should be faught. */
-	case sprite::UP:
-	case sprite::UP_UPPER:
-	  levelRules.gamePlayer->updatePosRel('w');
-	  return INPUT_ENTERED;
-	case sprite::LEFT:
-	case sprite::LEFT_UPPER:
-	  levelRules.gamePlayer->updatePosRel('a');
-	  return INPUT_ENTERED;
-	case sprite::DOWN:
-	case sprite::DOWN_UPPER:
-	  levelRules.gamePlayer->updatePosRel('s');
-	  return INPUT_ENTERED;
-	case sprite::RIGHT:
-	case sprite::RIGHT_UPPER:
-	  levelRules.gamePlayer->updatePosRel('d');
-	  return INPUT_ENTERED;
-	case ESC_CHAR:	// Esc.
-	  return M_QUIT_GAME;
-	}
-    }
-  
-  return NO_INPUT_ENTERED;
 }
