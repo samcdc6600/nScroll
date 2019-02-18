@@ -23,9 +23,12 @@ struct rules
   {
     delete(gamePlayer);
   }
+
+private:
+  int playerPosition {};
+
+public:
+  int physics(const int input);
 };
-
-
-void physics(rules & levelRules, const int input);
 
 #endif

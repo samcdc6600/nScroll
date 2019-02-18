@@ -6,3 +6,4 @@
 (*)-->  Fix Graphical sprite anomalies when switching between
 	player directions and sprite files are set up a certin way.
 (*)-->	Implement basic boundry handling code.
+(*)-->	Just go ahead a make rules struct a class called physics?

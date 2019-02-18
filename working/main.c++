@@ -70,26 +70,35 @@ void menu(const yx maxyx)
 
 int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelRules)
 {  
-  for(int iter{}; iter < 126; ++iter)
+  auto startTimeInput = std::chrono::high_resolution_clock::now();// Control's background update time.
+  auto currentTimeInputBackground = std::chrono::high_resolution_clock::now();// Control's background update time.
+  while(true)
     {
-      auto startTimeInput = std::chrono::high_resolution_clock::now();// Control's background update time.
-      auto currentTimeInputBackground = std::chrono::high_resolution_clock::now();// Control's background update time.
+      int i {};
+      i++;
+      std::stringstream s{};
+      s<<i;
       while(std::chrono::duration_cast<std::chrono::milliseconds>(currentTimeInputBackground - startTimeInput).count()
 	    < 225)
-	{
+	{	  
 	  char input {};
+	  int position {};
 	  
-	  input = getch();	  
+	  input = getch();
 	  if(input == ESC_CHAR)
 	    return M_QUIT_GAME;
+	  else
+	    if(input == LEVEL_COMPLEAT)
+	      return LEVEL_COMPLEAT;
 
-	  physics(levelRules, input);
-	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, iter);
-	  refresh();      
+	  position = levelRules.physics(input);
+	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, position);
+	  refresh();
+	        printw(s.str().c_str());
+      refresh();
 
 	  sleep(32);
-	  currentTimeInputBackground =std::chrono::high_resolution_clock::now();
+	  currentTimeInputBackground = std::chrono::high_resolution_clock::now();
 	}
     }
-  return LEVEL_COMPLEAT;
 }
