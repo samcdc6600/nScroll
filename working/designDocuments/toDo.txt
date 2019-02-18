@@ -2,5 +2,5 @@
 "+" mean's done.
 
 (*)-->	Add bound's checking into rules.lev parsing code.
-(*)-->  Finish cases 2 and default in setUpBoundryCoordsVector.
+(*)-->  Finish the default in setUpBoundryCoordsVector.
 (*)-->
