@@ -82,9 +82,6 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
 	  input = getch();	  
 	  if(input == ESC_CHAR)
 	    return M_QUIT_GAME;
-	  else
-	    if(input == ERR)
-	      exit("Error reading input from keyboard", input); // Input hold's the error.
 
 	  physics(levelRules, input);
 	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, iter);
