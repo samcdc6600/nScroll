@@ -22,13 +22,12 @@ void player::updatePosRel(char ch)
      {
        switch(ch)
 	 {
-	 case 'q':
-	 case 'Q'://left up
+	 case LEFT_UP:
+	 case LEFT_UP_UPPER://left up
 	   if(!inScreenBounds(--position.y, --position.x))
 	     {			// Reposition if we've gone out of bounds.
 	       ++position.y;
 	       ++position.x;
-	       //	       resetCurrentSliceNum(DIR_RIGHT);
 	     }
 	   else
 	     if(direction != DIR_LEFT)//if we are changind the direction
@@ -37,13 +36,11 @@ void player::updatePosRel(char ch)
 		 direction = DIR_LEFT;//change sprite
 	       }	   
 	   break;
-	 case 'w':
-	 case 'W'://up
-	   //position.y--;
+	 case UP:
+	 case UP_UPPER://up
 	   if(!inScreenBounds(--position.y, position.x))
 	     {
 	       ++position.y;
-	       //resetCurrentSliceNum(DIR_LEFT);
 	     }
 	   else
 	     if(direction != DIR_UP)
@@ -52,15 +49,12 @@ void player::updatePosRel(char ch)
 		 direction = DIR_UP;
 	       }
 	   break;
-	 case 'e':
-	 case 'E'://right up
-	   ///position.y--;
-	   //position.x++;
+	 case RIGHT_UP:
+	 case RIGHT_UP_UPPER://right up
 	   if(!inScreenBounds(--position.y, ++position.x))
 	     {
 	       ++position.y;
 	       --position.x;
-	       //resetCurrentSliceNum(DIR_LEFT);
 	     }
 	   else
 	     if(direction != DIR_RIGHT)
@@ -69,13 +63,11 @@ void player::updatePosRel(char ch)
 		 direction = DIR_RIGHT;
 	       }
 	   break;
-	 case 'a':
-	 case 'A'://left
-	   //position.x--;
+	 case LEFT:
+	 case LEFT_UPPER://left
 	   if(!inScreenBounds(position.y, --position.x))
 	     {
 	       ++position.x;
-	       //resetCurrentSliceNum(DIR_RIGHT);
 	     }
 	   else
 	     if(direction != DIR_LEFT)
@@ -84,13 +76,11 @@ void player::updatePosRel(char ch)
 		 direction = DIR_LEFT;
 	       }
 	   break;
-	 case 'd':
-	 case 'D'://right
-	   //position.x++;
+	 case RIGHT:
+	 case RIGHT_UPPER://right
 	   if(!inScreenBounds(position.y, ++position.x))
 	     {
 	       --position.x;
-	       //resetCurrentSliceNum(DIR_LEFT);
 	     }
 	   else
 	     if(direction != DIR_RIGHT)
@@ -99,15 +89,12 @@ void player::updatePosRel(char ch)
 		 direction = DIR_RIGHT;
 	       }
 	   break;
-	 case 'z':
-	 case 'Z'://left down
-	   //position.y++;
-	   //position.x--;
+	 case LEFT_DOWN:
+	 case LEFT_DOWN_UPPER://left down
 	   if(!inScreenBounds(++position.y, --position.x))
 	     {
 	       --position.y;
 	       ++position.y;
-	       //resetCurrentSliceNum(DIR_RIGHT);
 	     }
 	   else
 	     if(direction != DIR_LEFT)
@@ -116,13 +103,11 @@ void player::updatePosRel(char ch)
 		 direction = DIR_LEFT;
 	       }
 	   break;
-	 case 's':
-	 case 'S'://down
-	   //position.y++;
+	 case DOWN:
+	 case DOWN_UPPER://down
 	   if(!inScreenBounds(++position.y, position.x))
 	     {
 	       --position.y;
-	       //resetCurrentSliceNum(DIR_DOWN);
 	     }
 	   else
 	     if(direction != DIR_DOWN)
@@ -131,15 +116,12 @@ void player::updatePosRel(char ch)
 		 direction = DIR_DOWN;
 	       }
 	   break;
-	 case 'x':
-	 case 'X'://right down
-	   //position.y++;
-	   //position.x++;
+	 case RIGHT_DOWN:
+	 case RIGHT_DOWN_UPPER://right down
 	   if(!inScreenBounds(++position.y, ++position.x))
 	     {
 	       --position.y;
 	       --position.x;
-	       //resetCurrentSliceNum(DIR_LEFT);
 	     }
 	   else
 	     if(direction != DIR_RIGHT)

@@ -2,5 +2,7 @@
 "+" mean's done.
 
 (*)-->	Add bound's checking into rules.lev parsing code.
-(*)-->  Finish the default in setUpBoundryCoordsVector.
-(*)-->
+(+)-->  Finish the default in setUpBoundryCoordsVector.
+(*)-->  Fix Graphical sprite anomalies when switching between
+	player directions and sprite files are set up a certin way.
+(*)-->	Implement basic boundry handling code.

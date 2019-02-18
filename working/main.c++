@@ -107,20 +107,20 @@ gameFuncRetCodes branchOnInput(rules & levelRules)
       switch((int)input)
 	{	/* I've added these because I can. Although less code is probably optimal and feature bloat
 		   should be faught. */
-	case 'w':
-	case 'W':
+	case sprite::UP:
+	case sprite::UP_UPPER:
 	  levelRules.gamePlayer->updatePosRel('w');
 	  return INPUT_ENTERED;
-	case 'a':
-	case 'A':
+	case sprite::LEFT:
+	case sprite::LEFT_UPPER:
 	  levelRules.gamePlayer->updatePosRel('a');
 	  return INPUT_ENTERED;
-	case 's':
-	case 'S':
+	case sprite::DOWN:
+	case sprite::DOWN_UPPER:
 	  levelRules.gamePlayer->updatePosRel('s');
 	  return INPUT_ENTERED;
-	case 'd':
-	case 'D':
+	case sprite::RIGHT:
+	case sprite::RIGHT_UPPER:
 	  levelRules.gamePlayer->updatePosRel('d');
 	  return INPUT_ENTERED;
 	case ESC_CHAR:	// Esc.

@@ -78,7 +78,8 @@ class sprite
     /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated from the tallest spriteSlice and
      longest sliceLine in sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left 
      of position. These values are used for possible collision detection and bounds checking. */
-  void getMaxYXOffset();  
+  void getMaxYXOffset();
+  // Iterates through spriteSlices in sD and set's up boundry coords for each slice in sD.
   void setUpBoundryCoordsVector(spriteData & sD);
   /* Addes the index of every character in s[y].sliceLine that is not equal to TRANS_SP plus s[y].offset to
      sliceBoundryCoords (using .push_back().) */
@@ -119,17 +120,39 @@ class sprite
   const yx getMaxBottomRightOffset();
   
  public://----------------------------------------------------------------------------------------------------------
+
+  // Direction Characters.
+  static constexpr char LEFT_UP {'q'};
+  static constexpr char LEFT_UP_UPPER {'Q'};
+  static constexpr char UP {'w'};
+  static constexpr char UP_UPPER {'W'};
+  static constexpr char RIGHT_UP {'e'};
+  static constexpr char RIGHT_UP_UPPER {'E'};
+  static constexpr char LEFT {'a'};
+  static constexpr char LEFT_UPPER {'A'};
+  static constexpr char RIGHT {'d'};
+  static constexpr char RIGHT_UPPER {'D'};
+  static constexpr char LEFT_DOWN {'z'};
+  static constexpr char LEFT_DOWN_UPPER {'Z'};
+  static constexpr char DOWN {'s'};
+  static constexpr char DOWN_UPPER {'S'};
+  static constexpr char RIGHT_DOWN {'x'};
+  static constexpr char RIGHT_DOWN_UPPER {'X'};
+
   
   //constructor reads spriteFile and converts it to the internal object structure
   sprite(const yx max, const yx pos, const char spriteFileName []);
-  virtual void updatePosAbs(int y, int x);	/* update's position of sprite in an absoulte fashion with reference
-						   to the background */
-  virtual void updatePosRel(const char ch);	/* update's position of sprite in a relative fashion with reference to
-						   the sprite. The argument tell's witch direction to increment. */
-  virtual void draw(int spriteNum, bool updateSlice);	/* displays sprite (potentially more then one file's worth of
-							   sprite) */
-  virtual void draw(bool updateSlice) = 0; /* For sprites that only have one set of slices. */
-  virtual void draw() {draw(false);}	   /* Draw same sprite slice as before. */
+  // update's position of sprite in an absoulte fashion with reference to the background
+  virtual void updatePosAbs(int y, int x);
+  /* update's sprite's y and x position value's by a difference of no more then 1. The direction depends on the
+     value of ch. */
+  virtual void updatePosRel(const char ch);
+  // displays sprite (potentially more then one file's worth of sprites.)
+  virtual void draw(int spriteNum, bool updateSlice);
+  // For sprites that only have one set of slices.
+  virtual void draw(bool updateSlice) = 0;
+  // Draw same sprite slice as before.
+  virtual void draw() {draw(false);}
   virtual ~sprite() {};
 };
 

@@ -346,39 +346,39 @@ void sprite::updatePosRel(const char ch)
     {
       switch(ch)
 	{
-	case 'q':
-	case 'Q':		// Left up.
+	case LEFT_UP:
+	case LEFT_UP_UPPER:
 	  --position.y;
 	  --position.x;
 	  break;
-	case 'w':
-	case 'W':		// Up.
+	case UP:
+	case UP_UPPER:
 	  --position.y;
 	  break;
-	case 'e':
-	case 'E':		// Right up.
+	case RIGHT_UP:
+	case RIGHT_UP_UPPER:
 	  --position.y;
 	  ++position.x;
 	  break;
-	case 'a':
-	case 'A':		// Left.
+	case LEFT:
+	case LEFT_UPPER:
 	  --position.x;
 	  break;
-	case 'd':
-	case 'D':		// Right.
+	case RIGHT:
+	case RIGHT_UPPER:
 	  ++position.x;
 	  break;
-	case 'z':
-	case 'Z':		// Left down.
+	case LEFT_DOWN:
+	case LEFT_DOWN_UPPER:
 	  ++position.y;
 	  --position.x;
 	  break;
-	case 's':
-	case 'S':		// Down.
+	case DOWN:
+	case DOWN_UPPER:
 	  ++position.y;
 	  break;
-	case 'x':
-	case 'X':		// Right down.
+	case RIGHT_DOWN:
+	case RIGHT_DOWN_UPPER:
 	  ++position.y;
 	  ++position.x;
 	  break;      
@@ -401,6 +401,9 @@ void sprite::updatePosRel(const char ch)
 void sprite::draw(int spriteNum, bool updateSlice)
 {
   //  checkSpriteRanges(spriteNum);
+  /*  printw("currentSliceNumber = ");
+  refresh();
+  sleep(1000);*/
   for(int sliceLine{}; sliceLine < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice.size(); ++sliceLine)
     {      
       for(int sliceLineIter{};
