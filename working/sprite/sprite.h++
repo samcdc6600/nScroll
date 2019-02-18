@@ -122,26 +122,30 @@ class sprite
  public://----------------------------------------------------------------------------------------------------------
 
   // Direction Characters.
-  static constexpr char LEFT_UP {'q'};
-  static constexpr char LEFT_UP_UPPER {'Q'};
-  static constexpr char UP {'w'};
-  static constexpr char UP_UPPER {'W'};
-  static constexpr char RIGHT_UP {'e'};
-  static constexpr char RIGHT_UP_UPPER {'E'};
-  static constexpr char LEFT {'a'};
-  static constexpr char LEFT_UPPER {'A'};
-  static constexpr char RIGHT {'d'};
-  static constexpr char RIGHT_UPPER {'D'};
-  static constexpr char LEFT_DOWN {'z'};
-  static constexpr char LEFT_DOWN_UPPER {'Z'};
-  static constexpr char DOWN {'s'};
-  static constexpr char DOWN_UPPER {'S'};
-  static constexpr char RIGHT_DOWN {'x'};
-  static constexpr char RIGHT_DOWN_UPPER {'X'};
+  enum directions
+    {
+      LEFT_UP ='q',
+      LEFT_UP_UPPER ='Q',
+      UP ='w',
+      UP_UPPER ='W',
+      RIGHT_UP ='e',
+      RIGHT_UP_UPPER ='E',
+      LEFT ='a',
+      LEFT_UPPER ='A',
+      RIGHT ='d',
+      RIGHT_UPPER ='D',
+      LEFT_DOWN ='z',
+      LEFT_DOWN_UPPER ='Z',
+      DOWN ='s',
+      DOWN_UPPER ='S',
+      RIGHT_DOWN ='x',
+      RIGHT_DOWN_UPPER ='X'
+    };
 
   
   //constructor reads spriteFile and converts it to the internal object structure
   sprite(const yx max, const yx pos, const char spriteFileName []);
+  //virtual void peekDirection(cont int);
   // update's position of sprite in an absoulte fashion with reference to the background
   virtual void updatePosAbs(int y, int x);
   /* update's sprite's y and x position value's by a difference of no more then 1. The direction depends on the
