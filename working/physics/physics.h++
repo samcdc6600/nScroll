@@ -8,6 +8,8 @@
 
 struct rules
 {
+  // The player cannot pass within this many character's of the windo boarder's
+  const yx playerNoGoInnerBoarder {5, 8};
   struct spriteInfo		/* For sprites (holds sprite data (slices) and the rule for the sprite. */
   {
     /* Sprite data to go here (when I do it.) */

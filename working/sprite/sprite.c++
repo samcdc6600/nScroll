@@ -318,27 +318,10 @@ void sprite::checkSpriteRanges(const int spriteNum)
     }  
 }
 
+
 const yx sprite::getMaxBottomRightOffset()
 {
   return maxBottomRightOffset;
-}
-
-
-
-bool sprite::checkPosValidity(const sprite::directions dir)
-{
-  if(dir == LEFT_UP	||	dir == LEFT_UP_UPPER	||
-     dir == UP		||	dir == UP_UPPER		||
-     dir == RIGHT_UP	||	dir == RIGHT_UP_UPPER	||
-     dir == LEFT	||	dir == LEFT_UPPER	||
-     dir == RIGHT	||	dir == RIGHT_UPPER	||
-     dir == LEFT_DOWN	||	dir == LEFT_DOWN_UPPER	||
-     dir == DOWN	||	dir == DOWN_UPPER	||
-     dir == RIGHT_DOWN	||	dir == RIGHT_DOWN_UPPER)
-    {
-      return true;
-    }
-  return false;
 }
 
 
@@ -351,54 +334,46 @@ yx sprite::getNewPos(const sprite::directions dir)
     case LEFT_UP_UPPER:
       d.y = position.y -1;
       d.x = position.x -1;
-      //      --position.y;
-      //      --position.x;
       break;
     case UP:
     case UP_UPPER:
       d.y = position.y -1;
       d.x = position.x;
-      //      --position.y;
       break;
     case RIGHT_UP:
     case RIGHT_UP_UPPER:
       d.y = position.y -1;
       d.x = position.x +1;
-      //      --position.y;
-      //      ++position.x;
       break;
     case LEFT:
     case LEFT_UPPER:
       d.y = position.y;
       d.x = position.x -1;
-      //      --position.x;
       break;
     case RIGHT:
     case RIGHT_UPPER:
       d.y = position.y;
       d.x = position.x +1;
-      //      ++position.x;
       break;
     case LEFT_DOWN:
     case LEFT_DOWN_UPPER:
       d.y = position.y +1;
       d.x = position.x -1;
-      //      ++position.y;
-      //      --position.x;
       break;
     case DOWN:
     case DOWN_UPPER:
       d.y = position.y +1;
       d.x = position.x;
-      //      ++position.y;
       break;
     case RIGHT_DOWN:
     case RIGHT_DOWN_UPPER:
       d.y = position.y +1;
       d.x = position.x +1;
-      //      ++position.y;
-      //      ++position.x;
       break;
+    default:
+      std::stringstream e {};
+      e<<"Error direction ("<<char(dir)<<") not valid.";
+      exit(e.str().c_str(), ERROR_INVALID_DIRECTION);
     }
 
   return d;
@@ -409,7 +384,7 @@ yx sprite::getNewPos(const sprite::directions dir)
    direction dir */
 yx sprite::peekAtPos(const directions dir)
 {
-  
+  //  return
 }
 
 
@@ -428,16 +403,7 @@ z---S---X
  */
 void sprite::updatePosRel(const sprite::directions dir)
 {
-  if(checkPosValidity(dir))
-    {
-      position = getNewPos(dir);
-    }
-  else
-    {
-      std::stringstream e {};
-      e<<"Error direction ("<<char(dir)<<") not valid in sprite.";
-      exit(e.str().c_str(), ERROR_INVALID_DIRECTION);
-    }
+  position = getNewPos(dir);
 }
 
 

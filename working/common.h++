@@ -43,7 +43,7 @@ struct yx
 
 
 void sleep(const unsigned long long t);
-/* Returns false if a is not range [0, coord). */
+/* Returns false if a is not range [min, max). */
 bool checkRange(const int a, const int coord);
 /* return's true if a - offset is within the range [SINGLE_DIGIT_MIN, SINGLE_DIGIT_MAX].
    return's false otherwise. */

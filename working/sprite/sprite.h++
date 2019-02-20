@@ -125,13 +125,15 @@ protected:
   {
     currentSliceNumber = 0;
   }
+  inline bool inBounds(const int y, const int x, const int innerBoarderY, innerBoarderX)
+  {
+    return ((checkRange(y, 
+  }
   /* Checks that y and x are in range (0 to screen height and width), by calling checkRange(const int, const int). */
   inline bool inScreenBounds(const int y, const int x)
-  {     /* The reason for having to call checkRange twice is so that it may be a more generic function and we done
-	   have to change it or create another auxulary functino. The runtime overhead of calling it twice is seen as
-	   exceptible (given that is program is probably very far from optimal in many other dimensions. */
-    bool ret = ((checkRange(y, maxyx.y) && checkRange(x, maxyx.x)) ? true : false) &&
-      ((checkRange(y + maxBottomRightOffset.y, maxyx.y) && checkRange(x + maxBottomRightOffset.x, maxyx.x))
+  {
+    bool ret = ((checkRange(y, 0, maxyx.y) && checkRange(x, 0, maxyx.x)) ? true : false) &&
+      ((checkRange(y + maxBottomRightOffset.y, 0, maxyx.y) && checkRange(x + maxBottomRightOffset.x, 0, maxyx.x))
        ? true : false);
     return ret;
   }
@@ -141,9 +143,6 @@ protected:
   /* We can get a const version of maxBottomRightOffset in a derived class (couldn't make maxBottomRightOffset in
      sprite. At least we can force it for derived classes.) */
   const yx getMaxBottomRightOffset();
-  /* This function should be called before getNewPos if getNewPos's return value will be used to update the data
-     member position! */
-  bool checkPosValidity(const directions dir);
   /* Returns a yx struct that is a copy of the data member position with it's y and x member's incremented,
      decremented or left unchanged depending on the value of dir. */
   yx getNewPos(const directions dir);
