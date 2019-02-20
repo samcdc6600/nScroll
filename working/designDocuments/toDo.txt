@@ -11,3 +11,5 @@
 (*)-->	Implement basic boundry handling code.
 (*)-->	Implement and possibly rename inBounds func and rewrite
 	inScreenBounds to use it and then use inBounds in movePlayer.
+(*)-->	Fix problem with player sprite not changing animation when direction is
+	changed.
