@@ -6,6 +6,8 @@
 (+)-->  Finish the default in setUpBoundryCoordsVector.
 (*)-->  Fix Graphical sprite anomalies when switching between
 	player directions and sprite files are set up a certin way.
-(*)-->	Implement basic boundry handling code.
 (*?)-->	Just go ahead a make rules struct a class called physics.
 (+)-->	Fix lock up problem >':(.
+(*)-->	Implement basic boundry handling code.
+(*)-->	Implement and possibly rename inBounds func and rewrite
+	inScreenBounds to use it and then use inBounds in movePlayer.

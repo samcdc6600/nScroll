@@ -126,7 +126,7 @@ protected:
     currentSliceNumber = 0;
   }
   inline bool inBounds(const int y, const int x, const int innerBoarderY, innerBoarderX)
-  {
+  {				// Check that y, x and also y + offset and x + offset are within the windo - innerBoarder7 and innerboarderx etc lksdajfldsa.
     return ((checkRange(y, 
   }
   /* Checks that y and x are in range (0 to screen height and width), by calling checkRange(const int, const int). */
