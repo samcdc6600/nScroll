@@ -324,11 +324,97 @@ const yx sprite::getMaxBottomRightOffset()
 }
 
 
+
+bool sprite::checkPosValidity(const sprite::directions dir)
+{
+  if(dir == LEFT_UP	||	dir == LEFT_UP_UPPER	||
+     dir == UP		||	dir == UP_UPPER		||
+     dir == RIGHT_UP	||	dir == RIGHT_UP_UPPER	||
+     dir == LEFT	||	dir == LEFT_UPPER	||
+     dir == RIGHT	||	dir == RIGHT_UPPER	||
+     dir == LEFT_DOWN	||	dir == LEFT_DOWN_UPPER	||
+     dir == DOWN	||	dir == DOWN_UPPER	||
+     dir == RIGHT_DOWN	||	dir == RIGHT_DOWN_UPPER)
+    {
+      return true;
+    }
+  return false;
+}
+
+
+yx sprite::getNewPos(const sprite::directions dir)
+{
+  yx d {};
+  switch(dir)
+    {
+    case LEFT_UP:
+    case LEFT_UP_UPPER:
+      d.y = position.y -1;
+      d.x = position.x -1;
+      //      --position.y;
+      //      --position.x;
+      break;
+    case UP:
+    case UP_UPPER:
+      d.y = position.y -1;
+      d.x = position.x;
+      //      --position.y;
+      break;
+    case RIGHT_UP:
+    case RIGHT_UP_UPPER:
+      d.y = position.y -1;
+      d.x = position.x +1;
+      //      --position.y;
+      //      ++position.x;
+      break;
+    case LEFT:
+    case LEFT_UPPER:
+      d.y = position.y;
+      d.x = position.x -1;
+      //      --position.x;
+      break;
+    case RIGHT:
+    case RIGHT_UPPER:
+      d.y = position.y;
+      d.x = position.x +1;
+      //      ++position.x;
+      break;
+    case LEFT_DOWN:
+    case LEFT_DOWN_UPPER:
+      d.y = position.y +1;
+      d.x = position.x -1;
+      //      ++position.y;
+      //      --position.x;
+      break;
+    case DOWN:
+    case DOWN_UPPER:
+      d.y = position.y +1;
+      d.x = position.x;
+      //      ++position.y;
+      break;
+    case RIGHT_DOWN:
+    case RIGHT_DOWN_UPPER:
+      d.y = position.y +1;
+      d.x = position.x +1;
+      //      ++position.y;
+      //      ++position.x;
+      break;
+    }
+
+  return d;
+}
+
+
+/* Returns the of position of the sprite after moving one character (including diagonal movement) in the
+   direction dir */
+yx sprite::peekAtPos(const directions dir)
+{
+  
+}
+
+
 void sprite::updatePosAbs(int y, int x)
 { //add in bound's checking latter!
-  /* Position can't be outside of the background file and player class should have a version of this function that
-     makes sure that it's position is always within a certin boundary that fall's within the visiable section of the
-     background. */
   position.y = y, position.x = x; // Update position.
 }
 
@@ -336,64 +422,21 @@ void sprite::updatePosAbs(int y, int x)
 /* Direction's that ch can take on.
 Q---W---E
 |...^...|
-A.<--->.D
+A.<-|->.D
 |...v...|
 z---S---X
  */
-void sprite::updatePosRel(const char ch)
+void sprite::updatePosRel(const sprite::directions dir)
 {
-  try
+  if(checkPosValidity(dir))
     {
-      switch(ch)
-	{
-	case LEFT_UP:
-	case LEFT_UP_UPPER:
-	  --position.y;
-	  --position.x;
-	  break;
-	case UP:
-	case UP_UPPER:
-	  --position.y;
-	  break;
-	case RIGHT_UP:
-	case RIGHT_UP_UPPER:
-	  --position.y;
-	  ++position.x;
-	  break;
-	case LEFT:
-	case LEFT_UPPER:
-	  --position.x;
-	  break;
-	case RIGHT:
-	case RIGHT_UPPER:
-	  ++position.x;
-	  break;
-	case LEFT_DOWN:
-	case LEFT_DOWN_UPPER:
-	  ++position.y;
-	  --position.x;
-	  break;
-	case DOWN:
-	case DOWN_UPPER:
-	  ++position.y;
-	  break;
-	case RIGHT_DOWN:
-	case RIGHT_DOWN_UPPER:
-	  ++position.y;
-	  ++position.x;
-	  break;      
-      
-	default:	
-	  std::stringstream e;
-	  e<<"Ch out of range."
-		  <<"range = [q, w, e, a, d, z, s, x] & upper case forms."
-		  <<"ch = "<<ch;
-	  throw std::logic_error(e.str());
-	}
+      position = getNewPos(dir);
     }
-  catch(std::logic_error e)
+  else
     {
-      exit(e.what(), ERROR_POS_CH_RANGE);
+      std::stringstream e {};
+      e<<"Error direction ("<<char(dir)<<") not valid in sprite.";
+      exit(e.str().c_str(), ERROR_INVALID_DIRECTION);
     }
 }
 

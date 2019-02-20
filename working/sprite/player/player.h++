@@ -51,7 +51,7 @@ class player: public sprite
   
   
   virtual ~player() {};
-  virtual void updatePosRel(char ch);
+  virtual void updatePosRel(directions dir);
   virtual void draw(bool updateSlice);
   //  virtual void draw() {draw(false);}
   

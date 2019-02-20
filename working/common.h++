@@ -14,6 +14,7 @@ enum errorsCodes
     ERROR_WIN_PARAM, // Window not initialised - there was a problem with the window parameters.
     ERROR_CURSOR_PARAM,	// Cursor parameters out of range.
     ERROR_POS_CH_RANGE,	// Character position out of range.
+    ERROR_INVALID_DIRECTION,	// Direction character found not to be valid.
     ERROR_OPENING_FILE,	// Error opening file.
     ERROR_CHARACTER_RANGE,	// Character out of range.
     ERROR_COLOR_CODE_RANGE,	// Color code out of range.

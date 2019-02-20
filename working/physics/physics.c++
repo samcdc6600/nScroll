@@ -10,7 +10,13 @@ int rules::physics(const int input)
 	       input == sprite::DOWN || input == sprite::DOWN_UPPER ||
 	       input == sprite::RIGHT || input == sprite::RIGHT_UPPER)
               {
-		gamePlayer->updatePosRel(input);
+		movePlayer(sprite::directions(input));
+		gamePlayer->updatePosRel(sprite::directions(input));
 	      }
   return playerPosition;
+}
+
+
+void rules::movePlayer(const sprite::directions input)
+{
 }

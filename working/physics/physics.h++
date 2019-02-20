@@ -27,8 +27,11 @@ struct rules
 private:
   int playerPosition {};
 
+  // Moves the player 
+  void movePlayer(const sprite::directions input);
+
 public:
-  int physics(const int input);
+  int physics(const int input);  
 };
 
 #endif

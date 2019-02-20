@@ -76,7 +76,7 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
     {
       do
 	{	  
-	  char input {};
+	  int input {};
 	  int position {};
 	  
 	  input = getch();
@@ -89,9 +89,7 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
 	  position = levelRules.physics(input);
 	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, position);
 	  refresh();
-	        
-	  refresh();
-
+	  
 	  sleep(32);
 	  currentTimeInputBackground = std::chrono::high_resolution_clock::now();
 	}

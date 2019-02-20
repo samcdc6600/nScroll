@@ -9,7 +9,30 @@
 // PlayerSprite and enimySprite and nonInterativeSprite
 class sprite
 {
- private:
+public:
+
+  // Direction Characters.
+  enum directions
+    {
+      LEFT_UP ='q',
+      LEFT_UP_UPPER ='Q',
+      UP ='w',
+      UP_UPPER ='W',
+      RIGHT_UP ='e',
+      RIGHT_UP_UPPER ='E',
+      LEFT ='a',
+      LEFT_UPPER ='A',
+      RIGHT ='d',
+      RIGHT_UPPER ='D',
+      LEFT_DOWN ='z',
+      LEFT_DOWN_UPPER ='Z',
+      DOWN ='s',
+      DOWN_UPPER ='S',
+      RIGHT_DOWN ='x',
+      RIGHT_DOWN_UPPER ='X'
+    };
+  
+private:
   
   const yx maxyx;		// Window size.
   enum sliceLineIndex
@@ -18,13 +41,13 @@ class sprite
       SLICE_LINE_TWO
     };
   
- protected:
+protected:
   
-    yx position;     // Position of sprite relative to background and top left corner of sprite object.
-    /* Holds the maximum bottom right offset. Calculated from all slices.*/
-    yx maxBottomRightOffset; /* Used for inital (possible) collision detection and bounds checking */
+  yx position;     // Position of sprite relative to background and top left corner of sprite object.
+  /* Holds the maximum bottom right offset. Calculated from all slices.*/
+  yx maxBottomRightOffset; /* Used for inital (possible) collision detection and bounds checking */
     
- private://------------------------------------------------------------------------------------------------------
+private://------------------------------------------------------------------------------------------------------
  
   // Holds the sprite animation (slice) that we are upto in the sequences.
   // Should not go above spriteSlices.size(); and should wrappe back around to zero.  
@@ -51,7 +74,7 @@ class sprite
     int offset;	// Horizontal offset of sliceLine from current curser position.
   };
   
- protected:
+protected:
   
   struct spriteData
   { /* Speed of sprite animation. */
@@ -62,7 +85,7 @@ class sprite
     std::vector<sliceData> spriteSlices {};
   } sD_base;    // Hold's a single sprite instance that will be setup by this ABC in it's constructor.
   
- private:  
+private:  
   
   // Split up file into cycleSpeed and unprocessesd representation of sprite.
   std::vector<std::vector<partiallyProcessedSliceLine>> parserPhaseOne(const std::string & spriteFile,
@@ -75,7 +98,7 @@ class sprite
   partiallyProcessedSliceLine getSliceLine(const std::string & spriteFile, int & spFIter);
   // Calls collaps on slice lines and stores the lines in a type corresponding to the return value
   void parserPhaseTwo(const std::vector<std::vector<sprite::partiallyProcessedSliceLine>> & pPSL, spriteData & sD);
-    /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated from the tallest spriteSlice and
+  /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated from the tallest spriteSlice and
      longest sliceLine in sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left 
      of position. These values are used for possible collision detection and bounds checking. */
   void getMaxYXOffset();
@@ -84,19 +107,19 @@ class sprite
   /* Addes the index of every character in s[y].sliceLine that is not equal to TRANS_SP plus s[y].offset to
      sliceBoundryCoords (using .push_back().) */
   void getBoundryCoordsForWholeSingleSliceLine(std::vector<sliceLine> & s, const int y,
-					  std::vector<yx> & sliceBoundryCoords);
+					       std::vector<yx> & sliceBoundryCoords);
   /* Operation is the same as getBoundryCoordsForWholeSingleSliceLine with the exception that only the coordinates
      plus s[y].offset of end (non TRANS_SP) chars are added to sliceBoundryCoords. If all character's are TRANS_SP
      then no coords are added and if there is only one non TRANS_SP character then only it's coordinate plus offset is
      added. */
   void getBoundryCoordsForEndSofSingleSliceLine(std::vector<sliceLine> & s, const int y,
-					  std::vector<yx> & sliceBoundryCoords);
+						std::vector<yx> & sliceBoundryCoords);
   
- protected:
+protected:
   // This vector hold's the sprites (sprite slices and cycle speed's.)
   std::vector<spriteData> spriteS;
 
-    /* Initialises sD_base */
+  /* Initialises sD_base */
   void getSprite(const char spriteFileName [], spriteData & sD);
   void resetCurrentSliceNum(int sprite)
   {
@@ -118,39 +141,25 @@ class sprite
   /* We can get a const version of maxBottomRightOffset in a derived class (couldn't make maxBottomRightOffset in
      sprite. At least we can force it for derived classes.) */
   const yx getMaxBottomRightOffset();
+  /* This function should be called before getNewPos if getNewPos's return value will be used to update the data
+     member position! */
+  bool checkPosValidity(const directions dir);
+  /* Returns a yx struct that is a copy of the data member position with it's y and x member's incremented,
+     decremented or left unchanged depending on the value of dir. */
+  yx getNewPos(const directions dir);
   
- public://----------------------------------------------------------------------------------------------------------
-
-  // Direction Characters.
-  enum directions
-    {
-      LEFT_UP ='q',
-      LEFT_UP_UPPER ='Q',
-      UP ='w',
-      UP_UPPER ='W',
-      RIGHT_UP ='e',
-      RIGHT_UP_UPPER ='E',
-      LEFT ='a',
-      LEFT_UPPER ='A',
-      RIGHT ='d',
-      RIGHT_UPPER ='D',
-      LEFT_DOWN ='z',
-      LEFT_DOWN_UPPER ='Z',
-      DOWN ='s',
-      DOWN_UPPER ='S',
-      RIGHT_DOWN ='x',
-      RIGHT_DOWN_UPPER ='X'
-    };
-
+public://----------------------------------------------------------------------------------------------------------
   
   //constructor reads spriteFile and converts it to the internal object structure
   sprite(const yx max, const yx pos, const char spriteFileName []);
-  //virtual void peekDirection(cont int);
+  /* Returns the of position of the sprite after moving one character (including diagonal movement) in the
+     direction dir */
+  yx peekAtPos(const directions dir);
   // update's position of sprite in an absoulte fashion with reference to the background
   virtual void updatePosAbs(int y, int x);
   /* update's sprite's y and x position value's by a difference of no more then 1. The direction depends on the
      value of ch. */
-  virtual void updatePosRel(const char ch);
+  virtual void updatePosRel(const directions dir);
   // displays sprite (potentially more then one file's worth of sprites.)
   virtual void draw(int spriteNum, bool updateSlice);
   // For sprites that only have one set of slices.
