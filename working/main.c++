@@ -74,12 +74,7 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
   auto currentTimeInputBackground = std::chrono::high_resolution_clock::now();// Control's background update time.
   while(true)
     {
-      int i {};
-      i++;
-      std::stringstream s{};
-      s<<i;
-      while(std::chrono::duration_cast<std::chrono::milliseconds>(currentTimeInputBackground - startTimeInput).count()
-	    < 225)
+      do
 	{	  
 	  char input {};
 	  int position {};
@@ -94,11 +89,14 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
 	  position = levelRules.physics(input);
 	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, position);
 	  refresh();
-	        printw(s.str().c_str());
-      refresh();
+	        
+	  refresh();
 
 	  sleep(32);
 	  currentTimeInputBackground = std::chrono::high_resolution_clock::now();
 	}
+      while(std::chrono::duration_cast<std::chrono::milliseconds>
+	    (currentTimeInputBackground - startTimeInput).count() < 255);
+      startTimeInput = std::chrono::high_resolution_clock::now();
     }
 }

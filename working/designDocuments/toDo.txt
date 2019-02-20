@@ -1,4 +1,5 @@
 "*" mean's to do.
+"*?" mean's maybe to do.
 "+" mean's done.
 
 (*)-->	Add bound's checking into rules.lev parsing code.
@@ -6,4 +7,5 @@
 (*)-->  Fix Graphical sprite anomalies when switching between
 	player directions and sprite files are set up a certin way.
 (*)-->	Implement basic boundry handling code.
-(*)-->	Just go ahead a make rules struct a class called physics?
+(*?)-->	Just go ahead a make rules struct a class called physics.
+(+)-->	Fix lock up problem >':(.
