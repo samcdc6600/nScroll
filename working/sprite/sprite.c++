@@ -1,5 +1,4 @@
 #include <stdexcept>
-#include <sstream>
 #include <curses.h>
 #include <iostream>
 #include "sprite.h++"

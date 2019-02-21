@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <chrono>
+#include <sstream>
 #include "../common.h++"
 
 // This class should be inherited by other classes such as
@@ -131,18 +132,29 @@ protected:
     currentSliceNumber = 0;
   }
 
-  /* Checks that y and x are */
+  /* Checks that y and x are in the ranges [0 + innerBoarderY, maxyx.y - innerBoarderY) and
+     [0 + innerBoarderX, maxyx.x - innderBoaderX) respectively. */
   inline bool inBounds(const int y, const int x, const int innerBoarderY, int innerBoarderX)
-  {				// Check that y, x and also y + offset and x + offset are within the windo - innerBoarder7 and innerboarderx etc lksdajfldsa.
-    
+  {
+    if(!(innerBoarderY >= 0 && innerBoarderX >= 0))
+      {
+	std::stringstream e {};
+	e<<"Error negative inner window boarder/s ("<<y<<", "<<x<<") given";
+	exit(e.str().c_str(), ERROR_BAD_LOGIC);
+      }
+    return (checkRange(y, 0 + innerBoarderY, maxyx.y - innerBoarderY) && // Check top left coords.
+	    checkRange(x, 0 + innerBoarderX, maxyx.x - innerBoarderX) &&
+	    // check bottom right coords.
+	    checkRange(y + maxBottomRightOffset.y, 0 + innerBoarderY, maxyx.y - innerBoarderY) &&
+	    checkRange(x + maxBottomRightOffset.x, 0 + innerBoarderX, maxyx.x - innerBoarderX));
+    std::stringstream e {};
+    e<<"Error invalid sprite coordinate ("<<y<<", "<<x<<") encountered.";
+    exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
   }
   /* Checks that y and x are in range (0 to screen height and width), by calling checkRange(const int, const int). */
   inline bool inScreenBounds(const int y, const int x)
   {
-    bool ret = ((checkRange(y, 0, maxyx.y) && checkRange(x, 0, maxyx.x)) ? true : false) &&
-      ((checkRange(y + maxBottomRightOffset.y, 0, maxyx.y) && checkRange(x + maxBottomRightOffset.x, 0, maxyx.x))
-       ? true : false);
-    return ret;
+    return inBounds(y, x, 0, 0);	// We have an inner boarder of 0, 0
   }
   
   // Return's false if there is no match for dir.

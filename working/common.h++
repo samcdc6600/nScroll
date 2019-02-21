@@ -13,6 +13,7 @@ enum errorsCodes
     /* There was a problem with the window parameters and the window could not be initialised */
     ERROR_WIN_PARAM, // Window not initialised - there was a problem with the window parameters.
     ERROR_CURSOR_PARAM,	// Cursor parameters out of range.
+    ERROR_SPRITE_POS_RANGE,	// Sprite position out of range.
     ERROR_POS_CH_RANGE,	// Character position out of range.
     ERROR_INVALID_DIRECTION,	// Direction character found not to be valid.
     ERROR_OPENING_FILE,	// Error opening file.
@@ -24,8 +25,8 @@ enum errorsCodes
     ERROR_MALFORMED_STRING,	// We encountered a malformed string.
     ERROR_MALFORMED_COORDINATE,	// We have encountered a malformed coordinate.
     ERROR_DUPLICATE_COORDINATE,	// We have encountered a duplicate coordinate.
-    ERROR_MALFORMED_COORDINATE_CHAR_FIELD // We have encountered a coordinate character field that is malformed.
-    //ERROR_BAD_LOGIC		// There was an error in the code.
+    ERROR_MALFORMED_COORDINATE_CHAR_FIELD, // We have encountered a coordinate character field that is malformed.
+    ERROR_BAD_LOGIC		// There was an error in the code.
   };
 
 
