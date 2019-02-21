@@ -1,7 +1,7 @@
 #include <stdexcept>
 #include <ncurses.h>
-#include "slice.h"
-#include "../common.h"
+#include "slice.h++"
+#include "../common.h++"
 
 
 std::vector<int> getSlice(const std::vector<int> buff, const unsigned long offset, const int y, const int x)

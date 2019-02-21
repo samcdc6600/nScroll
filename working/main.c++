@@ -10,7 +10,6 @@
 #include "draw/drawExit.h++"
 #include "sprite/sprite.h++"
 #include "sprite/player/player.h++"
-#include "sprite/player/direction.h++"
 
 
 // Values returned by branchOnInput

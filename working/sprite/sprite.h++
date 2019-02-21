@@ -31,6 +31,11 @@ public:
       RIGHT_DOWN ='x',
       RIGHT_DOWN_UPPER ='X'
     };
+
+  enum directionCodes
+    {
+      DIR_LEFT, DIR_RIGHT, DIR_UP, DIR_DOWN
+    };
   
 private:
   
@@ -121,13 +126,14 @@ protected:
 
   /* Initialises sD_base */
   void getSprite(const char spriteFileName [], spriteData & sD);
-  void resetCurrentSliceNum(int sprite)
+  void resetCurrentSliceNum()
   {
     currentSliceNumber = 0;
   }
-  inline bool inBounds(const int y, const int x, const int innerBoarderY, innerBoarderX)
+  
+  inline bool inBounds(const int y, const int x, const int innerBoarderY, int innerBoarderX)
   {				// Check that y, x and also y + offset and x + offset are within the windo - innerBoarder7 and innerboarderx etc lksdajfldsa.
-    return ((checkRange(y, 
+    //    return ((checkRange(y, 
   }
   /* Checks that y and x are in range (0 to screen height and width), by calling checkRange(const int, const int). */
   inline bool inScreenBounds(const int y, const int x)

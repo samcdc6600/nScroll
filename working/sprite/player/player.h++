@@ -4,7 +4,6 @@
 #include <sstream>
 #include "../sprite.h++"
 #include "../../common.h++"
-#include "direction.h++"	//contains an enumeration with direction definitions
 
 
 class player: public sprite

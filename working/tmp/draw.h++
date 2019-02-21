@@ -1,9 +1,9 @@
 #ifndef DRAW_H_
 #define DRAW_H_
 #include <vector>
-#include "../common.h"
-#include "../sprite/sprite.h"
-#include "../physics/physics.h"
+#include "../common.h++"
+#include "../sprite/sprite.h++"
+#include "../physics/physics.h++"
 
 
 #define DRAW_NO_OP 10176	/* This character should be skipped */

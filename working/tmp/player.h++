@@ -2,9 +2,9 @@
 #define PLAYER_H_
 #include <stdexcept>
 #include <sstream>
-#include "../sprite.h"
-#include "../../common.h"
-#include "direction.h"	//contains an enumeration with direction definitions
+#include "../sprite.h++"
+#include "../../common.h++"
+#include "direction.h++"	//contains an enumeration with direction definitions
 
 
 class player: public sprite
@@ -51,9 +51,7 @@ class player: public sprite
   
   
   virtual ~player() {};
-  virtual void getHardBoundaryCoordinates(std::vector<int> & spCoords);
-  virtual void getSoftBoundaryCoordinates(std::vector<int> & spCoords);
-  virtual void updatePosRel(char ch);//update's position of sprite in a relative fashion with reference to the sprite.
+  virtual void updatePosRel(directions dir);
   virtual void draw(bool updateSlice);
   //  virtual void draw() {draw(false);}
   

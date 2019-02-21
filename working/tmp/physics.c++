@@ -19,10 +19,10 @@ int rules::physics(const int input)
 
 void rules::movePlayer(const sprite::directions input)
 {
-  /*  if(inBounds())
+  if(inBounds())
     {
     }
   else
     {
-    }*/
+    }
 }

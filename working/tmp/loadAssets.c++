@@ -3,8 +3,8 @@
 #include <cstring>
 //#include <locale>
 #include <ncurses.h>// test code
-#include "loadAssets.h"
-#include "../collapse/collapse.h"
+#include "loadAssets.h++"
+#include "../collapse/collapse.h++"
 
 
 void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & background,
@@ -72,20 +72,11 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rule
 
 
   try
-    {
-      bool inHeader {true};
+    {     
       for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(HEADER_START) -1)},
 	    current {peek++}; *peek != NULL_BYTE; ++peek, ++current)
 	{
-	  // endwin();
-	  //	  std::cout<<"*current = "<<*current<<std::endl;
-	  //	  std::cout<<"*peek = "<<*peek<<std::endl;
-	  //	  std::cout<<"inHeader = "<<inHeader<<std::endl<<std::endl;
-	  //	  char ch {};
-	  //	  std::cin>>ch;
-	  //	  sleep(1000);
-	  
-	  switchOnCurrent(maxyx, buff, current, peek, buff.end(), inHeader, levelRules);
+	  switchOnCurrent(maxyx, buff, current, peek, buff.end(), levelRules);
 	}
     }
   catch (std::out_of_range & e)
@@ -99,32 +90,21 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rule
 
 
 void switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-		    std::string::const_iterator & peek, std::string::const_iterator max, bool & inHeader,
-		    rules & levelRules)
+		    std::string::const_iterator & peek, std::string::const_iterator max, rules & levelRules)
 {
   switch(*current)
     {
     case FIELD_START_DENOTATION:    // Handle start of new field or section.
-      handleCurrentIsFieldStartDenotation(maxyx, buff, current, peek, max, inHeader, levelRules);
-      break;
-    case HEADER_END_DENOTATION:
-      rubOutSpace(buff, current, peek, max); // Remove any space after HEADER_END_DENOTATION.
-      inHeader = false;
+      handleCurrentIsFieldStartDenotation(maxyx, buff, current, peek, max, levelRules);
       break;
     default:
-      constexpr int SHOW_COUNT {45};
       std::stringstream e {};
-      e<<"Error current character not expected at current position rules.lev. The following is the "<<SHOW_COUNT
-       <<" character's after and including the current character (note output may be less then 15 character's if"
-	" the EOF character was encountered):\n";
-      for(int iter {SHOW_COUNT} ; *current != NULL_BYTE && iter > 0; --iter, ++current)
-	{e<<*current;}
+      e<<"Error current character not expected at current position in the rules.lev file. The following is the "
+       <<SHOW_COUNT<<" character's after and including the current character (note output may be less then "
+       <<SHOW_COUNT<<" character's if the EOF character was encountered):\n";
+      printCurrent(current, SHOW_COUNT, e);
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
-
-  //endwin();
-  //sleep(10000);
-  //    exit("\n\nwe are free!\n", -1);
 }
 
 
@@ -132,16 +112,18 @@ void switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iter
 
 
 void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-				    std::string::const_iterator & peek, std::string::const_iterator max,
-				    const bool inHeader, rules & levelRules)
+					 std::string::const_iterator & peek, std::string::const_iterator max,
+					 rules & levelRules)
 {			// We have a sprite
+  static bool inHeader {true};
   if(!inHeader)
     {
       switch(*peek)
 	{
 	case STRING_DENOTATION:
-	  std::cout<<"\" character encountered."<<std::endl;
-	  sleep(20000);
+	  endwin();
+	  std::cout<<"String denotation character encountered after start denotation (not in header.)"<<std::endl;
+	  sleep(10000);
 	  break;
 	default:
 	  if(*peek == BOARDER_CHAR			||	*peek == BOARDER_CHAR_UPPER
@@ -152,49 +134,76 @@ void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std
 	     || *peek == LIFE_POWER_UP_CHAR		||	*peek == LIFE_POWER_UP_CHAR_UPPER)
 	    {	      // Call function to handle coordinate character's character
 	      ++current, ++peek;
-	      handleBoarderCharacter(buff, current, peek, max, levelRules);
+	      handleCoordinateCharacter(buff, current, peek, max, levelRules);
+	      // Make sure there's no space between end of coordinate character field and next field (if any.)
+	      rubOutSpace(buff, current, peek, max);
+	    }
+	  else
+	    {
+	      std::stringstream e {};
+	      e<<"Error expected but did not encounter coordinate character. The following is the "<<SHOW_COUNT
+	       <<" character's after and including the current character (note output may be less then "<<SHOW_COUNT
+	       <<" character's if the EOF character was encountered):\n";
+	      printCurrent(current, SHOW_COUNT, e);
+	      exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE_CHAR_FIELD);
 	    }
 	  break;
 	}
     }
   else			// Read in the player sprite info.
-    initPlayerSprite(maxyx, buff, current, peek, max, levelRules);
-  
-  rubOutSpace(buff, current, peek, max);
+    {
+      initPlayerSprite(maxyx, buff, current, peek, max, levelRules);
+      // Make sure there's no space between end of player field and HEADER_END_DENOTATION character.
+      rubOutSpace(buff, current, peek, max); 
+      ++current, ++peek;	// Move peek past HEADER_END_DENOTATION character.
+      if(*current != HEADER_END_DENOTATION)
+	{
+	  std::stringstream e {};
+	  e<<"Error expected but did not see \""<<HEADER_END_DENOTATION<<"\" character to denote the end of the"
+	   "header";
+	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+	}
+      // Make sure there's no space between HEADER_END_DENOTATION and next field.
+      rubOutSpace(buff, current, peek, max);
+      inHeader = false;		// We are leaving the header.
+    }
 }
 
 
 // FUNCTIONS TO BE DISPATCHED BY SWITCHONCURRENT -END- ------------------------------- -----------------------------
 
 
-/* Read in the character *current (which should already have been checked for it's validity), then read in
+/* Read in the character *current (which should already have been checked for validity), then read in
    the coordinate pair, finally the function should check to see that this coordinate pair is unique in the object
    levelRules.charCoords and if it is use the coordinates as a key to store the character (which is to be interprited
    as a Coordinate character */
-void handleBoarderCharacter(std::string & buff, std::string::const_iterator & current,
+void handleCoordinateCharacter(std::string & buff, std::string::const_iterator & current,
 			    std::string::const_iterator & peek, std::string::const_iterator & max,
 			    rules & levelRules)
 {
   const char c {*current};	// Get coordinate char (should be pre checked for validity.)
-  // Make sure there is no space between coordinate char and FIELD_START_DENOTATION.
+  // Make sure there is no space between coordinate char and FIELD_START_DENOTATION for the coordinate field.
   rubOutSpace(buff, current, peek, max);
   if(*peek != FIELD_START_DENOTATION)
-    {				// error encountered boarder character but did not encounter ( character
+    {
+      std::stringstream e {};
+      e<<"Error encountered coordinate character but did not encounter "<<FIELD_START_DENOTATION<<" character.";
+      exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
     }
   ++current, ++peek;		// Set current to FIELD_START_DENOTATION character position.
   std::string key {getCoords(buff, current, peek, max)};
+  // Make sure there's no space between the end of the coordinate field and the end of the coordinate character field.
+  rubOutSpace(buff, current, peek, max);
   if(levelRules.coordChars.find(key) == levelRules.coordChars.end())// Key not found
-    {
-      endwin();
-      std::cout<<"Added to map :) \n"<<c<<"\n"<<key<<std::endl<<std::endl;
-      sleep(3432);
-      exit("", -1);
-      levelRules.coordChars[key] = c; // Add our beautiful key, boarder character pair to the coordChars map :).
-    }
+      levelRules.coordChars[key] = c; // Add our beautiful key, coordinate character pair to the coordChars map :).
   else
     {				// Error duplicate key's in rules.lev file.
+      std::stringstream e {};
+      e<<"Error duplicate character coordinate's ("<<key<<") encountered in rules.lev file.";
+      exit(e.str().c_str(), ERROR_DUPLICATE_COORDINATE);
     }
-  
+  // Advance peek past end of coordinate character field and thus past FIELD_END_DENOTATION character.
+  ++current, ++peek;
 }
 
 
@@ -202,7 +211,7 @@ void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_ite
 		      std::string::const_iterator & peek, std::string::const_iterator & max, rules & levelRules)
 {
   std::vector<std::string> sprites {handleStringDenotationAfterFieldDenotation(buff, current, peek, max)};
-  rubOutSpace(buff, current, peek, max);
+  rubOutSpace(buff, current, peek, max); // Make sure there's no space between string field and coordinate field.
   current++, peek++;
   
   if(*current == FIELD_START_DENOTATION)
@@ -350,7 +359,7 @@ std::string getString(std::string::const_iterator & current, std::string::const_
 	  std::stringstream e {};
 	  e<<"Error parsing string, we have reached the end of the file but have not encountred the appropriate"
 	    "character's. A rules.lev file must end with the character's \""<<STRING_DENOTATION<<FIELD_END_DENOTATION
-	   <<"\", if the last peice of information in the last field in the file is a string.";
+	   <<"\", if the last piece of information in the last field in the file is a string.";
 	  exit(e.str().c_str(), ERROR_MALFORMED_STRING);
 	}
       switch(*current)
@@ -408,4 +417,13 @@ bool rubOutSpace(std::string & buff, std::string::const_iterator & current, std:
     }
   
   return true;
+}
+
+
+void printCurrent(std::string::const_iterator & current, const int SHOW_COUNT, std::stringstream & e)
+{
+  for(int iter {SHOW_COUNT} ; *current != NULL_BYTE && iter > 0; --iter, ++current)
+    {
+      e<<*current;
+    }
 }

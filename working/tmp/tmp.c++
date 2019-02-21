@@ -31,6 +31,11 @@ class chMap
  chMap();
  int find(const std::string str);
 };
+
+
+// Code for 
+//Value of transparent space is 1 higher then 159 * 64 which is above the space of all ACS and ASCII characters whether colored or not.
+constexpr int TRANS_SP {10176};
 //"Collapse's" buff and stores into ret. copies all characters not part of an escape sequence into
 //ret (one char goes into one int (thus ret may actually be larger then buff (but I say it is collapsed
 //for reasons explained shortly)). All escape sequences are not copied reather they are used as an
@@ -86,56 +91,6 @@ class setColorMode//This class is used to change the color mode of Ncurses
 };
 
 #endif
-#ifndef COMMON_H_
-#define COMMON_H_
-
-
-constexpr int MONO_CH_MAX {158};
-constexpr int COLOR_CH_MAX {63};
-constexpr int ASCII_NUMBER_OFFSET {48};
-
-
-enum errorsCodes
-  {/* Error codes */
-    /* There was a problem with the window parameters and the window could not be initialised */
-    ERROR_WIN_PARAM, // Window not initialised - there was a problem with the window parameters.
-    ERROR_CURSOR_PARAM,	// Cursor parameters out of range.
-    ERROR_POS_CH_RANGE,	// Character position out of range.
-    ERROR_OPENING_FILE,	// Error opening file.
-    ERROR_CHARACTER_RANGE,	// Character out of range.
-    ERROR_COLOR_CODE_RANGE,	// Color code out of range.
-    ERROR_GENERIC_RANGE_ERROR,
-    ERROR_RULES_LEV_HEADER,	// Header of .level.rules file is malformed.
-    ERROR_RULES_STRING_FIELDS,	// There was an error in a field containing string's.
-    ERROR_MALFORMED_STRING,	// We encountered a malformed string.
-    ERROR_MALFORMED_COORDINATE	// We have encountered a malformed coordinate.
-    //ERROR_BAD_LOGIC		// There was an error in the code.
-  };
-
-
-struct yx
-{
-  yx() {}  
-  yx(const int y, const int x)
-  {
-    this->y = y;
-    this->x = x;
-  }
-  int y;
-  int x;
-};
-
-
-void sleep(const unsigned long long t);
-/* Returns false if a is not range [0, coord). */
-bool checkRange(const int a, const int coord);
-/* return's true if a - offset is within the range [SINGLE_DIGIT_MIN, SINGLE_DIGIT_MAX].
-   return's false otherwise. */
-bool inSingleDigitRange(const int a, const int offset);
-/* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
-void exit(const std::string & e, const int status);
-
-#endif
 #ifndef DIRECTION_H_ 
 #define DIRECTION_H_
 
@@ -155,9 +110,9 @@ void drawExit(const yx maxyx);
 #ifndef DRAW_H_
 #define DRAW_H_
 #include <vector>
-#include "../common.h"
-#include "../sprite/sprite.h"
-#include "../physics/physics.h"
+#include "../common.h++"
+#include "../sprite/sprite.h++"
+#include "../physics/physics.h++"
 
 
 #define DRAW_NO_OP 10176	/* This character should be skipped */
@@ -181,10 +136,21 @@ void drawCh(int ch);
 bool inColorRange(const int ch); /* Checks whethere ch is a colour character or not. */
 int getColor(const int ch);	 /* Returns colour code encoded in ch. */
 #endif
-#ifndef INPUTHANDLERNONBLOCK_H_
-#define INPUTHANDLERNONBLOCK_H_
+#ifndef INITCURSES_H_
+#define INITCURSES_H_
 
-char inputHandlerNonBlock();
+#include <string>
+#include <ncurses.h>
+#include <sstream>
+#include "../common.h++"
+
+
+constexpr int yHeight {33}, xWidth{125};        // The window must be these dimensions                                 
+
+
+void initialiseCurses(yx & maxyx);
+void initColorPairs();
+
 
 #endif
 #ifndef LEVELINTERACTIONHANDLER_H_
@@ -205,7 +171,7 @@ char nearPass(const std::vector<int> playerSpChoords, const std::vector<int> spC
 #include <vector>
 #include <string>
 #include <fstream>
-#include "../../physics/physics.h" // For rules.
+#include "../../physics/physics.h++" // For rules.
 
 
 constexpr char HEADER_START [] = {"(p("}; // The header should always start with me.
@@ -213,12 +179,14 @@ constexpr char FIELD_START_DENOTATION {'('};	 // Marks the start of a new field 
 constexpr char FIELD_END_DENOTATION {')'};	 // Marks the end of the current field or section of the current file.
 constexpr char HEADER_END_DENOTATION {'#'}; // Marks the end of the header sectino of the file.
 constexpr char STRING_DENOTATION {'"'}; // This character denotes the start of a sting
+constexpr int SHOW_COUNT {45};		// How many characters to print in printN function.
 // This character denotes the presence of another string when used after a string.
 constexpr char STRINGS_SEPERATION {','};
 constexpr char ESCAPE_CHAR {'\\'}; // The character used for escape sequences (within a string) in .rules.lev file's.
 constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
 constexpr char NULL_BYTE {'\0'};
-/* Coordinate character's. I have decided to add an uppercase alternative for each character. This is so that rules.lev file's will be more forgiving of "mistakes." */
+/* Coordinate character's. I have decided to add an uppercase alternative for each character. This is so that
+   rules.lev file's will be more forgiving of "mistakes." */
 constexpr char BOARDER_CHAR {'b'}; // Player character's cannot pass through coordinate's marked as this.
 constexpr char BOARDER_CHAR_UPPER {'B'};
 constexpr char KILL_CHAR {'k'};	// Player character's are killed uppon intersection with coordinate's marked as this.
@@ -266,21 +234,23 @@ template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, cons
 /* Branch to differnt parsing function's depending on the values of current and peek. InHeader tells whether we are in
    the header (parsing decisions may be different depending on it's state.) */
 void switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-		    std::string::const_iterator & peek, std::string::const_iterator max, bool & inHeader,
-		    rules & levelRules);
+		    std::string::const_iterator & peek, std::string::const_iterator max, rules & levelRules);
+// Dispatches functions based on the value of *peek. Should only be called when *current == FIELD_START_DENOTATION
 void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-				    std::string::const_iterator & peek, std::string::const_iterator max,
-					 const bool inHeader, rules & levelRules);
-/* This function should be called from switchOnCurrent when *current == FIELD_DENOTATION. 
-   It despatches a function based on the value of *peek */
-void handleBoarderCharacter(std::string & buff, std::string::const_iterator & current,
+					 std::string::const_iterator & peek, std::string::const_iterator max,
+					 rules & levelRules);
+/* Read in the character *current (which should already have been checked for validity), then read in
+   the coordinate pair, finally the function should check to see that this coordinate pair is unique in the object
+   levelRules.charCoords and if it is use the coordinates as a key to store the character (which is to be interprited
+   as a Coordinate character */
+void handleCoordinateCharacter(std::string & buff, std::string::const_iterator & current,
 			    std::string::const_iterator & peek, std::string::const_iterator & max,
 			    rules & levelRules);
 /* Read in the character *current (which should already have been checked for it's validity), then read in
    the coordinate pair, finally the function should check to see that this coordinate pair is unique in the object
    levelRules.charCoords and if it is use the coordinates as a key to store the character (which is to be interprited
    as a Coordinate character */
-void handleBoarderCharacter(std::string::const_iterator & current, std::string::const_iterator & peek,
+void handleCoordinateCharacter(std::string::const_iterator & current, std::string::const_iterator & peek,
 			    std::string::const_iterator & max, const rules & levelRules);
 /* Calls handleStringDenotationAfterFieldDenotation to read in string's. Then calls getCoords to read in coordinates.
 Then initialises player */
@@ -305,6 +275,7 @@ std::string getString(std::string::const_iterator & current, std::string::const_
    It is assumed that current and peek point to consecutive elment's */
 bool rubOutSpace(std::string & buff, std::string::const_iterator & current, std::string::const_iterator & peek,
 	       std::string::const_iterator & max);
+void printCurrent(std::string::const_iterator & current, const int SHOW_COUNT, std::stringstream & e);
 
 
 #endif
@@ -313,11 +284,13 @@ bool rubOutSpace(std::string & buff, std::string::const_iterator & current, std:
 #include <map>
 #include <string>
 #include <vector>
-#include "../sprite/sprite.h"
-#include "../sprite/player/player.h"
+#include "../sprite/sprite.h++"
+#include "../sprite/player/player.h++"
 
 struct rules
 {
+  // The player cannot pass within this many character's of the windo boarder's
+  const yx playerNoGoInnerBoarder {5, 8};
   struct spriteInfo		/* For sprites (holds sprite data (slices) and the rule for the sprite. */
   {
     /* Sprite data to go here (when I do it.) */
@@ -333,18 +306,25 @@ struct rules
   {
     delete(gamePlayer);
   }
-};
 
-void physics(rules & levelRules);
+private:
+  int playerPosition {};
+
+  // Moves the player 
+  void movePlayer(const sprite::directions input);
+
+public:
+  int physics(const int input);  
+};
 
 #endif
 #ifndef PLAYER_H_
 #define PLAYER_H_
 #include <stdexcept>
 #include <sstream>
-#include "../sprite.h"
-#include "../../common.h"
-#include "direction.h"	//contains an enumeration with direction definitions
+#include "../sprite.h++"
+#include "../../common.h++"
+#include "direction.h++"	//contains an enumeration with direction definitions
 
 
 class player: public sprite
@@ -391,9 +371,7 @@ class player: public sprite
   
   
   virtual ~player() {};
-  virtual void getHardBoundaryCoordinates(std::vector<int> & spCoords);
-  virtual void getSoftBoundaryCoordinates(std::vector<int> & spCoords);
-  virtual void updatePosRel(char ch);//update's position of sprite in a relative fashion with reference to the sprite.
+  virtual void updatePosRel(directions dir);
   virtual void draw(bool updateSlice);
   //  virtual void draw() {draw(false);}
   
@@ -416,23 +394,51 @@ std::vector<int> getSlice(const std::vector<int> buff, const unsigned long offse
 #include <vector>
 #include <string>
 #include <chrono>
-#include "../common.h"
+#include "../common.h++"
 
 // This class should be inherited by other classes such as
 // PlayerSprite and enimySprite and nonInterativeSprite
 class sprite
 {
- private:
+public:
+
+  // Direction Characters.
+  enum directions
+    {
+      LEFT_UP ='q',
+      LEFT_UP_UPPER ='Q',
+      UP ='w',
+      UP_UPPER ='W',
+      RIGHT_UP ='e',
+      RIGHT_UP_UPPER ='E',
+      LEFT ='a',
+      LEFT_UPPER ='A',
+      RIGHT ='d',
+      RIGHT_UPPER ='D',
+      LEFT_DOWN ='z',
+      LEFT_DOWN_UPPER ='Z',
+      DOWN ='s',
+      DOWN_UPPER ='S',
+      RIGHT_DOWN ='x',
+      RIGHT_DOWN_UPPER ='X'
+    };
+  
+private:
   
   const yx maxyx;		// Window size.
+  enum sliceLineIndex
+    {				// Used as index into sliceLine vector.
+      SLICE_LINE_ONE,
+      SLICE_LINE_TWO
+    };
   
- protected:
+protected:
   
-    yx position;     // Position of sprite relative to background and top left corner of sprite object.
-    /* Holds the maximum bottom right offset. Calculated from all slices.*/
-    yx maxBottomRightOffset; /* Used for inital (possible) collision detection and bounds checking */
+  yx position;     // Position of sprite relative to background and top left corner of sprite object.
+  /* Holds the maximum bottom right offset. Calculated from all slices.*/
+  yx maxBottomRightOffset; /* Used for inital (possible) collision detection and bounds checking */
     
- private://------------------------------------------------------------------------------------------------------
+private://------------------------------------------------------------------------------------------------------
  
   // Holds the sprite animation (slice) that we are upto in the sequences.
   // Should not go above spriteSlices.size(); and should wrappe back around to zero.  
@@ -440,18 +446,26 @@ class sprite
   // These two veriables keep track of when sprites can be updates
   std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
   std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
-    struct sliceLine
+  
+  struct sliceLine
   {
     std::vector<int> sliceLine;	// Holds line of slice.
     int offset;	// Horizontal offset of sliceLine from current curser position.
   };
+  
+  struct sliceData
+  {
+    std::vector<sliceLine> slice {};    
+    std::vector<yx> sliceBoundryCoords {}; // Hold's a list of boundry coordinates for the slice.
+  };
+
   struct partiallyProcessedSliceLine
   {
     std::string sliceLine;	// Holds unprocessed slice line.
     int offset;	// Horizontal offset of sliceLine from current curser position.
   };
   
- protected:
+protected:
   
   struct spriteData
   { /* Speed of sprite animation. */
@@ -459,10 +473,10 @@ class sprite
     /* Outer vector holds inner vectors that hold sliceLine objects
        that make up the horizontal lines of slices.
        This object holds the slices that make up the sprite. */
-    std::vector<std::vector<sliceLine>> spriteSlices {};
+    std::vector<sliceData> spriteSlices {};
   } sD_base;    // Hold's a single sprite instance that will be setup by this ABC in it's constructor.
   
- private:  
+private:  
   
   // Split up file into cycleSpeed and unprocessesd representation of sprite.
   std::vector<std::vector<partiallyProcessedSliceLine>> parserPhaseOne(const std::string & spriteFile,
@@ -475,28 +489,42 @@ class sprite
   partiallyProcessedSliceLine getSliceLine(const std::string & spriteFile, int & spFIter);
   // Calls collaps on slice lines and stores the lines in a type corresponding to the return value
   void parserPhaseTwo(const std::vector<std::vector<sprite::partiallyProcessedSliceLine>> & pPSL, spriteData & sD);
-  
- protected:
-  // This vector hold's the sprites (sprite slices and cycle speed's.)
-  std::vector<spriteData> spriteS;
-  
-  /* Initialises sD_base */
-  void getSprite(const char spriteFileName [], spriteData & sD);
   /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated from the tallest spriteSlice and
      longest sliceLine in sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left 
      of position. These values are used for possible collision detection and bounds checking. */
   void getMaxYXOffset();
+  // Iterates through spriteSlices in sD and set's up boundry coords for each slice in sD.
+  void setUpBoundryCoordsVector(spriteData & sD);
+  /* Addes the index of every character in s[y].sliceLine that is not equal to TRANS_SP plus s[y].offset to
+     sliceBoundryCoords (using .push_back().) */
+  void getBoundryCoordsForWholeSingleSliceLine(std::vector<sliceLine> & s, const int y,
+					       std::vector<yx> & sliceBoundryCoords);
+  /* Operation is the same as getBoundryCoordsForWholeSingleSliceLine with the exception that only the coordinates
+     plus s[y].offset of end (non TRANS_SP) chars are added to sliceBoundryCoords. If all character's are TRANS_SP
+     then no coords are added and if there is only one non TRANS_SP character then only it's coordinate plus offset is
+     added. */
+  void getBoundryCoordsForEndSofSingleSliceLine(std::vector<sliceLine> & s, const int y,
+						std::vector<yx> & sliceBoundryCoords);
+  
+protected:
+  // This vector hold's the sprites (sprite slices and cycle speed's.)
+  std::vector<spriteData> spriteS;
+
+  /* Initialises sD_base */
+  void getSprite(const char spriteFileName [], spriteData & sD);
   void resetCurrentSliceNum(int sprite)
   {
     currentSliceNumber = 0;
   }
+  inline bool inBounds(const int y, const int x, const int innerBoarderY, innerBoarderX)
+  {				// Check that y, x and also y + offset and x + offset are within the windo - innerBoarder7 and innerboarderx etc lksdajfldsa.
+    return ((checkRange(y, 
+  }
   /* Checks that y and x are in range (0 to screen height and width), by calling checkRange(const int, const int). */
   inline bool inScreenBounds(const int y, const int x)
-  {     /* The reason for having to call checkRange twice is so that it may be a more generic function and we done
-	   have to change it or create another auxulary functino. The runtime overhead of calling it twice is seen as
-	   exceptible (given that is program is probably very far from optimal in many other dimensions. */
-    bool ret = ((checkRange(y, maxyx.y) && checkRange(x, maxyx.x)) ? true : false) &&
-      ((checkRange(y + maxBottomRightOffset.y, maxyx.y) && checkRange(x + maxBottomRightOffset.x, maxyx.x))
+  {
+    bool ret = ((checkRange(y, 0, maxyx.y) && checkRange(x, 0, maxyx.x)) ? true : false) &&
+      ((checkRange(y + maxBottomRightOffset.y, 0, maxyx.y) && checkRange(x + maxBottomRightOffset.x, 0, maxyx.x))
        ? true : false);
     return ret;
   }
@@ -506,24 +534,33 @@ class sprite
   /* We can get a const version of maxBottomRightOffset in a derived class (couldn't make maxBottomRightOffset in
      sprite. At least we can force it for derived classes.) */
   const yx getMaxBottomRightOffset();
+  /* Returns a yx struct that is a copy of the data member position with it's y and x member's incremented,
+     decremented or left unchanged depending on the value of dir. */
+  yx getNewPos(const directions dir);
   
- public://----------------------------------------------------------------------------------------------------------
+public://----------------------------------------------------------------------------------------------------------
   
   //constructor reads spriteFile and converts it to the internal object structure
   sprite(const yx max, const yx pos, const char spriteFileName []);
-  virtual void updatePosAbs(int y, int x);	/* update's position of sprite in an absoulte fashion with reference
-						   to the background */
-  virtual void updatePosRel(const char ch);	/* update's position of sprite in a relative fashion with reference to
-						   the sprite. The argument tell's witch direction to increment. */
-  virtual void draw(int spriteNum, bool updateSlice);	/* displays sprite (potentially more then one file's worth of
-							   sprite) */
-  virtual void draw(bool updateSlice) = 0; /* For sprites that only have one set of slices. */
-  virtual void draw() {draw(false);}	   /* Draw same sprite slice as before. */
+  /* Returns the of position of the sprite after moving one character (including diagonal movement) in the
+     direction dir */
+  yx peekAtPos(const directions dir);
+  // update's position of sprite in an absoulte fashion with reference to the background
+  virtual void updatePosAbs(int y, int x);
+  /* update's sprite's y and x position value's by a difference of no more then 1. The direction depends on the
+     value of ch. */
+  virtual void updatePosRel(const directions dir);
+  // displays sprite (potentially more then one file's worth of sprites.)
+  virtual void draw(int spriteNum, bool updateSlice);
+  // For sprites that only have one set of slices.
+  virtual void draw(bool updateSlice) = 0;
+  // Draw same sprite slice as before.
+  virtual void draw() {draw(false);}
   virtual ~sprite() {};
 };
 
 #endif
-#include "checkBoundsOfBounds.h"
+#include "checkBoundsOfBounds.h++"
 
 
 /* should return an integer that represents the difference in "size" between the background file and
@@ -533,8 +570,8 @@ int checkBoundsOfBounds(const std::string boarder, const std::vector<int> backgr
   return boarder.size() - background.size();
 }
 #include <stdexcept>
-#include "collapse.h"
-#include "../../draw/colorS.h"
+#include "collapse.h++"
+#include "../../draw/colorS.h++"
 #include <ncurses.h>
 //#include <sstream>
 
@@ -603,7 +640,7 @@ void collapse(const std::string & buffWithSpaces, std::vector<int> & ret)
 	  if(buff[iter] == '\\' && buff[1 + iter] == 't' && buff[2 + iter] == 'r' && buff[3 + iter] == 'a' && buff[4 + iter] == 'n'
 	     && buff[5 + iter] == 's' && buff[6 + iter] == 'S' && buff[7 + iter] == 'P' && buff[8 + iter] == '/')
 	    {
-	      preRet.push_back(10176);//Value of transparent space is 1 higher then 159 * 64 whitch is above the space of all ACS and ASCII characters whether colored or not.
+	      preRet.push_back(TRANS_SP);
 	      iter += 8;
 	    }
 	  else
@@ -666,7 +703,7 @@ void collapse(const std::string & buffWithSpaces, std::vector<int> & ret)
     }
 }
 #include <ncurses.h>
-#include "colorS.h"
+#include "colorS.h++"
 
 colourMap::colourMap()
 {
@@ -726,53 +763,16 @@ void setColorMode::clearColor()
 {
   setState(defaultColor);//turn on defaultColor color
 }
-#include <chrono>
-#include <thread>
-#include <ncurses.h>
-#include <iostream>
-#include "common.h"
-
-
-void sleep(const unsigned long long t)
-{
-  std::this_thread::sleep_for(std::chrono::milliseconds(t));
-}
-
-
-bool checkRange(const int a, const int coord)
-{
-  bool ret = (a >= 0 && a < coord) ? true : false;
-  return ret;
-}
-
-
-bool inSingleDigitRange(const int a, const int offset)
-{
-  constexpr int SINGLE_DIGIT_MIN {};
-  constexpr int SINGLE_DIGIT_MAX {9};
-  if(((a - offset) < SINGLE_DIGIT_MIN) || ((a - offset) > SINGLE_DIGIT_MAX))
-    return false;
-  return true;
-}
-
-
-/* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
-void exit(const std::string & e, const int status)
-{
-  endwin();
-  std::cerr<<e<<'\n';
-  exit(status);
-}
 #include <ncurses.h>
 #include <string>
 #include <vector>
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
-#include "../common.h"
-#include "slice.h"
-#include "draw.h"
-#include "colorS.h"
+#include "../common.h++"
+#include "slice.h++"
+#include "draw.h++"
+#include "colorS.h++"
 
 
 // Class handels the setting of color when printing characters (used in draw.cpp) argument is the default color pair.
@@ -1105,9 +1105,9 @@ int getColor(const int ch)
 #include <cstdlib>
 #include <ctime>
 #include <ncurses.h>
-#include "../common.h"
-#include "drawExit.h"
-#include "draw.h"
+#include "../common.h++"
+#include "drawExit.h++"
+#include "draw.h++"
 
 
 void drawExit(const yx maxyx)
@@ -1171,17 +1171,101 @@ void drawExit(const yx maxyx)
 	}
     }
 }
-#include "inputHandlerNonBlock.h"
-#include <ncurses.h>
+#include "initCurses.h++"
 
-char inputHandlerNonBlock(void)
+
+void initialiseCurses(yx & maxyx)
 {
-  nodelay(stdscr, TRUE); // Don't block while waiting for input (use non blocking sys call).
-  int ch {getch()};
-  return ch;
-  nodelay(stdscr, FALSE);	// Set back to blocking.
+  initscr();                                  // Start curses mode                                                     
+  getmaxyx(stdscr, maxyx.y, maxyx.x); // Screen size in characters                                                     
+  if(maxyx.y != yHeight || maxyx.x != xWidth) // Check the window size.                                                
+    {
+      std::stringstream e {};
+      e<<"error windows must be "<<yHeight<<" characters high and "<<xWidth<<" characters wide. "
+        "The current height is "<<maxyx.y<<" characters and the current width is "<<maxyx.x<<" characters.\n";
+      exit(e.str(), ERROR_WIN_PARAM);
+    }
+  if(has_colors() == FALSE)  // If the terminal does not support colors                                                
+    {
+      exit("Error your terminal does not support colour :'(\n", ERROR_WIN_PARAM);
+    }
+  raw();                     // To disable line buffering                                                              
+  curs_set(0);               // Make the cursor invisible                                                              
+  noecho();                  // Turn echoing off on the terminal                                                       
+  start_color();             // Start color and initialise color pairs!                                                
+  nodelay(stdscr, TRUE);     // Dissable blocking while waiting for input (use non blocking sys call.)                 
+  initColorPairs();          // Initialise the color pairs                                                             
 }
-#include "levelInteractionHandler.h"
+
+
+void initColorPairs()
+{
+  attron(COLOR_PAIR(56));       //default color. Must also be changed in draw.cpp!!!!!!!!!!!!!!!!!!!!!!!!              
+  init_pair(1, COLOR_BLACK, COLOR_BLACK);
+  init_pair(2, COLOR_BLACK, COLOR_RED);
+  init_pair(3, COLOR_BLACK, COLOR_GREEN);
+  init_pair(4, COLOR_BLACK, COLOR_YELLOW);
+  init_pair(5, COLOR_BLACK, COLOR_BLUE);
+  init_pair(6, COLOR_BLACK, COLOR_MAGENTA);
+  init_pair(7, COLOR_BLACK, COLOR_CYAN);
+  init_pair(8, COLOR_BLACK, COLOR_WHITE);
+  init_pair(9, COLOR_RED, COLOR_BLACK);
+  init_pair(10, COLOR_RED, COLOR_RED);
+  init_pair(11, COLOR_RED, COLOR_GREEN);
+  init_pair(12, COLOR_RED, COLOR_YELLOW);
+  init_pair(13, COLOR_RED, COLOR_BLUE);
+  init_pair(14, COLOR_RED, COLOR_MAGENTA);
+  init_pair(15, COLOR_RED, COLOR_CYAN);
+  init_pair(16, COLOR_RED, COLOR_WHITE);
+  init_pair(17, COLOR_GREEN, COLOR_BLACK);
+  init_pair(18, COLOR_GREEN, COLOR_RED);
+  init_pair(19, COLOR_GREEN, COLOR_GREEN);
+  init_pair(20, COLOR_GREEN, COLOR_YELLOW);
+  init_pair(21, COLOR_GREEN, COLOR_BLUE);
+  init_pair(22, COLOR_GREEN, COLOR_MAGENTA);
+  init_pair(23, COLOR_GREEN, COLOR_CYAN);
+  init_pair(24, COLOR_GREEN, COLOR_WHITE);
+  init_pair(25, COLOR_YELLOW, COLOR_BLACK);
+  init_pair(26, COLOR_YELLOW, COLOR_RED);
+  init_pair(27, COLOR_YELLOW, COLOR_GREEN);
+  init_pair(28, COLOR_YELLOW, COLOR_YELLOW);
+  init_pair(29, COLOR_YELLOW, COLOR_BLUE);
+  init_pair(30, COLOR_YELLOW, COLOR_MAGENTA);
+  init_pair(31, COLOR_YELLOW, COLOR_CYAN);
+  init_pair(32, COLOR_YELLOW, COLOR_WHITE);
+  init_pair(33, COLOR_BLUE, COLOR_BLACK);
+  init_pair(34, COLOR_BLUE, COLOR_RED);
+  init_pair(35, COLOR_BLUE, COLOR_GREEN);
+  init_pair(36, COLOR_BLUE, COLOR_YELLOW);
+  init_pair(37, COLOR_BLUE, COLOR_BLUE);
+  init_pair(38, COLOR_BLUE, COLOR_MAGENTA);
+  init_pair(39, COLOR_BLUE, COLOR_CYAN);
+  init_pair(40, COLOR_BLUE, COLOR_WHITE);
+  init_pair(41, COLOR_MAGENTA, COLOR_BLACK);
+  init_pair(42, COLOR_MAGENTA, COLOR_RED);
+  init_pair(43, COLOR_MAGENTA, COLOR_GREEN);
+  init_pair(44, COLOR_MAGENTA, COLOR_YELLOW);
+  init_pair(45, COLOR_MAGENTA, COLOR_BLUE);
+  init_pair(46, COLOR_MAGENTA, COLOR_MAGENTA);
+  init_pair(47, COLOR_MAGENTA, COLOR_CYAN);
+  init_pair(48, COLOR_MAGENTA, COLOR_WHITE);
+  init_pair(49, COLOR_CYAN, COLOR_BLACK);
+  init_pair(50, COLOR_CYAN, COLOR_RED);
+  init_pair(51, COLOR_CYAN, COLOR_GREEN);
+  init_pair(52, COLOR_CYAN, COLOR_YELLOW);
+  init_pair(53, COLOR_CYAN, COLOR_BLUE);
+  init_pair(54, COLOR_CYAN, COLOR_MAGENTA);
+  init_pair(55, COLOR_CYAN, COLOR_CYAN);
+  init_pair(56, COLOR_CYAN, COLOR_WHITE);
+  init_pair(57, COLOR_WHITE, COLOR_RED);
+  init_pair(58, COLOR_WHITE, COLOR_GREEN);
+  init_pair(59, COLOR_WHITE, COLOR_YELLOW);
+  init_pair(60, COLOR_WHITE, COLOR_BLUE);
+  init_pair(61, COLOR_WHITE, COLOR_MAGENTA);
+  init_pair(62, COLOR_WHITE, COLOR_CYAN);
+  init_pair(63, COLOR_WHITE, COLOR_WHITE);
+}
+#include "levelInteractionHandler.h++"
 
 //test level agains sprite's
 char intersection(const std::string & boundsInteraction, const std::vector<int> spChoords)
@@ -1221,8 +1305,8 @@ char nearPass(const std::vector<int> playerSpChoords, const std::vector<int> spC
 #include <cstring>
 //#include <locale>
 #include <ncurses.h>// test code
-#include "loadAssets.h"
-#include "../collapse/collapse.h"
+#include "loadAssets.h++"
+#include "../collapse/collapse.h++"
 
 
 void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & background,
@@ -1290,20 +1374,11 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rule
 
 
   try
-    {
-      bool inHeader {true};
+    {     
       for(std::string::const_iterator peek {getAdvancedIter(buff.begin(), buff.end(), sizeof(HEADER_START) -1)},
 	    current {peek++}; *peek != NULL_BYTE; ++peek, ++current)
 	{
-	  // endwin();
-	  //	  std::cout<<"*current = "<<*current<<std::endl;
-	  //	  std::cout<<"*peek = "<<*peek<<std::endl;
-	  //	  std::cout<<"inHeader = "<<inHeader<<std::endl<<std::endl;
-	  //	  char ch {};
-	  //	  std::cin>>ch;
-	  //	  sleep(1000);
-	  
-	  switchOnCurrent(maxyx, buff, current, peek, buff.end(), inHeader, levelRules);
+	  switchOnCurrent(maxyx, buff, current, peek, buff.end(), levelRules);
 	}
     }
   catch (std::out_of_range & e)
@@ -1317,32 +1392,21 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rule
 
 
 void switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-		    std::string::const_iterator & peek, std::string::const_iterator max, bool & inHeader,
-		    rules & levelRules)
+		    std::string::const_iterator & peek, std::string::const_iterator max, rules & levelRules)
 {
   switch(*current)
     {
     case FIELD_START_DENOTATION:    // Handle start of new field or section.
-      handleCurrentIsFieldStartDenotation(maxyx, buff, current, peek, max, inHeader, levelRules);
-      break;
-    case HEADER_END_DENOTATION:
-      rubOutSpace(buff, current, peek, max); // Remove any space after HEADER_END_DENOTATION.
-      inHeader = false;
+      handleCurrentIsFieldStartDenotation(maxyx, buff, current, peek, max, levelRules);
       break;
     default:
-      constexpr int SHOW_COUNT {45};
       std::stringstream e {};
-      e<<"Error current character not expected at current position rules.lev. The following is the "<<SHOW_COUNT
-       <<" character's after and including the current character (note output may be less then 15 character's if"
-	" the EOF character was encountered):\n";
-      for(int iter {SHOW_COUNT} ; *current != NULL_BYTE && iter > 0; --iter, ++current)
-	{e<<*current;}
+      e<<"Error current character not expected at current position in the rules.lev file. The following is the "
+       <<SHOW_COUNT<<" character's after and including the current character (note output may be less then "
+       <<SHOW_COUNT<<" character's if the EOF character was encountered):\n";
+      printCurrent(current, SHOW_COUNT, e);
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
-
-  //endwin();
-  //sleep(10000);
-  //    exit("\n\nwe are free!\n", -1);
 }
 
 
@@ -1350,16 +1414,18 @@ void switchOnCurrent(const yx maxyx, std::string & buff, std::string::const_iter
 
 
 void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std::string::const_iterator & current,
-				    std::string::const_iterator & peek, std::string::const_iterator max,
-				    const bool inHeader, rules & levelRules)
+					 std::string::const_iterator & peek, std::string::const_iterator max,
+					 rules & levelRules)
 {			// We have a sprite
+  static bool inHeader {true};
   if(!inHeader)
     {
       switch(*peek)
 	{
 	case STRING_DENOTATION:
-	  std::cout<<"\" character encountered."<<std::endl;
-	  sleep(20000);
+	  endwin();
+	  std::cout<<"String denotation character encountered after start denotation (not in header.)"<<std::endl;
+	  sleep(10000);
 	  break;
 	default:
 	  if(*peek == BOARDER_CHAR			||	*peek == BOARDER_CHAR_UPPER
@@ -1370,49 +1436,76 @@ void handleCurrentIsFieldStartDenotation(const yx maxyx, std::string & buff, std
 	     || *peek == LIFE_POWER_UP_CHAR		||	*peek == LIFE_POWER_UP_CHAR_UPPER)
 	    {	      // Call function to handle coordinate character's character
 	      ++current, ++peek;
-	      handleBoarderCharacter(buff, current, peek, max, levelRules);
+	      handleCoordinateCharacter(buff, current, peek, max, levelRules);
+	      // Make sure there's no space between end of coordinate character field and next field (if any.)
+	      rubOutSpace(buff, current, peek, max);
+	    }
+	  else
+	    {
+	      std::stringstream e {};
+	      e<<"Error expected but did not encounter coordinate character. The following is the "<<SHOW_COUNT
+	       <<" character's after and including the current character (note output may be less then "<<SHOW_COUNT
+	       <<" character's if the EOF character was encountered):\n";
+	      printCurrent(current, SHOW_COUNT, e);
+	      exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE_CHAR_FIELD);
 	    }
 	  break;
 	}
     }
   else			// Read in the player sprite info.
-    initPlayerSprite(maxyx, buff, current, peek, max, levelRules);
-  
-  rubOutSpace(buff, current, peek, max);
+    {
+      initPlayerSprite(maxyx, buff, current, peek, max, levelRules);
+      // Make sure there's no space between end of player field and HEADER_END_DENOTATION character.
+      rubOutSpace(buff, current, peek, max); 
+      ++current, ++peek;	// Move peek past HEADER_END_DENOTATION character.
+      if(*current != HEADER_END_DENOTATION)
+	{
+	  std::stringstream e {};
+	  e<<"Error expected but did not see \""<<HEADER_END_DENOTATION<<"\" character to denote the end of the"
+	   "header";
+	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+	}
+      // Make sure there's no space between HEADER_END_DENOTATION and next field.
+      rubOutSpace(buff, current, peek, max);
+      inHeader = false;		// We are leaving the header.
+    }
 }
 
 
 // FUNCTIONS TO BE DISPATCHED BY SWITCHONCURRENT -END- ------------------------------- -----------------------------
 
 
-/* Read in the character *current (which should already have been checked for it's validity), then read in
+/* Read in the character *current (which should already have been checked for validity), then read in
    the coordinate pair, finally the function should check to see that this coordinate pair is unique in the object
    levelRules.charCoords and if it is use the coordinates as a key to store the character (which is to be interprited
    as a Coordinate character */
-void handleBoarderCharacter(std::string & buff, std::string::const_iterator & current,
+void handleCoordinateCharacter(std::string & buff, std::string::const_iterator & current,
 			    std::string::const_iterator & peek, std::string::const_iterator & max,
 			    rules & levelRules)
 {
   const char c {*current};	// Get coordinate char (should be pre checked for validity.)
-  // Make sure there is no space between coordinate char and FIELD_START_DENOTATION.
+  // Make sure there is no space between coordinate char and FIELD_START_DENOTATION for the coordinate field.
   rubOutSpace(buff, current, peek, max);
   if(*peek != FIELD_START_DENOTATION)
-    {				// error encountered boarder character but did not encounter ( character
+    {
+      std::stringstream e {};
+      e<<"Error encountered coordinate character but did not encounter "<<FIELD_START_DENOTATION<<" character.";
+      exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
     }
   ++current, ++peek;		// Set current to FIELD_START_DENOTATION character position.
   std::string key {getCoords(buff, current, peek, max)};
+  // Make sure there's no space between the end of the coordinate field and the end of the coordinate character field.
+  rubOutSpace(buff, current, peek, max);
   if(levelRules.coordChars.find(key) == levelRules.coordChars.end())// Key not found
-    {
-      endwin();
-      std::cout<<"Added to map :) \n"<<c<<"\n"<<key<<std::endl<<std::endl;
-      sleep(3432);
-      exit("", -1);
-      levelRules.coordChars[key] = c; // Add our beautiful key, boarder character pair to the coordChars map :).
-    }
+      levelRules.coordChars[key] = c; // Add our beautiful key, coordinate character pair to the coordChars map :).
   else
     {				// Error duplicate key's in rules.lev file.
+      std::stringstream e {};
+      e<<"Error duplicate character coordinate's ("<<key<<") encountered in rules.lev file.";
+      exit(e.str().c_str(), ERROR_DUPLICATE_COORDINATE);
     }
-  
+  // Advance peek past end of coordinate character field and thus past FIELD_END_DENOTATION character.
+  ++current, ++peek;
 }
 
 
@@ -1420,7 +1513,7 @@ void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_ite
 		      std::string::const_iterator & peek, std::string::const_iterator & max, rules & levelRules)
 {
   std::vector<std::string> sprites {handleStringDenotationAfterFieldDenotation(buff, current, peek, max)};
-  rubOutSpace(buff, current, peek, max);
+  rubOutSpace(buff, current, peek, max); // Make sure there's no space between string field and coordinate field.
   current++, peek++;
   
   if(*current == FIELD_START_DENOTATION)
@@ -1568,7 +1661,7 @@ std::string getString(std::string::const_iterator & current, std::string::const_
 	  std::stringstream e {};
 	  e<<"Error parsing string, we have reached the end of the file but have not encountred the appropriate"
 	    "character's. A rules.lev file must end with the character's \""<<STRING_DENOTATION<<FIELD_END_DENOTATION
-	   <<"\", if the last peice of information in the last field in the file is a string.";
+	   <<"\", if the last piece of information in the last field in the file is a string.";
 	  exit(e.str().c_str(), ERROR_MALFORMED_STRING);
 	}
       switch(*current)
@@ -1627,399 +1720,135 @@ bool rubOutSpace(std::string & buff, std::string::const_iterator & current, std:
   
   return true;
 }
-#include <ncurses.h>
-#include <sstream>
-//#include <iostream>
-#include <system_error>
-#include <stdexcept>
-#include <string>
-#include "common.h"
-#include "io/inputHandlerNonBlock.h"
-#include "initial/load/loadAssets.h"
-//#include "initial/collapse/collapse.h"
-#include "initial/checkBoundsOfBounds/checkBoundsOfBounds.h"
-#include "physics/physics.h"
-#include "draw/draw.h"
-#include "draw/colorS.h"
-#include "draw/drawExit.h"
-#include "sprite/sprite.h"
-#include "sprite/player/player.h"
-#include "sprite/player/direction.h"
 
 
-// Game menu switch options (to be returned by gameLoop.)
-#define M_QUIT_GAME      1
-#define M_LEVEL_COMPLEAT 2
-constexpr int yHeight {33}, xWidth{125};	// The window must be these dimensions
-
-
-void initialiseCurses(yx & maxyx);
-void initColorPairs();
-void menu(const yx maxyx); // Game menu
-// Where the magic (thats glued together with cheap craft glue) happens (returns a game menu switch option.) :)
-int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelRules);
-//void freeResources(std::vector<sprite *> & spArray);
-
-
-int main()
+void printCurrent(std::string::const_iterator & current, const int SHOW_COUNT, std::stringstream & e)
 {
-  yx maxyx;		// Holds the window size.
-  initialiseCurses(maxyx);	// Start and setup ncurses
-  menu(maxyx);
-  
-  endwin();//end curses mode!
-  return 0;
-}
-
-void initialiseCurses(yx & maxyx)
-{
-  initscr();				      // Start curses mode
-  getmaxyx(stdscr, maxyx.y, maxyx.x); // Screen size in characters
-  if(maxyx.y != yHeight || maxyx.x != xWidth) // Check the window size.
+  for(int iter {SHOW_COUNT} ; *current != NULL_BYTE && iter > 0; --iter, ++current)
     {
-      std::stringstream e {};
-      e<<"error windows must be "<<yHeight<<" characters high and "<<xWidth<<" characters wide. "
-	"The current height is "<<maxyx.y<<" characters and the current width is "<<maxyx.x<<" characters.\n";
-      exit(e.str(), ERROR_WIN_PARAM);
-    }   
-  if(has_colors() == FALSE)  // If the terminal does not support colors
-    {
-      exit("Error your terminal does not support colour :'(\n", ERROR_WIN_PARAM);
+      e<<*current;
     }
-  raw();		     // To disable line buffering
-  curs_set(0);		     // Make the cursor invisible
-  noecho();		     // Turn echoing off on the terminal
-  start_color();	     // Start color and initialise color pairs!
-  initColorPairs();	     // Initialise the color pairs
 }
+#include "physics.h++"
+#include "../sprite/sprite.h++"
+#include "levelInteractionHandler.h++"
 
-void initColorPairs()
+
+int rules::physics(const int input)
 {
-  attron(COLOR_PAIR(56));	//default color. Must also be changed in draw.cpp!!!!!!!!!!!!!!!!!!!!!!!!
-  init_pair(1, COLOR_BLACK, COLOR_BLACK);
-  init_pair(2, COLOR_BLACK, COLOR_RED);
-  init_pair(3, COLOR_BLACK, COLOR_GREEN);
-  init_pair(4, COLOR_BLACK, COLOR_YELLOW);
-  init_pair(5, COLOR_BLACK, COLOR_BLUE);
-  init_pair(6, COLOR_BLACK, COLOR_MAGENTA);
-  init_pair(7, COLOR_BLACK, COLOR_CYAN);
-  init_pair(8, COLOR_BLACK, COLOR_WHITE);
-  init_pair(9, COLOR_RED, COLOR_BLACK);
-  init_pair(10, COLOR_RED, COLOR_RED);
-  init_pair(11, COLOR_RED, COLOR_GREEN);
-  init_pair(12, COLOR_RED, COLOR_YELLOW);
-  init_pair(13, COLOR_RED, COLOR_BLUE);
-  init_pair(14, COLOR_RED, COLOR_MAGENTA);
-  init_pair(15, COLOR_RED, COLOR_CYAN);
-  init_pair(16, COLOR_RED, COLOR_WHITE);
-  init_pair(17, COLOR_GREEN, COLOR_BLACK);
-  init_pair(18, COLOR_GREEN, COLOR_RED);
-  init_pair(19, COLOR_GREEN, COLOR_GREEN);
-  init_pair(20, COLOR_GREEN, COLOR_YELLOW);
-  init_pair(21, COLOR_GREEN, COLOR_BLUE);
-  init_pair(22, COLOR_GREEN, COLOR_MAGENTA);
-  init_pair(23, COLOR_GREEN, COLOR_CYAN);
-  init_pair(24, COLOR_GREEN, COLOR_WHITE);
-  init_pair(25, COLOR_YELLOW, COLOR_BLACK);
-  init_pair(26, COLOR_YELLOW, COLOR_RED);
-  init_pair(27, COLOR_YELLOW, COLOR_GREEN);
-  init_pair(28, COLOR_YELLOW, COLOR_YELLOW);
-  init_pair(29, COLOR_YELLOW, COLOR_BLUE);
-  init_pair(30, COLOR_YELLOW, COLOR_MAGENTA);
-  init_pair(31, COLOR_YELLOW, COLOR_CYAN);
-  init_pair(32, COLOR_YELLOW, COLOR_WHITE);
-  init_pair(33, COLOR_BLUE, COLOR_BLACK);
-  init_pair(34, COLOR_BLUE, COLOR_RED);
-  init_pair(35, COLOR_BLUE, COLOR_GREEN);
-  init_pair(36, COLOR_BLUE, COLOR_YELLOW);
-  init_pair(37, COLOR_BLUE, COLOR_BLUE);
-  init_pair(38, COLOR_BLUE, COLOR_MAGENTA);
-  init_pair(39, COLOR_BLUE, COLOR_CYAN);
-  init_pair(40, COLOR_BLUE, COLOR_WHITE);
-  init_pair(41, COLOR_MAGENTA, COLOR_BLACK);
-  init_pair(42, COLOR_MAGENTA, COLOR_RED);
-  init_pair(43, COLOR_MAGENTA, COLOR_GREEN);
-  init_pair(44, COLOR_MAGENTA, COLOR_YELLOW);
-  init_pair(45, COLOR_MAGENTA, COLOR_BLUE);
-  init_pair(46, COLOR_MAGENTA, COLOR_MAGENTA);
-  init_pair(47, COLOR_MAGENTA, COLOR_CYAN);
-  init_pair(48, COLOR_MAGENTA, COLOR_WHITE);
-  init_pair(49, COLOR_CYAN, COLOR_BLACK);
-  init_pair(50, COLOR_CYAN, COLOR_RED);
-  init_pair(51, COLOR_CYAN, COLOR_GREEN);
-  init_pair(52, COLOR_CYAN, COLOR_YELLOW);
-  init_pair(53, COLOR_CYAN, COLOR_BLUE);
-  init_pair(54, COLOR_CYAN, COLOR_MAGENTA);
-  init_pair(55, COLOR_CYAN, COLOR_CYAN);
-  init_pair(56, COLOR_CYAN, COLOR_WHITE);
-  init_pair(57, COLOR_WHITE, COLOR_RED);
-  init_pair(58, COLOR_WHITE, COLOR_GREEN);
-  init_pair(59, COLOR_WHITE, COLOR_YELLOW);
-  init_pair(60, COLOR_WHITE, COLOR_BLUE);
-  init_pair(61, COLOR_WHITE, COLOR_MAGENTA);
-  init_pair(62, COLOR_WHITE, COLOR_CYAN);
-  init_pair(63, COLOR_WHITE, COLOR_WHITE);
+  if(input == sprite::UP || input == sprite::UP_UPPER ||
+	       input == sprite::LEFT || input == sprite::LEFT_UPPER ||
+	       input == sprite::DOWN || input == sprite::DOWN_UPPER ||
+	       input == sprite::RIGHT || input == sprite::RIGHT_UPPER)
+              {
+		movePlayer(sprite::directions(input));
+		gamePlayer->updatePosRel(sprite::directions(input));
+	      }
+  return playerPosition;
 }
 
 
-void menu(const yx maxyx)
+void rules::movePlayer(const sprite::directions input)
 {
-  std::vector<int> background {};	// Hold's the background
-  // Hold's the "rules" for the current level. (see physics.h and rules.lev.txt.)
-  rules levelRules {};
-  /* Note this should be done in the menu or loop or some sub function
-     called from within it since multiple level's can be played. It is
-     placed here right now only for testing and development purposes. */
-  loadAssets(maxyx, "assets/level1/level1.backgound.lev", background,
-	     "assets/level1/level1.rules.lev", levelRules);   	// Load game files.
-  
-  bool run = true;
-  while(run)
+  if(inBounds())
     {
-      switch(gameLoop(maxyx, background, levelRules))
-	{
-	case M_QUIT_GAME:
-	run = false;
-	break;
-	case M_LEVEL_COMPLEAT:
-	run = false;		// TEMPORARY!!!!!!!!!!!!!!!
-	break;
-	}
     }
-  //  freeResources(levelRules);
-  drawExit(maxyx);  
-}
-
-
-int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelRules)
-{  
-  for(int iter{}; iter < 126; ++iter)
+  else
     {
-      char input{};	// Hold's character returned from the HandlerNonBlock() function.
-      auto startTimeInput = std::chrono::high_resolution_clock::now();// Control's background update time.
-      auto currentTimeInputBackground = std::chrono::high_resolution_clock::now();// Control's background update time.
-      while(std::chrono::duration_cast<std::chrono::milliseconds>(currentTimeInputBackground - startTimeInput).count()
-	    < 225)
-	{
-	  		  std::stringstream errorMsg;
-	  physics(levelRules);
-	  if((input = inputHandlerNonBlock()))
-	    {
-	      switch((int)input)
-		{	/* I've added these because I can. Although less code is probably optimal and feature bloat
-			   should be faught. */
-		case 'w':
-		case 'W':
-		  levelRules.gamePlayer->updatePosRel('w');
-		  break;
-		case 'a':
-		case 'A':
-		  levelRules.gamePlayer->updatePosRel('a');
-		  break;
-		case 's':
-		case 'S':
-		  levelRules.gamePlayer->updatePosRel('s');
-		  break;
-		case 'd':
-		case 'D':
-		  levelRules.gamePlayer->updatePosRel('d');
-		  break;
-		case 27:	// Esc.
-		  return M_QUIT_GAME;
-		}
-	      draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, iter);
-	      refresh();      
-
-	      sleep(32);
-	      currentTimeInputBackground =std::chrono::high_resolution_clock::now();
-	    }
-	}
     }
-  return M_LEVEL_COMPLEAT;
-}
-
-/*void freeResources(rules & levelRules)
-{
-  delete(levelRules.gamePlayer);
-  }*/
-#include "physics.h"
-#include "../sprite/sprite.h"
-#include "levelInteractionHandler.h"
-
-void physics(rules & levelRules)
-{
-
 }
 //#include <stdexcept>
 #include <sstream>
 #include <curses.h>
 #include <thread>
 #include <chrono>
-#include "player.h"
-#include "../../draw/colorS.h"
-#include "../../draw/draw.h"
+#include "player.h++"
+#include "../../draw/colorS.h++"
+#include "../../draw/draw.h++"
 
 extern setColorMode colorMode;//must be included for the draw function
 
-
-void player::getHardBoundaryCoordinates(std::vector<int> & spCoords)
-{
-  
-}
-
-void player::getSoftBoundaryCoordinates(std::vector<int> & spCoords)
-{
-}
-
 /*Direction's that ch can take on
-Q---W---E
-|...^...|
-A<--|-->D
-|...v...|                                            
-z---S---X                                                     
+  Q---W---E
+  |...^...|
+  A<--|-->D
+  |...v...|                                            
+  z---S---X                                                     
 */
-void player::updatePosRel(char ch)
+void player::updatePosRel(sprite::directions dir)
 {//update's position of sprite in a relative fashion with reference to the sprite and update's direction.
-   try
-     {
-       switch(ch)
-	 {
-	 case 'q':
-	 case 'Q'://left up
-	   if(!inScreenBounds(--position.y, --position.x))
-	     {			// Reposition if we've gone out of bounds.
-	       ++position.y;
-	       ++position.x;
-	     }
-	   else
-	     if(direction != DIR_LEFT)//if we are changind the direction
-	       {
-		 resetCurrentSliceNum(DIR_RIGHT);//we don't wan't to cause a seg fault
-		 direction = DIR_LEFT;//change sprite
-	       }	   
-	   break;
-	 case 'w':
-	 case 'W'://up
-	   //position.y--;
-	   if(!inScreenBounds(--position.y, position.x))
-	     {
-	       ++position.y;
-	     }
-	   else
-	     if(direction != DIR_UP)
-	       {
-		 resetCurrentSliceNum(DIR_LEFT);
-		 direction = DIR_UP;
-	       }
-	   break;
-	 case 'e':
-	 case 'E'://right up
-	   ///position.y--;
-	   //position.x++;
-	   if(!inScreenBounds(--position.y, ++position.x))
-	     {
-	       ++position.y;
-	       --position.x;
-	     }
-	   else
-	     if(direction != DIR_RIGHT)
-	       {
-		 resetCurrentSliceNum(DIR_LEFT);
-		 direction = DIR_RIGHT;
-	       }
-	   break;
-	 case 'a':
-	 case 'A'://left
-	   //position.x--;
-	   if(!inScreenBounds(position.y, --position.x))
-	     {
-	       ++position.x;
-	     }
-	   else
-	     if(direction != DIR_LEFT)
-	       {	       
-		 resetCurrentSliceNum(DIR_RIGHT);
-		 direction = DIR_LEFT;
-	       }
-	   break;
-	 case 'd':
-	 case 'D'://right
-	   //position.x++;
-	   if(!inScreenBounds(position.y, ++position.x))
-	     {
-	       --position.x;
-	     }
-	   else
-	     if(direction != DIR_RIGHT)
-	       {
-		 resetCurrentSliceNum(DIR_LEFT);
-		 direction = DIR_RIGHT;
-	       }
-	   break;
-	 case 'z':
-	 case 'Z'://left down
-	   //position.y++;
-	   //position.x--;
-	   if(!inScreenBounds(++position.y, --position.x))
-	     {
-	       --position.y;
-	       ++position.y;
-	     }
-	   else
-	     if(direction != DIR_LEFT)
-	       {
-		 resetCurrentSliceNum(DIR_RIGHT);
-		 direction = DIR_LEFT;
-	       }
-	   break;
-	 case 's':
-	 case 'S'://down
-	   //position.y++;
-	   if(!inScreenBounds(++position.y, position.x))
-	     {
-	       --position.y;
-	     }
-	   else
-	     if(direction != DIR_DOWN)
-	       {
-		 resetCurrentSliceNum(DIR_DOWN);
-		 direction = DIR_DOWN;
-	       }
-	   break;
-	 case 'x':
-	 case 'X'://right down
-	   //position.y++;
-	   //position.x++;
-	   if(!inScreenBounds(++position.y, ++position.x))
-	     {
-	       --position.y;
-	       --position.x;
-	     }
-	   else
-	     if(direction != DIR_RIGHT)
-	       {
-		 resetCurrentSliceNum(DIR_LEFT);
-		 direction = DIR_RIGHT;
-	       }
-	   break;
-
-	 default:
-	   std::stringstream errorMsg;
-	   errorMsg<<"in sprite/sprite.cpp, "
-		   <<"void sprite::updatePosRel(char ch), ch out of range."
-		   <<"range = [q, w, e, a, d, z, s, x] & upper case forms."
-		   <<"ch = "<<ch;
-	   throw std::logic_error(errorMsg.str());
-	 }
-     }
-   catch(std::logic_error errorMsg)
-     {
-       mvprintw(0, 0, "%s", errorMsg.what());
-       refresh();
-       std::this_thread::sleep_for(std::chrono::milliseconds(19999));
-       endwin();
-       exit(-1);
-     }   
+  yx p {getNewPos(dir)};
+  if(inScreenBounds(p.y, p.x))
+    position = p;		// The position is mint :).
+  else
+    {			// Oh no :'(.
+      switch(dir)
+	{
+	case LEFT_UP:
+	case LEFT_UP_UPPER://left up
+	  if(direction != DIR_LEFT)//if we are changind the direction
+	    {
+	      resetCurrentSliceNum(DIR_RIGHT);//we don't wan't to cause a seg fault
+	      direction = DIR_LEFT;//change sprite
+	    }	   
+	  break;
+	case UP:
+	case UP_UPPER://up
+	  if(direction != DIR_UP)
+	    {
+	      resetCurrentSliceNum(DIR_LEFT);
+	      direction = DIR_UP;
+	    }
+	  break;
+	case RIGHT_UP:
+	case RIGHT_UP_UPPER://right up
+	  if(direction != DIR_RIGHT)
+	    {
+	      resetCurrentSliceNum(DIR_LEFT);
+	      direction = DIR_RIGHT;
+	    }
+	  break;
+	case LEFT:
+	case LEFT_UPPER://left
+	  if(direction != DIR_LEFT)
+	    {	       
+	      resetCurrentSliceNum(DIR_RIGHT);
+	      direction = DIR_LEFT;
+	    }
+	  break;
+	case RIGHT:
+	case RIGHT_UPPER://right
+	  if(direction != DIR_RIGHT)
+	    {
+	      resetCurrentSliceNum(DIR_LEFT);
+	      direction = DIR_RIGHT;
+	    }
+	  break;
+	case LEFT_DOWN:
+	case LEFT_DOWN_UPPER://left down
+	  if(direction != DIR_LEFT)
+	    {
+	      resetCurrentSliceNum(DIR_RIGHT);
+	      direction = DIR_LEFT;
+	    }
+	  break;
+	case DOWN:
+	case DOWN_UPPER://down
+	  if(direction != DIR_DOWN)
+	    {
+	      resetCurrentSliceNum(DIR_DOWN);
+	      direction = DIR_DOWN;
+	    }
+	  break;
+	case RIGHT_DOWN:
+	case RIGHT_DOWN_UPPER://right down
+	  if(direction != DIR_RIGHT)
+	    {
+	      resetCurrentSliceNum(DIR_LEFT);
+	      direction = DIR_RIGHT;
+	    }
+	}
+    }
 }
 
 void player::draw(bool updateSlice)
@@ -2045,8 +1874,8 @@ void player::draw(bool updateSlice)
 }
 #include <stdexcept>
 #include <ncurses.h>
-#include "slice.h"
-#include "../common.h"
+#include "slice.h++"
+#include "../common.h++"
 
 
 std::vector<int> getSlice(const std::vector<int> buff, const unsigned long offset, const int y, const int x)
@@ -2070,11 +1899,11 @@ std::vector<int> getSlice(const std::vector<int> buff, const unsigned long offse
 #include <sstream>
 #include <curses.h>
 #include <iostream>
-#include "sprite.h"
-#include "../initial/load/loadAssets.h"
-#include "../initial/collapse/collapse.h"// For second phase
-#include "../draw/draw.h"
-#include "../common.h"
+#include "sprite.h++"
+#include "../initial/load/loadAssets.h++"
+#include "../initial/collapse/collapse.h++"// For second phase
+#include "../draw/draw.h++"
+#include "../common.h++"
 
 
 sprite::sprite(const yx max, const yx pos, const char spriteFileName [])
@@ -2084,6 +1913,7 @@ sprite::sprite(const yx max, const yx pos, const char spriteFileName [])
 {
   getSprite(spriteFileName, sD_base);
   getMaxYXOffset();
+  //  get
 }
 
 
@@ -2107,24 +1937,100 @@ void sprite::getSprite(const char spriteFileName [], spriteData & sD)
   /* Set currentSliceNumber to 0. This veriable should only take on values between 0 and
      (spriteSlices.size() -1) */
   currentSliceNumber = 0;
+  setUpBoundryCoordsVector(sD);
 }
 
-  /* returns the maximum yOffset and xOffset as calculated from the tallest spriteSlice and longest sliceLine in
-     sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left of position. These
-     values are used for possible collision detection and bounds checking. */
+
 void sprite::getMaxYXOffset()
 { /* I tried my best to make maxBottomRightOffset const, however I was thwarted by a seg fault that would occur when
-     calling resize() on a vector in getSprite() when getSprite() was called in the constructors membor initializer
+     calling resize() on a vector in getSprite() when getSprite() was called in the constructors member initializer
      list >:'( */
   int max {};
-  for(std::vector<sliceLine> slice: sD_base.spriteSlices) // Get y offset.
-    max = slice.size() > max ? slice.size() : max;
-  maxBottomRightOffset.y = max -1; // The offset is from the upper left of the sprite. So we account for that with -1.
+  for(sliceData s: sD_base.spriteSlices) // Get y offset :).
+    max = s.slice.size() > max ? s.slice.size() : s.slice.size();
+  maxBottomRightOffset.y = max -1; // The upper left of the sprite is (0,0) so we need size -1 :).
   max = 0;
-  for(std::vector<sliceLine> slice: sD_base.spriteSlices) // Get x offset.
-    for(sliceLine sl: slice)
+  for(sliceData s: sD_base.spriteSlices)
+    for(sliceLine sl: s.slice)
       max = sl.sliceLine.size() > max ? sl.sliceLine.size() : max;
   maxBottomRightOffset.x = max -1;
+}
+
+
+void sprite::setUpBoundryCoordsVector(spriteData & sD)
+{				// std::vector<std::vector<std::vector<int>>>
+  for(auto s: sD.spriteSlices)
+    {
+      switch(s.slice.size())
+	{
+	case 0:
+	  continue;		// Nothing to do
+	case 1:			// Only one line in slice.
+	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_ONE, s.sliceBoundryCoords);      
+	  break;
+	case 2:			// Only two lines in slice.
+	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_ONE, s.sliceBoundryCoords);
+	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_TWO, s.sliceBoundryCoords);
+	  break;
+	default:     		// More then two lines (general case.)
+	  {
+	    int iter {SLICE_LINE_ONE};
+	    constexpr int endOffset {1};
+	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter, s.sliceBoundryCoords);
+	    iter++;		// Advance to next slice line.
+	    for( ; iter < s.slice.size() -endOffset; ++iter)
+	      getBoundryCoordsForEndSofSingleSliceLine(s.slice, iter, s.sliceBoundryCoords);
+	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter, s.sliceBoundryCoords);
+	  }
+	}
+    }
+}
+
+
+void sprite::getBoundryCoordsForWholeSingleSliceLine(std::vector<sliceLine> & s, const int y,
+						std::vector<yx> & sliceBoundryCoords)
+{
+  for(int iter {}; iter < s[y].sliceLine.size(); ++iter)
+    {
+      if(s[y].sliceLine[iter] != TRANS_SP)
+	{
+	  yx c {y, iter + s[y].offset};
+	  sliceBoundryCoords.push_back(c);
+	}
+    }
+}
+
+
+/* Operation is the same as getBoundryCoordsForWholeSingleSliceLine with the exception that only the coordinates
+   plus s[y].offset of end (non TRANS_SP) chars are added to sliceBoundryCoords. If all character's are TRANS_SP
+   then no coords are added and if there is only one non TRANS_SP character then only it's coordinate plus offset is
+   added. */
+void sprite::getBoundryCoordsForEndSofSingleSliceLine(std::vector<sliceLine> & s, const int y,
+					      std::vector<yx> & sliceBoundryCoords)
+{
+  constexpr int subZero {-1};
+  int first {subZero}, last {subZero}; // Keep track of the first non TRANS_SP char and of the last non TRANS_SP char.
+  for(int iter {}; iter < s[y].sliceLine.size(); ++iter)
+    {
+      if(s[y].sliceLine[iter] != TRANS_SP)
+	{			// We have seen a non TRANS_SP char.
+	  if(first < 0)
+	    {			// It's the first one.
+	      first = iter;
+	      yx c {y, first + s[y].offset};
+	      sliceBoundryCoords.push_back(c); // Add first choord.
+	    }
+	  else
+	    {
+	      	  last = iter;
+	    }
+	}
+    }
+  if(first != last && last != subZero)
+    {				// Add last choord.
+      yx c {y, last + s[y].offset};
+      sliceBoundryCoords.push_back(c);
+    }
 }
 
 
@@ -2275,11 +2181,12 @@ void sprite::parserPhaseTwo(const std::vector<std::vector<sprite::partiallyProce
     {				// Iterate throught slice lines.
       for(int sliceLineIter{}; sliceLineIter < pPSL[sliceIter].size(); ++sliceLineIter)
 	{ // Make slice at sliceIter the right size (number of slice lines).
-	  sD.spriteSlices[sliceIter].resize(pPSL[sliceIter].size());
+	  sD.spriteSlices[sliceIter].slice.resize(pPSL[sliceIter].size());
 	  // Collapse and copy slice line.
-	  collapse(pPSL[sliceIter][sliceLineIter].sliceLine, sD.spriteSlices[sliceIter][sliceLineIter].sliceLine);
+	  collapse(pPSL[sliceIter][sliceLineIter].sliceLine,
+		   sD.spriteSlices[sliceIter].slice[sliceLineIter].sliceLine);
 	  // Copy offset value over.
-	  sD.spriteSlices[sliceIter][sliceLineIter].offset = pPSL[sliceIter][sliceLineIter].offset;
+	  sD.spriteSlices[sliceIter].slice[sliceLineIter].offset = pPSL[sliceIter][sliceLineIter].offset;
 	}
     }
   refresh();
@@ -2308,17 +2215,78 @@ void sprite::checkSpriteRanges(const int spriteNum)
     }  
 }
 
+
 const yx sprite::getMaxBottomRightOffset()
 {
   return maxBottomRightOffset;
 }
 
 
+yx sprite::getNewPos(const sprite::directions dir)
+{
+  yx d {};
+  switch(dir)
+    {
+    case LEFT_UP:
+    case LEFT_UP_UPPER:
+      d.y = position.y -1;
+      d.x = position.x -1;
+      break;
+    case UP:
+    case UP_UPPER:
+      d.y = position.y -1;
+      d.x = position.x;
+      break;
+    case RIGHT_UP:
+    case RIGHT_UP_UPPER:
+      d.y = position.y -1;
+      d.x = position.x +1;
+      break;
+    case LEFT:
+    case LEFT_UPPER:
+      d.y = position.y;
+      d.x = position.x -1;
+      break;
+    case RIGHT:
+    case RIGHT_UPPER:
+      d.y = position.y;
+      d.x = position.x +1;
+      break;
+    case LEFT_DOWN:
+    case LEFT_DOWN_UPPER:
+      d.y = position.y +1;
+      d.x = position.x -1;
+      break;
+    case DOWN:
+    case DOWN_UPPER:
+      d.y = position.y +1;
+      d.x = position.x;
+      break;
+    case RIGHT_DOWN:
+    case RIGHT_DOWN_UPPER:
+      d.y = position.y +1;
+      d.x = position.x +1;
+      break;
+    default:
+      std::stringstream e {};
+      e<<"Error direction ("<<char(dir)<<") not valid.";
+      exit(e.str().c_str(), ERROR_INVALID_DIRECTION);
+    }
+
+  return d;
+}
+
+
+/* Returns the of position of the sprite after moving one character (including diagonal movement) in the
+   direction dir */
+yx sprite::peekAtPos(const directions dir)
+{
+  //  return
+}
+
+
 void sprite::updatePosAbs(int y, int x)
 { //add in bound's checking latter!
-  /* Position can't be outside of the background file and player class should have a version of this function that
-     makes sure that it's position is always within a certin boundary that fall's within the visiable section of the
-     background. */
   position.y = y, position.x = x; // Update position.
 }
 
@@ -2326,81 +2294,32 @@ void sprite::updatePosAbs(int y, int x)
 /* Direction's that ch can take on.
 Q---W---E
 |...^...|
-A.<--->.D
+A.<-|->.D
 |...v...|
 z---S---X
  */
-void sprite::updatePosRel(const char ch)
+void sprite::updatePosRel(const sprite::directions dir)
 {
-  try
-    {
-      switch(ch)
-	{
-	case 'q':
-	case 'Q':		// Left up.
-	  --position.y;
-	  --position.x;
-	  break;
-	case 'w':
-	case 'W':		// Up.
-	  --position.y;
-	  break;
-	case 'e':
-	case 'E':		// Right up.
-	  --position.y;
-	  ++position.x;
-	  break;
-	case 'a':
-	case 'A':		// Left.
-	  --position.x;
-	  break;
-	case 'd':
-	case 'D':		// Right.
-	  ++position.x;
-	  break;
-	case 'z':
-	case 'Z':		// Left down.
-	  ++position.y;
-	  --position.x;
-	  break;
-	case 's':
-	case 'S':		// Down.
-	  ++position.y;
-	  break;
-	case 'x':
-	case 'X':		// Right down.
-	  ++position.y;
-	  ++position.x;
-	  break;      
-      
-	default:	
-	  std::stringstream e;
-	  e<<"Ch out of range."
-		  <<"range = [q, w, e, a, d, z, s, x] & upper case forms."
-		  <<"ch = "<<ch;
-	  throw std::logic_error(e.str());
-	}
-    }
-  catch(std::logic_error e)
-    {
-      exit(e.what(), ERROR_POS_CH_RANGE);
-    }
+  position = getNewPos(dir);
 }
 
 
 void sprite::draw(int spriteNum, bool updateSlice)
 {
   //  checkSpriteRanges(spriteNum);
-  for(int sliceLine{}; sliceLine < spriteS[spriteNum].spriteSlices[currentSliceNumber].size(); ++sliceLine)
+  /*  printw("currentSliceNumber = ");
+  refresh();
+  sleep(1000);*/
+  for(int sliceLine{}; sliceLine < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice.size(); ++sliceLine)
     {      
       for(int sliceLineIter{};
-	  sliceLineIter < spriteS[spriteNum].spriteSlices[currentSliceNumber][sliceLine].sliceLine.size();
+	  sliceLineIter < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine.size();
 	  ++sliceLineIter)
 	{ // Move curser to the right position.
 	  setCursor(position.y + sliceLine, position.x +
-		    spriteS[spriteNum].spriteSlices[currentSliceNumber][sliceLine].offset + sliceLineIter, maxyx);
+		    spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].offset + sliceLineIter, maxyx);
 	  // Get the character.
-	  int ch {spriteS[spriteNum].spriteSlices[currentSliceNumber][sliceLine].sliceLine[sliceLineIter]};
+	  int ch {spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine[sliceLineIter]};
 	  drawCh(ch);
 	}
   

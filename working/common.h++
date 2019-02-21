@@ -44,7 +44,7 @@ struct yx
 
 void sleep(const unsigned long long t);
 /* Returns false if a is not range [min, max). */
-bool checkRange(const int a, const int coord);
+bool checkRange(const int a, const int min, const int max);
 /* return's true if a - offset is within the range [SINGLE_DIGIT_MIN, SINGLE_DIGIT_MAX].
    return's false otherwise. */
 bool inSingleDigitRange(const int a, const int offset);

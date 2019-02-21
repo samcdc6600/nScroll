@@ -3,11 +3,13 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "../sprite/sprite.h"
-#include "../sprite/player/player.h"
+#include "../sprite/sprite.h++"
+#include "../sprite/player/player.h++"
 
 struct rules
 {
+  // The player cannot pass within this many character's of the windo boarder's
+  const yx playerNoGoInnerBoarder {5, 8};
   struct spriteInfo		/* For sprites (holds sprite data (slices) and the rule for the sprite. */
   {
     /* Sprite data to go here (when I do it.) */
@@ -23,8 +25,15 @@ struct rules
   {
     delete(gamePlayer);
   }
-};
 
-void physics(rules & levelRules);
+private:
+  int playerPosition {};
+
+  // Moves the player 
+  void movePlayer(const sprite::directions input);
+
+public:
+  int physics(const int input);  
+};
 
 #endif

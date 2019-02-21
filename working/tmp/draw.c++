@@ -4,10 +4,10 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
-#include "../common.h"
-#include "slice.h"
-#include "draw.h"
-#include "colorS.h"
+#include "../common.h++"
+#include "slice.h++"
+#include "draw.h++"
+#include "colorS.h++"
 
 
 // Class handels the setting of color when printing characters (used in draw.cpp) argument is the default color pair.

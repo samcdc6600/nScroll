@@ -1,6 +1,6 @@
 #include <stdexcept>
-#include "collapse.h"
-#include "../../draw/colorS.h"
+#include "collapse.h++"
+#include "../../draw/colorS.h++"
 #include <ncurses.h>
 //#include <sstream>
 
@@ -69,7 +69,7 @@ void collapse(const std::string & buffWithSpaces, std::vector<int> & ret)
 	  if(buff[iter] == '\\' && buff[1 + iter] == 't' && buff[2 + iter] == 'r' && buff[3 + iter] == 'a' && buff[4 + iter] == 'n'
 	     && buff[5 + iter] == 's' && buff[6 + iter] == 'S' && buff[7 + iter] == 'P' && buff[8 + iter] == '/')
 	    {
-	      preRet.push_back(10176);//Value of transparent space is 1 higher then 159 * 64 whitch is above the space of all ACS and ASCII characters whether colored or not.
+	      preRet.push_back(TRANS_SP);
 	      iter += 8;
 	    }
 	  else

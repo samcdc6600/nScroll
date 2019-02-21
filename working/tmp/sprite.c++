@@ -2,11 +2,11 @@
 #include <sstream>
 #include <curses.h>
 #include <iostream>
-#include "sprite.h"
-#include "../initial/load/loadAssets.h"
-#include "../initial/collapse/collapse.h"// For second phase
-#include "../draw/draw.h"
-#include "../common.h"
+#include "sprite.h++"
+#include "../initial/load/loadAssets.h++"
+#include "../initial/collapse/collapse.h++"// For second phase
+#include "../draw/draw.h++"
+#include "../common.h++"
 
 
 sprite::sprite(const yx max, const yx pos, const char spriteFileName [])
@@ -16,6 +16,7 @@ sprite::sprite(const yx max, const yx pos, const char spriteFileName [])
 {
   getSprite(spriteFileName, sD_base);
   getMaxYXOffset();
+  //  get
 }
 
 
@@ -39,24 +40,100 @@ void sprite::getSprite(const char spriteFileName [], spriteData & sD)
   /* Set currentSliceNumber to 0. This veriable should only take on values between 0 and
      (spriteSlices.size() -1) */
   currentSliceNumber = 0;
+  setUpBoundryCoordsVector(sD);
 }
 
-  /* returns the maximum yOffset and xOffset as calculated from the tallest spriteSlice and longest sliceLine in
-     sD_basespriteSlices. The offsets are interprited as a point at (0,0) or to the lower left of position. These
-     values are used for possible collision detection and bounds checking. */
+
 void sprite::getMaxYXOffset()
 { /* I tried my best to make maxBottomRightOffset const, however I was thwarted by a seg fault that would occur when
-     calling resize() on a vector in getSprite() when getSprite() was called in the constructors membor initializer
+     calling resize() on a vector in getSprite() when getSprite() was called in the constructors member initializer
      list >:'( */
   int max {};
-  for(std::vector<sliceLine> slice: sD_base.spriteSlices) // Get y offset.
-    max = slice.size() > max ? slice.size() : max;
-  maxBottomRightOffset.y = max -1; // The offset is from the upper left of the sprite. So we account for that with -1.
+  for(sliceData s: sD_base.spriteSlices) // Get y offset :).
+    max = s.slice.size() > max ? s.slice.size() : s.slice.size();
+  maxBottomRightOffset.y = max -1; // The upper left of the sprite is (0,0) so we need size -1 :).
   max = 0;
-  for(std::vector<sliceLine> slice: sD_base.spriteSlices) // Get x offset.
-    for(sliceLine sl: slice)
+  for(sliceData s: sD_base.spriteSlices)
+    for(sliceLine sl: s.slice)
       max = sl.sliceLine.size() > max ? sl.sliceLine.size() : max;
   maxBottomRightOffset.x = max -1;
+}
+
+
+void sprite::setUpBoundryCoordsVector(spriteData & sD)
+{				// std::vector<std::vector<std::vector<int>>>
+  for(auto s: sD.spriteSlices)
+    {
+      switch(s.slice.size())
+	{
+	case 0:
+	  continue;		// Nothing to do
+	case 1:			// Only one line in slice.
+	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_ONE, s.sliceBoundryCoords);      
+	  break;
+	case 2:			// Only two lines in slice.
+	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_ONE, s.sliceBoundryCoords);
+	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_TWO, s.sliceBoundryCoords);
+	  break;
+	default:     		// More then two lines (general case.)
+	  {
+	    int iter {SLICE_LINE_ONE};
+	    constexpr int endOffset {1};
+	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter, s.sliceBoundryCoords);
+	    iter++;		// Advance to next slice line.
+	    for( ; iter < s.slice.size() -endOffset; ++iter)
+	      getBoundryCoordsForEndSofSingleSliceLine(s.slice, iter, s.sliceBoundryCoords);
+	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter, s.sliceBoundryCoords);
+	  }
+	}
+    }
+}
+
+
+void sprite::getBoundryCoordsForWholeSingleSliceLine(std::vector<sliceLine> & s, const int y,
+						std::vector<yx> & sliceBoundryCoords)
+{
+  for(int iter {}; iter < s[y].sliceLine.size(); ++iter)
+    {
+      if(s[y].sliceLine[iter] != TRANS_SP)
+	{
+	  yx c {y, iter + s[y].offset};
+	  sliceBoundryCoords.push_back(c);
+	}
+    }
+}
+
+
+/* Operation is the same as getBoundryCoordsForWholeSingleSliceLine with the exception that only the coordinates
+   plus s[y].offset of end (non TRANS_SP) chars are added to sliceBoundryCoords. If all character's are TRANS_SP
+   then no coords are added and if there is only one non TRANS_SP character then only it's coordinate plus offset is
+   added. */
+void sprite::getBoundryCoordsForEndSofSingleSliceLine(std::vector<sliceLine> & s, const int y,
+					      std::vector<yx> & sliceBoundryCoords)
+{
+  constexpr int subZero {-1};
+  int first {subZero}, last {subZero}; // Keep track of the first non TRANS_SP char and of the last non TRANS_SP char.
+  for(int iter {}; iter < s[y].sliceLine.size(); ++iter)
+    {
+      if(s[y].sliceLine[iter] != TRANS_SP)
+	{			// We have seen a non TRANS_SP char.
+	  if(first < 0)
+	    {			// It's the first one.
+	      first = iter;
+	      yx c {y, first + s[y].offset};
+	      sliceBoundryCoords.push_back(c); // Add first choord.
+	    }
+	  else
+	    {
+	      	  last = iter;
+	    }
+	}
+    }
+  if(first != last && last != subZero)
+    {				// Add last choord.
+      yx c {y, last + s[y].offset};
+      sliceBoundryCoords.push_back(c);
+    }
 }
 
 
@@ -207,11 +284,12 @@ void sprite::parserPhaseTwo(const std::vector<std::vector<sprite::partiallyProce
     {				// Iterate throught slice lines.
       for(int sliceLineIter{}; sliceLineIter < pPSL[sliceIter].size(); ++sliceLineIter)
 	{ // Make slice at sliceIter the right size (number of slice lines).
-	  sD.spriteSlices[sliceIter].resize(pPSL[sliceIter].size());
+	  sD.spriteSlices[sliceIter].slice.resize(pPSL[sliceIter].size());
 	  // Collapse and copy slice line.
-	  collapse(pPSL[sliceIter][sliceLineIter].sliceLine, sD.spriteSlices[sliceIter][sliceLineIter].sliceLine);
+	  collapse(pPSL[sliceIter][sliceLineIter].sliceLine,
+		   sD.spriteSlices[sliceIter].slice[sliceLineIter].sliceLine);
 	  // Copy offset value over.
-	  sD.spriteSlices[sliceIter][sliceLineIter].offset = pPSL[sliceIter][sliceLineIter].offset;
+	  sD.spriteSlices[sliceIter].slice[sliceLineIter].offset = pPSL[sliceIter][sliceLineIter].offset;
 	}
     }
   refresh();
@@ -240,17 +318,78 @@ void sprite::checkSpriteRanges(const int spriteNum)
     }  
 }
 
+
 const yx sprite::getMaxBottomRightOffset()
 {
   return maxBottomRightOffset;
 }
 
 
+yx sprite::getNewPos(const sprite::directions dir)
+{
+  yx d {};
+  switch(dir)
+    {
+    case LEFT_UP:
+    case LEFT_UP_UPPER:
+      d.y = position.y -1;
+      d.x = position.x -1;
+      break;
+    case UP:
+    case UP_UPPER:
+      d.y = position.y -1;
+      d.x = position.x;
+      break;
+    case RIGHT_UP:
+    case RIGHT_UP_UPPER:
+      d.y = position.y -1;
+      d.x = position.x +1;
+      break;
+    case LEFT:
+    case LEFT_UPPER:
+      d.y = position.y;
+      d.x = position.x -1;
+      break;
+    case RIGHT:
+    case RIGHT_UPPER:
+      d.y = position.y;
+      d.x = position.x +1;
+      break;
+    case LEFT_DOWN:
+    case LEFT_DOWN_UPPER:
+      d.y = position.y +1;
+      d.x = position.x -1;
+      break;
+    case DOWN:
+    case DOWN_UPPER:
+      d.y = position.y +1;
+      d.x = position.x;
+      break;
+    case RIGHT_DOWN:
+    case RIGHT_DOWN_UPPER:
+      d.y = position.y +1;
+      d.x = position.x +1;
+      break;
+    default:
+      std::stringstream e {};
+      e<<"Error direction ("<<char(dir)<<") not valid.";
+      exit(e.str().c_str(), ERROR_INVALID_DIRECTION);
+    }
+
+  return d;
+}
+
+
+/* Returns the of position of the sprite after moving one character (including diagonal movement) in the
+   direction dir */
+yx sprite::peekAtPos(const directions dir)
+{
+  //  return
+}
+
+
 void sprite::updatePosAbs(int y, int x)
 { //add in bound's checking latter!
-  /* Position can't be outside of the background file and player class should have a version of this function that
-     makes sure that it's position is always within a certin boundary that fall's within the visiable section of the
-     background. */
   position.y = y, position.x = x; // Update position.
 }
 
@@ -258,81 +397,32 @@ void sprite::updatePosAbs(int y, int x)
 /* Direction's that ch can take on.
 Q---W---E
 |...^...|
-A.<--->.D
+A.<-|->.D
 |...v...|
 z---S---X
  */
-void sprite::updatePosRel(const char ch)
+void sprite::updatePosRel(const sprite::directions dir)
 {
-  try
-    {
-      switch(ch)
-	{
-	case 'q':
-	case 'Q':		// Left up.
-	  --position.y;
-	  --position.x;
-	  break;
-	case 'w':
-	case 'W':		// Up.
-	  --position.y;
-	  break;
-	case 'e':
-	case 'E':		// Right up.
-	  --position.y;
-	  ++position.x;
-	  break;
-	case 'a':
-	case 'A':		// Left.
-	  --position.x;
-	  break;
-	case 'd':
-	case 'D':		// Right.
-	  ++position.x;
-	  break;
-	case 'z':
-	case 'Z':		// Left down.
-	  ++position.y;
-	  --position.x;
-	  break;
-	case 's':
-	case 'S':		// Down.
-	  ++position.y;
-	  break;
-	case 'x':
-	case 'X':		// Right down.
-	  ++position.y;
-	  ++position.x;
-	  break;      
-      
-	default:	
-	  std::stringstream e;
-	  e<<"Ch out of range."
-		  <<"range = [q, w, e, a, d, z, s, x] & upper case forms."
-		  <<"ch = "<<ch;
-	  throw std::logic_error(e.str());
-	}
-    }
-  catch(std::logic_error e)
-    {
-      exit(e.what(), ERROR_POS_CH_RANGE);
-    }
+  position = getNewPos(dir);
 }
 
 
 void sprite::draw(int spriteNum, bool updateSlice)
 {
   //  checkSpriteRanges(spriteNum);
-  for(int sliceLine{}; sliceLine < spriteS[spriteNum].spriteSlices[currentSliceNumber].size(); ++sliceLine)
+  /*  printw("currentSliceNumber = ");
+  refresh();
+  sleep(1000);*/
+  for(int sliceLine{}; sliceLine < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice.size(); ++sliceLine)
     {      
       for(int sliceLineIter{};
-	  sliceLineIter < spriteS[spriteNum].spriteSlices[currentSliceNumber][sliceLine].sliceLine.size();
+	  sliceLineIter < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine.size();
 	  ++sliceLineIter)
 	{ // Move curser to the right position.
 	  setCursor(position.y + sliceLine, position.x +
-		    spriteS[spriteNum].spriteSlices[currentSliceNumber][sliceLine].offset + sliceLineIter, maxyx);
+		    spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].offset + sliceLineIter, maxyx);
 	  // Get the character.
-	  int ch {spriteS[spriteNum].spriteSlices[currentSliceNumber][sliceLine].sliceLine[sliceLineIter]};
+	  int ch {spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine[sliceLineIter]};
 	  drawCh(ch);
 	}
   

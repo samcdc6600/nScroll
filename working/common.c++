@@ -11,7 +11,7 @@ void sleep(const unsigned long long t)
 }
 
 
-bool checkRange(const int a, const int min, const max)
+bool checkRange(const int a, const int min, const int max)
 {
   bool ret = (min >= 0 && a < max) ? true : false;
   return ret;
