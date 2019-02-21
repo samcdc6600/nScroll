@@ -131,8 +131,25 @@ protected:
   {
     currentSliceNumber = 0;
   }
+  
+  // Return's false if there is no match for dir.
+  bool checkDirection(const directions dir)
+  {
+    return (dir != LEFT_UP && dir != LEFT_UP_UPPER && dir != UP && dir != UP_UPPER &&
+	    dir != RIGHT_UP && dir != RIGHT_UP_UPPER && dir != LEFT && dir != LEFT_UPPER &&
+	    dir != RIGHT && dir != RIGHT_UPPER && dir != LEFT_DOWN && dir != LEFT_DOWN_UPPER &&
+	    dir != DOWN && dir != DOWN_UPPER && dir != RIGHT_DOWN && dir != RIGHT_DOWN_UPPER) ? false : true;
+  }
+  /* We can get a const version of maxBottomRightOffset in a derived class (couldn't make maxBottomRightOffset in
+     sprite. At least we can force it for derived classes.) */
+  const yx getMaxBottomRightOffset();
+  /* Returns a yx struct that is a copy of the data member position with it's y and x member's incremented,
+     decremented or left unchanged depending on the value of dir. */
+  yx getNewPos(const directions dir);
+  
+public://----------------------------------------------------------------------------------------------------------
 
-  /* Checks that y and x are in the ranges [0 + innerBoarderY, maxyx.y - innerBoarderY) and
+   /* Checks that y and x are in the ranges [0 + innerBoarderY, maxyx.y - innerBoarderY) and
      [0 + innerBoarderX, maxyx.x - innderBoaderX) respectively. */
   inline bool inBounds(const int y, const int x, const int innerBoarderY, int innerBoarderX)
   {
@@ -156,29 +173,13 @@ protected:
   {
     return inBounds(y, x, 0, 0);	// We have an inner boarder of 0, 0
   }
-  
-  // Return's false if there is no match for dir.
-  bool checkDirection(const directions dir)
-  {
-    return (dir != LEFT_UP && dir != LEFT_UP_UPPER && dir != UP && dir != UP_UPPER &&
-	    dir != RIGHT_UP && dir != RIGHT_UP_UPPER && dir != LEFT && dir != LEFT_UPPER &&
-	    dir != RIGHT && dir != RIGHT_UPPER && dir != LEFT_DOWN && dir != LEFT_DOWN_UPPER &&
-	    dir != DOWN && dir != DOWN_UPPER && dir != RIGHT_DOWN && dir != RIGHT_DOWN_UPPER) ? false : true;
-  }
-  /* We can get a const version of maxBottomRightOffset in a derived class (couldn't make maxBottomRightOffset in
-     sprite. At least we can force it for derived classes.) */
-  const yx getMaxBottomRightOffset();
-  /* Returns a yx struct that is a copy of the data member position with it's y and x member's incremented,
-     decremented or left unchanged depending on the value of dir. */
-  yx getNewPos(const directions dir);
-  
-public://----------------------------------------------------------------------------------------------------------
-  
   //constructor reads spriteFile and converts it to the internal object structure
   sprite(const yx max, const yx pos, const char spriteFileName []);
   /* Returns the of position of the sprite after moving one character (including diagonal movement) in the
      direction dir */
   yx peekAtPos(const directions dir);
+  // Returns the sprite position.
+  yx getPos() {return position;}    
   // update's position of sprite in an absoulte fashion with reference to the background
   virtual void updatePosAbs(int y, int x);
   /* update's sprite's y and x position value's by a difference of no more then 1. The direction depends on the

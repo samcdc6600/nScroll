@@ -12,18 +12,16 @@ void rules::physics(const int input, int & position, const size_t backgroundLeng
 	       input == sprite::RIGHT || input == sprite::RIGHT_UPPER)
               {
 		movePlayer(sprite::directions(input));
-		gamePlayer->updatePosRel(sprite::directions(input));
+		//		gamePlayer->updatePosRel(sprite::directions(input));
 	      }
 }
 
 
 void rules::movePlayer(const sprite::directions input)
 {
-  
-  /*  if(inBounds())
+  yx peekPos {gamePlayer->peekAtPos(input)};
+  if(gamePlayer->inBounds(peekPos.y, peekPos.x, playerInnerBoarder.y, playerInnerBoarder.x))
     {
+      gamePlayer->updatePosRel(sprite::directions(input));      
     }
-  else
-    {
-    }*/
 }
