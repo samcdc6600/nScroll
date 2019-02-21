@@ -86,7 +86,7 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
 	    if(input == LEVEL_COMPLEAT)
 	      return LEVEL_COMPLEAT;
 
-	  levelRules.physics(input, position, backgroundLen);
+	  levelRules.physics(input, position, maxyx, backgroundLen);
 	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, position);
 	  refresh();
 	  

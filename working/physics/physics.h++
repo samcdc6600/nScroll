@@ -8,8 +8,6 @@
 
 struct rules
 {
-  // The player cannot pass within this many character's of the windo boarder's
-  const yx playerInnerBoarder {0, 44};
   struct spriteInfo		/* For sprites (holds sprite data (slices) and the rule for the sprite. */
   {
     /* Sprite data to go here (when I do it.) */
@@ -29,10 +27,10 @@ struct rules
 private:
 
   // Moves the player 
-  void movePlayer(const sprite::directions input);
+  void movePlayer(const sprite::directions input, const yx maxyx);
 
 public:
-  void physics(const int input, int & position, const size_t backgroundLength);
+  void physics(const int input, int & position, const yx maxyx, const size_t backgroundLength);
 };
 
 #endif

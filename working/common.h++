@@ -2,11 +2,24 @@
 #define COMMON_H_
 
 
+struct yx
+{
+  yx() {}  
+  yx(const int y, const int x)
+  {
+    this->y = y;
+    this->x = x;
+  }
+  int y;
+  int x;
+};
+
 constexpr int MONO_CH_MAX {158};
 constexpr int COLOR_CH_MAX {63};
 constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR {27};
-
+// The player cannot pass widthin this many character's of the window boarder's (y, x).
+const yx PLAYER_MOVEMENT_INNER_BOARDER {0, 44};
 constexpr int BACKGROUND_HEIGHT {33}; // This isn't how I would have done it in retrospect :'(.
 
 
@@ -30,19 +43,6 @@ enum errorsCodes
     ERROR_MALFORMED_COORDINATE_CHAR_FIELD, // We have encountered a coordinate character field that is malformed.
     ERROR_BAD_LOGIC		// There was an error in the code.
   };
-
-
-struct yx
-{
-  yx() {}  
-  yx(const int y, const int x)
-  {
-    this->y = y;
-    this->x = x;
-  }
-  int y;
-  int x;
-};
 
 
 void sleep(const unsigned long long t);
