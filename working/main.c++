@@ -68,14 +68,15 @@ void menu(const yx maxyx)
 
 
 int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelRules)
-{  
+{
   auto startTimeInput = std::chrono::high_resolution_clock::now();// Control's background update time.
   auto currentTimeInputBackground = std::chrono::high_resolution_clock::now();// Control's background update time.
   while(true)
     {
       do
-	{	  
+	{
 	  int input {};
+	  const size_t backgroundLen {background.size() / BACKGROUND_HEIGHT};
 	  int position {};
 	  
 	  input = getch();
@@ -85,7 +86,7 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
 	    if(input == LEVEL_COMPLEAT)
 	      return LEVEL_COMPLEAT;
 
-	  position = levelRules.physics(input);
+	  levelRules.physics(input, position, backgroundLen);
 	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, position);
 	  refresh();
 	  

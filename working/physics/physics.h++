@@ -33,7 +33,7 @@ private:
   void movePlayer(const sprite::directions input);
 
 public:
-  int physics(const int input);  
+  void physics(const int input, int & position, const size_t backgroundLength);
 };
 
 #endif

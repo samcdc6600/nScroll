@@ -19,10 +19,10 @@ extern setColorMode colorMode;//must be included for the draw function
 void player::updatePosRel(sprite::directions dir)
 {//update's position of sprite in a relative fashion with reference to the sprite and update's direction.
   yx p {getNewPos(dir)};
-  if(inScreenBounds(p.y, p.x))
+  /*  if(inScreenBounds(p.y, p.x))
     {				// We have a valid position so update.
-      position = p;
-    }
+      }*/
+  position = p;
   if(direction != dir)
     {				// Change direction.
       resetCurrentSliceNum();

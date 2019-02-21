@@ -90,7 +90,7 @@ void sprite::setUpBoundryCoordsVector(spriteData & sD)
 
 
 void sprite::getBoundryCoordsForWholeSingleSliceLine(std::vector<sliceLine> & s, const int y,
-						std::vector<yx> & sliceBoundryCoords)
+						     std::vector<yx> & sliceBoundryCoords)
 {
   for(int iter {}; iter < s[y].sliceLine.size(); ++iter)
     {
@@ -108,7 +108,7 @@ void sprite::getBoundryCoordsForWholeSingleSliceLine(std::vector<sliceLine> & s,
    then no coords are added and if there is only one non TRANS_SP character then only it's coordinate plus offset is
    added. */
 void sprite::getBoundryCoordsForEndSofSingleSliceLine(std::vector<sliceLine> & s, const int y,
-					      std::vector<yx> & sliceBoundryCoords)
+						      std::vector<yx> & sliceBoundryCoords)
 {
   constexpr int subZero {-1};
   int first {subZero}, last {subZero}; // Keep track of the first non TRANS_SP char and of the last non TRANS_SP char.
@@ -124,7 +124,7 @@ void sprite::getBoundryCoordsForEndSofSingleSliceLine(std::vector<sliceLine> & s
 	    }
 	  else
 	    {
-	      	  last = iter;
+	      last = iter;
 	    }
 	}
     }
@@ -150,7 +150,7 @@ std::vector<std::vector<sprite::partiallyProcessedSliceLine>> sprite::parserPhas
     }
   int iter{3}; /* stores what position we are upto in the parse. start's off as 3 becaue it is used after the initial
 		  character sequence. */
-				// Get cs value----------------------------------------------------------------------
+  // Get cs value----------------------------------------------------------------------
   if(spriteFile[0] == 'c' && spriteFile[1] == 's' && spriteFile[2] == '(')
     {
       std::stringstream cS {}; // Will hold ASCII representation of cycleSpeed0 integer veriable.
@@ -360,7 +360,7 @@ yx sprite::getNewPos(const sprite::directions dir)
    direction dir */
 yx sprite::peekAtPos(const directions dir)
 {
-  //  return
+  return getNewPos(dir);
 }
 
 
@@ -371,12 +371,12 @@ void sprite::updatePosAbs(int y, int x)
 
 
 /* Direction's that ch can take on.
-Q---W---E
-|...^...|
-A.<-|->.D
-|...v...|
-z---S---X
- */
+   Q---W---E
+   |...^...|
+   A.<-|->.D
+   |...v...|
+   z---S---X
+*/
 void sprite::updatePosRel(const sprite::directions dir)
 {
   position = getNewPos(dir);
@@ -387,8 +387,8 @@ void sprite::draw(int spriteNum, bool updateSlice)
 {
   //  checkSpriteRanges(spriteNum);
   /*  printw("currentSliceNumber = ");
-  refresh();
-  sleep(1000);*/
+      refresh();
+      sleep(1000);*/
   for(int sliceLine{}; sliceLine < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice.size(); ++sliceLine)
     {      
       for(int sliceLineIter{};
@@ -400,20 +400,21 @@ void sprite::draw(int spriteNum, bool updateSlice)
 	  // Get the character.
 	  int ch {spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine[sliceLineIter]};
 	  drawCh(ch);
-	}
+
   
-      if(updateSlice)
-	{
-	  currentTime = std::chrono::high_resolution_clock::now();
-	  if(std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count() >
-	     spriteS[spriteNum].cycleSpeed)
+	  if(updateSlice)
 	    {
-	      startTime = std::chrono::high_resolution_clock::now();
-	      currentSliceNumber++; // Move to next slice
-	      // -1 because indexing from 0, so currentSliceNumber shouldn't be bigger then size() -1
-	      if(currentSliceNumber > (spriteS[spriteNum].spriteSlices.size() -1))
-		currentSliceNumber = 0; // We have displayed all the slices so the value should wrape arround.
-	    }      
+	      currentTime = std::chrono::high_resolution_clock::now();
+	      if(std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count() >
+		 spriteS[spriteNum].cycleSpeed)
+		{
+		  startTime = std::chrono::high_resolution_clock::now();
+		  currentSliceNumber++; // Move to next slice
+		  // -1 because indexing from 0, so currentSliceNumber shouldn't be bigger then size() -1
+		  if(currentSliceNumber > (spriteS[spriteNum].spriteSlices.size() -1))
+		    currentSliceNumber = 0; // We have displayed all the slices so the value should wrape arround.
+		}      
+	    }
 	}
     }
 }

@@ -3,7 +3,8 @@
 #include "levelInteractionHandler.h++"
 
 
-int rules::physics(const int input)
+#include <sstream>
+void rules::physics(const int input, int & position, const size_t backgroundLength)
 {
   if(input == sprite::UP || input == sprite::UP_UPPER ||
 	       input == sprite::LEFT || input == sprite::LEFT_UPPER ||
@@ -13,12 +14,12 @@ int rules::physics(const int input)
 		movePlayer(sprite::directions(input));
 		gamePlayer->updatePosRel(sprite::directions(input));
 	      }
-  return playerPosition;
 }
 
 
 void rules::movePlayer(const sprite::directions input)
 {
+  
   /*  if(inBounds())
     {
     }

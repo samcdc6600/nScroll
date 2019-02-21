@@ -53,26 +53,16 @@ void drawBackground(const std::vector<int> & buff, const yx maxyx, const unsigne
 
 void setCursor(const int y, const int x, const yx maxyx)
 {
-  try
+  if(checkRange(y, 0, maxyx.y) && checkRange(x, 0, maxyx.x))
     {
-      if(y >= 0 && x >= 0)
-	{
-	  if(y < maxyx.y && x < maxyx.x)
-	    mvprintw(y, x, "");
-	  else
-	    {
-	      std::stringstream e;
-	      e<<"In setCursor(), y and or x out of range. Range = ("<<maxyx.y<<"(y),"<<maxyx.x
-		  <<"(x)). Y and x given = "<<y<<", "<<x<<" respectively.";
-	      throw std::logic_error(e.str());
-	    }
-	}
+      mvprintw(y, x, "");
     }
-  catch(std::logic_error e)
-    {      
-      exit(e.what(), ERROR_CURSOR_PARAM);
+  else
+    {
+      std::stringstream e {};
+      e<<"Error invalid cursor position ("<<y<<", "<<x<<") encountered.";
+      exit(e.str().c_str(), ERROR_BAD_LOGIC);
     }
-      
 }
 
 

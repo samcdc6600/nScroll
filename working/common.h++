@@ -7,6 +7,8 @@ constexpr int COLOR_CH_MAX {63};
 constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR {27};
 
+constexpr int BACKGROUND_HEIGHT {33}; // This isn't how I would have done it in retrospect :'(.
+
 
 enum errorsCodes
   {/* Error codes */
