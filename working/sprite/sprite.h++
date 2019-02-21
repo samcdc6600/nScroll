@@ -48,7 +48,7 @@ private:
   
 protected:
   
-  yx position;     // Position of sprite relative to background and top left corner of sprite object.
+  yx position;     // Position of the top left corner of the sprite object relative the window.
   /* Holds the maximum bottom right offset. Calculated from all slices.*/
   yx maxBottomRightOffset; /* Used for inital (possible) collision detection and bounds checking */
     
@@ -130,10 +130,11 @@ protected:
   {
     currentSliceNumber = 0;
   }
-  
+
+  /* Checks that y and x are */
   inline bool inBounds(const int y, const int x, const int innerBoarderY, int innerBoarderX)
   {				// Check that y, x and also y + offset and x + offset are within the windo - innerBoarder7 and innerboarderx etc lksdajfldsa.
-    //    return ((checkRange(y, 
+    
   }
   /* Checks that y and x are in range (0 to screen height and width), by calling checkRange(const int, const int). */
   inline bool inScreenBounds(const int y, const int x)
@@ -143,8 +144,6 @@ protected:
        ? true : false);
     return ret;
   }
-  /* Checks if position.y and position.x are in range and if the spriteNum is in range. Throws and exception if 
-     there is an error */
   
   // Return's false if there is no match for dir.
   bool checkDirection(const directions dir)
