@@ -145,7 +145,15 @@ protected:
   }
   /* Checks if position.y and position.x are in range and if the spriteNum is in range. Throws and exception if 
      there is an error */
-  void checkSpriteRanges(const int spriteNum);
+  
+  // Return's false if there is no match for dir.
+  bool checkDirection(const directions dir)
+  {
+    return (dir != LEFT_UP && dir != LEFT_UP_UPPER && dir != UP && dir != UP_UPPER &&
+	    dir != RIGHT_UP && dir != RIGHT_UP_UPPER && dir != LEFT && dir != LEFT_UPPER &&
+	    dir != RIGHT && dir != RIGHT_UPPER && dir != LEFT_DOWN && dir != LEFT_DOWN_UPPER &&
+	    dir != DOWN && dir != DOWN_UPPER && dir != RIGHT_DOWN && dir != RIGHT_DOWN_UPPER) ? false : true;
+  }
   /* We can get a const version of maxBottomRightOffset in a derived class (couldn't make maxBottomRightOffset in
      sprite. At least we can force it for derived classes.) */
   const yx getMaxBottomRightOffset();

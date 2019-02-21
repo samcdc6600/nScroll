@@ -296,29 +296,6 @@ void sprite::parserPhaseTwo(const std::vector<std::vector<sprite::partiallyProce
 }
 
 
-void sprite::checkSpriteRanges(const int spriteNum)
-{
-  if(position.y < 0 || position.y > maxyx.y || position.x < 0 || position.x > maxyx.x)
-    {
-      std::stringstream errorMsg;
-      errorMsg<<"in sprite/sprite.cpp\n"
-	      <<"void sprite::draw(int spriteNum). position.y or position.x value out of range,"
-	      <<"\nwhere range is from (0,0) to ("<<maxyx.y<<","<<maxyx.x<<"). and the position.y and position.x \n"
-	      <<"coordinates were ("<<position.y<<","<<position.x<<")\n";
-      throw std::logic_error(errorMsg.str());
-    }
-  if(spriteNum > spriteS.size() || spriteNum < 0)    
-    {
-      std::stringstream errorMsg;
-      errorMsg<<"in sprite/sprite.cpp\n"
-	      <<"void sprite::draw(int spriteNum)."
-	      <<" the value of spriteNum that was passed to the function is out of range. "
-	      <<"spriteNum - 1 ="<<spriteNum<<", spriteS.size() = "<<spriteS.size()<<"\n";
-      throw std::logic_error(errorMsg.str());
-    }  
-}
-
-
 const yx sprite::getMaxBottomRightOffset()
 {
   return maxBottomRightOffset;

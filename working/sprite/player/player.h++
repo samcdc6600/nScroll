@@ -28,7 +28,7 @@ class player: public sprite
  player(std::vector<std::string> sprites, const yx max, const yx pos, const int h, const int d)
    : sprite(max, pos, sprites[INITIAL_SPRITE_INDEX].c_str()), health(h), direction(d)
   {
-    if(!(d >= DIR_LEFT && d <= DIR_DOWN))
+    if(!checkDirection(directions(d)))
       {
 	std::stringstream e {};
 	e<<"Error when initialising player: direction ("<<d<<") out of range.";
