@@ -1,0 +1,14 @@
+(p("./assets/sprites/sprite(0).sprite",
+	"./assets/sprites/sprite(1).sprite",
+	"./assets/sprites/sprite(2).sprite",
+	"./assets/sprites/sprite(3).sprite")(13,45))
+#
+(b (25,0))
+(b (26,0))
+(b (27,0))
+(b (28,0))
+(b (29,0))
+(b (30,0))
+(b (31,0))
+(b (32,0))
+(b (33,0))
