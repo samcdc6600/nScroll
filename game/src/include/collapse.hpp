@@ -5,7 +5,7 @@
 #include <map>
 
 class chMap
-{
+{ // this class converts to and from colour offsets.
  private:
   std::map<std::string, int> strMap;//stores special character types to int code mappings
   std::vector<std::string> characters//special characters types
