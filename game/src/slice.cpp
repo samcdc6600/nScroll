@@ -8,9 +8,9 @@ std::vector<int> getSlice(const std::vector<int> buff, const unsigned long offse
 {
   if((offset + x) > (buff.size() / y))
     { // Check for error condition (can't scroll past end of background file).
-      // exit("error in (slice.cpp)->(std::vector<int> getSlice(std::vector<int> "
-      // 	   "buff, unsigned long offset, int y,int x)): (offset + x) > (array / "
-      // 	   "y)!", ERROR_GENERIC_RANGE_ERROR);
+      exit("error in (slice.cpp)->(std::vector<int> getSlice(std::vector<int> "
+ 	   "buff, unsigned long offset, int y,int x)): (offset + x) > (array / "
+	   "y)!", ERROR_GENERIC_RANGE_ERROR);
     }  
   std::vector<int> slice {};  
   for(int iterY {}; iterY < y; ++iterY)	// Column.
