@@ -57,7 +57,7 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [], rule
 /* Increment's (advances) i by (n -1), if i equals iEnd before being incremented n times we throw an exception. */
 template <typename T_A, typename T_B> auto getAdvancedIter(T_A i, T_B iEnd, const size_t n) -> T_A
 {
-  for(int iter {}; iter < (n -1); ++iter)
+  for(size_t iter {}; iter < size_t(n -1); ++iter)
     {
       i++;
       if(*i == *iEnd)
@@ -92,8 +92,8 @@ void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_ite
 		      std::string::const_iterator & peek, std::string::const_iterator & max, rules & levelRules);
 /* Check's for coordinate of the form "(Y,X)" and return's "Y,X" (discarding "(" and ")") if Y and X are valid
    integer number's that do not falloutside of the X and Y values in maxyx and are greater or equal to zero.  */
-std::string getCoords(const std::string & buff, std::string::const_iterator & current,
-		      std::string::const_iterator & peek, const std::string::const_iterator & max);
+std::string getCoords(std::string::const_iterator & current,
+		      std::string::const_iterator & peek);
 /* Read's in a number of string's separated by the STRING_SEPERATION character. Stop when current reaches the
   character where a STRING_SEPERATION character is expected. Returns each string read in a vector. */
 std::vector<std::string> handleStringDenotationAfterFieldDenotation(std::string & buff,

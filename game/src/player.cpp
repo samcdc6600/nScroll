@@ -17,7 +17,8 @@ extern setColorMode colorMode;//must be included for the draw function
   z---S---X                                                     
 */
 void player::updatePosRel(sprite::directions dir)
-{//update's position of sprite in a relative fashion with reference to the sprite and update's direction.
+{ /* Update's position of sprite in a relative fashion with reference to the
+     sprite and update's direction. */
   yx p {getNewPos(dir)};
   /*  if(inScreenBounds(p.y, p.x))
     {				// We have a valid position so update.

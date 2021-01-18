@@ -10,8 +10,8 @@ struct yx
     this->y = y;
     this->x = x;
   }
-  int y;
-  int x;
+  size_t y;
+  size_t x;
 };
 
 constexpr int MONO_CH_MAX {158};

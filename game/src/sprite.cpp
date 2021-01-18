@@ -47,7 +47,7 @@ void sprite::getMaxYXOffset()
 { /* I tried my best to make maxBottomRightOffset const, however I was thwarted by a seg fault that would occur when
      calling resize() on a vector in getSprite() when getSprite() was called in the constructors member initializer
      list >:'( */
-  int max {};
+  size_t max {};
   for(sliceData s: sD_base.spriteSlices) // Get y offset :).
     max = s.slice.size() > max ? s.slice.size() : s.slice.size();
   maxBottomRightOffset.y = max -1; // The upper left of the sprite is (0,0) so we need size -1 :).
@@ -76,7 +76,7 @@ void sprite::setUpBoundryCoordsVector(spriteData & sD)
 	  break;
 	default:     		// More then two lines (general case.)
 	  {
-	    int iter {SLICE_LINE_ONE};
+	    size_t iter {SLICE_LINE_ONE};
 	    constexpr int endOffset {1};
 	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter, s.sliceBoundryCoords);
 	    iter++;		// Advance to next slice line.
@@ -112,7 +112,7 @@ void sprite::getBoundryCoordsForEndSofSingleSliceLine(std::vector<sliceLine> & s
 {
   constexpr int subZero {-1};
   int first {subZero}, last {subZero}; // Keep track of the first non TRANS_SP char and of the last non TRANS_SP char.
-  for(int iter {}; iter < s[y].sliceLine.size(); ++iter)
+  for(size_t iter {}; iter < s[y].sliceLine.size(); ++iter)
     {
       if(s[y].sliceLine[iter] != TRANS_SP)
 	{			// We have seen a non TRANS_SP char.
@@ -149,7 +149,7 @@ std::vector<std::vector<sprite::partiallyProcessedSliceLine>> sprite::parserPhas
       throw std::logic_error(errorMsg.str());
     }
   int iter{3}; /* stores what position we are upto in the parse. start's off as 3 becaue it is used after the initial
-		  character sequence. */
+		     character sequence. */
   // Get cs value----------------------------------------------------------------------
   if(spriteFile[0] == 'c' && spriteFile[1] == 's' && spriteFile[2] == '(')
     {
@@ -279,9 +279,9 @@ void sprite::parserPhaseTwo(const std::vector<std::vector<sprite::partiallyProce
 {
   sD.spriteSlices.resize(pPSL.size()); // Make outer vector (number of slices) the right size.
 
-  for(int sliceIter{}; sliceIter < pPSL.size(); ++sliceIter) // Iterte through slices.
+  for(size_t sliceIter{}; sliceIter < pPSL.size(); ++sliceIter) // Iterte through slices.
     {				// Iterate throught slice lines.
-      for(int sliceLineIter{}; sliceLineIter < pPSL[sliceIter].size(); ++sliceLineIter)
+      for(size_t sliceLineIter{}; sliceLineIter < pPSL[sliceIter].size(); ++sliceLineIter)
 	{ // Make slice at sliceIter the right size (number of slice lines).
 	  sD.spriteSlices[sliceIter].slice.resize(pPSL[sliceIter].size());
 	  // Collapse and copy slice line.
@@ -389,9 +389,9 @@ void sprite::draw(int spriteNum, bool updateSlice)
   /*  printw("currentSliceNumber = ");
       refresh();
       sleep(1000);*/
-  for(int sliceLine{}; sliceLine < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice.size(); ++sliceLine)
+  for(size_t sliceLine{}; sliceLine < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice.size(); ++sliceLine)
     {      
-      for(int sliceLineIter{};
+      for(size_t sliceLineIter{};
 	  sliceLineIter < spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine.size();
 	  ++sliceLineIter)
 	{ // Move curser to the right position.

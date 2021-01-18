@@ -23,8 +23,10 @@ enum gameFuncRetCodes
 
 
 void menu(const yx maxyx); // Game menu
-// Where the magic (thats glued together with cheap craft glue) happens (returns a game menu switch option.) :)
-int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelRules);
+/* Where the magic (thats glued together with cheap craft glue) happens
+   (returns a game menu switch option.) :) */
+int gameLoop(const yx maxyx, const std::vector<int> & background,
+	     rules & levelRules);
 
 
 int main()
@@ -41,13 +43,14 @@ int main()
 void menu(const yx maxyx)
 {
   std::vector<int> background {};	// Hold's the background
-  // Hold's the "rules" for the current level. (see physics.h and rules.lev.txt.)
+  /* Hold's the "rules" for the current level. (see physics.h and
+     rules.lev.txt.) */
   rules levelRules {};
   /* Note this should be done in the menu or loop or some sub function
      called from within it since multiple level's can be played. It is
      placed here right now only for testing and development purposes. */
   loadAssets(maxyx, "assets/level1/level1.backgound.lev", background,
-	     "assets/level1/level1.rules.lev", levelRules);   	// Load game files.
+	     "assets/level1/level1.rules.lev", levelRules);
   
   bool run = true;
   while(run)
@@ -67,10 +70,12 @@ void menu(const yx maxyx)
 }
 
 
-int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelRules)
-{
-  auto startTimeInput = std::chrono::high_resolution_clock::now();// Control's background update time.
-  auto currentTimeInputBackground = std::chrono::high_resolution_clock::now();// Control's background update time.
+int gameLoop(const yx maxyx, const std::vector<int> & background,
+	     rules & levelRules)
+{ // Control's background update time.
+  auto startTimeInput = std::chrono::high_resolution_clock::now();
+  // Control's background update time.
+  auto currentTimeInputBackground = std::chrono::high_resolution_clock::now();
   while(true)
     {
       do
@@ -87,11 +92,13 @@ int gameLoop(const yx maxyx, const std::vector<int> & background, rules & levelR
 	      return LEVEL_COMPLEAT;
 
 	  levelRules.physics(input, position, maxyx, backgroundLen);
-	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer, maxyx, position);
+	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer,
+	       maxyx, position);
 	  refresh();
 	  
 	  sleep(32);
-	  currentTimeInputBackground = std::chrono::high_resolution_clock::now();
+	  currentTimeInputBackground =
+	    std::chrono::high_resolution_clock::now();
 	}
       while(std::chrono::duration_cast<std::chrono::milliseconds>
 	    (currentTimeInputBackground - startTimeInput).count() < 255);

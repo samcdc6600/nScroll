@@ -18,11 +18,11 @@ void drawExit(const yx maxyx)
   int ch {};  
   srand(time(NULL));
   
-  for(int iter {}; iter < frames; ++iter)
+  for(size_t iter {}; iter < frames; ++iter)
     {
-      for(int xIter {}; xIter < maxyx.x; ++xIter)
+      for(size_t xIter {}; xIter < maxyx.x; ++xIter)
 	{
-	  for(int yIter {}; yIter < maxyx.y; ++yIter)
+	  for(size_t yIter {}; yIter < maxyx.y; ++yIter)
 	    {
 	      if(swanSong.size() != 0) // Check that message has non zero size.
 		{		  

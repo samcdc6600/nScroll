@@ -191,7 +191,7 @@ void handleCoordinateCharacter(std::string & buff, std::string::const_iterator &
       exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
     }
   ++current, ++peek;		// Set current to FIELD_START_DENOTATION character position.
-  std::string key {getCoords(buff, current, peek, max)};
+  std::string key {getCoords(current, peek)};
   // Make sure there's no space between the end of the coordinate field and the end of the coordinate character field.
   rubOutSpace(buff, current, peek, max);
   if(levelRules.coordChars.find(key) == levelRules.coordChars.end())// Key not found
@@ -216,7 +216,7 @@ void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_ite
   
   if(*current == FIELD_START_DENOTATION)
     {
-      std::stringstream coordsSS {getCoords(buff, current, peek, max)};
+      std::stringstream coordsSS {getCoords(current, peek)};
       yx initPos {};		// Initial sprite position.
       coordsSS>>initPos.y;
       {				// We are only using c to skip the COORD_SEPERATION character!
@@ -238,8 +238,8 @@ void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_ite
 }
 
 
-std::string getCoords(const std::string & buff, std::string::const_iterator & current,
-		      std::string::const_iterator & peek, const std::string::const_iterator & max)
+std::string getCoords(std::string::const_iterator & current,
+		      std::string::const_iterator & peek)
 {
   std::string ret;  
   ++current, ++peek;		// Advance current to first digit.
