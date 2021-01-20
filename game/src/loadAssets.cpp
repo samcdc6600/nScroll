@@ -1,8 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstring>
-//#include <locale>
-#include <ncurses.h>// test code
+#include <ncurses.h>
 #include "include/loadAssets.hpp"
 #include "include/collapse.hpp"
 

@@ -20,7 +20,7 @@ constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR {27};
 // The player cannot pass widthin this many character's of the window boarder's (y, x).
 const yx PLAYER_MOVEMENT_INNER_BOARDER {0, 44};
-constexpr int BACKGROUND_HEIGHT {33}; // This isn't how I would have done it in retrospect :'(.
+//constexpr int BACKGROUND_HEIGHT {33};
 
 
 enum errorsCodes

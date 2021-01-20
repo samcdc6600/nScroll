@@ -3,7 +3,7 @@
 #include <vector>
 #include "common.hpp"
 #include "sprite.hpp"
-#include "physics.hpp"
+#include "levelRules.hpp"
 
 
 #define DRAW_NO_OP 10176	/* This character should be skipped */

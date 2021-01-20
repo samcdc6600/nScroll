@@ -4,7 +4,7 @@
 #include "include/common.hpp"
 #include "include/loadAssets.hpp"
 #include "include/checkBoundsOfBounds.hpp"
-#include "include/physics.hpp"
+#include "include/levelRules.hpp"
 #include "include/draw.hpp"
 #include "include/colorS.hpp"
 #include "include/drawExit.hpp"
@@ -76,13 +76,17 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
   auto startTimeInput = std::chrono::high_resolution_clock::now();
   // Control's background update time.
   auto currentTimeInputBackground = std::chrono::high_resolution_clock::now();
+
+  
   while(true)
     {
+      int input {};  
+      int position {};
+      const size_t backgroundLen {background.size() /
+	levelRules.BACKGROUND_HEIGHT};
+      
       do
 	{
-	  int input {};
-	  const size_t backgroundLen {background.size() / BACKGROUND_HEIGHT};
-	  int position {};
 	  
 	  input = getch();
 	  if(input == ESC_CHAR)
@@ -96,12 +100,13 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
 	       maxyx, position);
 	  refresh();
 	  
-	  sleep(32);
+	  sleep(levelRules.engineSleepTime);
 	  currentTimeInputBackground =
 	    std::chrono::high_resolution_clock::now();
 	}
       while(std::chrono::duration_cast<std::chrono::milliseconds>
 	    (currentTimeInputBackground - startTimeInput).count() < 255);
+      
       startTimeInput = std::chrono::high_resolution_clock::now();
     }
 }
