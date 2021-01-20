@@ -19,6 +19,31 @@ class player: public sprite
   virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
   
 public:
+  enum directionChars
+    { /* Input character to direction mapping.
+         Q---W---E
+	 |...^...|
+	 A<--|-->D
+	 |...v...|                                            
+	 z---S---X */
+      LEFT_UP ='q',
+      LEFT_UP_UPPER ='Q',
+      UP ='w',
+      UP_UPPER ='W',
+      RIGHT_UP ='e',
+      RIGHT_UP_UPPER ='E',
+      LEFT ='a',
+      LEFT_UPPER ='A',
+      RIGHT ='d',
+      RIGHT_UPPER ='D',
+      LEFT_DOWN ='z',
+      LEFT_DOWN_UPPER ='Z',
+      DOWN ='s',
+      DOWN_UPPER ='S',
+      RIGHT_DOWN ='x',
+      RIGHT_DOWN_UPPER ='X'
+    };
+  
   /* Read's sprite files and converts them so they may be used with the classes
      draw function/s */
   player(std::vector<std::string> sprites, const yx max, const yx pos,
@@ -48,7 +73,8 @@ public:
   
   
   virtual ~player() {};
-  virtual void updatePosRel(directions dir);
+  yx sprite::getNewPos(const sprite::directionChars dir)
+    virtual void updatePosRel(directions dir);
   virtual void draw(bool updateSlice);  
 };
 

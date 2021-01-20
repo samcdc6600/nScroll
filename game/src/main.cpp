@@ -83,17 +83,22 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
       int input {};  
       int position {};
       const size_t backgroundLen {background.size() /
-	levelRules.BACKGROUND_HEIGHT};
+	levelRules.backgroundHeight};
       
       do
-	{
-	  
+	{	  
 	  input = getch();
 	  if(input == ESC_CHAR)
-	    return M_QUIT_GAME;
+	    {
+	      return M_QUIT_GAME;
+	    }
 	  else
-	    if(input == LEVEL_COMPLEAT)
-	      return LEVEL_COMPLEAT;
+	    {
+	      if(input == LEVEL_COMPLEAT)
+		{
+		  return LEVEL_COMPLEAT;
+		}
+	    }
 
 	  levelRules.physics(input, position, maxyx, backgroundLen);
 	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer,

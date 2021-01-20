@@ -30,8 +30,8 @@ public:
   const size_t engineSleepTime {32};
   /* The player cannot pass widthin this many character's of the left and right
       window boarders (y, x). */
-  const yx PLAYER_MOVEMENT_INNER_BOARDER {0, 44};
-  const int BACKGROUND_HEIGHT {33};
+  const yx playerMovementInnerLRBoarder {0, 44};
+  const int backgroundHeight {33};
   // For sprites (holds sprite data (slices) and the rule for the sprite.)
   struct spriteInfo
   { // Sprite data to go here (when I do it.)
