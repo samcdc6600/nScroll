@@ -143,14 +143,14 @@ void sprite::getBoundryCoordsForEndSofSingleSliceLine(std::vector<sliceLine> & s
 
 bool sprite::checkDirection(const directions dir)
 { // Return's false if there is no match for dir.
-  return {(dir == DIR_UP ||
-	   dir == DIR_RIGHT_UP ||
-	   dir == DIR_RIGHT ||
-	   dir == DIR_RIGHT_DOWN ||
-	   dir == DIR_DOWN ||
-	   dir == DIR_LEFT_DOWN ||
-	   dir == DIR_LEFT ||
-	   dir != DIR_LEFT_UP)};
+  return (dir == DIR_UP ||
+	  dir == DIR_RIGHT_UP ||
+	  dir == DIR_RIGHT ||
+	  dir == DIR_RIGHT_DOWN ||
+	  dir == DIR_DOWN ||
+	  dir == DIR_LEFT_DOWN ||
+	  dir == DIR_LEFT ||
+	  dir != DIR_LEFT_UP);
 }
 
 

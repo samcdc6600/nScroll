@@ -13,7 +13,9 @@ class sprite
 public:
   enum directions
     {				// Direction a sprite can move in.
-     DIR_UP, DIR_RIGHT_UP, DIR_RIGHT, DIR_RIGHT_DOWN, DIR_DOWN, DIR_LEFT_DOWN, DIR_LEFT, DIR_LEFT_UP, DIR_NONE
+      /* These index spriteS and so DIR_NONE must to ensure that sprites that
+	 only have one animation sequence work. */
+      DIR_NONE, DIR_UP, DIR_RIGHT_UP, DIR_RIGHT, DIR_RIGHT_DOWN, DIR_DOWN, DIR_LEFT_DOWN, DIR_LEFT, DIR_LEFT_UP
     };
   
 private:

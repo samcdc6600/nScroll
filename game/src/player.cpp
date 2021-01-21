@@ -10,10 +10,10 @@
 extern setColorMode colorMode;//must be included for the draw function
 
 
-yx player::getNewPos(const directionChars dir)
-{
-  return sprite::getNewPos(convertDirectionCharsToDirections(dir));
-}
+// yx player::getNewPos(const directionChars dir)
+// {
+//   return sprite::getNewPos(convertDirectionCharsToDirections(dir));
+// }
 
 
 player::player(std::vector<std::string> sprites, const yx max, const yx pos,
@@ -84,20 +84,26 @@ sprite::directions player::convertDirectionCharsToDirections
 
 yx player::peekAtPos(const directionChars dir)
 {
-  return getNewPos(dir);
+  return getNewPos(convertDirectionCharsToDirections(dir));
 }
 
 
-void player::updatePosRel(const directionChars dir)
+void player::updatePosRel(const directionChars d)
 { /* Update's position of sprite in a relative fashion with reference to the
      sprite and update's direction. */
+  directions dir {convertDirectionCharsToDirections(d)};
   yx p {getNewPos(dir)};
   position = p;
   if(direction != dir)
     {				// Change direction.
       resetCurrentSliceNum();
       direction = dir;
-    }  
+    }
+
+
+  // std::stringstream ss {};
+  // ss<<"direction = "<<dir<<'\n';
+  // exit(ss.str(), 0);
 }
 
 
@@ -105,17 +111,17 @@ void player::draw(bool updateSlice)
 {
   switch(direction)
     {
-    case DIR_LEFT:
-      sprite::draw(DIR_LEFT, updateSlice);
+    case DIR_UP:
+      sprite::draw(DIR_UP, updateSlice);
       break;
     case DIR_RIGHT:
       sprite::draw(DIR_RIGHT, updateSlice);
       break;
-    case DIR_UP:
-      sprite::draw(DIR_UP, updateSlice);
-      break;
     case DIR_DOWN:
       sprite::draw(DIR_DOWN, updateSlice);
+      break;
+    case DIR_LEFT:
+      sprite::draw(DIR_LEFT, updateSlice);
       break;
     default:
       //add exception here!------------------------------------------~~~~~~~~~~~~~~*******************(O)

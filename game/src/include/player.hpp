@@ -48,10 +48,10 @@ public:
     };
 
 private:
-  /* Returns a yx struct that is a copy of the data member position with it's y
-     and x member's incremented, decremented or left unchanged depending on the
-     value of dir. */
-  yx getNewPos(const directionChars dir);
+  // /* Returns a yx struct that is a copy of the data member position with it's y
+  //    and x member's incremented, decremented or left unchanged depending on the
+  //    value of dir. */
+  // yx getNewPos(const directionChars dir);
 
 public:
   player(std::vector<std::string> sprites, const yx max, const yx pos,
@@ -60,7 +60,7 @@ public:
   // Unlike sprite player needs to handle input direction characters.
   directions convertDirectionCharsToDirections(const directionChars dir);
   yx peekAtPos(const directionChars dir);
-  virtual void updatePosRel(directionChars dir);
+  virtual void updatePosRel(const directionChars dir);
   virtual void draw(bool updateSlice);  
 };
 

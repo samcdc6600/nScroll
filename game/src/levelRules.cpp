@@ -48,7 +48,8 @@ void rules::movePlayer(const player::directionChars input)//, const yx maxyx)
   if(gamePlayer->inBounds(peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.y,
 			  PLAYER_MOVEMENT_INNER_BOARDER.x))
     {
-      gamePlayer->updatePosRel(player::directionChars(input));      
+      //              exit("No seg fault here!", 0);
+      gamePlayer->updatePosRel(player::directionChars(input));
     }
   else
     { /* Move the player as long as they will stay within
@@ -59,10 +60,10 @@ void rules::movePlayer(const player::directionChars input)//, const yx maxyx)
 	 appropriate direction (If there is background to spare.) If we are at
 	 either end of the level then the player cannot move further of
 	 course. */
-      switch(input)
-	{
+      // switch(input)
+      // 	{
 	  
-	}
+      // 	}
     }
 }
 
