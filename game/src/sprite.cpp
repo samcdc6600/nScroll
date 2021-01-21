@@ -8,18 +8,23 @@
 #include "include/common.hpp"
 
 
-sprite::sprite(const yx max, const yx pos, const char spriteFileName [])
-  : maxyx(max), position(pos), currentSliceNumber(0),
+sprite::sprite(const yx max, const yx pos, const directions dir, const char spriteFileName [])
+  : maxyx(max), position(pos), direction(dir), currentSliceNumber(0),
     startTime(std::chrono::high_resolution_clock::now()),
     currentTime(std::chrono::high_resolution_clock::now())
 {
-  getSprite(spriteFileName, sD_base);
+  if(!checkDirection(dir))
+    {
+      std::stringstream e {};
+      e<<"Error when initialising sprite: direction ("<<dir<<") out of range.";
+      exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
+    }
+  loadSprite(spriteFileName, sD_base);
   getMaxYXOffset();
-  //  get
 }
 
 
-void sprite::getSprite(const char spriteFileName [], spriteData & sD)
+void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
 {
   // Load sprite asset--------------------------------------------------------------------------------      
   std::string rawSprite {};// Holds raw contents of sprite file.
@@ -136,6 +141,19 @@ void sprite::getBoundryCoordsForEndSofSingleSliceLine(std::vector<sliceLine> & s
 }
 
 
+bool sprite::checkDirection(const directions dir)
+{ // Return's false if there is no match for dir.
+  return {(dir == DIR_UP ||
+	   dir == DIR_RIGHT_UP ||
+	   dir == DIR_RIGHT ||
+	   dir == DIR_RIGHT_DOWN ||
+	   dir == DIR_DOWN ||
+	   dir == DIR_LEFT_DOWN ||
+	   dir == DIR_LEFT ||
+	   dir != DIR_LEFT_UP)};
+}
+
+
 std::vector<std::vector<sprite::partiallyProcessedSliceLine>> sprite::parserPhaseOne(const std::string & spriteFile,
 										     spriteData & sD)
 {
@@ -149,7 +167,7 @@ std::vector<std::vector<sprite::partiallyProcessedSliceLine>> sprite::parserPhas
       throw std::logic_error(errorMsg.str());
     }
   int iter{3}; /* stores what position we are upto in the parse. start's off as 3 becaue it is used after the initial
-		     character sequence. */
+		  character sequence. */
   // Get cs value----------------------------------------------------------------------
   if(spriteFile[0] == 'c' && spriteFile[1] == 's' && spriteFile[2] == '(')
     {
@@ -301,48 +319,40 @@ const yx sprite::getMaxBottomRightOffset()
 }
 
 
-yx sprite::getNewPos(const sprite::directions dir)
+yx sprite::getNewPos(const directions dir)
 {
   yx d {};
   switch(dir)
     {
-    case LEFT_UP:
-    case LEFT_UP_UPPER:
+    case DIR_LEFT_UP:
       d.y = position.y -1;
       d.x = position.x -1;
       break;
-    case UP:
-    case UP_UPPER:
+    case DIR_UP:
       d.y = position.y -1;
       d.x = position.x;
       break;
-    case RIGHT_UP:
-    case RIGHT_UP_UPPER:
+    case DIR_RIGHT_UP:
       d.y = position.y -1;
       d.x = position.x +1;
       break;
-    case LEFT:
-    case LEFT_UPPER:
+    case DIR_LEFT:
       d.y = position.y;
       d.x = position.x -1;
       break;
-    case RIGHT:
-    case RIGHT_UPPER:
+    case DIR_RIGHT:
       d.y = position.y;
       d.x = position.x +1;
       break;
-    case LEFT_DOWN:
-    case LEFT_DOWN_UPPER:
+    case DIR_LEFT_DOWN:
       d.y = position.y +1;
       d.x = position.x -1;
       break;
-    case DOWN:
-    case DOWN_UPPER:
+    case DIR_DOWN:
       d.y = position.y +1;
       d.x = position.x;
       break;
-    case RIGHT_DOWN:
-    case RIGHT_DOWN_UPPER:
+    case DIR_RIGHT_DOWN:
       d.y = position.y +1;
       d.x = position.x +1;
       break;

@@ -6,14 +6,14 @@
 #include <sstream>
 #include "common.hpp"
 
-// This class should be inherited by other classes such as
-// PlayerSprite and enimySprite and nonInterativeSprite
+
 class sprite
 {
+  //=========================== Member Variables ===============================
 public:
   enum directions
-    {
-      DIR_LEFT, DIR_RIGHT, DIR_UP, DIR_DOWN, DIR_NONE
+    {				// Direction a sprite can move in.
+     DIR_UP, DIR_RIGHT_UP, DIR_RIGHT, DIR_RIGHT_DOWN, DIR_DOWN, DIR_LEFT_DOWN, DIR_LEFT, DIR_LEFT_UP, DIR_NONE
     };
   
 private:
@@ -25,19 +25,21 @@ private:
     };
   
 protected:
-  // Position of the top left corner of the sprite object relative the window.
+  /* Position of the top left corner of the sprite object relative to the
+     window. */
   yx position;
-  /* Holds the maximum bottom right offset. Calculated from all slices. Used for
-     inital (possible) collision detection and bounds checking */
-  yx maxBottomRightOffset;
-  int movementDirection {DIR_NONE};
+  /* Holds the maximum bottom right offset. Calculated from all slices. Used
+     (along with position) for inital collision detection and bounds checking */
+  yx maxBottomRightOffset {};
+  int direction {DIR_NONE};
     
 private:
   /* Holds the sprite animation (slice) that we are upto in the sequences.
-     Should not go above spriteSlices.size(); and should wrappe back around to
+     Should not go above spriteSlices.size(); and should wrape back around to
      zero. */
   int currentSliceNumber;
-  // These two veriables keep track of when sprites can be updates
+  /* StartTime and currentTime keep track of when sprite animations can be
+     updated. */
   std::chrono::high_resolution_clock::time_point startTime =
     std::chrono::high_resolution_clock::now();
   std::chrono::high_resolution_clock::time_point currentTime =
@@ -48,7 +50,7 @@ private:
     int offset;	// Horizontal offset of sliceLine from current curser position.
   };
   struct sliceData
-  {
+  { // A slice is essential one frame of a sprite animation.
     std::vector<sliceLine> slice {};
     // Hold's a list of boundry coordinates for the slice.
     std::vector<yx> sliceBoundryCoords {};
@@ -70,8 +72,12 @@ protected:
        This object holds the slices that make up the sprite. */
     std::vector<sliceData> spriteSlices {};
   } sD_base;
-  
-private:    
+
+  //=========================== Member Functions ===============================
+private:
+  /* Checks to make sure that dir is one of the values found in the enum
+     directions. */
+  bool checkDirection(const directions dir);
   // Split up file into cycleSpeed and unprocessesd representation of sprite.
   std::vector<std::vector<partiallyProcessedSliceLine>>
   parserPhaseOne(const std::string & spriteFile, spriteData & sD);
@@ -80,13 +86,13 @@ private:
      partiallyProcessedSliceLine's which it then returnes. */
   std::vector<std::vector<partiallyProcessedSliceLine>>
   getSliceLines(const std::string & spriteFile, int & iter);
-  /* Extracts sprite slice line for spriteFile and places in spriteSliceLine,
+  /* Extracts sprite slice line from spriteFile and places in spriteSliceLine,
      if there are spaces to the left places in lSpace and finally spFIter udates
      iter to new position. */
   partiallyProcessedSliceLine getSliceLine(const std::string & spriteFile,
 					   int & spFIter);
   /* Calls collaps on slice lines and stores the lines in a type corresponding
-  to the return value */
+     to the return value */
   void parserPhaseTwo
   (const std::vector<std::vector<sprite::partiallyProcessedSliceLine>> & pPSL,
    spriteData & sD);
@@ -117,7 +123,7 @@ protected:
   // This vector hold's the sprites (sprite slices and cycle speed's.)
   std::vector<spriteData> spriteS;
   /* Initialises sD_base */
-  void getSprite(const char spriteFileName [], spriteData & sD);
+  void loadSprite(const char spriteFileName [], spriteData & sD);
   void resetCurrentSliceNum()
   {
     currentSliceNumber = 0;
@@ -162,9 +168,10 @@ public:
   {
     return inBounds(y, x, 0, 0);	// We have an inner boarder of 0, 0
   }
-  /* constructor reads spriteFile and converts it to the internal object
-  structure */
-  sprite(const yx max, const yx pos, const char spriteFileName []);
+  /* The constructor reads the sprite file located at spriteFileName and
+     converts it's contents to the internal data structure needed by sprite. */
+  sprite(const yx max, const yx pos, const directions dir,
+	 const char spriteFileName []);
   /* Returns the of position of the sprite after moving one character (including
      diagonal movement) in the direction dir */
   yx peekAtPos(const directions dir);

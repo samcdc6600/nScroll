@@ -223,7 +223,7 @@ void initPlayerSprite(const yx maxyx, std::string & buff, std::string::const_ite
 	coordsSS>>c;
       }
       coordsSS>>initPos.x;
-      levelRules.gamePlayer = (new player(sprites, maxyx, initPos, 25, player::RIGHT));
+      levelRules.gamePlayer = (new player(sprites, maxyx, initPos, player::RIGHT_CHAR, 25));
       ++current, ++peek;
     }
   else

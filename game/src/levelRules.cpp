@@ -1,5 +1,5 @@
 #include "include/levelRules.hpp"
-#include "include/sprite.hpp"
+#include "include/player.hpp"
 
 
 //test level agains sprite's
@@ -42,13 +42,13 @@ char rules::nearPass(const std::vector<int> playerSpChoords,
 }
 
 
-void rules::movePlayer(const sprite::directions input)//, const yx maxyx)
+void rules::movePlayer(const player::directionChars input)//, const yx maxyx)
 {
   yx peekPos {gamePlayer->peekAtPos(input)};
   if(gamePlayer->inBounds(peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.y,
 			  PLAYER_MOVEMENT_INNER_BOARDER.x))
     {
-      gamePlayer->updatePosRel(sprite::directions(input));      
+      gamePlayer->updatePosRel(player::directionChars(input));      
     }
   else
     { /* Move the player as long as they will stay within
@@ -70,12 +70,12 @@ void rules::movePlayer(const sprite::directions input)//, const yx maxyx)
 void rules::physics(const int input, int & position, const yx maxyx,
 		    const size_t backgroundLength)
 {
-  if(input == sprite::UP || input == sprite::UP_UPPER ||
-     input == sprite::LEFT || input == sprite::LEFT_UPPER ||
-     input == sprite::DOWN || input == sprite::DOWN_UPPER ||
-     input == sprite::RIGHT || input == sprite::RIGHT_UPPER)
+  if(input == player::UP_CHAR || input == player::UP_UPPER_CHAR ||
+     input == player::LEFT_CHAR || input == player::LEFT_UPPER_CHAR ||
+     input == player::DOWN_CHAR || input == player::DOWN_UPPER_CHAR ||
+     input == player::RIGHT_CHAR || input == player::RIGHT_UPPER_CHAR)
     {
-      movePlayer(sprite::directions(input));
+      movePlayer(player::directionChars(input));
       //		gamePlayer->updatePosRel(sprite::directions(input));
     }
 }
