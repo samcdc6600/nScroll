@@ -192,7 +192,7 @@ sprite::partiallyProcessedSliceLine sprite::getSliceLine
 
 
 /* Calls collaps on slice lines and stores the lines in a type corresponding to
-the return value. */
+   the return value. */
 void sprite::parserPhaseTwo
 (const std::vector<std::vector<sprite::partiallyProcessedSliceLine>> & pPSL,
  spriteData & sD)
@@ -296,7 +296,7 @@ void sprite::getBoundryCoordsForEndSofSingleSliceLine
 {
   constexpr int subZero {-1};
   /* Keep track of the first non TRANS_SP char and of the last non TRANS_SP
-char. */
+     char. */
   int first {subZero}, last {subZero};
   for(size_t iter {}; iter < s[y].sliceLine.size(); ++iter)
     {
@@ -348,8 +348,32 @@ void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
 }
 
 
-void initialiseDirectionsVector()
-{
+void sprite::initialiseDirectionsVector()
+{ /* Sprites should only have these numbers of sets of slices. 5 and 9 and not
+     4 and 8 because we must account for DIR_NONE. */
+  constexpr int spriteNums1 {1}, spriteNums2 {5}, spriteNums3 {9};
+  switch(spriteS.size())
+    {
+    case spriteNums1:
+      spriteAnimationDirections = std::vector<directions> {DIR_NONE};
+      break;
+    case spriteNums2:
+      spriteAnimationDirections = std::vector<directions> {DIR_NONE,
+	DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,};
+      break;
+    case spriteNums3:
+      spriteAnimationDirections = std::vector<directions> {DIR_NONE,
+	DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,
+	DIR_RIGHT_UP, DIR_RIGHT_DOWN, DIR_LEFT_DOWN, DIR_LEFT_UP};
+      break;
+    default:
+      std::stringstream e {};
+      e<<"Error in initialiseDirectionsVector() in sprite.cpp, spriteS::size ("
+       <<spriteS.size()<<") not equal to "<<spriteNums1<<", "<<spriteNums2
+       <<" or "<<spriteNums3<<".";
+	
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
 }
 
 

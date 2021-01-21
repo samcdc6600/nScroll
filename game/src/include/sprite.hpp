@@ -11,8 +11,6 @@ class sprite
 {
   //=========================== Member Variables ===============================
 public:
-  
-private:
   enum directions
     {				// Direction a sprite can move in.
       /* Sprites should have either 1 set of slices (in which case they should
@@ -24,6 +22,8 @@ private:
       DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,
       DIR_RIGHT_UP, DIR_RIGHT_DOWN, DIR_LEFT_DOWN, DIR_LEFT_UP
     };
+  
+private:
   std::vector<directions> spriteAnimationDirections {};
   const yx maxyx;		// Window size.
   enum sliceLineIndex
@@ -143,8 +143,9 @@ protected:
     currentSliceNumber = 0;
   }
   /* Sprites should have either 1 set of slices 4 sets of slices 8. This
-     function checks that spriteS::size is equal to one of these values and adds
-     the appropriate directions from directions to spriteAnimationDirections.*/
+     function checks that spriteS.size() is equal to one of these values and
+     adds the appropriate directions from directions to
+     spriteAnimationDirections. */
   void initialiseDirectionsVector();
   /* We can get a const version of maxBottomRightOffset in a derived class
      (couldn't make maxBottomRightOffset in sprite. At least we can force it for
@@ -199,8 +200,6 @@ public:
   virtual void updatePosRel(const directions dir);
   // displays sprite (potentially more then one file's worth of sprites.)
   virtual void draw(int spriteNum, bool updateSlice);
-  // Draw same sprite slice as before.
-  virtual void draw() {draw(false);}
 
 };
 
