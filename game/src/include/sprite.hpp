@@ -11,14 +11,20 @@ class sprite
 {
   //=========================== Member Variables ===============================
 public:
-  enum directions
-    {				// Direction a sprite can move in.
-      /* These index spriteS and so DIR_NONE must to ensure that sprites that
-	 only have one animation sequence work. */
-      DIR_NONE, DIR_UP, DIR_RIGHT_UP, DIR_RIGHT, DIR_RIGHT_DOWN, DIR_DOWN, DIR_LEFT_DOWN, DIR_LEFT, DIR_LEFT_UP
-    };
   
 private:
+  enum directions
+    {				// Direction a sprite can move in.
+      /* Sprites should have either 1 set of slices (in which case they should
+	 only index into spriteS with DIR_NONE), 4 sets of slices (in which case
+	 they should only index into spriteS with DIR_NONE, DIR_UP, DIR_RIGHT,
+	 DIR_DOWN and DIR_LEFT) or 8 sets of slices (in which case they should
+	 index into spriteS with all directions.) */
+      DIR_NONE,
+      DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,
+      DIR_RIGHT_UP, DIR_RIGHT_DOWN, DIR_LEFT_DOWN, DIR_LEFT_UP
+    };
+  std::vector<directions> spriteAnimationDirections {};
   const yx maxyx;		// Window size.
   enum sliceLineIndex
     {				// Used as index into sliceLine vector.
@@ -74,8 +80,16 @@ protected:
        This object holds the slices that make up the sprite. */
     std::vector<sliceData> spriteSlices {};
   } sD_base;
+  // This vector hold's the sprites (sprite slices and cycle speed's.)
+  std::vector<spriteData> spriteS;
 
   //=========================== Member Functions ===============================
+public:
+  /* The constructor reads the sprite file located at spriteFileName and
+     converts it's contents to the internal data structure needed by sprite. */
+  sprite(const yx max, const yx pos, const directions dir,
+	 const char spriteFileName []);
+  virtual ~sprite() {};
 private:
   /* Checks to make sure that dir is one of the values found in the enum
      directions. */
@@ -122,14 +136,16 @@ private:
    std::vector<yx> & sliceBoundryCoords);
   
 protected:
-  // This vector hold's the sprites (sprite slices and cycle speed's.)
-  std::vector<spriteData> spriteS;
   /* Initialises sD_base */
   void loadSprite(const char spriteFileName [], spriteData & sD);
   void resetCurrentSliceNum()
   {
     currentSliceNumber = 0;
   }
+  /* Sprites should have either 1 set of slices 4 sets of slices 8. This
+     function checks that spriteS::size is equal to one of these values and adds
+     the appropriate directions from directions to spriteAnimationDirections.*/
+  void initialiseDirectionsVector();
   /* We can get a const version of maxBottomRightOffset in a derived class
      (couldn't make maxBottomRightOffset in sprite. At least we can force it for
      derived classes.) */
@@ -170,10 +186,6 @@ public:
   {
     return inBounds(y, x, 0, 0);	// We have an inner boarder of 0, 0
   }
-  /* The constructor reads the sprite file located at spriteFileName and
-     converts it's contents to the internal data structure needed by sprite. */
-  sprite(const yx max, const yx pos, const directions dir,
-	 const char spriteFileName []);
   /* Returns the of position of the sprite after moving one character (including
      diagonal movement) in the direction dir */
   yx peekAtPos(const directions dir);
@@ -187,11 +199,9 @@ public:
   virtual void updatePosRel(const directions dir);
   // displays sprite (potentially more then one file's worth of sprites.)
   virtual void draw(int spriteNum, bool updateSlice);
-  // For sprites that only have one set of slices.
-  virtual void draw(bool updateSlice) = 0;
   // Draw same sprite slice as before.
   virtual void draw() {draw(false);}
-  virtual ~sprite() {};
+
 };
 
 #endif
