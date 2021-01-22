@@ -121,7 +121,7 @@ private:
   /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated
      from the tallest spriteSlice and longest sliceLine in sD_basespriteSlices.
      The offsets are interprited as a point at (0,0) or to the lower left of
-     position. These values are used for possible collision detection and bounds
+     position. These values are used for collision detection and bounds
      checking. */
   void getMaxYXOffset();
   /* Iterates through spriteSlices in sD and set's up boundry coords for each
@@ -205,7 +205,7 @@ public:
      1. The direction depends on the value of ch. */
   virtual void updatePosRel(const directions dir);
   // displays sprite (potentially more then one file's worth of sprites.)
-  virtual void draw(int spriteNum, bool updateSlice);
+  virtual void draw(bool updateSlice);
 
 };
 

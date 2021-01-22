@@ -60,7 +60,6 @@ public:
   directions convertDirectionCharsToDirections(const directionChars dir);
   yx peekAtPos(const directionChars dir);
   virtual void updatePosRel(const directionChars dir);
-  virtual void draw(bool updateSlice);  
 };
 
 #endif

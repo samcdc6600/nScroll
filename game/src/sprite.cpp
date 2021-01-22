@@ -239,14 +239,27 @@ void sprite::getMaxYXOffset()
      getSprite() when getSprite() was called in the constructors member
      initializer list >:'( */
   size_t max {};
-  for(sliceData s: sD_base.spriteSlices) // Get y offset :).
-    max = s.slice.size() > max ? s.slice.size() : s.slice.size();
+
+  for(auto spriteSlices: spriteSliceSets)
+    {
+      for(sliceData s: (*spriteSlices).spriteSlices) // Get y offset :).
+	{
+	  max = s.slice.size() > max ? s.slice.size() : s.slice.size();
+	}
+    }
   // The upper left of the sprite is (0,0) so we need size -1 :).
   maxBottomRightOffset.y = max -1;
   max = 0;
-  for(sliceData s: sD_base.spriteSlices)
-    for(sliceLine sl: s.slice)
-      max = sl.sliceLine.size() > max ? sl.sliceLine.size() : max;
+    for(auto spriteSlices: spriteSliceSets)
+      {
+	for(sliceData s: (*spriteSlices).spriteSlices)
+	  {
+	    for(sliceLine sl: s.slice)
+	      {
+		max = sl.sliceLine.size() > max ? sl.sliceLine.size() : max;
+	      }
+	  }
+    }
   maxBottomRightOffset.x = max -1;
 }
 
@@ -365,9 +378,6 @@ void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
 
 void sprite::initialiseDirectionsVector()
 {
-  // std::stringstream e {};
-  // e<<"spriteS.size() = "<<spriteS.size()<<'\n';
-  // exit(e.str(), 0);
   switch(spriteS.size())
     {
     case spriteNums1:
@@ -474,26 +484,22 @@ void sprite::updatePosRel(const sprite::directions dir)
   position = getNewPos(dir);
 }
 
-
-void sprite::draw(int spriteNum, bool updateSlice)
+//int spriteNum, 
+void sprite::draw(bool updateSlice)
 {
-  //  checkSpriteRanges(spriteNum);
-  /*  printw("currentSliceNumber = ");
-      refresh();
-      sleep(1000);*/
   for(size_t sliceLine{}; sliceLine <
-	spriteS[spriteNum].spriteSlices[currentSliceNumber].slice.size();
+	spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
       ++sliceLine)
     {      
       for(size_t sliceLineIter{}; sliceLineIter <
-	    spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine.size();
+	    spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine.size();
 	  ++sliceLineIter)
 	{ // Move curser to the right position.
 	  setCursor(position.y + sliceLine, position.x +
-		    spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].offset +
+		    spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].offset +
 		    sliceLineIter, maxyx);
 	  // Get the character.
-	  int ch {spriteS[spriteNum].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine[sliceLineIter]};
+	  int ch {spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine[sliceLineIter]};
 	  drawCh(ch);
 
 	  if(updateSlice)
@@ -501,14 +507,14 @@ void sprite::draw(int spriteNum, bool updateSlice)
 	      currentTime = std::chrono::high_resolution_clock::now();
 	      if(std::chrono::duration_cast<std::chrono::milliseconds>(currentTime -
 								       startTime).count() >
-		 spriteS[spriteNum].cycleSpeed)
+		 spriteS[direction].cycleSpeed)
 		{
 		  startTime = std::chrono::high_resolution_clock::now();
 		  currentSliceNumber++; // Move to next slice
 		  /* -1 because indexing from 0, so currentSliceNumber shouldn't
 		     be bigger then size() -1 */
 		  if(currentSliceNumber >
-		     (spriteS[spriteNum].spriteSlices.size() -1))
+		     (spriteS[direction].spriteSlices.size() -1))
 		    { /* We have displayed all the slices so the value should
 			 wrape arround. */
 		      currentSliceNumber = 0;
