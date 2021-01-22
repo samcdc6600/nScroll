@@ -20,7 +20,7 @@ void loadAssets(const yx maxyx, const char bgFileName [], std::vector<int> & bac
     }
   collapse(levelBackGround, background); //collapse nonColor escape sequences.
   // Initialise player and non-player sprites (rules file).
-  parseAndInitialiseRules(maxyx, rulesFileName, levelRules);
+  loadParseAndInitialiseRules(maxyx, rulesFileName, levelRules);
 }
 
 
@@ -42,7 +42,7 @@ bool loadASCIIFile(const char name [], std::string & buff)
 }
 
 
-void parseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules & levelRules)
+void loadParseAndInitialiseRules(const yx maxyx, const char rulesFileName [], rules & levelRules)
 {
   std::string buff {};
   if(!loadASCIIFile(rulesFileName, buff)) // Load in the rules file.

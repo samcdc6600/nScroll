@@ -24,7 +24,6 @@ public:
     };
   
 private:
-  std::vector<directions> spriteAnimationDirections {};
   const yx maxyx;		// Window size.
   enum sliceLineIndex
     {				// Used as index into sliceLine vector.
@@ -33,6 +32,11 @@ private:
     };
   
 protected:
+  /* Sprites should only have these numbers of sets of slices. 5 and 9 and not
+     4 and 8 because we must account for DIR_NONE. */
+  static constexpr int spriteNums1 {1}, spriteNums2 {5}, spriteNums3 {9};
+  // Stores the animation directions a sprite instance can use.
+  std::vector<directions> spriteAnimationDirections {};
   /* Position of the top left corner of the sprite object relative to the
      window. */
   yx position;
@@ -87,8 +91,8 @@ protected:
 public:
   /* The constructor reads the sprite file located at spriteFileName and
      converts it's contents to the internal data structure needed by sprite. */
-  sprite(const yx max, const yx pos, const directions dir,
-	 const char spriteFileName []);
+  sprite(std::vector<std::string> spriteFileNames, const yx max, const yx pos,
+	 const directions dir);
   virtual ~sprite() {};
 private:
   /* Checks to make sure that dir is one of the values found in the enum

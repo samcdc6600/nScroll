@@ -16,22 +16,22 @@ extern setColorMode colorMode;//must be included for the draw function
 // }
 
 
-player::player(std::vector<std::string> sprites, const yx max, const yx pos,
-	       const directionChars dir, const int h)
-  : sprite(max, pos, convertDirectionCharsToDirections(dir), sprites[INITIAL_SPRITE_INDEX].c_str()), health(h)
+player::player(std::vector<std::string> spriteFileNames, const yx max,
+	       const yx pos, const directionChars dir, const int h)
+  : sprite(sprites, max, pos, convertDirectionCharsToDirections(dir)), health(h)
 {
-  if(sprites.size() != NUM_PLAYER_SPRITES)
-    {
-      std::stringstream e {};
-      e<<"Error when initialising player: "<<sprites.size()<<" player "
-	"sprites, but expected "<<NUM_PLAYER_SPRITES<<" sprites.";
-      exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
-    }
+  // if(sprites.size() != NUM_PLAYER_SPRITES)
+  //   {
+  //     std::stringstream e {};
+  //     e<<"Error when initialising player: "<<sprites.size()<<" player "
+  // 	"sprites, but expected "<<NUM_PLAYER_SPRITES<<" sprites.";
+  //     exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
+  //   }
 
-  for(int iter {ADDITIONAL_SPRITES_OFFSET}; iter < NUM_PLAYER_SPRITES; ++iter)
-    {
-      loadSprite(sprites[iter].c_str(), sD_player[iter]);
-    }
+  // for(int iter {ADDITIONAL_SPRITES_OFFSET}; iter < NUM_PLAYER_SPRITES; ++iter)
+  //   {
+  //     loadSprite(sprites[iter].c_str(), sD_player[iter]);
+  //   }
 }
 
 
@@ -92,12 +92,35 @@ void player::updatePosRel(const directionChars d)
 { /* Update's position of sprite in a relative fashion with reference to the
      sprite and update's direction. */
   directions dir {convertDirectionCharsToDirections(d)};
-  yx p {getNewPos(dir)};
+  yx p {getNewPos(dir)};	// GetNewPos will check if dir is valid!
   position = p;
   if(direction != dir)
     {				// Change direction.
-      resetCurrentSliceNum();
-      direction = dir;
+      // resetCurrentSliceNum();
+      // bool found {false};
+      // for(auto iter {spriteAnimationDirections.begin()}; iter !=
+      // 	    spriteAnimationDirections.end(); iter++)
+      // 	{
+      // 	  if(dir == *iter)
+      // 	    {
+      // 	      found = true;
+      // 	    }
+      // 	}
+      // if(!found)
+      // 	{
+	  std::stringstream e {};
+	  e<<"Error (in updatePosRel() in player.cpp): dir ("<<dir<<") wasn't "
+	    "found in spriteAnimationDirections (";
+	  for(auto iter {spriteAnimationDirections.begin()}; iter !=
+		spriteAnimationDirections.end(); iter++)
+	    {
+	      e<<*iter<<", ";
+	    }
+	  e<<".) spriteAnimationDirections[dir] = "<<spriteAnimationDirections[dir]
+	   <<". spriteS.size() = "<<spriteS.size()<<'\n';
+	  exit(e.str(), ERROR_INVALID_DIRECTION);
+      // 	}
+      direction = spriteAnimationDirections[dir];
     }
 
 

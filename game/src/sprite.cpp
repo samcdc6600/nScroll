@@ -341,7 +341,7 @@ void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
   parserPhaseTwo(pPSpriteSliceS, sD);
   // Append sD to spriteS vector.
   spriteS.push_back(sD);
-  /* Set currentSliceNumber to 0. This veriable should only take on values
+  /* Set currentSliceNumber to 0. This variable should only take on values
      between 0 and (spriteSlices.size() -1) */
   currentSliceNumber = 0;
   setUpBoundryCoordsVector(sD);
@@ -349,17 +349,20 @@ void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
 
 
 void sprite::initialiseDirectionsVector()
-{ /* Sprites should only have these numbers of sets of slices. 5 and 9 and not
-     4 and 8 because we must account for DIR_NONE. */
-  constexpr int spriteNums1 {1}, spriteNums2 {5}, spriteNums3 {9};
+{
+  // std::stringstream e {};
+  // e<<"spriteS.size() = "<<spriteS.size()<<'\n';
+  // exit(e.str(), 0);
   switch(spriteS.size())
     {
     case spriteNums1:
-      spriteAnimationDirections = std::vector<directions> {DIR_NONE};
+      spriteAnimationDirections = std::vector<directions>
+	{DIR_NONE, DIR_NONE, DIR_NONE, DIR_NONE, DIR_NONE, DIR_NONE, DIR_NONE,
+	 DIR_NONE, DIR_NONE,};
       break;
     case spriteNums2:
       spriteAnimationDirections = std::vector<directions> {DIR_NONE,
-	DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,};
+	DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT};
       break;
     case spriteNums3:
       spriteAnimationDirections = std::vector<directions> {DIR_NONE,
@@ -368,7 +371,7 @@ void sprite::initialiseDirectionsVector()
       break;
     default:
       std::stringstream e {};
-      e<<"Error in initialiseDirectionsVector() in sprite.cpp, spriteS::size ("
+      e<<"Error (in initialiseDirectionsVector() in sprite.cpp): SpriteS::size ("
        <<spriteS.size()<<") not equal to "<<spriteNums1<<", "<<spriteNums2
        <<" or "<<spriteNums3<<".";
 	

@@ -12,10 +12,9 @@
 
 class player: public sprite
 {
-  static constexpr int NUM_PLAYER_SPRITES {4};
-  static constexpr int INITIAL_SPRITE_INDEX {0};
-  static constexpr int ADDITIONAL_SPRITES_OFFSET {1};
-  spriteData sD_player [NUM_PLAYER_SPRITES];
+  // static constexpr int INITIAL_SPRITE_INDEX {0};
+  // static constexpr int ADDITIONAL_SPRITES_OFFSET {1};
+  // spriteData sD_player [NUM_PLAYER_SPRITES];
   int health;
 
   // This function is not intended for use in player (and thus is private.)
@@ -54,7 +53,7 @@ private:
   // yx getNewPos(const directionChars dir);
 
 public:
-  player(std::vector<std::string> sprites, const yx max, const yx pos,
+  player(std::vector<std::string> spriteFileNames, const yx max, const yx pos,
 	 const directionChars dir, const int h);
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.
