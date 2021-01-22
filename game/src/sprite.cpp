@@ -8,8 +8,8 @@
 #include "include/common.hpp"
 
 
-sprite::sprite(const yx max, const yx pos, const directions dir,
-	       const char spriteFileName [])
+sprite::sprite(std::vector<std::string> spriteFileNames, const yx max,
+	       const yx pos, const directions dir)
   : maxyx(max), position(pos), direction(dir), currentSliceNumber(0),
     startTime(std::chrono::high_resolution_clock::now()),
     currentTime(std::chrono::high_resolution_clock::now())
@@ -20,10 +20,25 @@ sprite::sprite(const yx max, const yx pos, const directions dir,
       e<<"Error when initialising sprite: direction ("<<dir<<") out of range.";
       exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
     }
-  loadSprite(spriteFileName, sD_base);
+  for(auto spriteFileName {spriteFileNames.begin()};
+      spriteFileName != spriteFileNames.end(); spriteFileName++)
+    {
+      spriteSliceSets.push_back(new spriteData ());
+      loadSprite(spriteFileName->c_str(), *spriteSliceSets.back());
+    }
   initialiseDirectionsVector();
   getMaxYXOffset();
 }
+
+
+sprite::~sprite()
+{
+  for(auto sliceSet {spriteSliceSets.begin()};
+      sliceSet != spriteSliceSets.end(); sliceSet++)
+    { // The elements of spriteSliceSets were dynamically allocated!
+      delete *sliceSet;
+    }
+};
 
 
 bool sprite::checkDirection(const directions dir)

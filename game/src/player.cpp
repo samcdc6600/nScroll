@@ -18,7 +18,8 @@ extern setColorMode colorMode;//must be included for the draw function
 
 player::player(std::vector<std::string> spriteFileNames, const yx max,
 	       const yx pos, const directionChars dir, const int h)
-  : sprite(sprites, max, pos, convertDirectionCharsToDirections(dir)), health(h)
+  : sprite(spriteFileNames, max, pos, convertDirectionCharsToDirections(dir)),
+    health(h)
 {
   // if(sprites.size() != NUM_PLAYER_SPRITES)
   //   {

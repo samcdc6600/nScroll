@@ -83,7 +83,9 @@ protected:
        that make up the horizontal lines of slices.
        This object holds the slices that make up the sprite. */
     std::vector<sliceData> spriteSlices {};
-  } sD_base;
+  };
+  // The set of slices for each sprite direction are stored here.
+  std::vector<spriteData *> spriteSliceSets {};
   // This vector hold's the sprites (sprite slices and cycle speed's.)
   std::vector<spriteData> spriteS;
 
@@ -93,7 +95,7 @@ public:
      converts it's contents to the internal data structure needed by sprite. */
   sprite(std::vector<std::string> spriteFileNames, const yx max, const yx pos,
 	 const directions dir);
-  virtual ~sprite() {};
+  ~sprite();
 private:
   /* Checks to make sure that dir is one of the values found in the enum
      directions. */
