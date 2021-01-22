@@ -78,6 +78,7 @@ void player::updatePosRel(const directionChars d)
   position = p;
   if(direction != dir)
     {				// Change direction.
+      resetCurrentSliceNum();
       direction = spriteAnimationDirections[dir];
     }
 }

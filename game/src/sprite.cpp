@@ -386,8 +386,12 @@ void sprite::initialiseDirectionsVector()
 	 DIR_NONE, DIR_NONE,};
       break;
     case spriteNums2:
+      /* When there are only 5 slice sets the directions DIR_RIGHT_UP and
+	 DIR_RIGHT_DOWN map to the right direction slice set and the directions
+	 DIR_LEFT and DIR_LEFT map to the left direction slice set. */
       spriteAnimationDirections = std::vector<directions> {DIR_NONE,
-	DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT};
+	DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,
+	DIR_RIGHT, DIR_RIGHT, DIR_LEFT, DIR_LEFT};
       break;
     case spriteNums3:
       spriteAnimationDirections = std::vector<directions> {DIR_NONE,

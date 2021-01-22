@@ -206,7 +206,6 @@ public:
   virtual void updatePosRel(const directions dir);
   // displays sprite (potentially more then one file's worth of sprites.)
   virtual void draw(bool updateSlice);
-
 };
 
 #endif
