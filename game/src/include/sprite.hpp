@@ -163,35 +163,38 @@ protected:
   yx getNewPos(const directions dir);
   
 public:
-  /* Checks that y and x are in the ranges [0 + innerBoarderY, maxyx.y -
-     innerBoarderY) and [0 + innerBoarderX, maxyx.x - innderBoaderX)
+  /* Checks that y and x are in the ranges [0 + yBound, maxyx.y -
+     yBound) and [0 + xBound, maxyx.x - xBound)
      respectively. */
-  inline bool inBounds(const int y, const int x, const int innerBoarderY,
-		       int innerBoarderX)
+  inline bool inWindowInnerMargin(const int y, const int x, const int yBound,
+		       int xBound)
   {
-    if(!(innerBoarderY >= 0 && innerBoarderX >= 0))
+    if(!(yBound >= 0 && xBound >= 0))
       {
 	std::stringstream e {};
 	e<<"Error negative inner window boarder/s ("<<y<<", "<<x<<") given";
 	exit(e.str().c_str(), ERROR_BAD_LOGIC);
       }
-    
-    return (checkRange(y, 0 + innerBoarderY, maxyx.y - innerBoarderY) && // Check top left coords.
-	    checkRange(x, 0 + innerBoarderX, maxyx.x - innerBoarderX) &&
+    // Check top left coords.
+    return (checkRange(y, 0 + yBound, maxyx.y - yBound) &&
+	    checkRange(x, 0 + xBound, maxyx.x - xBound) &&
 	    // check bottom right coords.
-	    checkRange(y + maxBottomRightOffset.y, 0 + innerBoarderY, maxyx.y - innerBoarderY) &&
-	    checkRange(x + maxBottomRightOffset.x, 0 + innerBoarderX, maxyx.x - innerBoarderX));
+	    checkRange(y + maxBottomRightOffset.y,
+		       0 + yBound, maxyx.y - yBound) &&
+	    checkRange(x + maxBottomRightOffset.x,
+		       0 + xBound, maxyx.x - xBound));
     
     std::stringstream e {};
     e<<"Error invalid sprite coordinate ("<<y<<", "<<x<<") encountered.";
     exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
   }
+
   
   /* Checks that y and x are in range (0 to screen height and width), by calling
      checkRange(const int, const int). */
-  inline bool inScreenBounds(const int y, const int x)
+  inline bool inWindow(const int y, const int x)
   {
-    return inBounds(y, x, 0, 0);	// We have an inner boarder of 0, 0
+    return inWindowInnerMargin(y, x, 0, 0); // We have an inner boarder of 0, 0
   }
   /* Returns the of position of the sprite after moving one character (including
      diagonal movement) in the direction dir */

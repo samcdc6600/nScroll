@@ -77,16 +77,18 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
   // Control's background update time.
   auto currentTimeInputBackground = std::chrono::high_resolution_clock::now();
 
-  
+  /* Position seems to be re-initialized on each iteration of the following
+     while loop. We feel like this is not what should be happening but we also
+     know that we are probably wrong. */
+  int position {};
   while(true)
     {
-      int input {};  
-      int position {};
+      int input {};
       const size_t backgroundLen {background.size() /
 	levelRules.backgroundHeight};
-      
-      do
-	{	  
+
+      // do
+      // 	{
 	  input = getch();
 	  if(input == ESC_CHAR)
 	    {
@@ -106,12 +108,12 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
 	  refresh();
 	  
 	  sleep(levelRules.engineSleepTime);
-	  currentTimeInputBackground =
-	    std::chrono::high_resolution_clock::now();
-	}
-      while(std::chrono::duration_cast<std::chrono::milliseconds>
-	    (currentTimeInputBackground - startTimeInput).count() < 255);
-      
-      startTimeInput = std::chrono::high_resolution_clock::now();
+	  // currentTimeInputBackground =
+	  //   std::chrono::high_resolution_clock::now();
+      // 	}
+      // while(std::chrono::duration_cast<std::chrono::milliseconds>
+      // 	    (currentTimeInputBackground - startTimeInput).count() < 255);
+      // position++;      
+      // startTimeInput = std::chrono::high_resolution_clock::now();
     }
 }

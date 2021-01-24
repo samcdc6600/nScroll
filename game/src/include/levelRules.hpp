@@ -23,7 +23,9 @@ private:
   char nearPass(const std::vector<int> playerSpChoords,
 		const std::vector<int> spChoords);
   // Moves the player 
-  void movePlayer(const player::directionChars input);//, const yx maxyx);
+  void movePlayer(const player::directionChars input,
+		  int & position, const yx maxyx,
+		  const size_t backgroundLength);//, const yx maxyx);
 
 public:
   // The duration of time we call sleep() for in the game loop.

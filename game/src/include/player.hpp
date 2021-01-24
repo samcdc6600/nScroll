@@ -57,7 +57,8 @@ public:
 	 const directionChars dir, const int h);
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.
-  directions convertDirectionCharsToDirections(const directionChars dir);
+  static directions convertDirectionCharsToDirections(const directionChars dir);
+  static bool isDirectionCharInputValid(const int input);
   yx peekAtPos(const directionChars dir);
   virtual void updatePosRel(const directionChars dir);
 };

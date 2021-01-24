@@ -64,6 +64,15 @@ sprite::directions player::convertDirectionCharsToDirections
 }
 
 
+bool player::isDirectionCharInputValid(const int input)
+{
+  return (input == player::UP_CHAR || input == player::UP_UPPER_CHAR ||
+	  input == player::LEFT_CHAR || input == player::LEFT_UPPER_CHAR ||
+	  input == player::DOWN_CHAR || input == player::DOWN_UPPER_CHAR ||
+	  input == player::RIGHT_CHAR || input == player::RIGHT_UPPER_CHAR);
+}
+
+
 yx player::peekAtPos(const directionChars dir)
 {
   return getNewPos(convertDirectionCharsToDirections(dir));
