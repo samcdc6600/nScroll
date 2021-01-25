@@ -25,7 +25,19 @@ private:
   // Moves the player 
   void movePlayer(const player::directionChars input,
 		  int & position, const yx maxyx,
-		  const size_t backgroundLength);//, const yx maxyx);
+		  const size_t backgroundLength);
+  // Moves the player when interacting with the inner margin.
+  void movePlayerWhenInteractingWithInnerMargin
+  (const player::directionChars input, int & position, const yx maxyx,
+   const size_t backgroundLength, const yx peekPos);
+  void movePlayerRightWhenInteractingWithInnerMargin
+  (const player::directionChars input, int & position, const yx maxyx,
+   const size_t backgroundLength, const yx peekPos,
+   const int REACHED_INNER_MARGIN_X);
+  void movePlayerLeftWhenInteractingWithInnerMargin
+(const player::directionChars input, int & position, const yx maxyx,
+ const size_t backgroundLength, const yx peekPos,
+ const int REACHED_INNER_MARGIN_X);
 
 public:
   // The duration of time we call sleep() for in the game loop.
