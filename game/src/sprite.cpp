@@ -462,6 +462,90 @@ yx sprite::getNewPos(const directions dir)
 }
 
 
+bool sprite::checkBoundValue(const int bound)
+{
+  if(!(bound >= 0))
+    {
+      return true;
+    }
+  return false;
+}
+
+
+void sprite::checkBoundValue(const std::string callerName, const int bound)
+{
+  if(checkBoundValue(bound))
+    {
+      std::stringstream e {};
+      e<<"Error (in "<<callerName<<"() in sprite.hpp): invalid window inner "
+	"margin value ("<<bound<<"). This value should be "
+	">= 0.";
+      exit(e.str().c_str(), ERROR_BAD_LOGIC);
+    }
+}
+
+
+void sprite::checkBoundValues(const std::string callerName, const int yBound,
+			      const int xBound)
+{
+  if(checkBoundValue(yBound) || checkBoundValue(xBound))
+    {
+      std::stringstream e {};
+      e<<"Error (in "<<callerName<<"() in sprite.hpp): invalid window inner "
+	"margin values ("<<yBound<<", "<<xBound<<"). These values should be "
+	">= 0.";
+      exit(e.str().c_str(), ERROR_BAD_LOGIC);
+    }
+}
+
+
+bool sprite::inWindowInnerMargin(const int y, const int x, const int yBound,
+			 int xBound)
+{
+  checkBoundValues("inWindowInnerMargin", yBound, xBound);
+  // Check top left coords.
+  return (checkRange(y, 0 + yBound, maxyx.y - yBound) &&
+	  checkRange(x, 0 + xBound, maxyx.x - xBound) &&
+	  // check bottom right coords.
+	  checkRange(y + maxBottomRightOffset.y,
+		     0 + yBound, maxyx.y - yBound) &&
+	  checkRange(x + maxBottomRightOffset.x,
+		     0 + xBound, maxyx.x - xBound));
+    
+  std::stringstream e {};
+  e<<"Error (in inWindowInnerMargin()): invalid sprite coordinate ("<<y<<", "
+   <<x<<") encountered.";
+  exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
+}
+
+
+bool sprite::leftOfWindowInnerRightMargin(const int x, const int xBound,
+					  const yx maxyx)
+{ // Return true if we are to the left of the windows right inner margin.
+  checkBoundValue("leftOfWindowInnerMargin", xBound);
+  // std::stringstream e {};
+  // e<<"In leftOfWindowInnerMargin()";
+  // exit(e.str().c_str(), ERROR_BAD_LOGIC);
+  return ((x + maxBottomRightOffset.x) < size_t(maxyx.x - xBound));
+}
+
+
+bool sprite::rightOfWindowInnerLeftMargin(const int x, const int xBound)
+{ // Return true if we are to the right of the windows left inner margin.
+    checkBoundValue("leftOfWindowInnerMargin", xBound);
+  // std::stringstream e {};
+  // e<<"In leftOfWindowInnerMargin()";
+  // exit(e.str().c_str(), ERROR_BAD_LOGIC);
+    return (size_t(xBound) < x);
+}
+
+
+bool sprite::inWindow(const int y, const int x)
+{
+  return inWindowInnerMargin(y, x, 0, 0); // We have an inner boarder of 0, 0
+}
+
+
 /* Returns the of position of the sprite after moving one character (including
    diagonal movement) in the direction dir */
 yx sprite::peekAtPos(const directions dir)

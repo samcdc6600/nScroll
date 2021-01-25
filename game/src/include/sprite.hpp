@@ -161,41 +161,23 @@ protected:
      and x member's incremented, decremented or left unchanged depending on the
      value of dir. */
   yx getNewPos(const directions dir);
+  bool checkBoundValue(const int bound);
+  void checkBoundValue(const std::string callerName, const int bound);
+  void checkBoundValues(const std::string callerName, const int yBound,
+			const int xBound);
   
 public:
   /* Checks that y and x are in the ranges [0 + yBound, maxyx.y -
      yBound) and [0 + xBound, maxyx.x - xBound)
      respectively. */
-  inline bool inWindowInnerMargin(const int y, const int x, const int yBound,
-		       int xBound)
-  {
-    if(!(yBound >= 0 && xBound >= 0))
-      {
-	std::stringstream e {};
-	e<<"Error negative inner window boarder/s ("<<y<<", "<<x<<") given";
-	exit(e.str().c_str(), ERROR_BAD_LOGIC);
-      }
-    // Check top left coords.
-    return (checkRange(y, 0 + yBound, maxyx.y - yBound) &&
-	    checkRange(x, 0 + xBound, maxyx.x - xBound) &&
-	    // check bottom right coords.
-	    checkRange(y + maxBottomRightOffset.y,
-		       0 + yBound, maxyx.y - yBound) &&
-	    checkRange(x + maxBottomRightOffset.x,
-		       0 + xBound, maxyx.x - xBound));
-    
-    std::stringstream e {};
-    e<<"Error invalid sprite coordinate ("<<y<<", "<<x<<") encountered.";
-    exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
-  }
-
-  
+  bool inWindowInnerMargin(const int y, const int x, const int yBound,
+			   int xBound);
+  bool leftOfWindowInnerRightMargin(const int x, const int xBound,
+				    const yx maxyx);
+  bool rightOfWindowInnerLeftMargin(const int x, const int xBound);
   /* Checks that y and x are in range (0 to screen height and width), by calling
      checkRange(const int, const int). */
-  inline bool inWindow(const int y, const int x)
-  {
-    return inWindowInnerMargin(y, x, 0, 0); // We have an inner boarder of 0, 0
-  }
+  bool inWindow(const int y, const int x);
   /* Returns the of position of the sprite after moving one character (including
      diagonal movement) in the direction dir */
   yx peekAtPos(const directions dir);

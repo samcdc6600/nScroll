@@ -45,14 +45,12 @@ char rules::nearPass(const std::vector<int> playerSpChoords,
 void rules::movePlayer(const player::directionChars input,
 		       int & position, const yx maxyx,
 		       const size_t backgroundLength)
-{ /* This function like many in this program aren't very well designed
-     LOL :'(. */
+{
   yx peekPos {gamePlayer->peekAtPos(input)};
   if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
 				PLAYER_MOVEMENT_INNER_BOARDER.y,
 				PLAYER_MOVEMENT_INNER_BOARDER.x))
     {
-      //              exit("No seg fault here!", 0);
       gamePlayer->updatePosRel(player::directionChars(input));
     }
   else
@@ -64,8 +62,8 @@ void rules::movePlayer(const player::directionChars input,
 	 appropriate direction (If there is background to spare.) If we are at
 	 either end of the level then the player cannot move further of
 	 course. */
-      /* We use this variable in the calls to inWindowInnerMargin() when peekPos is
-	 out of the x boarder range. */
+      /* We use this variable in the calls to inWindowInnerMargin() when peekPos
+	 is out of the x boarder range. */
       constexpr int REACHED_INNER_BOARDER_X {0};
       switch(player::convertDirectionCharsToDirections(input))
 	{
@@ -83,25 +81,35 @@ void rules::movePlayer(const player::directionChars input,
 	  break;
 	  // ===================================================================
 	case sprite::DIR_RIGHT:
-	  if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
-					     PLAYER_MOVEMENT_INNER_BOARDER.y,
-					     REACHED_INNER_BOARDER_X) &&
-	     (position + maxyx.x) < backgroundLength)
-	    { // There is still background left to spare.
-	      position++;	// Move background.
+	  if(gamePlayer->inWindowInnerMargin
+	     (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.y,
+	      REACHED_INNER_BOARDER_X) &&
+	     gamePlayer->leftOfWindowInnerRightMargin
+	     (peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.x, maxyx))
+	    { // We are to the left of the inner right margin.
+	      gamePlayer->updatePosRel(player::directionChars(input));
 	    }
-	  else
+	    else
 	    {
-	      if((position + maxyx.x) == backgroundLength &&
-		 (gamePlayer->inWindowInnerMargin
-		  (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.y,
-		   REACHED_INNER_BOARDER_X)))
-		{ /* No background left, so move the player to the right edge of
-		     the background. */
-		  gamePlayer->updatePosRel(player::directionChars(input));
+	      if(gamePlayer->inWindowInnerMargin
+		 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.y,
+		  REACHED_INNER_BOARDER_X)
+		 && (position + maxyx.x) < backgroundLength)
+		{ // There is still background left to spare.
+		  position++;	// Move background.
+		}
+	      else
+		{
+		  if((position + maxyx.x) == backgroundLength &&
+		     (gamePlayer->inWindowInnerMargin
+		      (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.y,
+		       REACHED_INNER_BOARDER_X)))
+		    { /* No background left, so move the player to the right
+			 edge of the background. */
+		      gamePlayer->updatePosRel(player::directionChars(input));
+		    }
 		}
 	    }
-	  ///	  exit("Right move not implemented here", 0);
 	  break;
 	  // ===================================================================
 	case sprite::DIR_DOWN:
@@ -112,7 +120,7 @@ void rules::movePlayer(const player::directionChars input,
 	  if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
 				  PLAYER_MOVEMENT_INNER_BOARDER.y,
 				  REACHED_INNER_BOARDER_X))
-	    {
+	    {	      
 	      gamePlayer->updatePosRel(player::directionChars(input));
 	    }
 	  break;
@@ -121,23 +129,35 @@ void rules::movePlayer(const player::directionChars input,
 	  if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
 					     PLAYER_MOVEMENT_INNER_BOARDER.y,
 					     REACHED_INNER_BOARDER_X) &&
-	     (position > 0))
-	    { // There is still background left to spare.
-	      position--;	// Move background.
+	     gamePlayer->rightOfWindowInnerLeftMargin
+	     (peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.x))
+	    { // We are to the righ of the inner left margin.
+	      // 	      std::stringstream e {};
+	      // e<<"exit error super error!";
+	      // exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
+	      gamePlayer->updatePosRel(player::directionChars(input));
 	    }
 	  else
 	    {
-	      //	      exit("Left move not implemented here", 0);
-	      if(position == 0 &&
-		 (gamePlayer->inWindowInnerMargin
-		  (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.y,
-		   REACHED_INNER_BOARDER_X)))
-		{ /* No background left, so move the player to the left edge of
-		     the background. */
-		  gamePlayer->updatePosRel(player::directionChars(input));
+	      if(gamePlayer->inWindowInnerMargin
+		 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.y,
+		  REACHED_INNER_BOARDER_X) &&
+		 (position > 0))
+		{ // There is still background left to spare.
+		  position--;	// Move background.
+		}
+	      else
+		{
+		  if(position == 0 &&
+		     (gamePlayer->inWindowInnerMargin
+		      (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_BOARDER.y,
+		       REACHED_INNER_BOARDER_X)))
+		    { /* No background left, so move the player to the left
+			 edge of the background. */
+		      gamePlayer->updatePosRel(player::directionChars(input));
+		    }
 		}
 	    }
-	  //		  
 	  break;
 	}
     }
