@@ -43,7 +43,7 @@ protected:
   /* Holds the maximum bottom right offset. Calculated from all slices. Used
      (along with position) for inital collision detection and bounds checking */
   yx maxBottomRightOffset {};
-  int direction {DIR_NONE};
+  directions direction {DIR_NONE};
     
 private:
   /* Holds the sprite animation (slice) that we are upto in the sequences.
@@ -97,9 +97,6 @@ public:
 	 const directions dir);
   ~sprite();
 private:
-  /* Checks to make sure that dir is one of the values found in the enum
-     directions. */
-  bool checkDirection(const directions dir);
   // Split up file into cycleSpeed and unprocessesd representation of sprite.
   std::vector<std::vector<partiallyProcessedSliceLine>>
   parserPhaseOne(const std::string & spriteFile, spriteData & sD);
@@ -153,6 +150,9 @@ protected:
      adds the appropriate directions from directions to
      spriteAnimationDirections. */
   void initialiseDirectionsVector();
+  /* Checks to make sure that dir is one of the values found in the enum
+     directions. Returns dir if it is.*/
+  directions checkDirection(const directions dir);
   /* We can get a const version of maxBottomRightOffset in a derived class
      (couldn't make maxBottomRightOffset in sprite. At least we can force it for
      derived classes.) */
@@ -182,7 +182,13 @@ public:
      diagonal movement) in the direction dir */
   yx peekAtPos(const directions dir);
   // Returns the sprite position.
-  yx getPos() {return position;}    
+  yx getPos() {return position;}
+  directions getDirection() {return direction;}
+  void updateDirection(const directions dir)
+  {
+    checkDirection(dir);
+    direction = spriteAnimationDirections[dir];
+  }
   /* update's position of sprite in an absoulte fashion with reference to the
      background */
   virtual void updatePosAbs(int y, int x);

@@ -10,16 +10,11 @@
 
 sprite::sprite(std::vector<std::string> spriteFileNames, const yx max,
 	       const yx pos, const directions dir)
-  : maxyx(max), position(pos), direction(dir), currentSliceNumber(0),
+  : maxyx(max), position(pos), direction(checkDirection(dir)),
+    currentSliceNumber(0),
     startTime(std::chrono::high_resolution_clock::now()),
     currentTime(std::chrono::high_resolution_clock::now())
 {
-  if(!checkDirection(dir))
-    {
-      std::stringstream e {};
-      e<<"Error when initialising sprite: direction ("<<dir<<") out of range.";
-      exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
-    }
   for(auto spriteFileName {spriteFileNames.begin()};
       spriteFileName != spriteFileNames.end(); spriteFileName++)
     {
@@ -41,30 +36,17 @@ sprite::~sprite()
 };
 
 
-bool sprite::checkDirection(const directions dir)
-{ // Return's false if there is no match for dir.
-  return (dir == DIR_UP ||
-	  dir == DIR_RIGHT_UP ||
-	  dir == DIR_RIGHT ||
-	  dir == DIR_RIGHT_DOWN ||
-	  dir == DIR_DOWN ||
-	  dir == DIR_LEFT_DOWN ||
-	  dir == DIR_LEFT ||
-	  dir != DIR_LEFT_UP);
-}
-
-
 std::vector<std::vector<sprite::partiallyProcessedSliceLine>>
 sprite::parserPhaseOne(const std::string & spriteFile, spriteData & sD)
 {
   if(spriteFile.size() < 8)
     {				// Sprite file too short. Malformed.
-      std::stringstream errorMsg;
-      errorMsg<<"in sprite/sprite.cpp "
+      std::stringstream e;
+      e<<"in sprite/sprite.cpp "
 	"sdt::vector<std::vector<partiallyProcessedSliceLine>> "
 	"sprite::parserPhaseOne(const std::string & spriteFile) Error "
 	"spriteFile.size() < 8. spriteFile name = ";
-      throw std::logic_error(errorMsg.str());
+      throw std::logic_error(e.str());
     }
   /* stores what position we are upto in the parse. start's off as 3 becaue it
      is used after the initial character sequence. */
@@ -106,9 +88,11 @@ sprite::parserPhaseOne(const std::string & spriteFile, spriteData & sD)
 		      {		// If cS is empty
 			std::stringstream errorMsg;
 			errorMsg<<"in sprite/sprite.cpp "
-			  " sdt::vector<std::vector<partiallyProcessedSliceLine>> "
-			  " sprite::parserPhaseOne(const std::string & spriteFile)"
-			  " Error malformed cs value (missing value). spriteFile name = ";
+			  " sdt::vector<std::vector"
+			  "<partiallyProcessedSliceLine>>  sprite::"
+			  "parserPhaseOne(const std::string & spriteFile)"
+			  " Error malformed cs value (missing value). "
+			  "spriteFile name = ";
 			throw std::logic_error(errorMsg.str());
 		      }
 		    /* Set sD.sliceLine to ASCII representation of cycle speed
@@ -409,6 +393,21 @@ void sprite::initialiseDirectionsVector()
 }
 
 
+sprite::directions sprite::checkDirection(const directions dir)
+{ // Return's false if there is no match for dir.
+  if(!(dir == DIR_NONE || dir == DIR_UP || dir == DIR_RIGHT_UP ||
+       dir == DIR_RIGHT || dir == DIR_RIGHT_DOWN || dir == DIR_DOWN ||
+       dir == DIR_LEFT_DOWN || dir == DIR_LEFT || dir == DIR_LEFT_UP))
+    {
+      std::stringstream e;
+      e<<"Error (in sprite.cpp): in checkDirection(), dir ("<<dir<<") !="
+	" direction in the enum sprite::directions.";
+      exit(e.str(), ERROR_INVALID_DIRECTION);
+    }
+  return dir;
+}
+
+
 const yx sprite::getMaxBottomRightOffset()
 {
   return maxBottomRightOffset;
@@ -452,9 +451,13 @@ yx sprite::getNewPos(const directions dir)
       d.y = position.y +1;
       d.x = position.x +1;
       break;
+    case DIR_NONE:
+      d.y = position.y;
+      d.x = position.x;
+      break;
     default:
       std::stringstream e {};
-      e<<"Error direction ("<<char(dir)<<") not valid.";
+      e<<"Error direction ("<<dir<<") not valid.";
       exit(e.str().c_str(), ERROR_INVALID_DIRECTION);
     }
 

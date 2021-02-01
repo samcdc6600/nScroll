@@ -49,6 +49,7 @@ void menu(const yx maxyx)
   /* Note this should be done in the menu or loop or some sub function
      called from within it since multiple level's can be played. It is
      placed here right now only for testing and development purposes. */
+  
   loadAssets(maxyx, "assets/level1/level1.backgound.lev", background,
 	     "assets/level1/level1.rules.lev", levelRules);
   
@@ -82,7 +83,7 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
      know that we are probably wrong. */
   int position {};
   while(true)
-    {
+    { 
       int input {};
       const size_t backgroundLen {background.size() /
 	levelRules.backgroundHeight};
@@ -90,16 +91,14 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
       // do
       // 	{
 	  input = getch();
-	  if(input == ESC_CHAR)
+	  switch(input)
 	    {
+	    case ESC_CHAR:
 	      return M_QUIT_GAME;
-	    }
-	  else
-	    {
-	      if(input == LEVEL_COMPLEAT)
-		{
-		  return LEVEL_COMPLEAT;
-		}
+	      break;
+	    case LEVEL_COMPLEAT:
+	      return LEVEL_COMPLEAT;
+	      break;
 	    }
 
 	  levelRules.physics(input, position, maxyx, backgroundLen);

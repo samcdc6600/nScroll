@@ -53,14 +53,14 @@ private:
   // yx getNewPos(const directionChars dir);
 
 public:
-  player(std::vector<std::string> spriteFileNames, const yx max, const yx pos,
-	 const directionChars dir, const int h);
+  player(std::vector<std::string> spriteFileNames, const yx max,
+	 const yx pos, const sprite::directions dir, const int h);
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.
   static directions convertDirectionCharsToDirections(const directionChars dir);
   static bool isDirectionCharInputValid(const int input);
-  yx peekAtPos(const directionChars dir);
-  virtual void updatePosRel(const directionChars dir);
+  // yx peekAtPos(const directionChars dir);
+  virtual void updatePosRel(const sprite::directions dir);
 };
 
 #endif

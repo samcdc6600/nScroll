@@ -11,8 +11,8 @@
 
 
 player::player(std::vector<std::string> spriteFileNames, const yx max,
-	       const yx pos, const directionChars dir, const int h)
-  : sprite(spriteFileNames, max, pos, convertDirectionCharsToDirections(dir)),
+	       const yx pos, const sprite::directions dir, const int h)
+  : sprite(spriteFileNames, max, pos, dir),
     health(h)
 {}
 
@@ -73,16 +73,16 @@ bool player::isDirectionCharInputValid(const int input)
 }
 
 
-yx player::peekAtPos(const directionChars dir)
-{
-  return getNewPos(convertDirectionCharsToDirections(dir));
-}
+// yx player::peekAtPos(const directionChars dir)
+// {
+//   return getNewPos(convertDirection//CharsToDirections(dir));
+// }
 
 
-void player::updatePosRel(const directionChars d)
+void player::updatePosRel(const sprite::directions dir)
 { /* Update's position of sprite in a relative fashion with reference to the
      sprite and update's direction. */
-  directions dir {convertDirectionCharsToDirections(d)};
+  checkDirection(dir);
   yx p {getNewPos(dir)};	// GetNewPos will check if dir is valid!
   position = p;
   if(direction != dir)
