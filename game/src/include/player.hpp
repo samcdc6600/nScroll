@@ -12,10 +12,9 @@
 
 class player: public sprite
 {
-  // static constexpr int INITIAL_SPRITE_INDEX {0};
-  // static constexpr int ADDITIONAL_SPRITES_OFFSET {1};
-  // spriteData sD_player [NUM_PLAYER_SPRITES];
   int health;
+  // The player sprite may be subject to gravitational forces.
+  double vertVelocity {};
 
   // This function is not intended for use in player (and thus is private.)
   virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
@@ -54,13 +53,15 @@ private:
 
 public:
   player(std::vector<std::string> spriteFileNames, const yx max,
-	 const yx pos, const sprite::directions dir, const int h);
+	 const yx pos, const sprite::directions dir, const int h,
+	 const int v);
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.
   static directions convertDirectionCharsToDirections(const directionChars dir);
   static bool isDirectionCharInputValid(const int input);
-  // yx peekAtPos(const directionChars dir);
   virtual void updatePosRel(const sprite::directions dir);
+  double getVertVelocity();
+  void setVertVelocity(const double newVV);
 };
 
 #endif

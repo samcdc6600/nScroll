@@ -187,6 +187,7 @@ public:
   void updateDirection(const directions dir)
   {
     checkDirection(dir);
+    resetCurrentSliceNum();
     direction = spriteAnimationDirections[dir];
   }
   /* update's position of sprite in an absoulte fashion with reference to the

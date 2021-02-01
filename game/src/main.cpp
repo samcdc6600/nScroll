@@ -73,11 +73,9 @@ void menu(const yx maxyx)
 
 int gameLoop(const yx maxyx, const std::vector<int> & background,
 	     rules & levelRules)
-{ // Control's background update time.
-  auto startTimeInput = std::chrono::high_resolution_clock::now();
-  // Control's background update time.
-  auto currentTimeInputBackground = std::chrono::high_resolution_clock::now();
-
+{
+  // Used for physics and update rate.
+  auto startTime = std::chrono::high_resolution_clock::now();
   /* Position seems to be re-initialized on each iteration of the following
      while loop. We feel like this is not what should be happening but we also
      know that we are probably wrong. */
@@ -88,31 +86,19 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
       const size_t backgroundLen {background.size() /
 	levelRules.backgroundHeight};
 
-      // do
-      // 	{
-	  input = getch();
-	  switch(input)
-	    {
-	    case ESC_CHAR:
-	      return M_QUIT_GAME;
-	      break;
-	    case LEVEL_COMPLEAT:
-	      return LEVEL_COMPLEAT;
-	      break;
-	    }
+      input = getch();
+      switch(input)
+	{
+	case ESC_CHAR:
+	  return M_QUIT_GAME;
+	  break;
+	case LEVEL_COMPLEAT:
+	  return LEVEL_COMPLEAT;
+	  break;
+	}
 
-	  levelRules.physics(input, position, maxyx, backgroundLen);
-	  draw(background, levelRules.spriteCoords, levelRules.gamePlayer,
-	       maxyx, position);
-	  refresh();
-	  
-	  sleep(levelRules.engineSleepTime);
-	  // currentTimeInputBackground =
-	  //   std::chrono::high_resolution_clock::now();
-      // 	}
-      // while(std::chrono::duration_cast<std::chrono::milliseconds>
-      // 	    (currentTimeInputBackground - startTimeInput).count() < 255);
-      // position++;      
-      // startTimeInput = std::chrono::high_resolution_clock::now();
+      levelRules.physics(input, position, maxyx, backgroundLen), startTime);
+      draw(background, levelRules.spriteCoords, levelRules.gamePlayer,
+	   maxyx, position);
     }
 }

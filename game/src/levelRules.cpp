@@ -54,6 +54,19 @@ void rules::movePlayer(const sprite::directions input,
      either end of the level then the player cannot move further of
      course. */
   yx peekPos {gamePlayer->peekAtPos(input)};
+  double vertVelocity {gamePlayer->getVertVelocity()};
+
+  /* We intend to alter this later to have it read in from the level rules
+     file */
+  double g {-3.2666};
+  /*  if(noVertCollision)
+      {*/
+  /*  if(timer)
+    {*/
+  vertVelocity *= g;
+    //    }
+  //    }
+  
   if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
 				PLAYER_MOVEMENT_INNER_MARGIN.y,
 				PLAYER_MOVEMENT_INNER_MARGIN.x))
@@ -193,6 +206,18 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
 }
 
 
+
+  // Control's background update time.
+  auto currentTimex = std::chrono::high_resolution_clock::now();
+// currentTimeInputBackground =
+	  //   std::chrono::high_resolution_clock::now();
+      // 	}
+      // while(std::chrono::duration_cast<std::chrono::milliseconds>
+      // 	    (currentTimeInputBackground - startTimeInput).count() < 255);
+      // position++;      
+      // startTimeInput = std::chrono::high_resolution_clock::now();
+
+
 void rules::physics(const int input, int & position,
 		    const yx maxyx, const size_t backgroundLength)
 {     
@@ -208,4 +233,5 @@ void rules::physics(const int input, int & position,
       movePlayer(currDir, position, maxyx,
 		 backgroundLength);
     }
+  sleep(levelRules.engineSleepTime);
 }

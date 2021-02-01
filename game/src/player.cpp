@@ -11,9 +11,10 @@
 
 
 player::player(std::vector<std::string> spriteFileNames, const yx max,
-	       const yx pos, const sprite::directions dir, const int h)
+	       const yx pos, const sprite::directions dir, const int h,
+	       const int v)
   : sprite(spriteFileNames, max, pos, dir),
-    health(h)
+    health(h), vertVelocity(v)
 {}
 
 
@@ -73,12 +74,6 @@ bool player::isDirectionCharInputValid(const int input)
 }
 
 
-// yx player::peekAtPos(const directionChars dir)
-// {
-//   return getNewPos(convertDirection//CharsToDirections(dir));
-// }
-
-
 void player::updatePosRel(const sprite::directions dir)
 { /* Update's position of sprite in a relative fashion with reference to the
      sprite and update's direction. */
@@ -90,4 +85,16 @@ void player::updatePosRel(const sprite::directions dir)
       resetCurrentSliceNum();
       direction = spriteAnimationDirections[dir];
     }
+}
+
+
+double player::getVertVelocity()
+{
+  return vertVelocity;
+}
+
+
+void player::setVertVelocity(const double newVV)
+{
+  vertVelocity = newVV;
 }
