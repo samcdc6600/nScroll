@@ -2,6 +2,17 @@
 #include "include/player.hpp"
 
 
+void rules::resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime)
+{
+  std::__1::chrono::steady_clock::time_point currentTime
+    {std::chrono::high_resolution_clock::now()};
+  if((duration_cast<std::chrono::duration<double>>
+      (currentTime - oldTime)).count() >= rules::second)
+    {
+      oldTime = currentTime;
+    }
+}
+
 //test level agains sprite's
 char rules::intersection(const std::string & boundsInteraction,
 			 const std::vector<int> spChoords)
@@ -206,21 +217,10 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
 }
 
 
-
-  // Control's background update time.
-  auto currentTimex = std::chrono::high_resolution_clock::now();
-// currentTimeInputBackground =
-	  //   std::chrono::high_resolution_clock::now();
-      // 	}
-      // while(std::chrono::duration_cast<std::chrono::milliseconds>
-      // 	    (currentTimeInputBackground - startTimeInput).count() < 255);
-      // position++;      
-      // startTimeInput = std::chrono::high_resolution_clock::now();
-
-
-void rules::physics(const int input, int & position,
-		    const yx maxyx, const size_t backgroundLength)
-{     
+void rules::physics
+(const int input, int & position, const yx maxyx, const size_t backgroundLength,
+ std::__1::chrono::steady_clock::time_point & secStartTime)
+{
   const sprite::directions currDir {gamePlayer->getDirection()};
   if(player::isDirectionCharInputValid(input) && input != currDir)
     { 
@@ -233,5 +233,6 @@ void rules::physics(const int input, int & position,
       movePlayer(currDir, position, maxyx,
 		 backgroundLength);
     }
-  sleep(levelRules.engineSleepTime);
+  sleep(engineSleepTime);
+  resetOldTime(secStartTime);
 }

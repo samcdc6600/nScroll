@@ -74,14 +74,15 @@ void menu(const yx maxyx)
 int gameLoop(const yx maxyx, const std::vector<int> & background,
 	     rules & levelRules)
 {
-  // Used for physics and update rate.
-  auto startTime = std::chrono::high_resolution_clock::now();
   /* Position seems to be re-initialized on each iteration of the following
      while loop. We feel like this is not what should be happening but we also
      know that we are probably wrong. */
   int position {};
+  std::__1::chrono::steady_clock::time_point secStartTime
+    {std::chrono::high_resolution_clock::now()};
+  
   while(true)
-    { 
+    {
       int input {};
       const size_t backgroundLen {background.size() /
 	levelRules.backgroundHeight};
@@ -97,7 +98,7 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
 	  break;
 	}
 
-      levelRules.physics(input, position, maxyx, backgroundLen), startTime);
+      levelRules.physics(input, position, maxyx, backgroundLen, secStartTime);
       draw(background, levelRules.spriteCoords, levelRules.gamePlayer,
 	   maxyx, position);
     }
