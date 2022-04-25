@@ -408,12 +408,6 @@ sprite::directions sprite::checkDirection(const directions dir)
 }
 
 
-const yx sprite::getMaxBottomRightOffset()
-{
-  return maxBottomRightOffset;
-}
-
-
 yx sprite::getNewPos(const directions dir)
 {
   yx d {};
@@ -551,9 +545,12 @@ bool sprite::inWindow(const int y, const int x)
 
 /* Returns the of position of the sprite after moving one character (including
    diagonal movement) in the direction dir */
-yx sprite::peekAtPos(const directions dir)
+yx sprite::peekAtPos(const directions dir) { return getNewPos(dir); }
+
+
+yx sprite::getMaxBottomRightOffset() const
 {
-  return getNewPos(dir);
+  return maxBottomRightOffset;
 }
 
 

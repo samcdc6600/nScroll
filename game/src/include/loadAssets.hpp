@@ -75,10 +75,11 @@ bool loadASCIIFile(const char name [], std::string & buff);
    extracted add sprite and rule using sprite coordinate as key to a vector in
    the spriteCoords map in the form of a spriteInfo struct */
 void loadParseAndInitialiseRules
-(const yx maxyx, const char rulesFileName [], rules & levelRules);
+(const yx maxyx, const char rulesFileName [], rules & levelRules,
+ const size_t bgSize);
 /* Extract and parse header info in buff. */
 void parse(const yx maxyx, std::string & buff, const char rulesFileName [],
-	   rules & levelRules);
+	   rules & levelRules, const size_t bgSize);
 /* Increment's (advances) i by (n -1), if i equals iEnd before being incremented
    n times we throw an exception. */
 template <typename T_A, typename T_B> auto
@@ -98,13 +99,13 @@ getAdvancedIter(T_A i, T_B iEnd, const size_t n) -> T_A
 void switchOnCurrent
 (const yx maxyx, std::string & buff, std::string::const_iterator & current,
  std::string::const_iterator & peek, std::string::const_iterator max,
- rules & levelRules);
+ rules & levelRules, const size_t bgSize);
 /* Dispatches functions based on the value of *peek. Should only be called when
  *current == FIELD_START_DENOTATION */
 void handleCurrentIsFieldStartDenotation
 (const yx maxyx, std::string & buff, std::string::const_iterator & current,
  std::string::const_iterator & peek, std::string::const_iterator max,
- rules & levelRules);
+ rules & levelRules, const size_t bgSize);
 /* Read in the character *current (which should already have been checked for
    validity), then read in the coordinate pair, finally the function should
    check to see that this coordinate pair is unique in the object
@@ -113,7 +114,7 @@ void handleCurrentIsFieldStartDenotation
 void handleCoordinateCharacter
 (std::string & buff, std::string::const_iterator & current,
  std::string::const_iterator & peek, std::string::const_iterator & max,
- rules & levelRules);
+ rules & levelRules, const size_t bgSize);
 /* Read in the character *current (which should already have been checked for
    it's validity), then read in the coordinate pair, finally the function should
    check to see that this coordinate pair is unique in the object
@@ -127,12 +128,12 @@ void handleCoordinateCharacter
 void initPlayerSprite
 (const yx maxyx, std::string & buff, std::string::const_iterator & current,
  std::string::const_iterator & peek, std::string::const_iterator & max,
- rules & levelRules);
+ rules & levelRules, const size_t bgSize);
 /* Check's for coordinate of the form "(Y,X)" and return's "Y,X" (discarding
    "(" and ")") if Y and X are valid integer number's that do not falloutside of
    the X and Y values in maxyx and are greater or equal to zero.  */
-std::string getCoords
-(std::string::const_iterator & current, std::string::const_iterator & peek);
+std::string getCoords(std::string::const_iterator & current,
+		      std::string::const_iterator & peek, const size_t bgSize);
 /* Read's in a number of string's separated by the STRING_SEPERATION character.
    Stop when current reaches the character where a STRING_SEPERATION character
    is expected. Returns each string read in a vector. */

@@ -1,0 +1,223 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/checkBoundsOfBounds.o",
+      "src/checkBoundsOfBounds.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/checkBoundsOfBounds.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/checkBoundsOfBounds.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/collapse.o",
+      "src/collapse.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/collapse.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/collapse.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/colorS.o",
+      "src/colorS.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/colorS.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/colorS.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/common.o",
+      "src/common.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/common.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/common.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/draw.o",
+      "src/draw.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/draw.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/draw.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/drawExit.o",
+      "src/drawExit.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/drawExit.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/drawExit.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/initCurses.o",
+      "src/initCurses.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/initCurses.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/initCurses.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/levelRules.o",
+      "src/levelRules.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/levelRules.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/levelRules.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/loadAssets.o",
+      "src/loadAssets.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/loadAssets.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/loadAssets.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/main.o",
+      "src/main.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/main.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/player.o",
+      "src/player.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/player.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/player.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/slice.o",
+      "src/slice.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/slice.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/slice.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-c",
+      "-std=c++2a",
+      "-Wall",
+      "-Wpedantic",
+      "-Wextra",
+      "-O2",
+      "-o",
+      "obj/sprite.o",
+      "src/sprite.cpp"
+    ],
+    "directory": "/usr/home/topaz/softDev/nScroll/game",
+    "file": "/usr/home/topaz/softDev/nScroll/game/src/sprite.cpp",
+    "output": "/usr/home/topaz/softDev/nScroll/game/obj/sprite.o"
+  }
+]

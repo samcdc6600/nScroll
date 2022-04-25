@@ -2,6 +2,7 @@
 #include <sstream>
 #include <cstring>
 #include <ncurses.h>
+#include "include/common.hpp"
 #include "include/loadAssets.hpp"
 #include "include/collapse.hpp"
 
@@ -21,7 +22,8 @@ void loadAssets
     }
   collapse(levelBackGround, background); //collapse nonColor escape sequences.
   // Initialise player and non-player sprites (rules file).
-  loadParseAndInitialiseRules(maxyx, rulesFileName, levelRules);
+  loadParseAndInitialiseRules(maxyx, rulesFileName, levelRules,
+			      background.size());
 }
 
 
@@ -44,7 +46,8 @@ bool loadASCIIFile(const char name [], std::string & buff)
 
 
 void loadParseAndInitialiseRules
-(const yx maxyx, const char rulesFileName [], rules & levelRules)
+(const yx maxyx, const char rulesFileName [], rules & levelRules,
+ const size_t bgSize)
 {
   std::string buff {};
   if(!loadASCIIFile(rulesFileName, buff)) // Load in the rules file.
@@ -53,7 +56,7 @@ void loadParseAndInitialiseRules
       e<<"Error unable to open: \""<<rulesFileName<<"\"";
       exit(e.str(), ERROR_OPENING_FILE);
     }
-  parse(maxyx, buff, rulesFileName, levelRules);
+  parse(maxyx, buff, rulesFileName, levelRules, bgSize);
   // Initialise player.
   /*  yx spritePos = {10, 10}; // Set inital position for player.
       levelRules.gamePlayer = (new player("assets/sprites/sprite(0).sprite", "assets/sprites/sprite(1).sprite",
@@ -63,7 +66,7 @@ void loadParseAndInitialiseRules
 
 
 void parse(const yx maxyx, std::string & buff, const char rulesFileName [],
-	   rules & levelRules)
+	   rules & levelRules, const size_t bgSize)
 {
   if(strncmp(buff.c_str(), HEADER_START, sizeof(HEADER_START) -1) != 0)
     {
@@ -78,7 +81,8 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [],
 	{getAdvancedIter(buff.begin(), buff.end(), sizeof(HEADER_START) -1)},
 	    current {peek++}; *peek != NULL_BYTE; ++peek, ++current)
 	{
-	  switchOnCurrent(maxyx, buff, current, peek, buff.end(), levelRules);
+	  switchOnCurrent(maxyx, buff, current, peek, buff.end(), levelRules,
+			  bgSize);
 	}
     }
   catch (std::out_of_range & e)
@@ -95,13 +99,13 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [],
 void switchOnCurrent
 (const yx maxyx, std::string & buff, std::string::const_iterator & current,
  std::string::const_iterator & peek, std::string::const_iterator max,
- rules & levelRules)
+ rules & levelRules, const size_t bgSize)
 {
   switch(*current)
     {
     case FIELD_START_DENOTATION:    // Handle start of new field or section.
       handleCurrentIsFieldStartDenotation
-	(maxyx, buff, current, peek, max, levelRules);
+	(maxyx, buff, current, peek, max, levelRules, bgSize);
       break;
     default:
       std::stringstream e {};
@@ -120,7 +124,7 @@ void switchOnCurrent
 void handleCurrentIsFieldStartDenotation
 (const yx maxyx, std::string & buff, std::string::const_iterator & current,
  std::string::const_iterator & peek, std::string::const_iterator max,
- rules & levelRules)
+ rules & levelRules, const size_t bgSize)
 {			// We have a sprite
   static bool inHeader {true};
   if(!inHeader)
@@ -148,7 +152,8 @@ void handleCurrentIsFieldStartDenotation
 	     *peek == LIFE_POWER_UP_CHAR_UPPER)
 	    { // Call function to handle coordinate character's character
 	      ++current, ++peek;
-	      handleCoordinateCharacter(buff, current, peek, max, levelRules);
+	      handleCoordinateCharacter(buff, current, peek, max, levelRules,
+					bgSize);
 	      /* Make sure there's no space between end of coordinate character
 		 field and next field (if any.) */
 	      rubOutSpace(buff, current, peek, max);
@@ -169,7 +174,7 @@ void handleCurrentIsFieldStartDenotation
     }
   else
     { // Read in the player sprite info.
-      initPlayerSprite(maxyx, buff, current, peek, max, levelRules);
+      initPlayerSprite(maxyx, buff, current, peek, max, levelRules, bgSize);
       /* Make sure there's no space between end of player field and
 	 HEADER_END_DENOTATION character. */
       rubOutSpace(buff, current, peek, max); 
@@ -198,7 +203,7 @@ void handleCurrentIsFieldStartDenotation
 void handleCoordinateCharacter
 (std::string & buff, std::string::const_iterator & current,
  std::string::const_iterator & peek, std::string::const_iterator & max,
- rules & levelRules)
+ rules & levelRules, const size_t bgSize)
 { // Get coordinate char (should be pre checked for validity.)
   const char c {*current};
   /* Make sure there is no space between coordinate char and
@@ -213,7 +218,7 @@ void handleCoordinateCharacter
     }
   // Set current to FIELD_START_DENOTATION character position.
   ++current, ++peek;
-  std::string key {getCoords(current, peek)};
+  std::string key {getCoords(current, peek, bgSize)};
   /* Make sure there's no space between the end of the coordinate field and the
      end of the coordinate character field. */
   rubOutSpace(buff, current, peek, max);
@@ -238,7 +243,7 @@ void handleCoordinateCharacter
 void initPlayerSprite
 (const yx maxyx, std::string & buff, std::string::const_iterator & current,
  std::string::const_iterator & peek, std::string::const_iterator & max,
- rules & levelRules)
+ rules & levelRules, const size_t bgSize)
 {
   std::vector<std::string> sprites
     {handleStringDenotationAfterFieldDenotation(buff, current, peek, max)};
@@ -248,7 +253,7 @@ void initPlayerSprite
   
   if(*current == FIELD_START_DENOTATION)
     {
-      std::stringstream coordsSS {getCoords(current, peek)};
+      std::stringstream coordsSS {getCoords(current, peek, bgSize)};
       yx initPos {};		// Initial sprite position.
       coordsSS>>initPos.y;
       { // We are only using c to skip the COORD_SEPERATION character!
@@ -273,7 +278,7 @@ void initPlayerSprite
 
 
 std::string getCoords(std::string::const_iterator & current,
-		      std::string::const_iterator & peek)
+		      std::string::const_iterator & peek, const size_t bgSize)
 {
   std::string ret;  
   ++current, ++peek;		// Advance current to first digit.
@@ -328,7 +333,31 @@ std::string getCoords(std::string::const_iterator & current,
       e<<"Error in rules.lev file. Encountered character other then \""
        <<FIELD_END_DENOTATION<<"\" or integer character while parsing X "
 	"coordinate.";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+      exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
+    }
+  else
+    {
+      int y, x;
+      char charNull;
+      std::stringstream coord {ret};
+      coord>>y;
+      coord>>charNull; // Skip the current character (should be ",").
+      coord>>x;
+
+      if(y >= yHeight)
+	{
+	  std::stringstream e {};
+	  e<<"Error in rules.lev file. Encountered y coordinated component "\
+	    "that is out of range for coordinate ("<<y<<", "<<x<<").\n";
+	  exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
+	}
+      else if (x >= (bgSize / yHeight))
+	{
+	  std::stringstream e {};
+	  e<<"Error in rules.lev file. Encountered x coordinated component "\
+	    "that is out of range for coordinate ("<<y<<", "<<x<<").\n";
+	  exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
+	}
     }
   
   return ret;

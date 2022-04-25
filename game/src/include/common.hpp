@@ -14,6 +14,8 @@ struct yx
   size_t x;
 };
 
+
+constexpr int yHeight {33}, xWidth{125}; // The window must be these dimensions.
 constexpr int MONO_CH_MAX {158};
 constexpr int COLOR_CH_MAX {63};
 constexpr int ASCII_NUMBER_OFFSET {48};
@@ -24,14 +26,13 @@ const yx PLAYER_MOVEMENT_INNER_MARGIN {0, 40};
 
 
 enum errorsCodes
-  {/* Error codes */
-    /* There was a problem with the window parameters and the window could not be initialised */
-    ERROR_WIN_PARAM, // Window not initialised - there was a problem with the window parameters.
-    ERROR_CURSOR_PARAM,	// Cursor parameters out of range.
+  { /* Error codes. */
+    ERROR_WIN_PARAM,		// Window not initialised - there was a problem with the window parameters.
+    ERROR_CURSOR_PARAM,		// Cursor parameters out of range.
     ERROR_SPRITE_POS_RANGE,	// Sprite position out of range.
-    ERROR_POS_CH_RANGE,	// Character position out of range.
+    ERROR_POS_CH_RANGE,		// Character position out of range.
     ERROR_INVALID_DIRECTION,	// Direction character found not to be valid.
-    ERROR_OPENING_FILE,	// Error opening file.
+    ERROR_OPENING_FILE,		// Error opening file.
     ERROR_CHARACTER_RANGE,	// Character out of range.
     ERROR_COLOR_CODE_RANGE,	// Color code out of range.
     ERROR_GENERIC_RANGE_ERROR,

@@ -153,10 +153,6 @@ protected:
   /* Checks to make sure that dir is one of the values found in the enum
      directions. Returns dir if it is.*/
   directions checkDirection(const directions dir);
-  /* We can get a const version of maxBottomRightOffset in a derived class
-     (couldn't make maxBottomRightOffset in sprite. At least we can force it for
-     derived classes.) */
-  const yx getMaxBottomRightOffset();
   /* Returns a yx struct that is a copy of the data member position with it's y
      and x member's incremented, decremented or left unchanged depending on the
      value of dir. */
@@ -183,6 +179,46 @@ public:
   yx peekAtPos(const directions dir);
   // Returns the sprite position.
   yx getPos() {return position;}
+  std::string getXPosAsStr() const
+  {
+    std::stringstream ss {};
+    ss<<position.x;
+    return ss.str();
+  }
+  std::string getYPosAsStr() const
+  {
+    std::stringstream ss {};
+    ss<<position.y;
+    return ss.str();
+  }
+  /* Return the the maximum absolute position of the bottom of the sprite.
+     The argument offset is added to the return value before it is converted to
+     a string. For any of the following functions that take an argument
+     position, the position should be the current background position. */
+  std::string getMaxXAbsLevelRightAsStr(const int offset, const int position)
+    const
+  {
+    std::stringstream ss {};
+    ss<<(this->position.x + maxBottomRightOffset.x + offset + position);
+    return ss.str();
+  }
+  std::string getMaxXAbsLevelLeftAsStr(const int offset, const int position)
+    const
+  {
+    std::stringstream ss {};
+    ss<<(this->position.x + offset + position);
+    return ss.str();
+  }
+  std::string getMaxYAbsAsStr(const int offset)
+    const
+  {
+    std::stringstream ss {};
+    ss<<position.y + maxBottomRightOffset.y + offset;
+    return ss.str();
+  }
+  /* Returns largest bottom right coordinates (relative to the start of the
+   sprite.) Used for simple collision detection. */
+  yx getMaxBottomRightOffset() const;
   directions getDirection() {return direction;}
   void updateDirection(const directions dir)
   {

@@ -11,6 +11,10 @@
 #include "include/sprite.hpp"
 #include "include/player.hpp"
 
+  // TMP ======================================== VVVVVVV
+#include <iostream>
+  // TMP ======================================== ^^^^^^^
+
 
 // Values returned by branchOnInput
 enum gameFuncRetCodes
@@ -23,7 +27,7 @@ enum gameFuncRetCodes
 
 
 void menu(const yx maxyx); // Game menu
-/* Where the magic (thats glued together with cheap craft glue) happens
+/* Where the horror happens
    (returns a game menu switch option.) :) */
 int gameLoop(const yx maxyx, const std::vector<int> & background,
 	     rules & levelRules);
@@ -52,6 +56,17 @@ void menu(const yx maxyx)
   
   loadAssets(maxyx, "assets/level1/level1.backgound.lev", background,
 	     "assets/level1/level1.rules.lev", levelRules);
+
+
+  // TMP ======================================== VVVVVVV
+  // for(std::map<std::string, char>::iterator iter {levelRules.coordChars.begin()}; iter != levelRules.coordChars.end(); iter++)
+  //   {
+  //     std::cout<<iter->first<<':'<<iter->second<<'\n';
+  //   }
+  // endwin();
+  // return;
+  // TMP ======================================== ^^^^^^^
+  
   
   bool run = true;
   while(run)
@@ -84,10 +99,15 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
   while(true)
     {
       int input {};
+
       const size_t backgroundLen {background.size() /
 	levelRules.backgroundHeight};
 
       input = getch();
+      if(input == ERR)
+	{
+	  input = sprite::DIR_NONE;	// Reset input.
+	}
       switch(input)
 	{
 	case ESC_CHAR:

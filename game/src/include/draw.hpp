@@ -22,7 +22,7 @@ void setCursor(const int y, const int x, const yx maxyx);
    calling it from sprie::draw in sprite.cpp. Sprite does not contain a member function with the same signature as
    this function, so I'm really not sure what the problem is. I suspect it has something to do with sprite::draw
    being a memeber function and maybe I had unwittingly strayed into undefined behaviour :O. In any case I think
-   drawCh is a more apt name anway :)*/
+   drawCh is a more apt name anyway :)*/
 void drawCh(int ch);
 bool inColorRange(const int ch); /* Checks whethere ch is a colour character or not. */
 int getColor(const int ch);	 /* Returns colour code encoded in ch. */
