@@ -2,16 +2,22 @@
 "*?" mean's maybe to do.
 "+" mean's done.
 
-(*)-->	Add bound's checking into rules.lev parsing code.
-(+)-->  Finish the default in setUpBoundryCoordsVector.
-(+)-->  Fix Graphical sprite anomalies when switching between
-	player directions and sprite files are set up a certin way.
-(*?)-->	Just go ahead a make rules struct a class called physics.
-(+)-->	Fix lock up problem >':(.
-(*)-->	Implement basic boundry handling code.
-(+)-->	Implement and possibly rename inBounds func and rewrite
+(+)-->	(1) Add bound's checking into rules.lev parsing code.
+(+)-->  (2) Finish the default in setUpBoundryCoordsVector.
+(+)-->  (3) Fix Graphical sprite anomalies when switching between
+	    player directions and sprite files are set up a certin way.
+(*?)-->	(4) Just go ahead a make rules struct a class called physics.
+(+)-->	(5) Fix lock up problem >':(.
+(*)-->	(6) Implement basic boundry handling code.
+(+)-->	(7) Implement and possibly rename inBounds func and rewrite
 	inScreenBounds to use it and then use inBounds in movePlayer.
-(+)-->	Fix problem with player sprite not changing animation when direction is
-	changed.
-(*)-->	Add check in init code for invalid initial player positions
-	(playerInnerBoarder!)
+(+)-->	(8) Fix problem with player sprite not changing animation when direction
+	    is changed.
+(+)-->	(9) Add check in init code for invalid initial player positions
+	    (playerInnerBoarder!) (This has basically been covered by the fix
+	    for 1, however the sprite will be able to be mostly off of the
+	    bottom right of the map. We don't think this is a real problem
+	    though, since the sprite will still technically be on screen)
+(*)-->  (10) Figure out problem where input doesn't revert back to 0 on next
+	     loop.
+(*)-->  (11) Add physics code to handle b (boarder) characters.

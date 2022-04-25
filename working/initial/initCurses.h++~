@@ -1,2 +1,0 @@
-void initialiseCurses(yx & maxyx);
-void initColorPairs();
