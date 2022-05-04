@@ -6,6 +6,7 @@
 #include <sstream>
 #include "common.hpp"
 
+  #include <iostream>
 
 class sprite
 {
@@ -120,7 +121,7 @@ private:
      The offsets are interprited as a point at (0,0) or to the lower left of
      position. These values are used for collision detection and bounds
      checking. */
-  void getMaxYXOffset();
+  void setMaxYXOffset();
   /* Iterates through spriteSlices in sD and set's up boundry coords for each
      slice in sD. */
   void setUpBoundryCoordsVector(spriteData & sD);
@@ -213,7 +214,7 @@ public:
     const
   {
     std::stringstream ss {};
-    ss<<position.y + maxBottomRightOffset.y + offset;
+    ss<<position.y + maxBottomRightOffset.y + offset;  
     return ss.str();
   }
   /* Returns largest bottom right coordinates (relative to the start of the

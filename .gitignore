@@ -3,6 +3,7 @@
 #*
 *#
 nscrl
+clangd.core
 
 game/~*
 game/*~
@@ -10,44 +11,44 @@ game/~#
 game/#~
 game/src/~*
 game/src/*~
-game/src/~#
-game/src/#~
+game/src/*#
+game/src/#*
 game/src/include/~*
 game/src/include/*~
-game/src/include/~#
-game/src/include/#~
+game/src/include/*#
+game/src/include/#*
 game/obj/*
 
 spriteCreate/~*
 spriteCreate/*~
-spriteCreate/~#
-spriteCreate/#~
+spriteCreate/*#
+spriteCreate/#*
 spriteCreate/src/~*
 spriteCreate/src/*~
-spriteCreate/src/~#
-spriteCreate/src/#~
+spriteCreate/src/*#
+spriteCreate/src/#*
 spriteCreate/src/include/~*
 spriteCreate/src/include/*~
-spriteCreate/src/include/~#
-spriteCreate/src/include/#~
+spriteCreate/src/include/*#
+spriteCreate/src/include/#*
 spriteCreate/obj/*
 
 
 
 designDocuments/~*
 designDocuments/*~
-designDocuments/~#
-designDocuments/#~
+designDocuments/*#
+designDocuments/#*
 
 assets/~*
 assets/*~
-assets/~#
-assets/#~
+assets/*#
+assets/#*
 assets/level1/~*
 assets/level1/*~
-assets/level1/~#
-assets/level1/#~
+assets/level1/*#
+assets/level1/#*
 assets/sprites/~*
 assets/sprites/*~
-assets/sprites/~#
-assets/sprites/#~
+assets/sprites/*#
+assets/sprites/#*

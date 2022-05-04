@@ -55,7 +55,7 @@ char rules::nearPass(const std::vector<int> playerSpChoords,
 #include <curses.h>
 #include <iostream>    
 
-void rules::movePlayer(const sprite::directions input,
+void rules::movePlayer(sprite::directions input,
 		       int & position, const yx maxyx,
 		       const size_t backgroundLength)
 { /* Move the player as long as they will stay within
@@ -67,7 +67,7 @@ void rules::movePlayer(const sprite::directions input,
      either end of the level then the player cannot move further of
      course. */
   const int currentDirection {gamePlayer->getDirection()};
-  yx peekPos {gamePlayer->peekAtPos(input)};
+  bool directionChanged {false};
   double vertVelocity {gamePlayer->getVertVelocity()};
 
   /* We intend to alter this later to have it read in from the level rules
@@ -81,65 +81,68 @@ void rules::movePlayer(const sprite::directions input,
     //    }
   //    }
 
+  // std::cout<<"getMaxXAbsLevelRightAsStr = "<<gamePlayer->getMaxXAbsLevelRightAsStr(0, position)
+  // 	   <<"\n"<<"getMaxYAbsAsStr(0)) = "<<gamePlayer->getMaxYAbsAsStr(0)<<"\n";
 
-
-  // Handle collision with boarder if moving down.
-  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + // Check for
-							      // boarder 0 in
-							      // front and 0
-							      // above feet.
-		     gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
-     != coordChars.end())
-    {
-      endwin();
-      std::cout<<"currentDirection = "<<currentDirection<<", "<<"sprite::DIR_DOWN"<<" = "<<sprite::DIR_DOWN<<'\n';
-      gamePlayer->updateDirection(sprite::DIR_NONE);
-      std::cout<<"gamePlayer->getDirection() = "<<gamePlayer->getDirection()<<'\n';
-      std::cout<<"input = "<<input<<'\n';
-      exit(-1);
-      if(currentDirection == sprite::DIR_DOWN)
-	{
-	  gamePlayer->updateDirection(sprite::DIR_NONE);
-	}
-      else if(currentDirection == sprite::DIR_RIGHT_DOWN)
-	{
-	  gamePlayer->updateDirection(sprite::DIR_RIGHT);
-	}
-    }
-
-  
-  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + // Check for
-							      // boarder 0 in
-							      // front and 0
-							      // above feet.
+  // Check for boarder 1 below feet and boarder 0 in front.
+  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + 
 		     gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
      != coordChars.end() &&
-     // Check for boarder 1 in front and 1 above feet.
+     // Check for boarder at feet and 1 in front .
      coordChars.find(gamePlayer->getMaxYAbsAsStr(0) + "," +
 		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
      != coordChars.end() &&
-     // Check for no boarder 1 in front and 2 above feet.
+     // Check for no boarder 1 above feet and 1 in front.
           coordChars.find(gamePlayer->getMaxYAbsAsStr(-1) + "," + 
 		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
      == coordChars.end())
     {
-      gamePlayer->updatePosRel(sprite::DIR_UP);
-      // endwin();
-      // std::cout<<gamePlayer->getMaxYAbsAsStr(1) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(0, position)<<'\n';
-      // std::cout<<gamePlayer->getMaxYAbsAsStr(0) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(1, position)<<'\n';
+      input = sprite::DIR_UP;
+      directionChanged = true;
+  }
+  // Handle collision with boarder if moving down (check to the bottom left and right.)
+  else if (coordChars.find((gamePlayer->getMaxYAbsAsStr(0)) + "," +
+			   gamePlayer->getMaxXAbsLevelLeftAsStr(0, position))
+	   != coordChars.end() ||
+	   coordChars.find((gamePlayer->getMaxYAbsAsStr(0)) + "," +
+			   gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
+	   != coordChars.end())
+    {
+      // std::cout<<"currentDirection = "<<currentDirection<<", "<<"sprite::DIR_DOWN"<<" = "<<sprite::DIR_DOWN<<'\n';
+      // gamePlayer->updateDirection(sprite::DIR_NONE);
+      // std::cout<<"gamePlayer->getDirection() = "<<gamePlayer->getDirection()<<'\n';
+      // std::cout<<"input = "<<input<<'\n';
       // exit(-1);
+      
+      if(currentDirection == sprite::DIR_DOWN)
+	{
+	  endwin();
+	  std::cout<<"Hello girls\n";
+	  input = sprite::DIR_NONE;
+	  directionChanged = true;
+	}
+      else if(currentDirection == sprite::DIR_RIGHT_DOWN)
+	{
+	  input = sprite::DIR_RIGHT;
+	  directionChanged = true;
+	
+	}
     }
-  
+
+  yx peekPos {gamePlayer->peekAtPos(input)};
+
+  if(directionChanged)
+    gamePlayer->updateDirection(input);
   if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
 				PLAYER_MOVEMENT_INNER_MARGIN.y,
 				PLAYER_MOVEMENT_INNER_MARGIN.x))
     {				// The player is moving within the inner margin
-      gamePlayer->updatePosRel(input);
+      	    gamePlayer->updatePosRel(input);
     }
   else
     {
-      movePlayerWhenInteractingWithInnerMargin(input, position, maxyx,
-					       backgroundLength, peekPos);
+      /*movePlayerWhenInteractingWithInnerMargin(input, position, maxyx,
+	backgroundLength, peekPos);*/
     }
 }
 
@@ -153,6 +156,10 @@ void rules::movePlayerWhenInteractingWithInnerMargin
   constexpr int REACHED_INNER_MARGIN_X {0};
   switch(input)
     {
+    // case sprite::DIR_NONE:
+    //   exit(-1);
+    //   gamePlayer->updatePosRel(input);
+    //   break;
     case sprite::DIR_UP:
       /* We use PLAYER_MOVEMENT_INNER_MARGIN.y here because we don't
 	 support scrolling in the y dimension. If
@@ -277,7 +284,7 @@ void rules::physics
   if(player::isDirectionCharInputValid(input) && input != currDir)
     { 
       movePlayer(player::convertDirectionCharsToDirections
-		 (player::directionChars(input)), position, maxyx,
+		 ((player::directionChars)input), position, maxyx,
 		 backgroundLength);
     }
   else

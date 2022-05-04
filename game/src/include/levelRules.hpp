@@ -50,7 +50,7 @@ private:
   char nearPass(const std::vector<int> playerSpChoords,
 		const std::vector<int> spChoords);
   // Moves the player 
-  void movePlayer(const sprite::directions input,
+  void movePlayer(sprite::directions input,
 		  int & position, const yx maxyx,
 		  const size_t backgroundLength);
   // Moves the player when interacting with the inner margin.
