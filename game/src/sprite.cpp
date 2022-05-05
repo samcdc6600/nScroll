@@ -22,7 +22,7 @@ sprite::sprite(std::vector<std::string> spriteFileNames, const yx max,
       loadSprite(spriteFileName->c_str(), *spriteSliceSets.back());
     }
   initialiseDirectionsVector();
-  setMaxYXOffset();
+  getMaxYXOffset();
 }
 
 
@@ -217,7 +217,7 @@ void sprite::parserPhaseTwo
 }
 
 
-void sprite::setMaxYXOffset()
+void sprite::getMaxYXOffset()
 { /* I tried my best to make maxBottomRightOffset const, however I was thwarted
      by a seg fault that would occur when calling resize() on a vector in
      getSprite() when getSprite() was called in the constructors member
@@ -413,10 +413,6 @@ yx sprite::getNewPos(const directions dir)
   yx d {};
   switch(dir)
     {
-    case DIR_NONE:
-      d.y = position.y;
-      d.x = position.x;
-      break;
     case DIR_LEFT_UP:
       d.y = position.y -1;
       d.x = position.x -1;
@@ -448,6 +444,10 @@ yx sprite::getNewPos(const directions dir)
     case DIR_RIGHT_DOWN:
       d.y = position.y +1;
       d.x = position.x +1;
+      break;
+    case DIR_NONE:
+      d.y = position.y;
+      d.x = position.x;
       break;
     default:
       std::stringstream e {};

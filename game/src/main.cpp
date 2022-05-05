@@ -67,7 +67,6 @@ void menu(const yx maxyx)
   // return;
   // TMP ======================================== ^^^^^^^
   
-  
   bool run = true;
   while(run)
     {
@@ -104,10 +103,10 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
 	levelRules.backgroundHeight};
 
       input = getch();
-      // if(input == ERR)
-      // 	{
-      // 	  input = sprite::DIR_NONE;	// Reset input.
-      // 	}
+      if(input == ERR)
+	{
+	  input = sprite::DIR_NONE;	// Reset input.
+	}
       switch(input)
 	{
 	case ESC_CHAR:

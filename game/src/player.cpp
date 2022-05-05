@@ -24,9 +24,6 @@ sprite::directions player::convertDirectionCharsToDirections
   directions ret {DIR_NONE};
   switch(dir)
     {
-    case ERR:			// There wasn't any any input.
-      ret = DIR_NONE;
-	break;
     case UP_CHAR:
     case UP_UPPER_CHAR:
       ret = DIR_UP;
@@ -70,9 +67,7 @@ sprite::directions player::convertDirectionCharsToDirections
 
 bool player::isDirectionCharInputValid(const int input)
 {
-  return (input == ERR ||	// Err is a special case and is passed in when
-				// there is no input.
-	  input == player::UP_CHAR || input == player::UP_UPPER_CHAR ||
+  return (input == player::UP_CHAR || input == player::UP_UPPER_CHAR ||
 	  input == player::LEFT_CHAR || input == player::LEFT_UPPER_CHAR ||
 	  input == player::DOWN_CHAR || input == player::DOWN_UPPER_CHAR ||
 	  input == player::RIGHT_CHAR || input == player::RIGHT_UPPER_CHAR);

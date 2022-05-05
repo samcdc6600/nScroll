@@ -10,8 +10,8 @@ struct yx
     this->y = y;
     this->x = x;
   }
-  size_t y;
-  size_t x;
+  int y;
+  int x;
 };
 
 

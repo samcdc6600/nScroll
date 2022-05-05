@@ -1,5 +1,6 @@
 #include "include/levelRules.hpp"
 #include "include/player.hpp"
+#include <string>
 
 
 void rules::resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime)
@@ -67,7 +68,7 @@ void rules::movePlayer(sprite::directions input,
      either end of the level then the player cannot move further of
      course. */
   const int currentDirection {gamePlayer->getDirection()};
-  bool directionChanged {false};
+  yx peekPos {gamePlayer->peekAtPos(input)};
   double vertVelocity {gamePlayer->getVertVelocity()};
 
   /* We intend to alter this later to have it read in from the level rules
@@ -81,68 +82,91 @@ void rules::movePlayer(sprite::directions input,
     //    }
   //    }
 
-  // std::cout<<"getMaxXAbsLevelRightAsStr = "<<gamePlayer->getMaxXAbsLevelRightAsStr(0, position)
-  // 	   <<"\n"<<"getMaxYAbsAsStr(0)) = "<<gamePlayer->getMaxYAbsAsStr(0)<<"\n";
 
-  // Check for boarder 1 below feet and boarder 0 in front.
-  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + 
+  /*  // Handle collision with boarder if moving down.
+  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + // Check for
+							      // boarder 0 in
+							      // front and 0
+							      // above feet.
 		     gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
-     != coordChars.end() &&
-     // Check for boarder at feet and 1 in front .
-     coordChars.find(gamePlayer->getMaxYAbsAsStr(0) + "," +
-		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
-     != coordChars.end() &&
-     // Check for no boarder 1 above feet and 1 in front.
-          coordChars.find(gamePlayer->getMaxYAbsAsStr(-1) + "," + 
-		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
-     == coordChars.end())
+     != coordChars.end())
     {
-      input = sprite::DIR_UP;
-      directionChanged = true;
-  }
-  // Handle collision with boarder if moving down (check to the bottom left and right.)
-  else if (coordChars.find((gamePlayer->getMaxYAbsAsStr(0)) + "," +
-			   gamePlayer->getMaxXAbsLevelLeftAsStr(0, position))
-	   != coordChars.end() ||
-	   coordChars.find((gamePlayer->getMaxYAbsAsStr(0)) + "," +
-			   gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
-	   != coordChars.end())
-    {
+      // endwin();
       // std::cout<<"currentDirection = "<<currentDirection<<", "<<"sprite::DIR_DOWN"<<" = "<<sprite::DIR_DOWN<<'\n';
       // gamePlayer->updateDirection(sprite::DIR_NONE);
       // std::cout<<"gamePlayer->getDirection() = "<<gamePlayer->getDirection()<<'\n';
       // std::cout<<"input = "<<input<<'\n';
       // exit(-1);
-      
       if(currentDirection == sprite::DIR_DOWN)
 	{
-	  endwin();
-	  std::cout<<"Hello girls\n";
-	  input = sprite::DIR_NONE;
-	  directionChanged = true;
+	  gamePlayer->updateDirection(sprite::DIR_NONE);
 	}
       else if(currentDirection == sprite::DIR_RIGHT_DOWN)
 	{
-	  input = sprite::DIR_RIGHT;
-	  directionChanged = true;
-	
+	  gamePlayer->updateDirection(sprite::DIR_RIGHT);
 	}
     }
 
-  yx peekPos {gamePlayer->peekAtPos(input)};
+  
+  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + // Check for
+							      // boarder 0 in
+							      // front and 0
+							      // above feet.
+		     gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
+     != coordChars.end() &&
+     // Check for boarder 1 in front and 1 above feet.
+     coordChars.find(gamePlayer->getMaxYAbsAsStr(0) + "," +
+		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
+     != coordChars.end() &&
+     // Check for no boarder 1 in front and 2 above feet.
+          coordChars.find(gamePlayer->getMaxYAbsAsStr(-1) + "," + 
+		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
+     == coordChars.end())
+    {
+      gamePlayer->updatePosRel(sprite::DIR_UP);
+      endwin();
+      std::cout<<gamePlayer->getMaxYAbsAsStr(1) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(0, position)<<'\n';
+      std::cout<<gamePlayer->getMaxYAbsAsStr(0) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(1, position)<<'\n';
+      exit(-1);
+      }*/
 
-  if(directionChanged)
-    gamePlayer->updateDirection(input);
+  if(currentDirection == sprite::DIR_DOWN)
+    {
+      for(std::string coord: gamePlayer->getBottomXAbsRangeAsStrs(position))
+	{
+	  if(coordChars.find(coord) != coordChars.end())
+	    {
+	      input = sprite::DIR_NONE;
+	      gamePlayer->updateDirection(input);
+	      break;
+	    }
+	}
+      // if (coordChars.find((gamePlayer->getMaxYAbsAsStr()) + "," +
+      // 			  gamePlayer->getMaxXAbsLevelRightAsStr(position))
+      // 	  != coordChars.end())
+      // {
+      // // 	      endwin();
+      // // 	      for(auto str: gamePlayer->getBottomXAbsRangeAsStrs(position))
+      // // 		std::cout<<" ("<<str<<"), ";
+      // // // std::cout<<gamePlayer->getMaxYAbsAsStr(1) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(0, position)<<'\n';
+      // // // std::cout<<gamePlayer->getMaxYAbsAsStr(0) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(1, position)<<'\n';
+      // // exit(-1);
+      // 	input = sprite::DIR_NONE;
+      // 	gamePlayer->updateDirection(input);
+      // }
+    }
+  //  else if
+  
   if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
 				PLAYER_MOVEMENT_INNER_MARGIN.y,
 				PLAYER_MOVEMENT_INNER_MARGIN.x))
     {				// The player is moving within the inner margin
-      	    gamePlayer->updatePosRel(input);
+      gamePlayer->updatePosRel(input);
     }
   else
     {
-      /*movePlayerWhenInteractingWithInnerMargin(input, position, maxyx,
-	backgroundLength, peekPos);*/
+      movePlayerWhenInteractingWithInnerMargin(input, position, maxyx,
+					       backgroundLength, peekPos);
     }
 }
 
@@ -156,10 +180,6 @@ void rules::movePlayerWhenInteractingWithInnerMargin
   constexpr int REACHED_INNER_MARGIN_X {0};
   switch(input)
     {
-    // case sprite::DIR_NONE:
-    //   exit(-1);
-    //   gamePlayer->updatePosRel(input);
-    //   break;
     case sprite::DIR_UP:
       /* We use PLAYER_MOVEMENT_INNER_MARGIN.y here because we don't
 	 support scrolling in the y dimension. If
@@ -284,7 +304,7 @@ void rules::physics
   if(player::isDirectionCharInputValid(input) && input != currDir)
     { 
       movePlayer(player::convertDirectionCharsToDirections
-		 ((player::directionChars)input), position, maxyx,
+		 (player::directionChars(input)), position, maxyx,
 		 backgroundLength);
     }
   else

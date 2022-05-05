@@ -5,7 +5,7 @@
 "./assets/sprites/sprite(1).sprite",
 	"./assets/sprites/sprite(2).sprite",
 	"./assets/sprites/sprite(3).sprite",
-	"./assets/sprites/sprite(4).sprite")(20,40))
+	"./assets/sprites/sprite(4).sprite")(13,45))
 #
 
 (b (27,0))

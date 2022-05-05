@@ -18,6 +18,14 @@ class player: public sprite
 
   // This function is not intended for use in player (and thus is private.)
   virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
+
+  // These values are used for collision checking in the physics code.
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // NOTE THAT WE INTEND TO 
+  const int topCollisionOffset {0};
+  const int bottomCollisionOffset {1};
+  const int rightCollisionOffset {-1};
+  const int leftCollissionOffset {1};
   
 public:
   enum directionChars
@@ -62,6 +70,53 @@ public:
   virtual void updatePosRel(const sprite::directions dir);
   double getVertVelocity();
   void setVertVelocity(const double newVV);
+  /* Return the the maximum absolute position of the bottom of the sprite.
+     For any of the following functions that take an argument position, the
+     position should be the current background position. */
+  std::string getMaxXAbsLevelRightAsStr(const int position)
+    const
+  {
+    std::stringstream ss {};
+    ss<<(this->position.x + maxBottomRightOffset.x + rightCollisionOffset +
+	 position);
+    return ss.str();
+  }
+  std::string getMaxXAbsLevelLeftAsStr(const int position)
+    const
+  {
+    std::stringstream ss {};
+    ss<<(this->position.x + leftCollissionOffset + position);
+    return ss.str();
+  }
+  std::string getMaxYAbsAsStr()
+    const
+  {
+    std::stringstream ss {};
+    ss<<position.y + maxBottomRightOffset.y + bottomCollisionOffset;
+    return ss.str();
+  }
+  /* Calculates all the points between the absolute position of the bottom
+     left + leftCollissionOffset and the absolute position of the bottom right +
+     rightCollissionOffset. Return value is a vector of strings of the pos's.*/
+  std::vector<std::string> getBottomXAbsRangeAsStrs(const int position)
+  {
+    const int absLeftPos {this->position.x + leftCollissionOffset + position};
+    const int absRightPos {this->position.x + maxBottomRightOffset.x +
+      rightCollisionOffset + position};
+
+    std::vector<std::string> retCoords {};
+    for(int pos {absLeftPos}; pos <= absRightPos; pos++)
+      {
+	std::stringstream ss {};
+	ss<<this->position.y + maxBottomRightOffset.y + bottomCollisionOffset
+	  <<","<<pos;
+	
+	retCoords.push_back(ss.str());
+	ss.clear();
+      }
+
+    return retCoords;
+  }
 };
 
 #endif

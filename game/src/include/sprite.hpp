@@ -6,7 +6,6 @@
 #include <sstream>
 #include "common.hpp"
 
-  #include <iostream>
 
 class sprite
 {
@@ -121,7 +120,7 @@ private:
      The offsets are interprited as a point at (0,0) or to the lower left of
      position. These values are used for collision detection and bounds
      checking. */
-  void setMaxYXOffset();
+  void getMaxYXOffset();
   /* Iterates through spriteSlices in sD and set's up boundry coords for each
      slice in sD. */
   void setUpBoundryCoordsVector(spriteData & sD);
@@ -190,31 +189,6 @@ public:
   {
     std::stringstream ss {};
     ss<<position.y;
-    return ss.str();
-  }
-  /* Return the the maximum absolute position of the bottom of the sprite.
-     The argument offset is added to the return value before it is converted to
-     a string. For any of the following functions that take an argument
-     position, the position should be the current background position. */
-  std::string getMaxXAbsLevelRightAsStr(const int offset, const int position)
-    const
-  {
-    std::stringstream ss {};
-    ss<<(this->position.x + maxBottomRightOffset.x + offset + position);
-    return ss.str();
-  }
-  std::string getMaxXAbsLevelLeftAsStr(const int offset, const int position)
-    const
-  {
-    std::stringstream ss {};
-    ss<<(this->position.x + offset + position);
-    return ss.str();
-  }
-  std::string getMaxYAbsAsStr(const int offset)
-    const
-  {
-    std::stringstream ss {};
-    ss<<position.y + maxBottomRightOffset.y + offset;  
     return ss.str();
   }
   /* Returns largest bottom right coordinates (relative to the start of the
