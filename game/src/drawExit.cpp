@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <ncurses.h>
-#include "include/common.hpp"
+#include "include/utils.hpp"
 #include "include/drawExit.hpp"
 #include "include/draw.hpp"
 
@@ -12,9 +12,9 @@ void drawExit(const yx maxyx)
   const std::string swanSong {"~~*-F-A-R-E-W-E-L-L-*~~"};
   int padding {1};
   bool direction {true};	// True indicates a "growing" direction (i.e. depletion zone around swanSong.)
-  int sleepTime {10};	// :)
+  int sleepTime {1};	// :)
   constexpr int sleepTimeStep {4};	// How much to increment or decrement sleep time by.
-  constexpr int frames {62};
+  constexpr int frames {34};
   int ch {};  
   srand(time(NULL));
   

@@ -1,7 +1,12 @@
 #include <stdexcept>
+#include <sstream>
 #include <ncurses.h>
+#include "include/utils.hpp"
 #include "include/collapse.hpp"
 #include "include/colorS.hpp"
+
+
+constexpr char NAME_OF_THIS_FILE [] = "collapse.cpp";
 
 
 // Copies rawBuff to buff with all '\n' characters removed.
@@ -157,9 +162,10 @@ void thirdPassOfCollapse(std::vector<int> & preRet, std::vector<int> & ret)
 	    {// Now apply color information to characters.
 	      if((iterColor - 3) >= preRet.size())
 		{
-		  mvprintw(0, 0, "iterColor = %d, preRet.size() = %d ", iterColor, preRet.size());
-		  getch();
-		  throw std::logic_error("if(iterColor >= preRet.size())");
+		  std::stringstream e {};
+		  e<<"Error (in \""<<NAME_OF_THIS_FILE<<"\"): iterColor = "
+		   <<iterColor<<", preRet.size() = "<<preRet.size();
+		  exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
 		}
 	      if(char(preRet[iterColor]) == '\\' && char(preRet[iterColor + 1]) == 'c' && char(preRet[iterColor + 2]) == 'x' && char(preRet[iterColor + 3]) == '/')
 		{ // Have we reached the closing escape sequences?

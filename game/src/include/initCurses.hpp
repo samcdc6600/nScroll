@@ -4,7 +4,7 @@
 #include <string>
 #include <ncurses.h>
 #include <sstream>
-#include "common.hpp"
+#include "utils.hpp"
 
 
 void initialiseCurses(yx & maxyx);

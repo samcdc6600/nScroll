@@ -65,6 +65,14 @@ private:
   (const sprite::directions input, int & position, const yx maxyx,
    const size_t backgroundLength, const yx peekPos,
    const int REACHED_INNER_MARGIN_X);
+  /* Handles collision with boarder characters when the player is moving down
+     Input should be the player input direction and the current absolute
+     possition of the player sprite in the x dimension. Returns updated
+     direction. */
+  sprite::directions handleGroundCollision(sprite::directions input,
+					   const int & position);
+  sprite::directions handleRightStepCollision(sprite::directions input,
+					      const int & position);
 
 public:
   void physics(const int input, int & position, const yx maxyx,

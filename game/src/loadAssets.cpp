@@ -2,7 +2,7 @@
 #include <sstream>
 #include <cstring>
 #include <ncurses.h>
-#include "include/common.hpp"
+#include "include/utils.hpp"
 #include "include/loadAssets.hpp"
 #include "include/collapse.hpp"
 

@@ -1,7 +1,7 @@
 #ifndef DRAW_H_
 #define DRAW_H_
 #include <vector>
-#include "common.hpp"
+#include "utils.hpp"
 #include "sprite.hpp"
 #include "levelRules.hpp"
 

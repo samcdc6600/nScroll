@@ -53,8 +53,12 @@ char rules::nearPass(const std::vector<int> playerSpChoords,
   return 'n';
 }
 
+// =================== TMP TMP TMP ==========================
 #include <curses.h>
-#include <iostream>    
+#include <iostream>
+#include <fstream>
+bool encountered {false};
+// =================== TMP TMP TMP ==========================
 
 void rules::movePlayer(sprite::directions input,
 		       int & position, const yx maxyx,
@@ -100,7 +104,7 @@ void rules::movePlayer(sprite::directions input,
       if(currentDirection == sprite::DIR_DOWN)
 	{
 	  gamePlayer->updateDirection(sprite::DIR_NONE);
-	}
+	  }
       else if(currentDirection == sprite::DIR_RIGHT_DOWN)
 	{
 	  gamePlayer->updateDirection(sprite::DIR_RIGHT);
@@ -130,32 +134,15 @@ void rules::movePlayer(sprite::directions input,
       exit(-1);
       }*/
 
-  if(currentDirection == sprite::DIR_DOWN)
+
+
+  if(currentDirection == sprite::DIR_DOWN || input == sprite::DIR_DOWN)
     {
-      for(std::string coord: gamePlayer->getBottomXAbsRangeAsStrs(position))
-	{
-	  if(coordChars.find(coord) != coordChars.end())
-	    {
-	      input = sprite::DIR_NONE;
-	      gamePlayer->updateDirection(input);
-	      break;
-	    }
-	}
-      // if (coordChars.find((gamePlayer->getMaxYAbsAsStr()) + "," +
-      // 			  gamePlayer->getMaxXAbsLevelRightAsStr(position))
-      // 	  != coordChars.end())
-      // {
-      // // 	      endwin();
-      // // 	      for(auto str: gamePlayer->getBottomXAbsRangeAsStrs(position))
-      // // 		std::cout<<" ("<<str<<"), ";
-      // // // std::cout<<gamePlayer->getMaxYAbsAsStr(1) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(0, position)<<'\n';
-      // // // std::cout<<gamePlayer->getMaxYAbsAsStr(0) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(1, position)<<'\n';
-      // // exit(-1);
-      // 	input = sprite::DIR_NONE;
-      // 	gamePlayer->updateDirection(input);
-      // }
+      input = handleGroundCollision(input, position);
     }
-  //  else if
+  else if(currentDirection == sprite::DIR_RIGHT || input == sprite::DIR_RIGHT)
+    {
+    }
   
   if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
 				PLAYER_MOVEMENT_INNER_MARGIN.y,
@@ -175,47 +162,56 @@ void rules::movePlayerWhenInteractingWithInnerMargin
 (const sprite::directions input, int & position, const yx maxyx,
  const size_t backgroundLength, const yx peekPos)
 {
-  /* We use this variable in the calls to inWindowInnerMargin() when peekPos
+  /* We use this variable in the call's to inWindowInnerMargin() when peekPos
      is out of the x boarder range. */
   constexpr int REACHED_INNER_MARGIN_X {0};
   switch(input)
     {
+    case sprite::DIR_NONE:
+      break;
     case sprite::DIR_UP:
       /* We use PLAYER_MOVEMENT_INNER_MARGIN.y here because we don't
 	 support scrolling in the y dimension. If
 	 PLAYER_MOVEMENT_INNER_MARGIN.y = 0 this point should not be
 	 reached. */
-      if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
-					 PLAYER_MOVEMENT_INNER_MARGIN.y,
-					 REACHED_INNER_MARGIN_X))
+      if(gamePlayer->inWindowInnerMargin
+	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
+	  REACHED_INNER_MARGIN_X))
 	{
 	  gamePlayer->updatePosRel(input);
 	}
       break;
-      // =======================================================================
     case sprite::DIR_RIGHT:
-      movePlayerRightWhenInteractingWithInnerMargin(input, position, maxyx,
-						    backgroundLength, peekPos,
-						    REACHED_INNER_MARGIN_X);
+      movePlayerRightWhenInteractingWithInnerMargin
+	(input, position, maxyx, backgroundLength, peekPos,
+	 REACHED_INNER_MARGIN_X);
       break;
-      // =======================================================================
+
     case sprite::DIR_DOWN:
+      	  // if(encountered)
+	  //   {
+      	  //     mvprintw(0, 0, "DIR_DOWN and encountered = true Coord = %s ", gamePlayer->getMaxYAbsAsStr().c_str());
+	  //     nodelay(stdscr, FALSE);
+	  //     refresh();
+	  //     getch();
+	  //     nodelay(stdscr, TRUE);
+	  //     encountered = true;
+	  //   }
       /* We use PLAYER_MOVEMENT_INNER_MARGIN.y here because we don't
 	 support scrolling in the y dimension. If
 	 PLAYER_MOVEMENT_INNER_MARGIN.y = 0 this point should not be
 	 reached. */
-      if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
-					 PLAYER_MOVEMENT_INNER_MARGIN.y,
-					 REACHED_INNER_MARGIN_X))
+      if(gamePlayer->inWindowInnerMargin
+	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
+	  REACHED_INNER_MARGIN_X))
 	{
 	  gamePlayer->updatePosRel(input);
 	}
       break;
-      // =======================================================================
     case sprite::DIR_LEFT:
-      movePlayerLeftWhenInteractingWithInnerMargin(input, position, maxyx,
-						    backgroundLength, peekPos,
-						    REACHED_INNER_MARGIN_X);
+      movePlayerLeftWhenInteractingWithInnerMargin
+	(input, position, maxyx, backgroundLength, peekPos,
+	 REACHED_INNER_MARGIN_X);
       break;
     }
 }
@@ -292,7 +288,29 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
 	    }
 	}
     }
+}
 
+
+sprite::directions rules::handleGroundCollision(sprite::directions input,
+						const int & position)
+{
+  sprite::directions retDir {input};
+  for(std::string coord: gamePlayer->getBottomXAbsRangeAsStrs(position))
+    {
+      if(coordChars.find(coord) != coordChars.end())
+	{
+	  retDir = sprite::DIR_NONE;
+	  gamePlayer->updateDirection(input);
+	  break;
+	}
+    }
+  return retDir;
+}
+
+
+sprite::directions rules::handleRightStepCollision(sprite::directions input,
+						   const int & position)
+{
 }
 
 

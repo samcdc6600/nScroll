@@ -1,0 +1,6 @@
+sudo lldb-3.9
+(lldb) plugin load /path/to/scd-app/libsosplugin.so
+(lldb) setclrpath /path/to/scd-app
+(lldb) process attach -p 6001
+
+ps | grep nsc

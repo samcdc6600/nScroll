@@ -5,7 +5,7 @@
 #include "include/loadAssets.hpp"
 #include "include/collapse.hpp"// For second phase
 #include "include/draw.hpp"
-#include "include/common.hpp"
+#include "include/utils.hpp"
 
 
 sprite::sprite(std::vector<std::string> spriteFileNames, const yx max,
@@ -413,41 +413,41 @@ yx sprite::getNewPos(const directions dir)
   yx d {};
   switch(dir)
     {
-    case DIR_LEFT_UP:
-      d.y = position.y -1;
-      d.x = position.x -1;
+    case DIR_NONE:
+      d.y = position.y;
+      d.x = position.x;
       break;
     case DIR_UP:
       d.y = position.y -1;
       d.x = position.x;
       break;
-    case DIR_RIGHT_UP:
-      d.y = position.y -1;
+    case DIR_RIGHT:
+      d.y = position.y;
       d.x = position.x +1;
+      break;
+    case DIR_DOWN:
+      d.y = position.y +1;
+      d.x = position.x;
       break;
     case DIR_LEFT:
       d.y = position.y;
       d.x = position.x -1;
       break;
-    case DIR_RIGHT:
-      d.y = position.y;
+    case DIR_RIGHT_UP:
+      d.y = position.y -1;
+      d.x = position.x +1;
+      break;
+    case DIR_RIGHT_DOWN:
+      d.y = position.y +1;
       d.x = position.x +1;
       break;
     case DIR_LEFT_DOWN:
       d.y = position.y +1;
       d.x = position.x -1;
       break;
-    case DIR_DOWN:
-      d.y = position.y +1;
-      d.x = position.x;
-      break;
-    case DIR_RIGHT_DOWN:
-      d.y = position.y +1;
-      d.x = position.x +1;
-      break;
-    case DIR_NONE:
-      d.y = position.y;
-      d.x = position.x;
+    case DIR_LEFT_UP:
+      d.y = position.y -1;
+      d.x = position.x -1;
       break;
     default:
       std::stringstream e {};
@@ -508,11 +508,6 @@ bool sprite::inWindowInnerMargin(const int y, const int x, const int yBound,
 		     0 + yBound, maxyx.y - yBound) &&
 	  checkRange(x + maxBottomRightOffset.x,
 		     0 + xBound, maxyx.x - xBound));
-    
-  std::stringstream e {};
-  e<<"Error (in inWindowInnerMargin()): invalid sprite coordinate ("<<y<<", "
-   <<x<<") encountered.";
-  exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
 }
 
 

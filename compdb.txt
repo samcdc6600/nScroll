@@ -1,0 +1,5 @@
+We've installed compiledb using pip and it put the compiledb command in
+"/home/crayxmp/.local/bin/compiledb". "/home/crayxmp/.local/bin/" Is in out
+$PATH variable. and r and x are set on compiledb. However when we try to run it
+it isn't found. So we are just going to use the absolute path for now as we
+can't be bothered to figure out what's going on here.

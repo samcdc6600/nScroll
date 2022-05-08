@@ -2,7 +2,7 @@
 #include <ncurses.h>
 #include <string>
 #include "include/slice.hpp"
-#include "include/common.hpp"
+#include "include/utils.hpp"
 
 
 std::vector<int> getSlice(const std::vector<int> buff, const unsigned long offset, const int y, const int x)

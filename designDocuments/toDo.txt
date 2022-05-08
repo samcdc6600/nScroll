@@ -2,6 +2,13 @@
 "*?" mean's maybe to do.
 "+" mean's done.
 
+* ---> (16) Change all error messages to include the file name. This should be
+	    achieved by adding a static string called NAME_OF_THIS_FILE to the
+	    top of each .cpp file. For any functions in .hpp files a variable of
+	    the same name should be declared in the function.
+* ---> (15) Change all code to use "void exit(const std::string & e,
+	    const int status)". We know that at least collapse.cpp uses
+	    exceptions.
 * ---> (14) Fix compilation warnings and then try to fix them as they come up.
 * ---> (13) Create sprite (called something different) class for enemy sprites
 	    (as they need to handle things like collision and also automated

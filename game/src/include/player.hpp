@@ -1,13 +1,10 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 #include <stdexcept>
-// tmp vvv
 #include <sstream>
-#include "common.hpp"
-// tmp ^^^
 #include <string>
 #include "sprite.hpp"
-#include "common.hpp"
+#include "utils.hpp"
 
 
 class player: public sprite

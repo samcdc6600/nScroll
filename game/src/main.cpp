@@ -1,7 +1,7 @@
 #include <sstream>
 #include <string>
 #include "include/initCurses.hpp"
-#include "include/common.hpp"
+#include "include/utils.hpp"
 #include "include/loadAssets.hpp"
 #include "include/checkBoundsOfBounds.hpp"
 #include "include/levelRules.hpp"
@@ -103,10 +103,6 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
 	levelRules.backgroundHeight};
 
       input = getch();
-      if(input == ERR)
-	{
-	  input = sprite::DIR_NONE;	// Reset input.
-	}
       switch(input)
 	{
 	case ESC_CHAR:

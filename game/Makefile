@@ -1,7 +1,7 @@
 CXX	= clang++
 #CXX	= g++
 # fpermissive requred for compilation with g++.
-CXXFLAGS	= -std=c++2a -Wall -Wpedantic -Wextra -O2
+CXXFLAGS	= -std=c++14 -Wall -Wpedantic -Wextra -O2
 LIBS	= -lncurses
 BIN_NAME	= nscrl
 SRC	= ./src
@@ -35,7 +35,7 @@ $(ODIR)/%.o: $(SRC)/%.cpp $(DEPS)
 
 # Call make recursively on $(BIN_NAME) target (with DEBUG var set to -DDEBUG.)
 debug:
-	$(MAKE) $(BIN_NAME) DEBUG=-DDEBUG
+	$(MAKE) $(BIN_NAME) CXXFLAGS="-std=c++14 -g -O0 -Wall -Wpedantic -Wextra" DEBUG=-DDEBUG 
 
 
 # Files with '#' and '~' seem to be left around be emacs >:'^(
