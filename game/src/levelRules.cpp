@@ -86,53 +86,8 @@ void rules::movePlayer(sprite::directions input,
     //    }
   //    }
 
-
-  /*  // Handle collision with boarder if moving down.
-  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + // Check for
-							      // boarder 0 in
-							      // front and 0
-							      // above feet.
-		     gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
-     != coordChars.end())
-    {
-      // endwin();
-      // std::cout<<"currentDirection = "<<currentDirection<<", "<<"sprite::DIR_DOWN"<<" = "<<sprite::DIR_DOWN<<'\n';
-      // gamePlayer->updateDirection(sprite::DIR_NONE);
-      // std::cout<<"gamePlayer->getDirection() = "<<gamePlayer->getDirection()<<'\n';
-      // std::cout<<"input = "<<input<<'\n';
-      // exit(-1);
-      if(currentDirection == sprite::DIR_DOWN)
-	{
-	  gamePlayer->updateDirection(sprite::DIR_NONE);
-	  }
-      else if(currentDirection == sprite::DIR_RIGHT_DOWN)
-	{
-	  gamePlayer->updateDirection(sprite::DIR_RIGHT);
-	}
-    }
-
   
-  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + // Check for
-							      // boarder 0 in
-							      // front and 0
-							      // above feet.
-		     gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
-     != coordChars.end() &&
-     // Check for boarder 1 in front and 1 above feet.
-     coordChars.find(gamePlayer->getMaxYAbsAsStr(0) + "," +
-		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
-     != coordChars.end() &&
-     // Check for no boarder 1 in front and 2 above feet.
-          coordChars.find(gamePlayer->getMaxYAbsAsStr(-1) + "," + 
-		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
-     == coordChars.end())
-    {
-      gamePlayer->updatePosRel(sprite::DIR_UP);
-      endwin();
-      std::cout<<gamePlayer->getMaxYAbsAsStr(1) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(0, position)<<'\n';
-      std::cout<<gamePlayer->getMaxYAbsAsStr(0) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(1, position)<<'\n';
-      exit(-1);
-      }*/
+  /**/
 
 
 
@@ -142,6 +97,7 @@ void rules::movePlayer(sprite::directions input,
     }
   else if(currentDirection == sprite::DIR_RIGHT || input == sprite::DIR_RIGHT)
     {
+      input = handleRightCollision(input, position);
     }
   
   if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
@@ -295,7 +251,8 @@ sprite::directions rules::handleGroundCollision(sprite::directions input,
 						const int & position)
 {
   sprite::directions retDir {input};
-  for(std::string coord: gamePlayer->getBottomXAbsRangeAsStrs(position))
+  for(std::string coord:
+	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
     {
       if(coordChars.find(coord) != coordChars.end())
 	{
@@ -308,9 +265,51 @@ sprite::directions rules::handleGroundCollision(sprite::directions input,
 }
 
 
-sprite::directions rules::handleRightStepCollision(sprite::directions input,
+sprite::directions rules::handleRightCollision(sprite::directions input,
 						   const int & position)
 {
+        /* mvprintw(0, 0, "DIR_RIGHT, Coord = %s (>.<)", coord.c_str());
+      nodelay(stdscr, FALSE);
+      refresh();
+      getch();
+      nodelay(stdscr, TRUE); */
+  sprite::directions retDir {input};
+  for(std::string coord:
+	gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position))
+    {
+      if(coordChars.find(coord) != coordChars.end())
+	{
+	  retDir = sprite::DIR_NONE;
+	  gamePlayer->updateDirection(input);
+
+	        nodelay(stdscr, FALSE);
+
+	  break;
+	}
+    }
+  return retDir;
+  
+  /*  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + // Check for
+							      // boarder 0 in
+							      // front and 0
+							      // above feet.
+		     gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
+     != coordChars.end() &&
+     // Check for boarder 1 in front and 1 above feet.
+     coordChars.find(gamePlayer->getMaxYAbsAsStr(0) + "," +
+		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
+     != coordChars.end() &&
+     // Check for no boarder 1 in front and 2 above feet.
+          coordChars.find(gamePlayer->getMaxYAbsAsStr(-1) + "," + 
+		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
+     == coordChars.end())
+    {
+      gamePlayer->updatePosRel(sprite::DIR_UP);
+      endwin();
+      std::cout<<gamePlayer->getMaxYAbsAsStr(1) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(0, position)<<'\n';
+      std::cout<<gamePlayer->getMaxYAbsAsStr(0) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(1, position)<<'\n';
+      exit(-1);
+      }*/
 }
 
 

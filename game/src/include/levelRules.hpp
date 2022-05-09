@@ -67,11 +67,15 @@ private:
    const int REACHED_INNER_MARGIN_X);
   /* Handles collision with boarder characters when the player is moving down
      Input should be the player input direction and the current absolute
-     possition of the player sprite in the x dimension. Returns updated
+     position of the player sprite in the x dimension. Returns updated
      direction. */
   sprite::directions handleGroundCollision(sprite::directions input,
 					   const int & position);
-  sprite::directions handleRightStepCollision(sprite::directions input,
+  /* Handles collision with boarder characters when the player is moving
+     right. If there is only one character to the bottom right then the player
+     will continue moving in the right direction but be moved up by one
+     character.  */
+  sprite::directions handleRightCollision(sprite::directions input,
 					      const int & position);
 
 public:
