@@ -71,11 +71,13 @@ private:
      direction. */
   sprite::directions handleGroundCollision(sprite::directions input,
 					   const int & position);
-  /* Handles collision with boarder characters when the player is moving
+  /* Handles collision with boarder characters when the player sprite is moving
      right. If there is only one character to the bottom right then the player
      will continue moving in the right direction but be moved up by one
-     character.  */
-  sprite::directions handleRightCollision(sprite::directions input,
+     character unless the player has a y position of 0, in which case the
+     player will be stopped. The player sprite will also be stopped if there is
+     more then one character directly to the right of it. */
+  sprite::directions handleRightCollision(const sprite::directions input,
 					      const int & position);
 
 public:

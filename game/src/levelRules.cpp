@@ -265,7 +265,7 @@ sprite::directions rules::handleGroundCollision(sprite::directions input,
 }
 
 
-sprite::directions rules::handleRightCollision(sprite::directions input,
+sprite::directions rules::handleRightCollision(const sprite::directions input,
 						   const int & position)
 {
         /* mvprintw(0, 0, "DIR_RIGHT, Coord = %s (>.<)", coord.c_str());
@@ -274,26 +274,57 @@ sprite::directions rules::handleRightCollision(sprite::directions input,
       getch();
       nodelay(stdscr, TRUE); */
   sprite::directions retDir {input};
-  for(std::string coord:
-	gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position))
+  const std::vector<std::string> playerCoords
+    {gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position)};
+  const std::string bottomRightPlayerCoord
+    {playerCoords[playerCoords.size() -1]};
+  bool stoppingContact {false};
+    
+  for(std::string playerCoord: playerCoords)
     {
-      if(coordChars.find(coord) != coordChars.end())
+      mvprintw(0, 0, "DIR_RIGHT, Coord = %s (>.<)", playerCoord.c_str());
+      nodelay(stdscr, FALSE);
+      refresh();
+      nodelay(stdscr, TRUE);
+      // If there is near contact and it's not with the bottom right coord.
+      if(playerCoord != bottomRightPlayerCoord &&
+          coordChars.find(playerCoord) != coordChars.end())
 	{
+	  stoppingContact = true;
 	  retDir = sprite::DIR_NONE;
 	  gamePlayer->updateDirection(input);
 
-	        nodelay(stdscr, FALSE);
+	  nodelay(stdscr, FALSE);
 
 	  break;
 	}
     }
-  return retDir;
   
+  if(!stoppingContact &&
+     coordChars.find(bottomRightPlayerCoord) != coordChars.end())
+    {
+      if(gamePlayer->getPos().y > 0)
+	{
+	  /* If we've hit a "step" (as in the things that constitute staircases)
+	     and we are not at the minimum (top of window) y position, then
+	     "step up" :). */
+	  gamePlayer->updatePosRel(sprite::DIR_UP);
+	}
+    }
+  
+  return retDir;
+
   /*  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + // Check for
-							      // boarder 0 in
-							      // front and 0
-							      // above feet.
-		     gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
+                                                              // boarder 0 in
+                                                              // front and 0
+                                                              // above feet.
+        And then I was all like I just don't really know what you mean at all
+        .you know and then I thought about it all the time Of that sort of
+        time. It's just as it is.XUXuXUIt was all about that sort of thing you
+        know and I knew that it was about that tsort of thing I knew I knew I
+        knew I knwo what you think abotu that and I knwo what I think abotu it
+        and It's just not what you think anad then I thought.
+gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
      != coordChars.end() &&
      // Check for boarder 1 in front and 1 above feet.
      coordChars.find(gamePlayer->getMaxYAbsAsStr(0) + "," +
