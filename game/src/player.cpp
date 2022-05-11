@@ -18,6 +18,8 @@ player::player(std::vector<std::string> spriteFileNames, const yx max,
 {}
 
 
+/* Returns dir as the corresponding direction, if there is none returns
+   DIR_NONE. */
 sprite::directions player::convertDirectionCharsToDirections
 (const directionChars dir)
 {
@@ -56,10 +58,6 @@ sprite::directions player::convertDirectionCharsToDirections
     case LEFT_UP_UPPER_CHAR:
       ret = DIR_LEFT_UP;
 	break;
-    default:
-      std::stringstream e {};
-      e<<"Error direction with ASCII code("<<dir<<") not valid.";
-      exit(e.str().c_str(), ERROR_INVALID_DIRECTION);
     }
   return ret;
 }

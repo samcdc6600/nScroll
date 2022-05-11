@@ -81,7 +81,7 @@ private:
 					      const int & position);
 
 public:
-  void physics(const int input, int & position, const yx maxyx,
+  void physics(const player::directionChars input, int & position, const yx maxyx,
 	       const size_t backgroundLength,
 	       std::__1::chrono::steady_clock::time_point & secStartTime);
   ~rules()

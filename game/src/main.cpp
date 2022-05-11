@@ -113,7 +113,8 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
 	  break;
 	}
 
-      levelRules.physics(input, position, maxyx, backgroundLen, secStartTime);
+      levelRules.physics(player::directionChars(input), position, maxyx,
+			 backgroundLen, secStartTime);
       draw(background, levelRules.spriteCoords, levelRules.gamePlayer,
 	   maxyx, position);
     }

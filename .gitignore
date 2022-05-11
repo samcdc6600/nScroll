@@ -9,6 +9,10 @@ game/~*
 game/*~
 game/~#
 game/#~
+game/nscrl
+game/clangd.core
+game/.clangd
+game/src/.#*
 game/src/~*
 game/src/*~
 game/src/*#

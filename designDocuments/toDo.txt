@@ -2,13 +2,24 @@
 "*?" mean's maybe to do.
 "+" mean's done.
 
-* ---> (16) Change all error messages to include the file name. This should be
+
+* ---> (18) Fix sprite bug. Start program move character right and wait to hit
+            the end of the level (this may not be required), attach debugger and
+            step through. Notice that some of the characters are out of place on
+            one of the frames (this may be a problem with the sprite file,
+            however even if it is if you watch the sprite without the debugger
+            attached this frame goes by very fast. Thus there is definitely
+            something wrong.)
+* ---> (17) Convert all functions that return coordinates as strings in
+	    player.hpp to be private and have two functions that force the
+	    original function to use bottomCollisionDirectOffset or
+	    bottomCollisionOneOffOffset and their equivalents for the x axis.
+*? --> (16) Change all errors to use error handling code from NESEmu (also
+	    replace code that uses exceptions.)?
+* ---> (15) Change all error messages to include the file name. This should be
 	    achieved by adding a static string called NAME_OF_THIS_FILE to the
 	    top of each .cpp file. For any functions in .hpp files a variable of
 	    the same name should be declared in the function.
-* ---> (15) Change all code to use "void exit(const std::string & e,
-	    const int status)". We know that at least collapse.cpp uses
-	    exceptions.
 * ---> (14) Fix compilation warnings and then try to fix them as they come up.
 * ---> (13) Create sprite (called something different) class for enemy sprites
 	    (as they need to handle things like collision and also automated
@@ -43,8 +54,8 @@
 *? --> (4) Just go ahead a make rules struct a class called
 	    physics.
 	    
-+ ---> (3) Fix Graphical sprite anomalies when switching between
-	    player directions and sprite files are set up a certin way.
++ ---> (3) Fix graphical sprite anomalies when switching between
+	   player directions and sprite files are set up a certin way.
 	    
 + ---> (2) Finish the default in setUpBoundryCoordsVector.
 

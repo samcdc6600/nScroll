@@ -91,11 +91,14 @@ void rules::movePlayer(sprite::directions input,
 
 
 
-  if(currentDirection == sprite::DIR_DOWN || input == sprite::DIR_DOWN)
+  if((currentDirection == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
+     input == sprite::DIR_DOWN)
     {
       input = handleGroundCollision(input, position);
     }
-  else if(currentDirection == sprite::DIR_RIGHT || input == sprite::DIR_RIGHT)
+  else if((currentDirection == sprite::DIR_RIGHT &&
+	   input == sprite::DIR_NONE) ||
+	  input == sprite::DIR_RIGHT)
     {
       input = handleRightCollision(input, position);
     }
@@ -282,10 +285,10 @@ sprite::directions rules::handleRightCollision(const sprite::directions input,
     
   for(std::string playerCoord: playerCoords)
     {
-      mvprintw(0, 0, "DIR_RIGHT, Coord = %s (>.<)", playerCoord.c_str());
-      nodelay(stdscr, FALSE);
-      refresh();
-      nodelay(stdscr, TRUE);
+      // mvprintw(0, 0, "DIR_RIGHT, Coord = %s (>.<)", playerCoord.c_str());
+      // nodelay(stdscr, FALSE);
+      // refresh();
+      // nodelay(stdscr, TRUE);
       // If there is near contact and it's not with the bottom right coord.
       if(playerCoord != bottomRightPlayerCoord &&
           coordChars.find(playerCoord) != coordChars.end())
@@ -309,6 +312,11 @@ sprite::directions rules::handleRightCollision(const sprite::directions input,
 	     and we are not at the minimum (top of window) y position, then
 	     "step up" :). */
 	  gamePlayer->updatePosRel(sprite::DIR_UP);
+	}
+      else
+	{
+	  // We've hit the top of the window.
+	  retDir = sprite::DIR_NONE;
 	}
     }
   
@@ -345,20 +353,22 @@ gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
 
 
 void rules::physics
-(const int input, int & position, const yx maxyx, const size_t backgroundLength,
+(const player::directionChars input, int & position, const yx maxyx,
+ const size_t backgroundLength,
  std::__1::chrono::steady_clock::time_point & secStartTime)
 {
+  sprite::directions inputDirection
+    {player::convertDirectionCharsToDirections(input)};
   const sprite::directions currDir {gamePlayer->getDirection()};
-  if(player::isDirectionCharInputValid(input) && input != currDir)
-    { 
-      movePlayer(player::convertDirectionCharsToDirections
-		 (player::directionChars(input)), position, maxyx,
-		 backgroundLength);
+  
+  if(player::isDirectionCharInputValid(input) && inputDirection != currDir)
+    {
+      // Change direction
+      movePlayer(inputDirection, position, maxyx, backgroundLength);
     }
   else
-    {	// Keep moving in the current direction.
-      movePlayer(currDir, position, maxyx,
-		 backgroundLength);
+    {
+      movePlayer(currDir, position, maxyx, backgroundLength);
     }
   sleep(engineSleepTime);
   resetOldTime(secStartTime);
