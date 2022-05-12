@@ -10,6 +10,8 @@
 class rules
 {
 public:
+  // The player cannot pass widthin this many character's of the window boarder's (y, x).
+  const yx PLAYER_MOVEMENT_INNER_MARGIN {0, 40};
   static constexpr size_t second {1};
   /* The key's for these maps should be of the form "Y,X" Where Y and X are 
      numbers and the whole thing is a string */
@@ -69,16 +71,14 @@ private:
      Input should be the player input direction and the current absolute
      position of the player sprite in the x dimension. Returns updated
      direction. */
-  sprite::directions handleGroundCollision(sprite::directions input,
-					   const int & position);
+  sprite::directions handleGroundCollision(const int & position);
   /* Handles collision with boarder characters when the player sprite is moving
      right. If there is only one character to the bottom right then the player
      will continue moving in the right direction but be moved up by one
      character unless the player has a y position of 0, in which case the
      player will be stopped. The player sprite will also be stopped if there is
      more then one character directly to the right of it. */
-  sprite::directions handleRightCollision(const sprite::directions input,
-					      const int & position);
+  sprite::directions handleRightCollision(const int & position);
 
 public:
   void physics(const player::directionChars input, int & position, const yx maxyx,

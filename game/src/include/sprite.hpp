@@ -14,13 +14,11 @@ public:
   enum directions
     {				// Direction a sprite can move in.
       /* Sprites should have either 1 set of slices (in which case they should
-	 only index into spriteS with DIR_NONE), 4 sets of slices (in which case
+	 only index into spriteS with DIR_NONE) or 5 sets of slices (in which case
 	 they should only index into spriteS with DIR_NONE, DIR_UP, DIR_RIGHT,
-	 DIR_DOWN and DIR_LEFT) or 8 sets of slices (in which case they should
-	 index into spriteS with all directions.) */
+	 DIR_DOWN and DIR_LEFT) */
       DIR_NONE,
       DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,
-      DIR_RIGHT_UP, DIR_RIGHT_DOWN, DIR_LEFT_DOWN, DIR_LEFT_UP
     };
   
 private:
@@ -158,16 +156,14 @@ protected:
      value of dir. */
   yx getNewPos(const directions dir);
   bool checkBoundValue(const int bound);
-  void checkBoundValue(const std::string callerName, const int bound);
-  void checkBoundValues(const std::string callerName, const int yBound,
-			const int xBound);
+  // void checkBoundValue(const std::string callerName, const int bound);
+  // // void checkBoundValues(const std::string callerName, const int yBound,
+  // // 			const int xBound);
   
 public:
-  /* Checks that y and x are in the ranges [0 + yBound, maxyx.y -
-     yBound) and [0 + xBound, maxyx.x - xBound)
-     respectively. */
-  bool inWindowInnerMargin(const int y, const int x, const int yBound,
-			   int xBound);
+  
+  bool inWindowInnerMarginY(const int y, const int yBound);
+  bool inWindowInnerMarginX(const int x, const int xBound);
   bool leftOfWindowInnerRightMargin(const int x, const int xBound,
 				    const yx maxyx);
   bool rightOfWindowInnerLeftMargin(const int x, const int xBound);

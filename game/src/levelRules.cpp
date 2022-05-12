@@ -71,7 +71,7 @@ void rules::movePlayer(sprite::directions input,
      appropriate direction (If there is background to spare.) If we are at
      either end of the level then the player cannot move further of
      course. */
-  const int currentDirection {gamePlayer->getDirection()};
+  const int currDir {gamePlayer->getDirection()};
   yx peekPos {gamePlayer->peekAtPos(input)};
   double vertVelocity {gamePlayer->getVertVelocity()};
 
@@ -90,23 +90,32 @@ void rules::movePlayer(sprite::directions input,
   /**/
 
 
-
-  if((currentDirection == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
+  // Handle contact with boarder characters.
+  if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
      input == sprite::DIR_DOWN)
     {
-      input = handleGroundCollision(input, position);
+      input = handleGroundCollision(position);
     }
-  else if((currentDirection == sprite::DIR_RIGHT &&
+  else if((currDir == sprite::DIR_RIGHT &&
 	   input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
     {
-      input = handleRightCollision(input, position);
+      input = handleRightCollision(position);
     }
-  
-  if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
-				PLAYER_MOVEMENT_INNER_MARGIN.y,
-				PLAYER_MOVEMENT_INNER_MARGIN.x))
-    {				// The player is moving within the inner margin
+
+
+  /* Make any final movement, check for window margin contact and take
+     appropriate action if such contact is made. */
+  if((input == sprite::DIR_LEFT || sprite::DIR_RIGHT) &&
+     gamePlayer->inWindowInnerMarginY
+     (peekPos.y, PLAYER_MOVEMENT_INNER_MARGIN.y))
+    {
+      gamePlayer->updatePosRel(input);
+    }
+  else if((input == sprite::DIR_DOWN || sprite::DIR_UP) &&
+	  gamePlayer->inWindowInnerMarginX
+	  (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x))
+    {
       gamePlayer->updatePosRel(input);
     }
   else
@@ -114,6 +123,17 @@ void rules::movePlayer(sprite::directions input,
       movePlayerWhenInteractingWithInnerMargin(input, position, maxyx,
 					       backgroundLength, peekPos);
     }
+    
+  // if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
+  // 				PLAYER_MOVEMENT_INNER_MARGIN.y,
+  // 				PLAYER_MOVEMENT_INNER_MARGIN.x))
+  //   {				// The player is moving within the inner margin
+  //     gamePlayer->updatePosRel(input);
+  //   }
+  // else
+  //   {
+      
+  //   }
 }
 
 
@@ -123,56 +143,42 @@ void rules::movePlayerWhenInteractingWithInnerMargin
 {
   /* We use this variable in the call's to inWindowInnerMargin() when peekPos
      is out of the x boarder range. */
-  constexpr int REACHED_INNER_MARGIN_X {0};
-  switch(input)
-    {
-    case sprite::DIR_NONE:
-      break;
-    case sprite::DIR_UP:
-      /* We use PLAYER_MOVEMENT_INNER_MARGIN.y here because we don't
-	 support scrolling in the y dimension. If
-	 PLAYER_MOVEMENT_INNER_MARGIN.y = 0 this point should not be
-	 reached. */
-      if(gamePlayer->inWindowInnerMargin
-	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-	  REACHED_INNER_MARGIN_X))
-	{
-	  gamePlayer->updatePosRel(input);
-	}
-      break;
-    case sprite::DIR_RIGHT:
-      movePlayerRightWhenInteractingWithInnerMargin
-	(input, position, maxyx, backgroundLength, peekPos,
-	 REACHED_INNER_MARGIN_X);
-      break;
+  // constexpr int REACHED_INNER_MARGIN_X {0};
+  // switch(input)
+  //   {
+  //   case sprite::DIR_NONE:
+  //     break;
+  //   case sprite::DIR_UP:
+  //     /* We use PLAYER_MOVEMENT_INNER_MARGIN.y here because we don't
+  // 	 support scrolling in the y dimension. If
+  // 	 PLAYER_MOVEMENT_INNER_MARGIN.y = 0 this point should not be
+  // 	 reached. */
+  //     if(gamePlayer->inWindowInnerMarginY
+  // 	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
+  // 	  REACHED_INNER_MARGIN_X))
+  // 	{
+  // 	  gamePlayer->updatePosRel(input);
+  // 	}
+  //     break;
+  //   case sprite::DIR_RIGHT:
+  //     movePlayerRightWhenInteractingWithInnerMargin
+  // 	(input, position, maxyx, backgroundLength, peekPos,
+  // 	 REACHED_INNER_MARGIN_X);
+  //     break;
 
-    case sprite::DIR_DOWN:
-      	  // if(encountered)
-	  //   {
-      	  //     mvprintw(0, 0, "DIR_DOWN and encountered = true Coord = %s ", gamePlayer->getMaxYAbsAsStr().c_str());
-	  //     nodelay(stdscr, FALSE);
-	  //     refresh();
-	  //     getch();
-	  //     nodelay(stdscr, TRUE);
-	  //     encountered = true;
-	  //   }
-      /* We use PLAYER_MOVEMENT_INNER_MARGIN.y here because we don't
-	 support scrolling in the y dimension. If
-	 PLAYER_MOVEMENT_INNER_MARGIN.y = 0 this point should not be
-	 reached. */
-      if(gamePlayer->inWindowInnerMargin
-	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-	  REACHED_INNER_MARGIN_X))
-	{
-	  gamePlayer->updatePosRel(input);
-	}
-      break;
-    case sprite::DIR_LEFT:
-      movePlayerLeftWhenInteractingWithInnerMargin
-	(input, position, maxyx, backgroundLength, peekPos,
-	 REACHED_INNER_MARGIN_X);
-      break;
-    }
+  //   case sprite::DIR_DOWN:
+  //     if(gamePlayer->inWindowInnerMarginY
+  // 	 (peekPos.y, PLAYER_MOVEMENT_INNER_MARGIN.y)
+  // 	{
+  // 	  gamePlayer->updatePosRel(input);
+  // 	}
+  //     break;
+  //   case sprite::DIR_LEFT:
+  //     movePlayerLeftWhenInteractingWithInnerMargin
+  // 	(input, position, maxyx, backgroundLength, peekPos,
+  // 	 REACHED_INNER_MARGIN_X);
+  //     break;
+  //   }
 }
 
 
@@ -181,35 +187,35 @@ void rules::movePlayerRightWhenInteractingWithInnerMargin
  const size_t backgroundLength, const yx peekPos,
  const int REACHED_INNER_MARGIN_X)
 {
-  if(gamePlayer->inWindowInnerMargin
-     (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-      REACHED_INNER_MARGIN_X) &&
-     gamePlayer->leftOfWindowInnerRightMargin
-     (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x, maxyx))
-    { // We are to the left of the inner right margin.
-      gamePlayer->updatePosRel(input);
-    }
-  else
-    {
-      if(gamePlayer->inWindowInnerMargin
-	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-	  REACHED_INNER_MARGIN_X) && (position + maxyx.x) < backgroundLength)
-	{ // There is still background left to spare.
-	  gamePlayer->updateDirection(input);
-	  position++;	// Move background.
-	}
-      else
-	{
-	  if((position + maxyx.x) == backgroundLength &&
-	     (gamePlayer->inWindowInnerMargin
-	      (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-	       REACHED_INNER_MARGIN_X)))
-	    { /* No background left, so move the player to the right
-		 edge of the background. */
-	      gamePlayer->updatePosRel(input);
-	    }
-	}
-    }
+  // if(gamePlayer->inWindowInnerMargin
+  //    (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
+  //     REACHED_INNER_MARGIN_X) &&
+  //    gamePlayer->leftOfWindowInnerRightMargin
+  //    (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x, maxyx))
+  //   { // We are to the left of the inner right margin.
+  //     gamePlayer->updatePosRel(input);
+  //   }
+  // else
+  //   {
+  //     if(gamePlayer->inWindowInnerMargin
+  // 	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
+  // 	  REACHED_INNER_MARGIN_X) && (position + maxyx.x) < backgroundLength)
+  // 	{ // There is still background left to spare.
+  // 	  gamePlayer->updateDirection(input);
+  // 	  position++;	// Move background.
+  // 	}
+  //     else
+  // 	{
+  // 	  if((position + maxyx.x) == backgroundLength &&
+  // 	     (gamePlayer->inWindowInnerMargin
+  // 	      (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
+  // 	       REACHED_INNER_MARGIN_X)))
+  // 	    { /* No background left, so move the player to the right
+  // 		 edge of the background. */
+  // 	      gamePlayer->updatePosRel(input);
+  // 	    }
+  // 	}
+  //   }
 }
 
 
@@ -218,49 +224,47 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
  const size_t backgroundLength, const yx peekPos,
  const int REACHED_INNER_MARGIN_X)
 {
-  if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
-				     PLAYER_MOVEMENT_INNER_MARGIN.y,
-				     REACHED_INNER_MARGIN_X) &&
-     gamePlayer->rightOfWindowInnerLeftMargin
-     (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x))
-    { // We are to the righ of the inner left margin.
-      gamePlayer->updatePosRel(input);
-    }
-  else
-    {
-      if(gamePlayer->inWindowInnerMargin
-	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-	  REACHED_INNER_MARGIN_X) && (position > 0))
-	{ // There is still background left to spare.
-	  gamePlayer->updateDirection(input);
-	  position--;	// Move background.
-	}
-      else
-	{
-	  if(position == 0 &&
-	     (gamePlayer->inWindowInnerMargin
-	      (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-	       REACHED_INNER_MARGIN_X)))
-	    { /* No background left, so move the player to the left
-		 edge of the background. */
-	      gamePlayer->updatePosRel(input);
-	    }
-	}
-    }
+  // if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
+  // 				     PLAYER_MOVEMENT_INNER_MARGIN.y,
+  // 				     REACHED_INNER_MARGIN_X) &&
+  //    gamePlayer->rightOfWindowInnerLeftMargin
+  //    (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x))
+  //   { // We are to the righ of the inner left margin.
+  //     gamePlayer->updatePosRel(input);
+  //   }
+  // else
+  //   {
+  //     if(gamePlayer->inWindowInnerMargin
+  // 	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
+  // 	  REACHED_INNER_MARGIN_X) && (position > 0))
+  // 	{ // There is still background left to spare.
+  // 	  gamePlayer->updateDirection(input);
+  // 	  position--;	// Move background.
+  // 	}
+  //     else
+  // 	{
+  // 	  if(position == 0 &&
+  // 	     (gamePlayer->inWindowInnerMargin
+  // 	      (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
+  // 	       REACHED_INNER_MARGIN_X)))
+  // 	    { /* No background left, so move the player to the left
+  // 		 edge of the background. */
+  // 	      gamePlayer->updatePosRel(input);
+  // 	    }
+  // 	}
+  //   }
 }
 
 
-sprite::directions rules::handleGroundCollision(sprite::directions input,
-						const int & position)
+sprite::directions rules::handleGroundCollision(const int & position)
 {
-  sprite::directions retDir {input};
+  sprite::directions retDir {sprite::DIR_DOWN};
   for(std::string coord:
 	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
     {
       if(coordChars.find(coord) != coordChars.end())
 	{
 	  retDir = sprite::DIR_NONE;
-	  gamePlayer->updateDirection(input);
 	  break;
 	}
     }
@@ -268,15 +272,14 @@ sprite::directions rules::handleGroundCollision(sprite::directions input,
 }
 
 
-sprite::directions rules::handleRightCollision(const sprite::directions input,
-						   const int & position)
+sprite::directions rules::handleRightCollision(const int & position)
 {
         /* mvprintw(0, 0, "DIR_RIGHT, Coord = %s (>.<)", coord.c_str());
       nodelay(stdscr, FALSE);
       refresh();
       getch();
       nodelay(stdscr, TRUE); */
-  sprite::directions retDir {input};
+  sprite::directions retDir {sprite::DIR_RIGHT};
   const std::vector<std::string> playerCoords
     {gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position)};
   const std::string bottomRightPlayerCoord
@@ -295,9 +298,6 @@ sprite::directions rules::handleRightCollision(const sprite::directions input,
 	{
 	  stoppingContact = true;
 	  retDir = sprite::DIR_NONE;
-	  gamePlayer->updateDirection(input);
-
-	  nodelay(stdscr, FALSE);
 
 	  break;
 	}
@@ -357,19 +357,9 @@ void rules::physics
  const size_t backgroundLength,
  std::__1::chrono::steady_clock::time_point & secStartTime)
 {
-  sprite::directions inputDirection
-    {player::convertDirectionCharsToDirections(input)};
-  const sprite::directions currDir {gamePlayer->getDirection()};
+  movePlayer(player::convertDirectionCharsToDirections(input), position,
+	     maxyx, backgroundLength);
   
-  if(player::isDirectionCharInputValid(input) && inputDirection != currDir)
-    {
-      // Change direction
-      movePlayer(inputDirection, position, maxyx, backgroundLength);
-    }
-  else
-    {
-      movePlayer(currDir, position, maxyx, backgroundLength);
-    }
   sleep(engineSleepTime);
   resetOldTime(secStartTime);
 }

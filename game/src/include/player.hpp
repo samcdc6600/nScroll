@@ -39,27 +39,15 @@ class player: public sprite
 public:
   enum directionChars
     { /* Input character to direction mapping.
-         Q---W---E
+         '---W---'
 	 |...^...|
 	 A<--|-->D
 	 |...v...|                                            
-	 z---S---X */
-      LEFT_UP_CHAR ='q',
-      LEFT_UP_UPPER_CHAR ='Q',
+	 .---S---. */
       UP_CHAR ='w',
-      UP_UPPER_CHAR ='W',
-      RIGHT_UP_CHAR ='e',
-      RIGHT_UP_UPPER_CHAR ='E',
       LEFT_CHAR ='a',
-      LEFT_UPPER_CHAR ='A',
       RIGHT_CHAR ='d',
-      RIGHT_UPPER_CHAR ='D',
-      LEFT_DOWN_CHAR ='z',
-      LEFT_DOWN_UPPER_CHAR ='Z',
       DOWN_CHAR ='s',
-      DOWN_UPPER_CHAR ='S',
-      RIGHT_DOWN_CHAR ='x',
-      RIGHT_DOWN_UPPER_CHAR ='X'
     };
 
   player(std::vector<std::string> spriteFileNames, const yx max,

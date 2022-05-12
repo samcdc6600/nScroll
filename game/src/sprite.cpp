@@ -366,21 +366,11 @@ void sprite::initialiseDirectionsVector()
     {
     case spriteNums1:
       spriteAnimationDirections = std::vector<directions>
-	{DIR_NONE, DIR_NONE, DIR_NONE, DIR_NONE, DIR_NONE, DIR_NONE, DIR_NONE,
-	 DIR_NONE, DIR_NONE,};
+	{DIR_NONE, DIR_NONE, DIR_NONE, DIR_NONE, DIR_NONE};
       break;
     case spriteNums2:
-      /* When there are only 5 slice sets the directions DIR_RIGHT_UP and
-	 DIR_RIGHT_DOWN map to the right direction slice set and the directions
-	 DIR_LEFT and DIR_LEFT map to the left direction slice set. */
       spriteAnimationDirections = std::vector<directions> {DIR_NONE,
-	DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,
-	DIR_RIGHT, DIR_RIGHT, DIR_LEFT, DIR_LEFT};
-      break;
-    case spriteNums3:
-      spriteAnimationDirections = std::vector<directions> {DIR_NONE,
-	DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,
-	DIR_RIGHT_UP, DIR_RIGHT_DOWN, DIR_LEFT_DOWN, DIR_LEFT_UP};
+	DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT};
       break;
     default:
       std::stringstream e {};
@@ -395,9 +385,8 @@ void sprite::initialiseDirectionsVector()
 
 sprite::directions sprite::checkDirection(const directions dir)
 {
-  if(!(dir == DIR_NONE || dir == DIR_UP || dir == DIR_RIGHT_UP ||
-       dir == DIR_RIGHT || dir == DIR_RIGHT_DOWN || dir == DIR_DOWN ||
-       dir == DIR_LEFT_DOWN || dir == DIR_LEFT || dir == DIR_LEFT_UP))
+  if(!(dir == DIR_NONE || dir == DIR_UP || dir == DIR_RIGHT ||
+       dir == DIR_DOWN || dir == DIR_LEFT))
     {
       std::stringstream e;
       e<<"Error (in sprite.cpp): in checkDirection(), dir ("<<dir<<") !="
@@ -433,22 +422,6 @@ yx sprite::getNewPos(const directions dir)
       d.y = position.y;
       d.x = position.x -1;
       break;
-    case DIR_RIGHT_UP:
-      d.y = position.y -1;
-      d.x = position.x +1;
-      break;
-    case DIR_RIGHT_DOWN:
-      d.y = position.y +1;
-      d.x = position.x +1;
-      break;
-    case DIR_LEFT_DOWN:
-      d.y = position.y +1;
-      d.x = position.x -1;
-      break;
-    case DIR_LEFT_UP:
-      d.y = position.y -1;
-      d.x = position.x -1;
-      break;
     default:
       std::stringstream e {};
       e<<"Error direction ("<<dir<<") not valid.";
@@ -469,73 +442,41 @@ bool sprite::checkBoundValue(const int bound)
 }
 
 
-void sprite::checkBoundValue(const std::string callerName, const int bound)
+bool sprite::inWindowInnerMarginY(const int y, const int yBound)
 {
-  if(checkBoundValue(bound))
-    {
-      std::stringstream e {};
-      e<<"Error (in "<<callerName<<"() in sprite.hpp): invalid window inner "
-	"margin value ("<<bound<<"). This value should be "
-	">= 0.";
-      exit(e.str().c_str(), ERROR_BAD_LOGIC);
-    }
+  checkBoundValue(yBound);
+  const int maximumY {y + maxBottomRightOffset.y};
+  return (y >= yBound) && maximumY <= (maxyx.y - yBound);
 }
 
 
-void sprite::checkBoundValues(const std::string callerName, const int yBound,
-			      const int xBound)
+bool sprite::inWindowInnerMarginX(const int x, const int xBound)
 {
-  if(checkBoundValue(yBound) || checkBoundValue(xBound))
-    {
-      std::stringstream e {};
-      e<<"Error (in "<<callerName<<"() in sprite.hpp): invalid window inner "
-	"margin values ("<<yBound<<", "<<xBound<<"). These values should be "
-	">= 0.";
-      exit(e.str().c_str(), ERROR_BAD_LOGIC);
-    }
-}
-
-
-bool sprite::inWindowInnerMargin(const int y, const int x, const int yBound,
-			 int xBound)
-{
-  checkBoundValues("inWindowInnerMargin", yBound, xBound);
-  // Check top left coords.
-  return (checkRange(y, 0 + yBound, maxyx.y - yBound) &&
-	  checkRange(x, 0 + xBound, maxyx.x - xBound) &&
-	  // check bottom right coords.
-	  checkRange(y + maxBottomRightOffset.y,
-		     0 + yBound, maxyx.y - yBound) &&
-	  checkRange(x + maxBottomRightOffset.x,
-		     0 + xBound, maxyx.x - xBound));
+    checkBoundValue(xBound);
+    const int maximumX {x + maxBottomRightOffset.x};
+    return (x >= xBound && maximumX <= (maxyx.x - xBound));
 }
 
 
 bool sprite::leftOfWindowInnerRightMargin(const int x, const int xBound,
 					  const yx maxyx)
 { // Return true if we are to the left of the windows right inner margin.
-  checkBoundValue("leftOfWindowInnerMargin", xBound);
-  // std::stringstream e {};
-  // e<<"In leftOfWindowInnerMargin()";
-  // exit(e.str().c_str(), ERROR_BAD_LOGIC);
+  checkBoundValue(xBound);
   return ((x + maxBottomRightOffset.x) < size_t(maxyx.x - xBound));
 }
 
 
 bool sprite::rightOfWindowInnerLeftMargin(const int x, const int xBound)
 { // Return true if we are to the right of the windows left inner margin.
-    checkBoundValue("leftOfWindowInnerMargin", xBound);
-  // std::stringstream e {};
-  // e<<"In leftOfWindowInnerMargin()";
-  // exit(e.str().c_str(), ERROR_BAD_LOGIC);
+    checkBoundValue(xBound);
     return (size_t(xBound) < x);
 }
 
 
-bool sprite::inWindow(const int y, const int x)
-{
-  return inWindowInnerMargin(y, x, 0, 0); // We have an inner boarder of 0, 0
-}
+// bool sprite::inWindow(const int y, const int x)
+// {
+//   return inWindowInnerMargin(y, x, 0, 0); // We have an inner boarder of 0, 0
+// }
 
 
 /* Returns the of position of the sprite after moving one character (including

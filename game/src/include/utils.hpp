@@ -20,8 +20,6 @@ constexpr int MONO_CH_MAX {158};
 constexpr int COLOR_CH_MAX {63};
 constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR {27};
-// The player cannot pass widthin this many character's of the window boarder's (y, x).
-const yx PLAYER_MOVEMENT_INNER_MARGIN {0, 40};
 //constexpr int BACKGROUND_HEIGHT {33};
 
 
