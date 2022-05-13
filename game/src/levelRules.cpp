@@ -106,16 +106,19 @@ void rules::movePlayer(sprite::directions input,
 
   /* Make any final movement, check for window margin contact and take
      appropriate action if such contact is made. */
-  if((input == sprite::DIR_LEFT || sprite::DIR_RIGHT) &&
-     gamePlayer->inWindowInnerMarginY
-     (peekPos.y, PLAYER_MOVEMENT_INNER_MARGIN.y))
+  if(((input == sprite::DIR_LEFT || input == sprite::DIR_RIGHT) &&
+      gamePlayer->notInWindowInnerMarginX
+      (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x)) ||      
+     input == sprite::DIR_NONE)	// Only need to check for DIR_NONE here.
     {
+      // We're not going to go into the margin.
       gamePlayer->updatePosRel(input);
     }
-  else if((input == sprite::DIR_DOWN || sprite::DIR_UP) &&
-	  gamePlayer->inWindowInnerMarginX
-	  (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x))
+  else if(((input == sprite::DIR_DOWN || input == sprite::DIR_UP) &&
+	   gamePlayer->notInWindowInnerMarginY
+	   (peekPos.y, PLAYER_MOVEMENT_INNER_MARGIN.y)))
     {
+      // We're not going to go into the margin.
       gamePlayer->updatePosRel(input);
     }
   else
@@ -137,48 +140,43 @@ void rules::movePlayer(sprite::directions input,
 }
 
 
+/* NOTE THAT THIS FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT THE PLAYER IS
+   NOT IN THE INNER MARGIN.*/
 void rules::movePlayerWhenInteractingWithInnerMargin
 (const sprite::directions input, int & position, const yx maxyx,
  const size_t backgroundLength, const yx peekPos)
 {
   /* We use this variable in the call's to inWindowInnerMargin() when peekPos
      is out of the x boarder range. */
-  // constexpr int REACHED_INNER_MARGIN_X {0};
-  // switch(input)
-  //   {
-  //   case sprite::DIR_NONE:
-  //     break;
-  //   case sprite::DIR_UP:
-  //     /* We use PLAYER_MOVEMENT_INNER_MARGIN.y here because we don't
-  // 	 support scrolling in the y dimension. If
-  // 	 PLAYER_MOVEMENT_INNER_MARGIN.y = 0 this point should not be
-  // 	 reached. */
-  //     if(gamePlayer->inWindowInnerMarginY
-  // 	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-  // 	  REACHED_INNER_MARGIN_X))
-  // 	{
-  // 	  gamePlayer->updatePosRel(input);
-  // 	}
-  //     break;
-  //   case sprite::DIR_RIGHT:
-  //     movePlayerRightWhenInteractingWithInnerMargin
-  // 	(input, position, maxyx, backgroundLength, peekPos,
-  // 	 REACHED_INNER_MARGIN_X);
-  //     break;
+  constexpr int REACHED_INNER_MARGIN_X {0};
+  switch(input)
+    {
+    case sprite::DIR_NONE:
+      break;
+    case sprite::DIR_UP:
+      if(gamePlayer->inWindowY(peekPos.y))
+	{
+	  gamePlayer->updatePosRel(input);
+	}
+      break;
+    case sprite::DIR_RIGHT:
+      movePlayerRightWhenInteractingWithInnerMargin
+	(input, position, maxyx, backgroundLength, peekPos,
+	 REACHED_INNER_MARGIN_X);
+      break;
 
-  //   case sprite::DIR_DOWN:
-  //     if(gamePlayer->inWindowInnerMarginY
-  // 	 (peekPos.y, PLAYER_MOVEMENT_INNER_MARGIN.y)
-  // 	{
-  // 	  gamePlayer->updatePosRel(input);
-  // 	}
-  //     break;
-  //   case sprite::DIR_LEFT:
-  //     movePlayerLeftWhenInteractingWithInnerMargin
-  // 	(input, position, maxyx, backgroundLength, peekPos,
-  // 	 REACHED_INNER_MARGIN_X);
-  //     break;
-  //   }
+    case sprite::DIR_DOWN:
+      if(gamePlayer->inWindowY(peekPos.y))
+	{
+	  gamePlayer->updatePosRel(input);
+	}
+      break;
+    case sprite::DIR_LEFT:
+      movePlayerLeftWhenInteractingWithInnerMargin
+	(input, position, maxyx, backgroundLength, peekPos,
+	 REACHED_INNER_MARGIN_X);
+      break;
+    }
 }
 
 
@@ -256,6 +254,8 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
 }
 
 
+/* Checks for contact with boarder characters when moving down. Returns the
+   direction that the player should be moving in. */
 sprite::directions rules::handleGroundCollision(const int & position)
 {
   sprite::directions retDir {sprite::DIR_DOWN};
@@ -272,13 +272,12 @@ sprite::directions rules::handleGroundCollision(const int & position)
 }
 
 
+/* Checks for contact with boarder characters when moving right. Moves the
+   player up one character if a "step" is encountered (as long as the player
+   will not go out of bounds.) Returns the direction the player should move in.
+*/
 sprite::directions rules::handleRightCollision(const int & position)
 {
-        /* mvprintw(0, 0, "DIR_RIGHT, Coord = %s (>.<)", coord.c_str());
-      nodelay(stdscr, FALSE);
-      refresh();
-      getch();
-      nodelay(stdscr, TRUE); */
   sprite::directions retDir {sprite::DIR_RIGHT};
   const std::vector<std::string> playerCoords
     {gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position)};
@@ -288,10 +287,6 @@ sprite::directions rules::handleRightCollision(const int & position)
     
   for(std::string playerCoord: playerCoords)
     {
-      // mvprintw(0, 0, "DIR_RIGHT, Coord = %s (>.<)", playerCoord.c_str());
-      // nodelay(stdscr, FALSE);
-      // refresh();
-      // nodelay(stdscr, TRUE);
       // If there is near contact and it's not with the bottom right coord.
       if(playerCoord != bottomRightPlayerCoord &&
           coordChars.find(playerCoord) != coordChars.end())
@@ -321,34 +316,6 @@ sprite::directions rules::handleRightCollision(const int & position)
     }
   
   return retDir;
-
-  /*  if(coordChars.find((gamePlayer->getMaxYAbsAsStr(1)) + "," + // Check for
-                                                              // boarder 0 in
-                                                              // front and 0
-                                                              // above feet.
-        And then I was all like I just don't really know what you mean at all
-        .you know and then I thought about it all the time Of that sort of
-        time. It's just as it is.XUXuXUIt was all about that sort of thing you
-        know and I knew that it was about that tsort of thing I knew I knew I
-        knew I knwo what you think abotu that and I knwo what I think abotu it
-        and It's just not what you think anad then I thought.
-gamePlayer->getMaxXAbsLevelRightAsStr(0, position))
-     != coordChars.end() &&
-     // Check for boarder 1 in front and 1 above feet.
-     coordChars.find(gamePlayer->getMaxYAbsAsStr(0) + "," +
-		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
-     != coordChars.end() &&
-     // Check for no boarder 1 in front and 2 above feet.
-          coordChars.find(gamePlayer->getMaxYAbsAsStr(-1) + "," + 
-		     gamePlayer->getMaxXAbsLevelRightAsStr(1, position))
-     == coordChars.end())
-    {
-      gamePlayer->updatePosRel(sprite::DIR_UP);
-      endwin();
-      std::cout<<gamePlayer->getMaxYAbsAsStr(1) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(0, position)<<'\n';
-      std::cout<<gamePlayer->getMaxYAbsAsStr(0) + "," + gamePlayer->getMaxXAbsLevelRightAsStr(1, position)<<'\n';
-      exit(-1);
-      }*/
 }
 
 

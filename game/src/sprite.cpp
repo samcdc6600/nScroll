@@ -442,19 +442,41 @@ bool sprite::checkBoundValue(const int bound)
 }
 
 
-bool sprite::inWindowInnerMarginY(const int y, const int yBound)
+bool sprite::notInWindowInnerMarginY(const int y, const int yMargin)
 {
-  checkBoundValue(yBound);
-  const int maximumY {y + maxBottomRightOffset.y};
-  return (y >= yBound) && maximumY <= (maxyx.y - yBound);
+  checkBoundValue(yMargin);
+  // +1 because we start maxBottomRightOffset start's at 0.
+  const int maximumY {y + maxBottomRightOffset.y + 1};
+  // >= and < because we start at 0.
+  return (y >= yMargin) && maximumY < (maxyx.y - yMargin);
 }
 
 
-bool sprite::inWindowInnerMarginX(const int x, const int xBound)
+bool sprite::notInWindowInnerMarginX(const int x, const int xMargin)
 {
-    checkBoundValue(xBound);
-    const int maximumX {x + maxBottomRightOffset.x};
-    return (x >= xBound && maximumX <= (maxyx.x - xBound));
+    checkBoundValue(xMargin);
+    // +1 because we start maxBottomRightOffset start's at 0.
+    const int maximumX {x + maxBottomRightOffset.x + 1};
+    // >= and < because we start at 0.
+    return (x >= xMargin && maximumX < (maxyx.x - xMargin));
+}
+
+
+bool sprite::inWindowY(const int y)
+{
+  // +1 because we start maxBottomRightOffset start's at 0.
+  const int maximumY {y + maxBottomRightOffset.y +1};
+  // >= and < because we start at 0.
+  return (y >= 0) && (maximumY < maxyx.y);
+}
+
+
+bool sprite::inWindowX(const int x)
+{
+  // +1 because we start maxBottomRightOffset start's at 0.
+  const int maximumX {x + maxBottomRightOffset.x +1};
+  // >= and < because we start at 0.
+  return (x >= 0) && (maximumX < maxyx.x);
 }
 
 
