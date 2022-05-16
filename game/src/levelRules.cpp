@@ -146,8 +146,6 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractions
 }
 
 
-/* NOTE THAT THIS FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT THE PLAYER IS
-   NOT IN THE INNER MARGIN.*/
 void rules::movePlayerWhenInteractingWithInnerMargin
 (const sprite::directions input, int & position, const yx maxyx,
  const size_t backgroundLength, const yx peekPos)
@@ -191,35 +189,21 @@ void rules::movePlayerRightWhenInteractingWithInnerMargin
  const size_t backgroundLength, const yx peekPos,
  const int REACHED_INNER_MARGIN_X)
 {
-  // if(gamePlayer->inWindowInnerMargin
-  //    (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-  //     REACHED_INNER_MARGIN_X) &&
-  //    gamePlayer->leftOfWindowInnerRightMargin
-  //    (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x, maxyx))
-  //   { // We are to the left of the inner right margin.
-  //     gamePlayer->updatePosRel(input);
-  //   }
-  // else
-  //   {
-  //     if(gamePlayer->inWindowInnerMargin
-  // 	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-  // 	  REACHED_INNER_MARGIN_X) && (position + maxyx.x) < backgroundLength)
-  // 	{ // There is still background left to spare.
-  // 	  gamePlayer->updateDirection(input);
-  // 	  position++;	// Move background.
-  // 	}
-  //     else
-  // 	{
-  // 	  if((position + maxyx.x) == backgroundLength &&
-  // 	     (gamePlayer->inWindowInnerMargin
-  // 	      (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-  // 	       REACHED_INNER_MARGIN_X)))
-  // 	    { /* No background left, so move the player to the right
-  // 		 edge of the background. */
-  // 	      gamePlayer->updatePosRel(input);
-  // 	    }
-  // 	}
-  //   }
+  if(gamePlayer->leftOfWindowInnerRightMargin
+     (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x, maxyx))
+    { // We are to the left of the inner right margin.
+      gamePlayer->updatePosRel(input);
+    }
+  else if((position + maxyx.x) < backgroundLength)
+    { // There is still background left to spare.
+      gamePlayer->updateDirection(input);
+      position++;	// Move background.
+    }
+  else if((position + maxyx.x) == backgroundLength)
+    { /* No background left, so move the player to the right
+	 edge of the background. */
+      gamePlayer->updatePosRel(input);
+    }
 }
 
 
@@ -228,35 +212,21 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
  const size_t backgroundLength, const yx peekPos,
  const int REACHED_INNER_MARGIN_X)
 {
-  // if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
-  // 				     PLAYER_MOVEMENT_INNER_MARGIN.y,
-  // 				     REACHED_INNER_MARGIN_X) &&
-  //    gamePlayer->rightOfWindowInnerLeftMargin
-  //    (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x))
-  //   { // We are to the righ of the inner left margin.
-  //     gamePlayer->updatePosRel(input);
-  //   }
-  // else
-  //   {
-  //     if(gamePlayer->inWindowInnerMargin
-  // 	 (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-  // 	  REACHED_INNER_MARGIN_X) && (position > 0))
-  // 	{ // There is still background left to spare.
-  // 	  gamePlayer->updateDirection(input);
-  // 	  position--;	// Move background.
-  // 	}
-  //     else
-  // 	{
-  // 	  if(position == 0 &&
-  // 	     (gamePlayer->inWindowInnerMargin
-  // 	      (peekPos.y, peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.y,
-  // 	       REACHED_INNER_MARGIN_X)))
-  // 	    { /* No background left, so move the player to the left
-  // 		 edge of the background. */
-  // 	      gamePlayer->updatePosRel(input);
-  // 	    }
-  // 	}
-  //   }
+  if(gamePlayer->rightOfWindowInnerLeftMargin
+     (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x))
+    { // We are to the righ of the inner left margin.
+      gamePlayer->updatePosRel(input);
+    }
+  else if(position > 0)
+    { // There is still background left to spare.
+      gamePlayer->updateDirection(input);
+      position--;	// Move background.
+    }
+  else if(position == 0)
+    { /* No background left, so move the player to the left
+	 edge of the background. */
+      gamePlayer->updatePosRel(input);
+    }
 }
 
 

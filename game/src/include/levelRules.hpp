@@ -61,15 +61,19 @@ private:
   (const sprite::directions newDir, int & position, const yx maxyx,
    const size_t backgroundLength, const yx peekPos);
   /* Moves the player when interacting with the inner margin (NOTE THAT THIS
-     FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT THE PLAYER IS NOT IN THE
-     INNER MARGIN). */
+     FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
+     THE INNER MARGIN). */
   void movePlayerWhenInteractingWithInnerMargin
   (const sprite::directions input, int & position, const yx maxyx,
    const size_t backgroundLength, const yx peekPos);
+  /* NOTE THAT THIS FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
+   THE INNER MARGIN */
   void movePlayerRightWhenInteractingWithInnerMargin
   (const sprite::directions input, int & position, const yx maxyx,
    const size_t backgroundLength, const yx peekPos,
    const int REACHED_INNER_MARGIN_X);
+  /* NOTE THAT THIS FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
+   THE INNER MARGIN */
   void movePlayerLeftWhenInteractingWithInnerMargin
   (const sprite::directions input, int & position, const yx maxyx,
    const size_t backgroundLength, const yx peekPos,

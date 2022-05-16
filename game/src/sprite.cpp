@@ -462,7 +462,7 @@ bool sprite::notInWindowInnerMarginX(const int x, const int xMargin)
 
 bool sprite::inWindowY(const int y)
 {
-  // +1 because we start maxBottomRightOffset start's at 0.
+  // +1 because coords start at 0, but maxyx holds the number of characters.
   const int maximumY {y + maxBottomRightOffset.y +1};
   // >= and < because we start at 0.
   return (y >= 0) && (maximumY < maxyx.y);
@@ -471,7 +471,7 @@ bool sprite::inWindowY(const int y)
 
 bool sprite::inWindowX(const int x)
 {
-  // +1 because we start maxBottomRightOffset start's at 0.
+  // +1 because coords start at 0, but maxyx holds the number of characters.
   const int maximumX {x + maxBottomRightOffset.x +1};
   // >= and < because we start at 0.
   return (x >= 0) && (maximumX < maxyx.x);
