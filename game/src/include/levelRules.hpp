@@ -55,6 +55,11 @@ private:
   void movePlayer(sprite::directions input,
 		  int & position, const yx maxyx,
 		  const size_t backgroundLength);
+  /* No functions that change the position of the player should be called after
+     this one for a given frame. */
+  void handleFinalPlayerMovementAndWindowAndMarginInteractions
+  (const sprite::directions newDir, int & position, const yx maxyx,
+   const size_t backgroundLength, const yx peekPos);
   /* Moves the player when interacting with the inner margin (NOTE THAT THIS
      FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT THE PLAYER IS NOT IN THE
      INNER MARGIN). */

@@ -72,7 +72,6 @@ void rules::movePlayer(sprite::directions input,
      either end of the level then the player cannot move further of
      course. */
   const int currDir {gamePlayer->getDirection()};
-  yx peekPos {gamePlayer->peekAtPos(input)};
   double vertVelocity {gamePlayer->getVertVelocity()};
 
   /* We intend to alter this later to have it read in from the level rules
@@ -103,35 +102,42 @@ void rules::movePlayer(sprite::directions input,
       input = handleRightCollision(position);
     }
 
+  handleFinalPlayerMovementAndWindowAndMarginInteractions
+    (input, position, maxyx, backgroundLength, gamePlayer->peekAtPos(input));
+}
 
-  /* Make any final movement, check for window margin contact and take
+
+void rules::handleFinalPlayerMovementAndWindowAndMarginInteractions
+(const sprite::directions newDir, int & position, const yx maxyx,
+ const size_t backgroundLength, const yx peekPos)
+{
+    /* Make any final movement, check for window margin contact and take
      appropriate action if such contact is made. */
-  if(((input == sprite::DIR_LEFT || input == sprite::DIR_RIGHT) &&
+  if(((newDir == sprite::DIR_LEFT || newDir == sprite::DIR_RIGHT) &&
       gamePlayer->notInWindowInnerMarginX
       (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x)) ||      
-     input == sprite::DIR_NONE)	// Only need to check for DIR_NONE here.
+     newDir == sprite::DIR_NONE)	// Only need to check for DIR_NONE here.
     {
       // We're not going to go into the margin.
-      gamePlayer->updatePosRel(input);
+      gamePlayer->updatePosRel(newDir);
     }
-  else if(((input == sprite::DIR_DOWN || input == sprite::DIR_UP) &&
+  else if(((newDir == sprite::DIR_DOWN || newDir == sprite::DIR_UP) &&
 	   gamePlayer->notInWindowInnerMarginY
 	   (peekPos.y, PLAYER_MOVEMENT_INNER_MARGIN.y)))
     {
       // We're not going to go into the margin.
-      gamePlayer->updatePosRel(input);
+      gamePlayer->updatePosRel(newDir);
     }
   else
     {
-      movePlayerWhenInteractingWithInnerMargin(input, position, maxyx,
+      movePlayerWhenInteractingWithInnerMargin(newDir, position, maxyx,
 					       backgroundLength, peekPos);
     }
-    
-  // if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
+    // if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
   // 				PLAYER_MOVEMENT_INNER_MARGIN.y,
   // 				PLAYER_MOVEMENT_INNER_MARGIN.x))
   //   {				// The player is moving within the inner margin
-  //     gamePlayer->updatePosRel(input);
+  //     gamePlayer->updatePosRel(newDir);
   //   }
   // else
   //   {

@@ -445,8 +445,7 @@ bool sprite::checkBoundValue(const int bound)
 bool sprite::notInWindowInnerMarginY(const int y, const int yMargin)
 {
   checkBoundValue(yMargin);
-  // +1 because we start maxBottomRightOffset start's at 0.
-  const int maximumY {y + maxBottomRightOffset.y + 1};
+  const int maximumY {y + maxBottomRightOffset.y};
   // >= and < because we start at 0.
   return (y >= yMargin) && maximumY < (maxyx.y - yMargin);
 }
@@ -455,8 +454,7 @@ bool sprite::notInWindowInnerMarginY(const int y, const int yMargin)
 bool sprite::notInWindowInnerMarginX(const int x, const int xMargin)
 {
     checkBoundValue(xMargin);
-    // +1 because we start maxBottomRightOffset start's at 0.
-    const int maximumX {x + maxBottomRightOffset.x + 1};
+    const int maximumX {x + maxBottomRightOffset.x};
     // >= and < because we start at 0.
     return (x >= xMargin && maximumX < (maxyx.x - xMargin));
 }
