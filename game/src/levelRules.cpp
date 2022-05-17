@@ -102,8 +102,19 @@ void rules::movePlayer(sprite::directions input,
       input = handleRightCollision(position);
     }
 
-  handleFinalPlayerMovementAndWindowAndMarginInteractions
-    (input, position, maxyx, backgroundLength, gamePlayer->peekAtPos(input));
+  {
+    const yx peekPos {gamePlayer->peekAtPos(input)};
+    if(gamePlayer->inLevelY(peekPos.y, backgroundHeight) &&
+       gamePlayer->inLevelX(peekPos.x + position, backgroundLength))
+	{
+	  handleFinalPlayerMovementAndWindowAndMarginInteractions
+	    (input, position, maxyx, backgroundLength, peekPos);
+	}
+      else
+	{
+	  gamePlayer->updateDirection(sprite::DIR_NONE);
+	}
+  }
 }
 
 
@@ -114,16 +125,16 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractions
     /* Make any final movement, check for window margin contact and take
      appropriate action if such contact is made. */
   if(((newDir == sprite::DIR_LEFT || newDir == sprite::DIR_RIGHT) &&
-      gamePlayer->notInWindowInnerMarginX
-      (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x)) ||      
+      gamePlayer->notInWindowInnerMarginX(peekPos.x,
+					  PLAYER_MOVEMENT_INNER_MARGIN.x)) ||
      newDir == sprite::DIR_NONE)	// Only need to check for DIR_NONE here.
     {
       // We're not going to go into the margin.
       gamePlayer->updatePosRel(newDir);
     }
-  else if(((newDir == sprite::DIR_DOWN || newDir == sprite::DIR_UP) &&
-	   gamePlayer->notInWindowInnerMarginY
-	   (peekPos.y, PLAYER_MOVEMENT_INNER_MARGIN.y)))
+  else if((newDir == sprite::DIR_DOWN || newDir == sprite::DIR_UP)
+	  && gamePlayer->notInWindowInnerMarginY(peekPos.y,
+						 PLAYER_MOVEMENT_INNER_MARGIN.y))
     {
       // We're not going to go into the margin.
       gamePlayer->updatePosRel(newDir);
@@ -158,22 +169,15 @@ void rules::movePlayerWhenInteractingWithInnerMargin
     case sprite::DIR_NONE:
       break;
     case sprite::DIR_UP:
-      if(gamePlayer->inWindowY(peekPos.y))
-	{
-	  gamePlayer->updatePosRel(input);
-	}
+      gamePlayer->updatePosRel(input);
       break;
     case sprite::DIR_RIGHT:
       movePlayerRightWhenInteractingWithInnerMargin
 	(input, position, maxyx, backgroundLength, peekPos,
 	 REACHED_INNER_MARGIN_X);
       break;
-
     case sprite::DIR_DOWN:
-      if(gamePlayer->inWindowY(peekPos.y))
-	{
-	  gamePlayer->updatePosRel(input);
-	}
+      gamePlayer->updatePosRel(input);
       break;
     case sprite::DIR_LEFT:
       movePlayerLeftWhenInteractingWithInnerMargin

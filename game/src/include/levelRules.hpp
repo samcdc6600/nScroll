@@ -62,7 +62,8 @@ private:
    const size_t backgroundLength, const yx peekPos);
   /* Moves the player when interacting with the inner margin (NOTE THAT THIS
      FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
-     THE INNER MARGIN). */
+     THE INNER MARGIN AND NOT OUTSIDE THE BOUNDS OF THE LEVEL AS DEFINED BY THE
+     BACKGROUND.) */
   void movePlayerWhenInteractingWithInnerMargin
   (const sprite::directions input, int & position, const yx maxyx,
    const size_t backgroundLength, const yx peekPos);

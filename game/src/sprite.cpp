@@ -460,21 +460,33 @@ bool sprite::notInWindowInnerMarginX(const int x, const int xMargin)
 }
 
 
-bool sprite::inWindowY(const int y)
+// bool sprite::inWindowY(const int y)
+// {
+//   const int maximumY {y + maxBottomRightOffset.y};
+//   // >= and < because we start at 0.
+//   return (y >= 0) && (maximumY < maxyx.y);
+// }
+
+
+// bool sprite::inWindowX(const int x)
+// {
+//   const int maximumX {x + maxBottomRightOffset.x};
+//   // >= and < because we start at 0.
+//   return (x >= 0) && (maximumX < maxyx.x);
+// }
+
+
+bool sprite::inLevelY(const int y, const int bgYLen)
 {
-  // +1 because coords start at 0, but maxyx holds the number of characters.
-  const int maximumY {y + maxBottomRightOffset.y +1};
-  // >= and < because we start at 0.
-  return (y >= 0) && (maximumY < maxyx.y);
+  const int maximumY {y + maxBottomRightOffset.y};
+  return (y >= 0) && (maximumY < bgYLen);
 }
 
 
-bool sprite::inWindowX(const int x)
+bool sprite::inLevelX(const int x, const int bgXLen)
 {
-  // +1 because coords start at 0, but maxyx holds the number of characters.
-  const int maximumX {x + maxBottomRightOffset.x +1};
-  // >= and < because we start at 0.
-  return (x >= 0) && (maximumX < maxyx.x);
+  const int maximumX {x + maxBottomRightOffset.x};
+  return (x >= 0) && (maximumX < bgXLen);
 }
 
 

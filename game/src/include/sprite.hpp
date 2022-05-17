@@ -171,14 +171,16 @@ public:
      the inner margins in the x axis, that is the sprite is in the inner most
      part of the window. */
   bool notInWindowInnerMarginX(const int x, const int xMargin);
-  /* Y is a potential y position of the sprite (e.g. peekPos.y). Returns true
-     if the sprite (with it's y position set to y) would be within the window in
-     the y axis. */
-  bool inWindowY(const int y);
-  /* X is a potential x position of the sprite (e.g. peekPos.x). Returns true
-     if the sprite (with it's x position set to x) would be within the window
-     in the x axis. */
-  bool inWindowX(const int x);
+  // /* Y is a potential y position of the sprite (e.g. peekPos.y). Returns true
+  //    if the sprite (with it's y position set to y) would be within the window in
+  //    the y axis. */
+  // bool inWindowY(const int y);
+  // /* X is a potential x position of the sprite (e.g. peekPos.x). Returns true
+  //    if the sprite (with it's x position set to x) would be within the window
+  //    in the x axis. */
+  // bool inWindowX(const int x);
+  bool inLevelY(const int y, const int bgYLen);
+  bool inLevelX(const int x, const int bgXLen);
   bool leftOfWindowInnerRightMargin(const int x, const int xBound,
 				    const yx maxyx);
   bool rightOfWindowInnerLeftMargin(const int x, const int xBound);
