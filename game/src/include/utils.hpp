@@ -47,8 +47,8 @@ enum errorsCodes
 void sleep(const unsigned long long t);
 /* Returns false if a is not range [min, max). */
 bool checkRange(const int a, const int min, const int max);
-/* return's true if a - offset is within the range [SINGLE_DIGIT_MIN, SINGLE_DIGIT_MAX].
-   return's false otherwise. */
+/* Return's true if a - offset is within the range [SINGLE_DIGIT_MIN, SINGLE_DIGIT_MAX].
+   Return's false otherwise. */
 bool inSingleDigitRange(const int a, const int offset);
 /* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
 void exit(const std::string & e, const int status);

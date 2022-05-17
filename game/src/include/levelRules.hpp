@@ -100,6 +100,10 @@ private:
   // Analogous to handleRightCollision but of course for leftward movement.
   sprite::directions handleLeftCollision(const int & position);
 
+#ifdef DEBUG
+  void printRuleChars();
+#endif
+
 public:
   void physics(const player::directionChars input, int & position, const yx maxyx,
 	       const size_t backgroundLength,
