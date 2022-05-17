@@ -57,6 +57,12 @@ private:
 		  const size_t backgroundLength);
   /* No functions that change the position of the player should be called after
      this one for a given frame. */
+  /* Calls handleFinalPlayerMovementAndWindowAndMarginInteractions after
+     checking that the player won't go outside of the level after it's position
+     is updated to peekPos. */
+  void handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
+  (const sprite::directions newDir, int & position, const yx maxyx,
+   const size_t backgroundLength);
   void handleFinalPlayerMovementAndWindowAndMarginInteractions
   (const sprite::directions newDir, int & position, const yx maxyx,
    const size_t backgroundLength, const yx peekPos);
@@ -91,6 +97,8 @@ private:
      player will be stopped. The player sprite will also be stopped if there is
      more then one character directly to the right of it. */
   sprite::directions handleRightCollision(const int & position);
+  // Analogous to handleRightCollision but of course for leftward movement.
+  sprite::directions handleLeftCollision(const int & position);
 
 public:
   void physics(const player::directionChars input, int & position, const yx maxyx,

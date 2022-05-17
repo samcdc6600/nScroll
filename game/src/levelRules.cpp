@@ -95,26 +95,38 @@ void rules::movePlayer(sprite::directions input,
     {
       input = handleGroundCollision(position);
     }
-  else if((currDir == sprite::DIR_RIGHT &&
-	   input == sprite::DIR_NONE) ||
+  else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
     {
       input = handleRightCollision(position);
     }
+  else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
+	  input == sprite::DIR_LEFT)
+    {
+      input = handleLeftCollision(position);
+    }
 
-  {
-    const yx peekPos {gamePlayer->peekAtPos(input)};
-    if(gamePlayer->inLevelY(peekPos.y, backgroundHeight) &&
-       gamePlayer->inLevelX(peekPos.x + position, backgroundLength))
-	{
-	  handleFinalPlayerMovementAndWindowAndMarginInteractions
-	    (input, position, maxyx, backgroundLength, peekPos);
-	}
-      else
-	{
-	  gamePlayer->updateDirection(sprite::DIR_NONE);
-	}
-  }
+  handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
+    (input, position, maxyx, backgroundLength);
+}
+
+
+void rules::handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
+(const sprite::directions newDir, int & position, const yx maxyx,
+ const size_t backgroundLength)
+{
+  const yx peekPos {gamePlayer->peekAtPos(newDir)};
+  if(gamePlayer->inLevelY(peekPos.y, backgroundHeight) &&
+     gamePlayer->inLevelX(peekPos.x + position, backgroundLength))
+    {
+      // We won't be outside of the level if we move.
+      handleFinalPlayerMovementAndWindowAndMarginInteractions
+	(newDir, position, maxyx, backgroundLength, peekPos);
+    }
+  else
+    {
+      gamePlayer->updateDirection(sprite::DIR_NONE);
+    }
 }
 
 
@@ -273,7 +285,6 @@ sprite::directions rules::handleRightCollision(const int & position)
 	{
 	  stoppingContact = true;
 	  retDir = sprite::DIR_NONE;
-
 	  break;
 	}
     }
@@ -295,6 +306,47 @@ sprite::directions rules::handleRightCollision(const int & position)
 	}
     }
   
+  return retDir;
+}
+
+
+sprite::directions rules::handleLeftCollision(const int & position)
+{
+  sprite::directions retDir {sprite::DIR_LEFT};
+  const std::vector<std::string> playerCoords
+    {gamePlayer->getLeftYAbsRangeAsStrsForOneOffContact(position)};
+  const std::string bottomLeftPlayerCoord
+    {playerCoords[playerCoords.size() -1]};
+  bool stoppingContact {false};
+
+  for(std::string playerCoord: playerCoords)
+    {
+      // If there is near contact and it's not with the bottom right coord.
+      if(playerCoord != bottomLeftPlayerCoord &&
+	 coordChars.find(playerCoord) != coordChars.end())
+	{
+	  stoppingContact = true;
+	  retDir = sprite::DIR_NONE;
+	  break;
+	}
+    }
+
+  if(!stoppingContact &&
+     coordChars.find(bottomLeftPlayerCoord) != coordChars.end())
+    {
+      if(gamePlayer->getPos().y > 0)
+	{
+	  /* If we've hit a "step" and we are not at the minimum (top of window)
+	     y position, then "step up" :) */
+	  gamePlayer->updatePosRel(sprite::DIR_UP);
+	}
+      else
+	{
+	  // We've hit the top of the window.
+	  retDir = sprite::DIR_NONE;
+	}
+    }
+
   return retDir;
 }
 
