@@ -9,8 +9,6 @@
 
 
 constexpr char HEADER_START [] = {"(p("}; // The header should always start with me.
-constexpr char COMMENT {'~'};		  // Used to denote a comment in
-					  // rules.lev files.
 constexpr char FIELD_START_DENOTATION {'('}; // Marks the start of a new field or section of the current file.
 constexpr char FIELD_END_DENOTATION {')'}; // Marks the end of the current field or section of the current file.
 constexpr char HEADER_END_DENOTATION {'#'}; // Marks the end of the header sectino of the file.
