@@ -354,7 +354,7 @@ sprite::directions rules::handleLeftCollision(const int & position)
 #ifdef DEBUG
 #include <sstream>
 
-void rules::printRuleChars()
+void rules::printRuleChars(const int position, const int maxX)
 {
   for(std::map<std::string, char>::iterator iter {coordChars.begin()};
       iter != coordChars.end(); ++iter)
@@ -368,11 +368,14 @@ void rules::printRuleChars()
       coord>>y;
       coord>>eat;
       coord>>x;
-      strChar = iter->second;
 
-      mvprintw(y, x, strChar.c_str());
-      refresh();
+      if((x - position) < maxX)
+	{
+	  strChar = iter->second;
       
+	  mvprintw(y, (x - position), strChar.c_str());
+	  refresh();
+	}
       coord.clear();
     }
 }
@@ -385,7 +388,7 @@ void rules::physics
  std::__1::chrono::steady_clock::time_point & secStartTime)
 {
 #ifdef DEBUG
-  printRuleChars();
+  printRuleChars(position, maxyx.x);
 #endif
   
   movePlayer(player::convertDirectionCharsToDirections(input), position,

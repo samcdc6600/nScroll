@@ -101,7 +101,7 @@ private:
   sprite::directions handleLeftCollision(const int & position);
 
 #ifdef DEBUG
-  void printRuleChars();
+  void printRuleChars(const int position, const int maxX);
 #endif
 
 public:
