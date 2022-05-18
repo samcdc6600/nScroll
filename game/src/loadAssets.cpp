@@ -17,7 +17,7 @@ void loadAssets
   if(!loadASCIIFile(bgFileName, levelBackGround))
     {
       std::stringstream err {};
-      err<<"Error unable to open: \""<<bgFileName<<"\"";
+      err<<"Error: unable to open \""<<bgFileName<<"\".";
       exit(err.str(), ERROR_OPENING_FILE);
     }
   collapse(levelBackGround, background); //collapse nonColor escape
@@ -64,7 +64,7 @@ void loadParseAndInitialiseRules
   if(!loadASCIIFile(rulesFileName, buff)) // Load in the rules file.
     {
       std::stringstream e {};
-      e<<"Error unable to open: \""<<rulesFileName<<"\"";
+      e<<"Error: unable to open \""<<rulesFileName<<"\".";
       exit(e.str(), ERROR_OPENING_FILE);
     }
   parse(maxyx, buff, rulesFileName, levelRules, bgSize);
@@ -82,7 +82,8 @@ void parse(const yx maxyx, std::string & buff, const char rulesFileName [],
   if(strncmp(buff.c_str(), HEADER_START, sizeof(HEADER_START) -1) != 0)
     {
       std::stringstream e {};
-      e<<"Error header of the .rules.lev file \""<<rulesFileName<<"\" is malformed!";
+      e<<"Error: header of the .rules.lev file \""<<rulesFileName
+       <<"\" is malformed!";
       exit(e.str(), ERROR_RULES_LEV_HEADER);
     }
 
@@ -120,7 +121,7 @@ void switchOnCurrent
       break;
     default:
       std::stringstream e {};
-      e<<"Error current character not expected at current position in the "
+      e<<"Error: current character not expected at current position in the "
 	"rules.lev file. The following is the "<<SHOW_COUNT<<" character's "
 	"after and including the current character (note output may be less "
 	"then "<<SHOW_COUNT<<" character's if the EOF character was "
@@ -172,7 +173,7 @@ void handleCurrentIsFieldStartDenotation
 	  else
 	    {
 	      std::stringstream e {};
-	      e<<"Error expected but did not encounter coordinate character. "
+	      e<<"Error: expected but did not encounter coordinate character. "
 		"The following is the "<<SHOW_COUNT<<" character's after and "
 		"including the current character (note output may be less then"
 	       <<SHOW_COUNT<<" character's if the EOF character was "
@@ -193,8 +194,8 @@ void handleCurrentIsFieldStartDenotation
       if(*current != HEADER_END_DENOTATION)
 	{
 	  std::stringstream e {};
-	  e<<"Error expected but did not see \""<<HEADER_END_DENOTATION<<"\" "
-	    "character to denote the end of the header";
+	  e<<"Error: expected but did not see \""<<HEADER_END_DENOTATION<<"\" "
+	    "character to denote the end of the header.";
 	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 	}
       /* Make sure there's no space between HEADER_END_DENOTATION and next
@@ -223,7 +224,7 @@ void handleCoordinateCharacter
   if(*peek != FIELD_START_DENOTATION)
     {
       std::stringstream e {};
-      e<<"Error encountered coordinate character but did not encounter "
+      e<<"Error: encountered coordinate character but did not encounter "
        <<FIELD_START_DENOTATION<<" character.";
       exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
     }
@@ -241,7 +242,7 @@ void handleCoordinateCharacter
   else
     { // Error duplicate key's in rules.lev file.
       std::stringstream e {};
-      e<<"Error duplicate character coordinate's ("<<key<<") encountered in "
+      e<<"Error: duplicate character coordinate's ("<<key<<") encountered in "
 	"rules.lev file.";
       exit(e.str().c_str(), ERROR_DUPLICATE_COORDINATE);
     }
@@ -279,10 +280,10 @@ void initPlayerSprite
   else
     {
       std::stringstream e {};
-      e<<"Error in rules.lev file header, encountered end of string field ("
+      e<<"Error: in rules.lev file header, encountered end of string field ("
 	"denoted by \""<<FIELD_END_DENOTATION<<"\") after string. But did not "
 	"then encounter sprite coordinates (denoted by \""
-       <<FIELD_START_DENOTATION<<".\"";
+       <<FIELD_START_DENOTATION<<"\".)";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
 }
@@ -297,7 +298,7 @@ std::string getCoords(std::string::const_iterator & current,
   if(!inSingleDigitRange(*current, ASCII_NUMBER_OFFSET))
     {				// Error!
       std::stringstream e {};
-      e<<"Error parsing coordinate, Y coordinate malformed! Coordinats must be "
+      e<<"Error: parsing coordinate, Y coordinate malformed! Coordinats must be "
 	"of the form \"Y"<<COORD_SEPERATION<<"X\", where Y and X are integer "
 	"numbers.";
       exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
@@ -317,7 +318,7 @@ std::string getCoords(std::string::const_iterator & current,
       if(!inSingleDigitRange(*current, ASCII_NUMBER_OFFSET))
 	{				// Error!
 	  std::stringstream e {};
-	  e<<"Error parsing coordinate, X coordinate malformed! Coordinats must"
+	  e<<"Error: parsing coordinate, X coordinate malformed! Coordinats must"
 	    "be of the form \"Y"<<COORD_SEPERATION<<"X\", where Y and X are "
 	    "integer numbers.";
 	  exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
@@ -332,7 +333,7 @@ std::string getCoords(std::string::const_iterator & current,
   else
     {				// Error!
       std::stringstream e {};
-      e<<"Error parsing coordinate, missing \""<<COORD_SEPERATION<<"\" "
+      e<<"Error: parsing coordinate, missing \""<<COORD_SEPERATION<<"\" "
 	"character or non integer character before \""<<COORD_SEPERATION<<"\" "
 	"character.";
       exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
@@ -341,7 +342,7 @@ std::string getCoords(std::string::const_iterator & current,
   if(*current != FIELD_END_DENOTATION)
     {	  
       std::stringstream e {};
-      e<<"Error in rules.lev file. Encountered character other then \""
+      e<<"Error: in rules.lev file. Encountered character other then \""
        <<FIELD_END_DENOTATION<<"\" or integer character while parsing X "
 	"coordinate.";
       exit(e.str().c_str(), ERROR_MALFORMED_COORDINATE);
@@ -358,14 +359,14 @@ std::string getCoords(std::string::const_iterator & current,
       if(y >= yHeight)
 	{
 	  std::stringstream e {};
-	  e<<"Error in rules.lev file. Encountered y coordinated component "\
+	  e<<"Error: in rules.lev file. Encountered y coordinated component "\
 	    "that is out of range for coordinate ("<<y<<", "<<x<<").\n";
 	  exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
 	}
       else if (x >= (bgSize / yHeight))
 	{
 	  std::stringstream e {};
-	  e<<"Error in rules.lev file. Encountered x coordinated component "\
+	  e<<"Error: in rules.lev file. Encountered x coordinated component "\
 	    "that is out of range for coordinate ("<<y<<", "<<x<<").\n";
 	  exit(e.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
 	}
@@ -403,7 +404,7 @@ handleStringDenotationAfterFieldDenotation
 	  else
 	    { // Didn't encounter STRING_SEPERATION or FIELD_END_DENOTATION.
 	      std::stringstream e {}; // We encountered was a syntax error.
-	      e<<"Error encountered a character other then '"<<STRING_DENOTATION
+	      e<<"Error: encountered a character other then '"<<STRING_DENOTATION
 	       <<"' or '"<<FIELD_END_DENOTATION<<"' when reading string's and "
 		"between string's";
 	      exit(e.str().c_str(), ERROR_RULES_STRING_FIELDS);
@@ -416,7 +417,7 @@ handleStringDenotationAfterFieldDenotation
 	  else
 	    { // Encounterd STRING_SEPERATION but no STRING_DENOTATION.
 	      std::stringstream e {};
-	      e<<"Error in field containig string/s found '"<<STRINGS_SEPERATION
+	      e<<"Error: in field containig string/s found '"<<STRINGS_SEPERATION
 	       <<"' that was not followed by '"<<STRING_DENOTATION<<'\'';
 	      exit(e.str().c_str(), ERROR_RULES_STRING_FIELDS);
 	    }
@@ -440,7 +441,7 @@ std::string getString
       if(peek == max)
 	{
 	  std::stringstream e {};
-	  e<<"Error parsing string, we have reached the end of the file but "
+	  e<<"Error: parsing string, we have reached the end of the file but "
 	    "have not encountred the appropriate character's. A rules.lev file "
 	    "must end with the character's \""<<STRING_DENOTATION
 	   <<FIELD_END_DENOTATION<<"\", if the last piece of information in the"
@@ -465,7 +466,7 @@ std::string getString
 	      else
 		{
 		  std::stringstream e {};
-		  e<<"Error parsing string, encountered '"<<ESCAPE_CHAR<<"' but"
+		  e<<"Error: parsing string, encountered '"<<ESCAPE_CHAR<<"' but"
 		    "did not encounter '"<<ESCAPE_CHAR<<"' or '"
 		   <<STRING_DENOTATION<<"' following it.";
 		  exit(e.str().c_str(), ERROR_MALFORMED_STRING);

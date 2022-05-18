@@ -8,42 +8,34 @@
 #include "levelRules.hpp" // For rules.
 
 
-// The header should always start with me.
-constexpr char HEADER_START [] = {"(p("};
-// Marks the start of a new field or section of the current file.
-constexpr char FIELD_START_DENOTATION {'('};
-// Marks the end of the current field or section of the current file.
-constexpr char FIELD_END_DENOTATION {')'};
-// Marks the end of the header sectino of the file.
-constexpr char HEADER_END_DENOTATION {'#'};
-// This character denotes the start of a sting
-constexpr char STRING_DENOTATION {'"'};
-// How many characters to print in printN function.
-constexpr int SHOW_COUNT {45};
+constexpr char HEADER_START [] = {"(p("}; // The header should always start with me.
+constexpr char COMMENT {'~'};		  // Used to denote a comment in
+					  // rules.lev files.
+constexpr char FIELD_START_DENOTATION {'('}; // Marks the start of a new field or section of the current file.
+constexpr char FIELD_END_DENOTATION {')'}; // Marks the end of the current field or section of the current file.
+constexpr char HEADER_END_DENOTATION {'#'}; // Marks the end of the header sectino of the file.
+constexpr char STRING_DENOTATION {'"'}; // This character denotes the start of a sting
+constexpr int SHOW_COUNT {45}; // How many characters to print in printN function.
 /* This character denotes the presence of another string when used after a
    string. */
 constexpr char STRINGS_SEPERATION {','};
 /* The character used for escape sequences (within a string) in .rules.lev
    files. */
 constexpr char ESCAPE_CHAR {'\\'};
-// Separating character between coordinates.
-constexpr char COORD_SEPERATION {','};
+constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
 constexpr char NULL_BYTE {'\0'};
 /* Coordinate character's. I have decided to add an uppercase alternative for
    each character. This is so that rules.lev file's will be more forgiving of
    "mistakes." */
-// Player character's cannot pass through coordinate's marked as this.
-constexpr char BOARDER_CHAR {'b'};
+constexpr char BOARDER_CHAR {'b'}; // Player character's cannot pass through coordinate's marked as this.
 constexpr char BOARDER_CHAR_UPPER {'B'};
 /* Player character's are killed uppon intersection with coordinate's marked as
    this. */
 constexpr char KILL_CHAR {'k'};
 constexpr char KILL_CHAR_UPPER {'K'};
-// Player character's loose health uppon intersection with coordinate's
-constexpr char DEGRADE_HEALTH_CHAR {'d'};
+constexpr char DEGRADE_HEALTH_CHAR {'d'}; // Player character's loose health uppon intersection with coordinate's
 constexpr char DEGRADE_HEALTH_CHAR_UPPER {'D'}; // marked as this.
-// Combination of DEGRADE_HEALTH_CHAR and BOARDER_CHAR.
-constexpr char DEGRADE_HEALTH_BOARDER_CHAR {'i'};
+constexpr char DEGRADE_HEALTH_BOARDER_CHAR {'i'}; // Combination of DEGRADE_HEALTH_CHAR and BOARDER_CHAR.
 constexpr char DEGRADE_HEALTH_BOARDER_CHAR_UPPER {'I'};
 /* Player character's "win" the level uppon intersection with coordinates
    marked. */
