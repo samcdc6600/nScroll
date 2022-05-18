@@ -34,6 +34,7 @@ enum errorsCodes
     ERROR_CHARACTER_RANGE,	// Character out of range.
     ERROR_COLOR_CODE_RANGE,	// Color code out of range.
     ERROR_GENERIC_RANGE_ERROR,
+    ERROR_BACKGROUND,		// Malformed BG file.
     ERROR_RULES_LEV_HEADER,	// Header of .level.rules file is malformed.
     ERROR_RULES_STRING_FIELDS,	// There was an error in a field containing string's.
     ERROR_MALFORMED_STRING,	// We encountered a malformed string.

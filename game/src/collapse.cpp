@@ -40,21 +40,16 @@ int chMap::find(const std::string str)
 }
 
 
-void collapse(const std::string & rawBuff, std::vector<int> & ret)
+void collapse(const std::string & rawBuff,
+	      std::vector<int> & ret)
 {
   ret.clear();			// Make sure that ret is empty.
   std::string buff {};
 
-  firstPassOfCollapse(rawBuff, buff);
-
-  
+  firstPassOfCollapse(rawBuff, buff);  
   std::vector<int> preRet {};
-
   secondPassOfCollapse(buff, preRet);
-
   thirdPassOfCollapse(preRet, ret);
-
-  //------------------------------(Third pass (encode color characters))--------
 }
 
 

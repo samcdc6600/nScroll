@@ -16,11 +16,22 @@ void loadAssets
   std::string levelBackGround {};
   if(!loadASCIIFile(bgFileName, levelBackGround))
     {
-      std::stringstream a {};
-      a<<"Error unable to open: \""<<bgFileName<<"\"";
-      exit(a.str(), ERROR_OPENING_FILE);
+      std::stringstream err {};
+      err<<"Error unable to open: \""<<bgFileName<<"\"";
+      exit(err.str(), ERROR_OPENING_FILE);
     }
-  collapse(levelBackGround, background); //collapse nonColor escape sequences.
+  collapse(levelBackGround, background); //collapse nonColor escape
+						//sequences.
+  if((background.size() % (maxyx.x * maxyx.y)) != 0)
+     {
+       std::stringstream err {};
+       err<<"Error: wrong number of characters in background after collapsing "
+	 "escaped characters. (background size (after processing) % (window "
+	 "length * window height)) != 0, where background size = "
+	  <<background.size()<<", window length = "<<maxyx.x<<" and window "
+	 "height = "<<maxyx.y<<".";
+       exit(err.str(), ERROR_BACKGROUND);
+     }
   // Initialise player and non-player sprites (rules file).
   loadParseAndInitialiseRules(maxyx, rulesFileName, levelRules,
 			      background.size());
