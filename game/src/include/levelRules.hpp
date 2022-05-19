@@ -99,6 +99,12 @@ private:
   sprite::directions handleRightCollision(const int & position);
   // Analogous to handleRightCollision but of course for leftward movement.
   sprite::directions handleLeftCollision(const int & position);
+  /* Called when the player is trying to jump (by pressing the jump button.)
+     obstructionAbove and obstructionBelow should be set to true if there is an
+     obstruction above or an obstruction below (respectively) that would stop
+     the player from jumping. */
+  void startJumping(const int obstructionNAbove,
+			   const int obstructionNBelow);
 
 #ifdef DEBUG
   void printRuleChars(const int position, const int maxX);

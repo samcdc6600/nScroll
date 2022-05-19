@@ -11,11 +11,20 @@
 
 
 player::player(std::vector<std::string> spriteFileNames, const yx max,
-	       const yx pos, const sprite::directions dir, const int h,
-	       const int v)
-  : sprite(spriteFileNames, max, pos, dir),
-    health(h), vertVelocity(v)
-{}
+               const yx pos, const sprite::directions dir, const int h,
+               const double g, const double v)
+    : sprite(spriteFileNames, max, pos, dir), health(h),
+      gravitationalConstant(g), maxVertVelocity(v)
+{
+  if(maxVertVelocity < 1)
+    {
+      std::stringstream err {};
+      err<<"Error: the maximum vertical velocity for the player must be at "
+	"least than 1 (the unit is in characters (position) per second.) "<<v
+	 <<" was provided.";
+      exit(err.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
+    }
+}
 
 
 /* Returns dir as the corresponding direction, if there is none returns
@@ -76,3 +85,91 @@ void player::setVertVelocity(const double newVV)
 {
   vertVelocity = newVV;
 }
+
+
+bool player::startJumping(const int obstructionNAbove)
+{
+  bool retVar {false};
+  if(jumpNum < maxJumpNum)
+    {
+      jumpNum++;
+      vertVelocity = gravitationalConstant;
+      jumping = jumpingUp;
+      retVar = true;
+
+      if(obstructionNAbove == 0 || (int)vertVelocity < obstructionNAbove)
+	{ 
+	  // We're not going to hit anything, so jump!
+	  for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
+	    {
+	      updatePosRel(sprite::DIR_UP);
+	    }
+	}
+    }
+
+  return retVar;
+}
+
+
+void player::keepJumping(const int obstructionNAbove,
+			 const int obstructionNBelow)
+{
+  if(jumping != notJumping)
+    {
+      if(jumping == jumpingUp)
+	{
+	  if(vertVelocity <= maxVertVelocity)
+	    {
+	      vertVelocity += gravitationalConstant;
+	    }
+	  else
+	    {
+	      jumping = jumpingDown;
+	      vertVelocity -= gravitationalConstant;
+	    }
+	}
+      else if(jumping == jumpingDown)
+	{
+	  if(vertVelocity > -maxVertVelocity)
+	    {
+	      vertVelocity -= gravitationalConstant;
+	    }
+	}
+
+      if(vertVelocity > 0 &&
+	 (obstructionNAbove == 0 || (int)vertVelocity < obstructionNAbove))
+	{
+	  for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
+	    {
+	      updatePosRel(sprite::DIR_UP);
+	    }
+	}
+      else
+	{
+	  for(int jumps {(int)-vertVelocity}; jumps > 0; jumps--)
+	    {
+	      updatePosRel(sprite::DIR_DOWN);
+	    }
+	}
+    }
+}
+
+
+void player::endJumping()
+{
+  vertVelocity = 0;
+  jumping = notJumping;
+  jumpNum = 0;
+}
+
+
+// bool player::decJumpNum()
+// {
+//   boole retVal {true};
+//   if(jumpNum > 0)
+//     {
+//       jumpNum--;
+//       retVal = false;
+//     }
+//   return retVal;
+// }

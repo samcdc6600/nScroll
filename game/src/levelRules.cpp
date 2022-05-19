@@ -89,7 +89,21 @@ void rules::movePlayer(sprite::directions input,
   /**/
 
 
-  // Handle contact with boarder characters.
+  
+  
+  if(input == sprite::DIR_UP)
+    {
+      // Start jump.
+      startJumping(1, 0);
+    }
+  else
+    {
+      // We are not jumping or we are past the start of a jump.
+      // If we can move down.
+      gamePlayer->keepJumping(1, 0);
+    }
+
+   // Handle contact with boarder characters.
   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
      input == sprite::DIR_DOWN)
     {
@@ -348,6 +362,16 @@ sprite::directions rules::handleLeftCollision(const int & position)
     }
 
   return retDir;
+}
+
+
+void rules::startJumping(const int obstructionNAbove,
+			 const int obstructionNBelow)
+{
+  if(!gamePlayer->startJumping(obstructionNAbove))
+    {
+      //      gamePlayer->keepJumping(obstructionNAbove, obstructionNBelow);
+    }
 }
 
 

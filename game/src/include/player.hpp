@@ -10,8 +10,22 @@
 class player: public sprite
 {
   int health;
-  // The player sprite may be subject to gravitational forces.
-  double vertVelocity {};
+  const double gravitationalConstant;
+  /* Negated for negative velocities (1 = 1 character per frame.). */
+  const double maxVertVelocity;	// Should be a minimum of 1.
+  double vertVelocity {};	// Used for jumping.
+  enum jumpingStates
+    {
+      notJumping,
+      jumpingUp,
+      jumpingDown		// AKA falling.
+    };
+  // Should hold only take on values from jumpingStates.
+  int jumping {notJumping};
+  /* Used to count current jump number (e.g., triple jump.) Where 0 is not
+     jumping. */
+  unsigned jumpNum {};
+  const unsigned maxJumpNum {3};
 
   // This function is not intended for use in player (and thus is private.)
   virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
@@ -50,9 +64,10 @@ public:
       DOWN_CHAR ='s',
     };
 
+  
   player(std::vector<std::string> spriteFileNames, const yx max,
 	 const yx pos, const sprite::directions dir, const int h,
-	 const int v);
+	 const double g, const double v);
 
   
   virtual ~player() {};
@@ -62,7 +77,23 @@ public:
   virtual void updatePosRel(const sprite::directions dir);
   double getVertVelocity();
   void setVertVelocity(const double newVV);
-
+  /* Starts jump (by altering various variables) and moves the player up X
+     characters, where X is dictated by (int)gravitationalConstant and only as
+     long as X < obstructionNAbove (when obstructionNAbove != 0). Returns
+     true if the the player started a new jump (this will only happen if
+     maxJumpNum hasn't been reached.) If the player didn't start a new jump
+     then keepJumping should be called (but only if the player can move down). */
+  bool startJumping(const int obstructionNAbove);
+  /* Should be called if the player can move down. If the
+     player is jumping reduces vertVelocity by some factor each call (until it
+     reaches a  maximum negative factor.) Then moves the player down by X
+     characters, where X is dictated by (int)vertVelocity. */
+  void keepJumping(const int obstructionNAbove,
+		   const int obstructionNBelow);
+  /* Should be called if player can't move down anymore characters. Resets
+     variables to the default non-jumping state. */
+  void endJumping();
+  
 private:
     /* For any of the following functions that take an argument position, the
      position should be the current background position. */
@@ -182,26 +213,38 @@ public:
     return   getYAbsRangeAsStrs(position, true, true);
   }
 
-  
-    std::vector<std::string>
+
+  std::vector<std::string>
   getRightYAbsRangeAsStrsForOneOffContact(const int position)
   {
-    return   getYAbsRangeAsStrs(position, true, 
-
-false);
+    return   getYAbsRangeAsStrs(position, true, false);
   }
+
   
-    std::vector<std::string>
+  std::vector<std::string>
   getLeftYAbsRangeAsStrsForDirectContact(const int position)
   {
     return   getYAbsRangeAsStrs(position, false, true);
   }
 
   
-    std::vector<std::string>
+  std::vector<std::string>
   getLeftYAbsRangeAsStrsForOneOffContact(const int position)
   {
     return   getYAbsRangeAsStrs(position, false, false);
+  }
+
+  std::string
+  getOneBelowBottomRight(const int position)
+  {
+        const int absLeftPos {this->position.x + leftCollisionDirectOffset + position};
+    const int absRightPos {this->position.x + maxBottomRightOffset.x +
+      rightCollisionDirectOffset + position};
+  }
+
+  std::string
+  getOneBelowBottomLeft(const int position)
+  {
   }
 };
 
