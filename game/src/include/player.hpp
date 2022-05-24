@@ -93,6 +93,7 @@ public:
   /* Should be called if player can't move down anymore characters. Resets
      variables to the default non-jumping state. */
   void endJumping();
+  bool isJumping() {return jumping != notJumping;};
   
 private:
     /* For any of the following functions that take an argument position, the
@@ -122,34 +123,31 @@ private:
   //   ss<<position.y + maxBottomRightOffset.y + bottomCollisionDirectOffset;//bottomCollisionOffset;
   //   return ss.str();
   // }
-  /* Calculates all the points between the absolute position of the bottom
-     left + leftCollisionOffset and the absolute position of the bottom right +
+  /* Calculates all the points between the absolute position of the left +
+     leftCollisionOffset and the absolute position of the right +
      rightCollisionOffset. Return value is a vector of strings of the pos's.
-     Posistion should be the absolute x position in the level and directContact
-     dictates whether to use bottomCollisionDirectOffset or
-     bottomCollisionOneOffOffset */
-  std::vector<std::string> getBottomXAbsRangeAsStrs(const int position,
-						    const bool directContact)
+     Position should be the absolute x position in the level and bottomSide
+     dictates whether to calculate y from the bottom of the sprite or the top of
+     the sprite directContact dictates whether to use
+     bottomCollisionDirectOffset or bottomCollisionOneOffOffset */
+  std::vector<std::string> getXAbsRangeAsStrs(const int position,
+					      const int bottomSide,
+					      const bool directContact)
   {
     const int absLeftPos {this->position.x + leftCollisionDirectOffset + position};
     const int absRightPos {this->position.x + maxBottomRightOffset.x +
       rightCollisionDirectOffset + position};
 
+    const int collisionOffset {bottomSide ?
+      (directContact ? bottomCollisionDirectOffset: bottomCollisionOneOffOffset) :
+      (directContact ? topCollisionDirectOffset: topCollisionOneOffOffset)};
+    const int y {(bottomSide ? this->maxBottomRightOffset.y: 0) + collisionOffset + this->position.y};
+
     std::vector<std::string> retCoords {};
     for(int pos {absLeftPos}; pos <= absRightPos; pos++)
       {
 	std::stringstream ss {};
-	if(directContact)
-	  {
-	    ss<<this->position.y + maxBottomRightOffset.y +
-	      bottomCollisionDirectOffset;
-	  }
-	else
-	  {
-	    ss<<this->position.y + maxBottomRightOffset.y +
-	      bottomCollisionOneOffOffset;
-	  }
-	ss<<','<<pos;
+	ss<<y<<','<<pos;
 	
 	retCoords.push_back(ss.str());
 	ss.clear();
@@ -158,23 +156,23 @@ private:
     return retCoords;
   }
 
-  
-  /*Calculates all the points between the absolute position of the top right +
-    topCollisionOffset and the absolute position of the bottom right +
-    bottomCollisionOffset. Return value is a vector of strings of the pos's. */
+
+  /* Calculates all the points between the absolute position of the top right +
+     topCollisionOffset and the absolute position of the bottom right +
+     bottomCollisionOffset. Return value is a vector of strings of the pos's. */
   std::vector<std::string> getYAbsRangeAsStrs(const int position,
-					      const bool rightDirection,
+					      const bool rightSide,
 					      const bool directContact)
   {
     const int absTopPos {this->position.y + topCollisionDirectOffset};
     const int absBottomPos {this->position.y + maxBottomRightOffset.y +
       bottomCollisionDirectOffset};
 
-    const int collisionOffset {rightDirection ?
-      (directContact ? rightCollisionDirectOffset : rightCollisionOneOffOffset) :
+    const int collisionOffset {rightSide ?
+      (directContact ? rightCollisionDirectOffset: rightCollisionOneOffOffset):
       (directContact ? leftCollisionDirectOffset: leftCollisionOneOffOffset)};
-    const int x {(rightDirection ?
-		  this->maxBottomRightOffset.x : 0) +
+    const int x {(rightSide ?
+		  this->maxBottomRightOffset.x: 0) +
     collisionOffset + position + this->position.x};
 
     
@@ -196,14 +194,28 @@ public:
     std::vector<std::string>
   getBottomXAbsRangeAsStrsForDirectContact(const int position)
   {
-    return getBottomXAbsRangeAsStrs(position, true);
+    return getXAbsRangeAsStrs(position, true, true);
   }
 
   
   std::vector<std::string>
   getBottomXAbsRangeAsStrsForOneOffContact(const int position)
   {
-    return getBottomXAbsRangeAsStrs(position, false);
+    return getXAbsRangeAsStrs(position, true, false);
+  }
+
+
+  std::vector<std::string>
+  getTopXAbsRangeAsStrsForDirectContact(const int position)
+  {
+    return getXAbsRangeAsStrs(position, false, true);
+  }
+
+
+    std::vector<std::string>
+  getTopXAbsRangeAsStrsForOneOffContact(const int position)
+  {
+    return getXAbsRangeAsStrs(position, false, false);
   }
 
   
@@ -237,7 +249,7 @@ public:
   std::string
   getOneBelowBottomRight(const int position)
   {
-        const int absLeftPos {this->position.x + leftCollisionDirectOffset + position};
+    const int absLeftPos {this->position.x + leftCollisionDirectOffset + position};
     const int absRightPos {this->position.x + maxBottomRightOffset.x +
       rightCollisionDirectOffset + position};
   }

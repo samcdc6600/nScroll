@@ -248,90 +248,90 @@ void sprite::getMaxYXOffset()
 }
 
 
-void sprite::setUpBoundryCoordsVector(spriteData & sD)
-{
-  for(auto s: sD.spriteSlices)
-    {
-      switch(s.slice.size())
-	{
-	case 0:
-	  continue;		// Nothing to do
-	case 1:			// Only one line in slice.
-	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_ONE,
-						  s.sliceBoundryCoords);      
-	  break;
-	case 2:			// Only two lines in slice.
-	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_ONE,
-						  s.sliceBoundryCoords);
-	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_TWO,
-						  s.sliceBoundryCoords);
-	  break;
-	default:     		// More then two lines (general case.)
-	  {
-	    size_t iter {SLICE_LINE_ONE};
-	    constexpr int endOffset {1};
-	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter,
-						    s.sliceBoundryCoords);
-	    iter++;		// Advance to next slice line.
-	    for( ; iter < s.slice.size() -endOffset; ++iter)
-	      getBoundryCoordsForEndSofSingleSliceLine(s.slice, iter,
-						       s.sliceBoundryCoords);
-	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter,
-						    s.sliceBoundryCoords);
-	  }
-	}
-    }
-}
+// void sprite::setUpBoundryCoordsVector(spriteData & sD)
+// {
+//   for(auto s: sD.spriteSlices)
+//     {
+//       switch(s.slice.size())
+// 	{
+// 	case 0:
+// 	  continue;		// Nothing to do
+// 	case 1:			// Only one line in slice.
+// 	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_ONE,
+// 						  s.sliceBoundryCoords);      
+// 	  break;
+// 	case 2:			// Only two lines in slice.
+// 	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_ONE,
+// 						  s.sliceBoundryCoords);
+// 	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_TWO,
+// 						  s.sliceBoundryCoords);
+// 	  break;
+// 	default:     		// More then two lines (general case.)
+// 	  {
+// 	    size_t iter {SLICE_LINE_ONE};
+// 	    constexpr int endOffset {1};
+// 	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter,
+// 						    s.sliceBoundryCoords);
+// 	    iter++;		// Advance to next slice line.
+// 	    for( ; iter < s.slice.size() -endOffset; ++iter)
+// 	      getBoundryCoordsForEndSofSingleSliceLine(s.slice, iter,
+// 						       s.sliceBoundryCoords);
+// 	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter,
+// 						    s.sliceBoundryCoords);
+// 	  }
+// 	}
+//     }
+// }
 
 
-void sprite::getBoundryCoordsForWholeSingleSliceLine
-(std::vector<sliceLine> & s,const int y, std::vector<yx> & sliceBoundryCoords)
-{
-  for(int iter {}; iter < s[y].sliceLine.size(); ++iter)
-    {
-      if(s[y].sliceLine[iter] != TRANS_SP)
-	{
-	  yx c {y, iter + s[y].offset};
-	  sliceBoundryCoords.push_back(c);
-	}
-    }
-}
+// void sprite::getBoundryCoordsForWholeSingleSliceLine
+// (std::vector<sliceLine> & s,const int y, std::vector<yx> & sliceBoundryCoords)
+// {
+//   for(int iter {}; iter < s[y].sliceLine.size(); ++iter)
+//     {
+//       if(s[y].sliceLine[iter] != TRANS_SP)
+// 	{
+// 	  yx c {y, iter + s[y].offset};
+// 	  sliceBoundryCoords.push_back(c);
+// 	}
+//     }
+// }
 
 
-/* Operation is the same as getBoundryCoordsForWholeSingleSliceLine with the
-   exception that only the coordinates plus s[y].offset of end (non TRANS_SP)
-   chars are added to sliceBoundryCoords. If all character's are TRANS_SP then
-   no coords are added and if there is only one non TRANS_SP character then only
-   it's coordinate plus offset is added. */
-void sprite::getBoundryCoordsForEndSofSingleSliceLine
-(std::vector<sliceLine> & s, const int y, std::vector<yx> & sliceBoundryCoords)
-{
-  constexpr int subZero {-1};
-  /* Keep track of the first non TRANS_SP char and of the last non TRANS_SP
-     char. */
-  int first {subZero}, last {subZero};
-  for(size_t iter {}; iter < s[y].sliceLine.size(); ++iter)
-    {
-      if(s[y].sliceLine[iter] != TRANS_SP)
-	{			// We have seen a non TRANS_SP char.
-	  if(first < 0)
-	    {			// It's the first one.
-	      first = iter;
-	      yx c {y, first + s[y].offset};
-	      sliceBoundryCoords.push_back(c); // Add first choord.
-	    }
-	  else
-	    {
-	      last = iter;
-	    }
-	}
-    }
-  if(first != last && last != subZero)
-    {				// Add last choord.
-      yx c {y, last + s[y].offset};
-      sliceBoundryCoords.push_back(c);
-    }
-}
+// /* Operation is the same as getBoundryCoordsForWholeSingleSliceLine with the
+//    exception that only the coordinates plus s[y].offset of end (non TRANS_SP)
+//    chars are added to sliceBoundryCoords. If all character's are TRANS_SP then
+//    no coords are added and if there is only one non TRANS_SP character then only
+//    it's coordinate plus offset is added. */
+// void sprite::getBoundryCoordsForEndSofSingleSliceLine
+// (std::vector<sliceLine> & s, const int y, std::vector<yx> & sliceBoundryCoords)
+// {
+//   constexpr int subZero {-1};
+//   /* Keep track of the first non TRANS_SP char and of the last non TRANS_SP
+//      char. */
+//   int first {subZero}, last {subZero};
+//   for(size_t iter {}; iter < s[y].sliceLine.size(); ++iter)
+//     {
+//       if(s[y].sliceLine[iter] != TRANS_SP)
+// 	{			// We have seen a non TRANS_SP char.
+// 	  if(first < 0)
+// 	    {			// It's the first one.
+// 	      first = iter;
+// 	      yx c {y, first + s[y].offset};
+// 	      sliceBoundryCoords.push_back(c); // Add first choord.
+// 	    }
+// 	  else
+// 	    {
+// 	      last = iter;
+// 	    }
+// 	}
+//     }
+//   if(first != last && last != subZero)
+//     {				// Add last choord.
+//       yx c {y, last + s[y].offset};
+//       sliceBoundryCoords.push_back(c);
+//     }
+// }
 
 
 void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
@@ -356,7 +356,7 @@ void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
   /* Set currentSliceNumber to 0. This variable should only take on values
      between 0 and (spriteSlices.size() -1) */
   currentSliceNumber = 0;
-  setUpBoundryCoordsVector(sD);
+  // setUpBoundryCoordsVector(sD);
 }
 
 

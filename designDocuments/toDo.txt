@@ -3,6 +3,9 @@
 "+" mean's done.
 
 
+* ---> (19) Convert functions in levelRules.* that deal with the player sprite
+	    to be more general and work with anything that inherits the sprite base
+	    class.
 * ---> (18) Fix sprite bug. Start program move character right and wait to hit
             the end of the level (this may not be required), attach debugger and
             step through. Notice that some of the characters are out of place on

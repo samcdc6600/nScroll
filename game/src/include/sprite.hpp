@@ -62,8 +62,8 @@ private:
   struct sliceData
   { // A slice is essential one frame of a sprite animation.
     std::vector<sliceLine> slice {};
-    // Hold's a list of boundry coordinates for the slice.
-    std::vector<yx> sliceBoundryCoords {};
+    // // Hold's a list of boundry coordinates for the slice.
+    // std::vector<yx> sliceBoundryCoords {};
   };
   struct partiallyProcessedSliceLine
   {
@@ -119,22 +119,22 @@ private:
      position. These values are used for collision detection and bounds
      checking. */
   void getMaxYXOffset();
-  /* Iterates through spriteSlices in sD and set's up boundry coords for each
-     slice in sD. */
-  void setUpBoundryCoordsVector(spriteData & sD);
-  /* Addes the index of every character in s[y].sliceLine that is not equal to
-     TRANS_SP plus s[y].offset to sliceBoundryCoords (using .push_back().) */
-  void getBoundryCoordsForWholeSingleSliceLine
-  (std::vector<sliceLine> & s, const int y,
-   std::vector<yx> & sliceBoundryCoords);
+  // /* Iterates through spriteSlices in sD and set's up boundry coords for each
+  //    slice in sD. */
+  // void setUpBoundryCoordsVector(spriteData & sD);
+  // /* Addes the index of every character in s[y].sliceLine that is not equal to
+  //    TRANS_SP plus s[y].offset to sliceBoundryCoords (using .push_back().) */
+  // void getBoundryCoordsForWholeSingleSliceLine
+  // (std::vector<sliceLine> & s, const int y,
+  //  std::vector<yx> & sliceBoundryCoords);
   /* Operation is the same as getBoundryCoordsForWholeSingleSliceLine with the
      exception that only the coordinates plus s[y].offset of end (non TRANS_SP)
      chars are added to sliceBoundryCoords. If all character's are TRANS_SP then
      no coords are added and if there is only one non TRANS_SP character then
      only it's coordinate plus offset is added. */
-  void getBoundryCoordsForEndSofSingleSliceLine
-  (std::vector<sliceLine> & s, const int y,
-   std::vector<yx> & sliceBoundryCoords);
+  // void getBoundryCoordsForEndSofSingleSliceLine
+  // (std::vector<sliceLine> & s, const int y,
+  //  std::vector<yx> & sliceBoundryCoords);
   
 protected:
   /* Initialises sD_base */

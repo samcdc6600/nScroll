@@ -85,20 +85,23 @@ private:
   (const sprite::directions input, int & position, const yx maxyx,
    const size_t backgroundLength, const yx peekPos,
    const int REACHED_INNER_MARGIN_X);
+  /* Returns number of characters untill the player bits a boarder character
+     (if moving up). Will return -1 if there are no boarder characters above */
+  int getClosestBoarderCharAbove(const int position, const bool directContact);
   /* Handles collision with boarder characters when the player is moving down
      Input should be the player input direction and the current absolute
      position of the player sprite in the x dimension. Returns updated
      direction. */
-  sprite::directions handleGroundCollision(const int & position);
+  sprite::directions handleGroundCollision(const int position);
   /* Handles collision with boarder characters when the player sprite is moving
      right. If there is only one character to the bottom right then the player
      will continue moving in the right direction but be moved up by one
      character unless the player has a y position of 0, in which case the
      player will be stopped. The player sprite will also be stopped if there is
      more then one character directly to the right of it. */
-  sprite::directions handleRightCollision(const int & position);
+  sprite::directions handleRightCollision(const int position);
   // Analogous to handleRightCollision but of course for leftward movement.
-  sprite::directions handleLeftCollision(const int & position);
+  sprite::directions handleLeftCollision(const int position);
   /* Called when the player is trying to jump (by pressing the jump button.)
      obstructionAbove and obstructionBelow should be set to true if there is an
      obstruction above or an obstruction below (respectively) that would stop
