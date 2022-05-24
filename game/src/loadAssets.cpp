@@ -274,7 +274,8 @@ void initPlayerSprite
       }
       coordsSS>>initPos.x;
       levelRules.gamePlayer =
-	(new player(sprites, maxyx, initPos, sprite::DIR_NONE, 25, 0.28, 1.9));
+	(new player(sprites, maxyx, initPos, sprite::DIR_NONE, 25, 0.28, 1.9, 1,
+		    3));
       ++current, ++peek;
     }
   else

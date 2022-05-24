@@ -14,7 +14,7 @@ class player: public sprite
   const double gravitationalConstant;
   /* Negated for negative velocities (1 = 1 character per frame.). */
   const double maxVertVelocity;	// Should be a minimum of 1.
-  double vertVelocity {};	// Used for jumping.
+  double vertVelocity;	// Used for jumping.
   enum jumpingStates
     {
       notJumping,
@@ -26,7 +26,9 @@ class player: public sprite
   /* Used to count current jump number (e.g., triple jump.) Where 0 is not
      jumping. */
   unsigned jumpNum {};
-  const unsigned maxJumpNum {3};
+  // If the player starts falling (when not jumping) how many jumps can they do?
+  const unsigned maxFallingJumpNum;
+  const unsigned maxJumpNum;
 
   // This function is not intended for use in player (and thus is private.)
   virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
@@ -65,11 +67,10 @@ public:
       DOWN_CHAR ='s',
     };
 
-  
   player(std::vector<std::string> spriteFileNames, const yx max,
-	 const yx pos, const sprite::directions dir, const int h,
-	 const double g, const double v);
-
+               const yx pos, const sprite::directions dir, const int h,
+               const double g, const double v, const int maxFallingJmpNum,
+	 const int maxJmpNum);
   
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.
@@ -92,11 +93,15 @@ public:
      If the player is falling keep falling unless the player is above a boarder
      character or the bottom of the level. If the player isn't above any baorder
      character and isn't at the bottom of the level then start falling. */
-  void handleJumpingAndFalling(const int position, const yx maxyx,
+  void handleJumpingAndFalling(const int bgPosition, const yx & maxyx,
 		   const std::map<std::string, char> & coordChars);
   bool isJumping() {return jumping != notJumping;};
   
 private:
+  void handleFalling(const int bgPosition, const yx & maxyx,
+		     const std::map<std::string, char> & coordChars);
+  void handleJumping(const int bgPosition, const yx & maxyx,
+		     const std::map<std::string, char> & coordChars);
   /* Calculates all the points between the absolute position of the left +
      leftCollisionOffset and the absolute position of the right +
      rightCollisionOffset. Return value is a vector of strings of the pos's.
