@@ -85,9 +85,9 @@ private:
   (const sprite::directions input, int & position, const yx maxyx,
    const size_t backgroundLength, const yx peekPos,
    const int REACHED_INNER_MARGIN_X);
-  /* Returns number of characters untill the player bits a boarder character
-     (if moving up). Will return -1 if there are no boarder characters above */
-  int getClosestBoarderCharAbove(const int position, const bool directContact);
+  // /* Returns number of characters untill the player bits a boarder character
+  //    (if moving up). Will return -1 if there are no boarder characters above */
+  // int getClosestBoarderCharAbove(const int position, const bool directContact);
   /* Handles collision with boarder characters when the player is moving down
      Input should be the player input direction and the current absolute
      position of the player sprite in the x dimension. Returns updated
@@ -106,8 +106,8 @@ private:
      obstructionAbove and obstructionBelow should be set to true if there is an
      obstruction above or an obstruction below (respectively) that would stop
      the player from jumping. */
-  void startJumping(const int obstructionNAbove,
-			   const int obstructionNBelow);
+  void startJumping(const int position,
+		    const std::map<std::string, char> & coordChars);
 
 #ifdef DEBUG
   void printRuleChars(const int position, const int maxX);

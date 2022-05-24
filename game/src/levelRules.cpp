@@ -91,14 +91,14 @@ void rules::movePlayer(sprite::directions input,
 
   
 
-  if(gamePlayer->isJumping() || input == sprite::DIR_UP)
-    {
-      const int boarderCharDistance {
-	getClosestBoarderCharAbove(position, true)};
+  // if(gamePlayer->isJumping() || input == sprite::DIR_UP)
+  //   {
+      // const int boarderCharDistance {
+      // 	getClosestBoarderCharAbove(position, true)};
       if(input == sprite::DIR_UP)
 	{
 	  // Start jump.
-	  startJumping(boarderCharDistance, 0);
+	  startJumping(position, coordChars);
 	  // We wan't to keep moving in the direction we were moving in before.
 	  input = (sprite::directions)currDir;
 
@@ -107,11 +107,11 @@ void rules::movePlayer(sprite::directions input,
 	{
 	  // We are not jumping or we are past the start of a jump.
 	  // If we can move down.
-	  gamePlayer->keepJumping(boarderCharDistance, 0);
+	  gamePlayer->handleJumpingAndFalling(position, maxyx, coordChars);
 	  // We wan't to keep moving in the direction we were moving in before.
 	  //      input = (sprite::directions)currDir;
 	}
-    }
+    // }
 
    // Handle contact with boarder characters.
   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
@@ -270,77 +270,77 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
 }
 
 
-int rules::getClosestBoarderCharAbove(const int position,
-				      const bool directContact)
-{
-  int minBoarderCharDistanceRet {0};
-  int yPos {};
+// int rules::getClosestBoarderCharAbove(const int position,
+// 				      const bool directContact)
+// {
+//   int minBoarderCharDistanceRet {0};
+//   int yPos {};
     
-  std::vector<std::string> spriteTopCoords
-    {gamePlayer->getTopXAbsRangeAsStrsForOneOffContact(position)};
+//   std::vector<std::string> spriteTopCoords
+//     {gamePlayer->getTopXAbsRangeAsStrsForOneOffContact(position)};
 
-  // All coordinates from spriteTopCoords and above.
-  std::vector<std::string> spriteTopCoordsColumn {};
+//   // All coordinates from spriteTopCoords and above.
+//   std::vector<std::string> spriteTopCoordsColumn {};
 
-  for(std::string strCoord: spriteTopCoords)
-    {
-      std::stringstream coord {strCoord};
-      int spCoordY, spCoordX;
-      char eat;
-      coord>>spCoordY;
-      coord>>eat;
-      coord>>spCoordX;
+//   for(std::string strCoord: spriteTopCoords)
+//     {
+//       std::stringstream coord {strCoord};
+//       int spCoordY, spCoordX;
+//       char eat;
+//       coord>>spCoordY;
+//       coord>>eat;
+//       coord>>spCoordX;
 
-      yPos = spCoordY;
+//       yPos = spCoordY;
 
-      for(int y {spCoordY}; y >= 0; y--)
-	{
-	  std::stringstream newCoord {};
-	  newCoord<<y;
-	  newCoord<<',';
-	  newCoord<<spCoordX;
-	  spriteTopCoordsColumn.push_back(newCoord.str());
-	}
-    }
+//       for(int y {spCoordY}; y >= 0; y--)
+// 	{
+// 	  std::stringstream newCoord {};
+// 	  newCoord<<y;
+// 	  newCoord<<',';
+// 	  newCoord<<spCoordX;
+// 	  spriteTopCoordsColumn.push_back(newCoord.str());
+// 	}
+//     }
 
 
-  bool foundBoarderChar {false};
-  for(std::string coord: spriteTopCoordsColumn)
-    {
-      if(coordChars.find(coord) != coordChars.end())
-	{
-	  foundBoarderChar = true;
-	  std::stringstream boarderCoord {coord};
-	  int boarderY {};
-	  boarderCoord>>boarderY;
+//   bool foundBoarderChar {false};
+//   for(std::string coord: spriteTopCoordsColumn)
+//     {
+//       if(coordChars.find(coord) != coordChars.end())
+// 	{
+// 	  foundBoarderChar = true;
+// 	  std::stringstream boarderCoord {coord};
+// 	  int boarderY {};
+// 	  boarderCoord>>boarderY;
 	  
-	  minBoarderCharDistanceRet =
-	    boarderY > minBoarderCharDistanceRet ? (yPos - boarderY):
-	    (yPos - minBoarderCharDistanceRet);
-	}
-      mvprintw(0, 0, "%d", minBoarderCharDistanceRet);
-    }
+// 	  minBoarderCharDistanceRet =
+// 	    boarderY > minBoarderCharDistanceRet ? (yPos - boarderY):
+// 	    (yPos - minBoarderCharDistanceRet);
+// 	}
+//       mvprintw(0, 0, "%d", minBoarderCharDistanceRet);
+//     }
 
-  // for(std::string strCoord: spriteTopCoordsColumn)
-  //   {
-  //     std::stringstream coord {strCoord};
-  //     int y, x;
-  //     char eat;
+//   // for(std::string strCoord: spriteTopCoordsColumn)
+//   //   {
+//   //     std::stringstream coord {strCoord};
+//   //     int y, x;
+//   //     char eat;
 
-  //     coord>>y;
-  //     coord>>eat;
-  //     coord>>x;
+//   //     coord>>y;
+//   //     coord>>eat;
+//   //     coord>>x;
 
-  //     if((x - position) < 250)
-  // 	{
-  // 	  mvprintw(y, (x - position), "@");
-  // 	  refresh();
-  // 	}
-  //     coord.clear();
-  //   }
+//   //     if((x - position) < 250)
+//   // 	{
+//   // 	  mvprintw(y, (x - position), "@");
+//   // 	  refresh();
+//   // 	}
+//   //     coord.clear();
+//   //   }
 
-  return foundBoarderChar ? minBoarderCharDistanceRet: -1;
-}
+//   return foundBoarderChar ? minBoarderCharDistanceRet: -1;
+// }
 
 
 /* Checks for contact with boarder characters when moving down. Returns the
@@ -448,10 +448,10 @@ sprite::directions rules::handleLeftCollision(const int position)
 }
 
 
-void rules::startJumping(const int obstructionNAbove,
-			 const int obstructionNBelow)
+void rules::startJumping(const int position,
+			 const std::map<std::string, char> & coordChars)
 {
-  if(!gamePlayer->startJumping(obstructionNAbove))
+  if(!gamePlayer->startJumping(position, coordChars))
     {
       //      gamePlayer->keepJumping(obstructionNAbove, obstructionNBelow);
     }

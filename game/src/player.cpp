@@ -87,7 +87,8 @@ void player::setVertVelocity(const double newVV)
 }
 
 
-bool player::startJumping(const int obstructionNAbove)
+bool player::startJumping(const int bgPosition,
+			  const std::map<std::string, char> & coordChars)
 {
   bool retVar {false};
   if(jumpNum < maxJumpNum)
@@ -97,22 +98,33 @@ bool player::startJumping(const int obstructionNAbove)
       jumping = jumpingUp;
       retVar = true;
 
-      if(obstructionNAbove == 0 || (int)vertVelocity < obstructionNAbove)
-	{ 
-	  // We're not going to hit anything, so jump!
-	  for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
+      for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
+	{
+	  for(auto coord: this->getXAbsRangeAsStrs(bgPosition, false, false))
 	    {
-	      updatePosRel(sprite::DIR_UP);
+	      if(coordChars.find(coord) != coordChars.end())
+		{
+		  // We're going to hit something.
+		  goto RETURN;
+		}
 	    }
+	  // We don't want to hit the top of the level.
+	  if(position.y == 0)
+	    {
+	      goto RETURN;
+	    }
+	  // We're not going to hit anything, so jump!
+	  updatePosRel(sprite::DIR_UP);
 	}
     }
 
+ RETURN:
   return retVar;
 }
 
 
-void player::keepJumping(const int obstructionNAbove,
-			 const int obstructionNBelow)
+void player::handleJumpingAndFalling(const int bgPosition, const yx maxyx,
+			 const std::map<std::string, char> & coordChars)
 {
   if(jumping != notJumping)
     {
@@ -136,30 +148,58 @@ void player::keepJumping(const int obstructionNAbove,
 	    }
 	}
 
-      if(vertVelocity > 0 &&
-	 (obstructionNAbove == 0 || (int)vertVelocity < obstructionNAbove))
+      if(vertVelocity > 0)
 	{
+	  // We are jumping up.
 	  for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
 	    {
+	      for(auto coord: this->getXAbsRangeAsStrs(bgPosition, false, false))
+		{
+		  if(coordChars.find(coord) != coordChars.end())
+		    {
+		      // We're going to hit something.
+		      goto RETURN;
+		    }
+		}
+	      if(position.y == 0)
+		{
+		  goto RETURN;
+		}
 	      updatePosRel(sprite::DIR_UP);
 	    }
 	}
       else
 	{
+	  // We're jumping down.
 	  for(int jumps {(int)-vertVelocity}; jumps > 0; jumps--)
 	    {
+	      for(auto coord: this->getXAbsRangeAsStrs(bgPosition, true, false))
+		{
+		  if(coordChars.find(coord) != coordChars.end())
+		    {
+		      // We're going to hit something (stop jumping!)
+		      vertVelocity = 0;
+		      jumping = notJumping;
+		      jumpNum = 0;
+		      goto RETURN;
+		    }
+		}
+	      mvprintw(0, 0, "yPos = %d, maxyx.y = %d", position.y, maxyx.y);
+	      refresh();
+	      if((position.y + maxBottomRightOffset.y) == (maxyx.y -1))
+		{
+		  // We're going to hit the ground (stop jumping!)
+		  vertVelocity = 0;
+		  jumping = notJumping;
+		  jumpNum = 0;
+		  goto RETURN;
+		}
 	      updatePosRel(sprite::DIR_DOWN);
 	    }
 	}
     }
-}
-
-
-void player::endJumping()
-{
-  vertVelocity = 0;
-  jumping = notJumping;
-  jumpNum = 0;
+ RETURN:
+  return;			// Required by RETURN label I guess.
 }
 
 

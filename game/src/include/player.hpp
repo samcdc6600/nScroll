@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <string>
+#include <map>
 #include "sprite.hpp"
 #include "utils.hpp"
 
@@ -78,51 +79,24 @@ public:
   double getVertVelocity();
   void setVertVelocity(const double newVV);
   /* Starts jump (by altering various variables) and moves the player up X
-     characters, where X is dictated by (int)gravitationalConstant and only as
-     long as X < obstructionNAbove (when obstructionNAbove != 0). Returns
-     true if the the player started a new jump (this will only happen if
-     maxJumpNum hasn't been reached.) If the player didn't start a new jump
-     then keepJumping should be called (but only if the player can move down). */
-  bool startJumping(const int obstructionNAbove);
-  /* Should be called if the player can move down. If the
-     player is jumping reduces vertVelocity by some factor each call (until it
-     reaches a  maximum negative factor.) Then moves the player down by X
-     characters, where X is dictated by (int)vertVelocity. */
-  void keepJumping(const int obstructionNAbove,
-		   const int obstructionNBelow);
-  /* Should be called if player can't move down anymore characters. Resets
-     variables to the default non-jumping state. */
-  void endJumping();
+     characters, where position is the absolute x position of the player and X
+     is dictated by (int)gravitationalConstant and only as long as the player
+     will not hit any boarder characters in coordChars or the top of the level.
+     Returns true if the the player started a new jump (this will only happen if
+     maxJumpNum hasn't been reached.) If the player didn't start a new jump then
+     keepJumping should be called (but only if the player can move down). */
+  bool startJumping(const int position,
+		    const std::map<std::string, char> & coordChars);
+  /* Keeps jumping if the player is jumping. That is as long as the player will
+     not collide with any boarder characters or the bottom or top of the level.
+     If the player is falling keep falling unless the player is above a boarder
+     character or the bottom of the level. If the player isn't above any baorder
+     character and isn't at the bottom of the level then start falling. */
+  void handleJumpingAndFalling(const int position, const yx maxyx,
+		   const std::map<std::string, char> & coordChars);
   bool isJumping() {return jumping != notJumping;};
   
 private:
-    /* For any of the following functions that take an argument position, the
-     position should be the current background position. */
-    // Returns the the maximum absolute position of the bottom of the sprite.
-  // std::string getMaxXAbsLevelRightAsStr(const int position,
-  // 					const bool directContact)
-  //   const
-  // {
-  //   std::stringstream ss {};
-  //   ss<<(this->position.x + maxBottomRightOffset.x + rightCollisionOffset +
-  // 	 position);
-  //   return ss.str();
-  // }
-  // std::string getMaxXAbsLevelLeftAsStr(const int position,
-  // 				       const bool directContact)
-  //   const
-  // {
-  //   std::stringstream ss {};
-  //   ss<<(this->position.x + leftCollisionOffset + position);
-  //   return ss.str();
-  // }
-  // std::string getMaxYAbsAsStr(const bool directContact)
-  //     const
-  // {
-  //   std::stringstream ss {};
-  //   ss<<position.y + maxBottomRightOffset.y + bottomCollisionDirectOffset;//bottomCollisionOffset;
-  //   return ss.str();
-  // }
   /* Calculates all the points between the absolute position of the left +
      leftCollisionOffset and the absolute position of the right +
      rightCollisionOffset. Return value is a vector of strings of the pos's.
