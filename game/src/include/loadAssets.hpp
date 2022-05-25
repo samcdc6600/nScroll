@@ -22,26 +22,26 @@ constexpr char STRINGS_SEPERATION {','};
 constexpr char ESCAPE_CHAR {'\\'};
 constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
 constexpr char NULL_BYTE {'\0'};
-/* Coordinate character's. I have decided to add an uppercase alternative for
-   each character. This is so that rules.lev file's will be more forgiving of
-   "mistakes." */
-constexpr char BOARDER_CHAR {'b'}; // Player character's cannot pass through coordinate's marked as this.
-constexpr char BOARDER_CHAR_UPPER {'B'};
-/* Player character's are killed uppon intersection with coordinate's marked as
-   this. */
-constexpr char KILL_CHAR {'k'};
-constexpr char KILL_CHAR_UPPER {'K'};
-constexpr char DEGRADE_HEALTH_CHAR {'d'}; // Player character's loose health uppon intersection with coordinate's
-constexpr char DEGRADE_HEALTH_CHAR_UPPER {'D'}; // marked as this.
-constexpr char DEGRADE_HEALTH_BOARDER_CHAR {'i'}; // Combination of DEGRADE_HEALTH_CHAR and BOARDER_CHAR.
-constexpr char DEGRADE_HEALTH_BOARDER_CHAR_UPPER {'I'};
-/* Player character's "win" the level uppon intersection with coordinates
-   marked. */
-constexpr char END_LEV_CHAR {'e'};
-constexpr char END_LEV_CHAR_UPPER {'E'}; // as this.
-// Player character's gain health point's when comming into contact
-constexpr char LIFE_POWER_UP_CHAR {'l'};
-constexpr char LIFE_POWER_UP_CHAR_UPPER {'L'};
+// /* Coordinate character's. I have decided to add an uppercase alternative for
+//    each character. This is so that rules.lev file's will be more forgiving of
+//    "mistakes." */
+// constexpr char BOARDER_CHAR {'b'}; // Player character's cannot pass through coordinate's marked as this.
+// constexpr char BOARDER_CHAR_UPPER {'B'};
+// /* Player character's are killed uppon intersection with coordinate's marked as
+//    this. */
+// constexpr char KILL_CHAR {'k'};
+// constexpr char KILL_CHAR_UPPER {'K'};
+// constexpr char DEGRADE_HEALTH_CHAR {'d'}; // Player character's loose health uppon intersection with coordinate's
+// constexpr char DEGRADE_HEALTH_CHAR_UPPER {'D'}; // marked as this.
+// constexpr char DEGRADE_HEALTH_BOARDER_CHAR {'i'}; // Combination of DEGRADE_HEALTH_CHAR and BOARDER_CHAR.
+// constexpr char DEGRADE_HEALTH_BOARDER_CHAR_UPPER {'I'};
+// /* Player character's "win" the level uppon intersection with coordinates
+//    marked. */
+// constexpr char END_LEV_CHAR {'e'};
+// constexpr char END_LEV_CHAR_UPPER {'E'}; // as this.
+// // Player character's gain health point's when comming into contact
+// constexpr char LIFE_POWER_UP_CHAR {'l'};
+// constexpr char LIFE_POWER_UP_CHAR_UPPER {'L'};
 
 
 /* This function should initialise the argument background that is passed to it.

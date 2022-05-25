@@ -69,8 +69,8 @@ public:
 
   player(std::vector<std::string> spriteFileNames, const yx max,
                const yx pos, const sprite::directions dir, const int h,
-               const double g, const double v, const int maxFallingJmpNum,
-	 const int maxJmpNum);
+               const double g, const double v, const unsigned maxFallingJmpNum,
+	 const unsigned maxJmpNum);
   
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.
@@ -100,6 +100,9 @@ public:
 private:
   void handleFalling(const int bgPosition, const yx & maxyx,
 		     const std::map<std::string, char> & coordChars);
+  void handleFallingSimple
+  (const int bgPosition, const yx & maxyx,
+   const std::map<std::string, char> & coordChars);
   void handleJumping(const int bgPosition, const yx & maxyx,
 		     const std::map<std::string, char> & coordChars);
   /* Calculates all the points between the absolute position of the left +

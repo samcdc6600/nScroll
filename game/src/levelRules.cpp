@@ -351,7 +351,9 @@ sprite::directions rules::handleGroundCollision(const int position)
   for(std::string coord:
 	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
     {
-      if(coordChars.find(coord) != coordChars.end())
+      if(coordChars.find(coord) != coordChars.end() &&
+	 (coordChars.find(coord)->second == 'b'  ||
+	  (coordChars.find(coord))->second == 'p'))
 	{
 	  retDir = sprite::DIR_NONE;
 	  break;
@@ -367,6 +369,7 @@ sprite::directions rules::handleGroundCollision(const int position)
 */
 sprite::directions rules::handleRightCollision(const int position)
 {
+  using namespace boarderRuleChars;
   sprite::directions retDir {sprite::DIR_RIGHT};
   const std::vector<std::string> playerCoords
     {gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position)};
@@ -378,7 +381,9 @@ sprite::directions rules::handleRightCollision(const int position)
     {
       // If there is near contact and it's not with the bottom right coord.
       if(playerCoord != bottomRightPlayerCoord &&
-          coordChars.find(playerCoord) != coordChars.end())
+	 coordChars.find(playerCoord) != coordChars.end() &&
+	 (coordChars.find(playerCoord)->second == boarderChar ||
+	  coordChars.find(playerCoord)->second == platformChar))
 	{
 	  stoppingContact = true;
 	  retDir = sprite::DIR_NONE;
@@ -387,7 +392,9 @@ sprite::directions rules::handleRightCollision(const int position)
     }
   
   if(!stoppingContact &&
-     coordChars.find(bottomRightPlayerCoord) != coordChars.end())
+     coordChars.find(bottomRightPlayerCoord) != coordChars.end() &&
+     (coordChars.find(bottomRightPlayerCoord)->second == boarderChar ||
+      coordChars.find(bottomRightPlayerCoord)->second == platformChar))
     {
       if(gamePlayer->getPos().y > 0)
 	{
@@ -409,6 +416,7 @@ sprite::directions rules::handleRightCollision(const int position)
 
 sprite::directions rules::handleLeftCollision(const int position)
 {
+  using namespace boarderRuleChars;
   sprite::directions retDir {sprite::DIR_LEFT};
   const std::vector<std::string> playerCoords
     {gamePlayer->getLeftYAbsRangeAsStrsForOneOffContact(position)};
@@ -420,7 +428,9 @@ sprite::directions rules::handleLeftCollision(const int position)
     {
       // If there is near contact and it's not with the bottom right coord.
       if(playerCoord != bottomLeftPlayerCoord &&
-	 coordChars.find(playerCoord) != coordChars.end())
+	 coordChars.find(playerCoord) != coordChars.end() &&
+	 (coordChars.find(playerCoord)->second == boarderChar ||
+	  coordChars.find(playerCoord)->second == platformChar))
 	{
 	  stoppingContact = true;
 	  retDir = sprite::DIR_NONE;
@@ -429,7 +439,9 @@ sprite::directions rules::handleLeftCollision(const int position)
     }
 
   if(!stoppingContact &&
-     coordChars.find(bottomLeftPlayerCoord) != coordChars.end())
+     coordChars.find(bottomLeftPlayerCoord) != coordChars.end() &&
+     (coordChars.find(bottomLeftPlayerCoord)->second == boarderChar ||
+	  coordChars.find(bottomLeftPlayerCoord)->second == platformChar))
     {
       if(gamePlayer->getPos().y > 0)
 	{

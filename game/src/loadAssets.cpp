@@ -150,18 +150,8 @@ void handleCurrentIsFieldStartDenotation
 	  sleep(10000);
 	  break;
 	default:
-	  if(*peek == BOARDER_CHAR ||
-	     *peek == BOARDER_CHAR_UPPER ||
-	     *peek == KILL_CHAR ||
-	     *peek == KILL_CHAR_UPPER ||
-	     *peek == DEGRADE_HEALTH_CHAR ||
-	     *peek == DEGRADE_HEALTH_CHAR_UPPER ||
-	     *peek == DEGRADE_HEALTH_BOARDER_CHAR ||
-	     *peek == DEGRADE_HEALTH_BOARDER_CHAR_UPPER ||
-	     *peek == END_LEV_CHAR ||
-	     *peek == END_LEV_CHAR_UPPER ||
-	     *peek == LIFE_POWER_UP_CHAR ||
-	     *peek == LIFE_POWER_UP_CHAR_UPPER)
+	  if(*peek == boarderRuleChars::boarderChar ||
+	     *peek == boarderRuleChars::platformChar)
 	    { // Call function to handle coordinate character's character
 	      ++current, ++peek;
 	      handleCoordinateCharacter(buff, current, peek, max, levelRules,
@@ -274,8 +264,8 @@ void initPlayerSprite
       }
       coordsSS>>initPos.x;
       levelRules.gamePlayer =
-	(new player(sprites, maxyx, initPos, sprite::DIR_NONE, 25, 0.28, 1.9, 1,
-		    3));
+	(new player(sprites, maxyx, initPos, sprite::DIR_NONE, 25, -0.28, 1.9,
+		    1, 3));
       ++current, ++peek;
     }
   else
