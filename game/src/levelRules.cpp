@@ -382,8 +382,7 @@ sprite::directions rules::handleRightCollision(const int position)
       // If there is near contact and it's not with the bottom right coord.
       if(playerCoord != bottomRightPlayerCoord &&
 	 coordChars.find(playerCoord) != coordChars.end() &&
-	 (coordChars.find(playerCoord)->second == boarderChar ||
-	  coordChars.find(playerCoord)->second == platformChar))
+	 coordChars.find(playerCoord)->second == boarderChar)
 	{
 	  stoppingContact = true;
 	  retDir = sprite::DIR_NONE;
@@ -429,8 +428,7 @@ sprite::directions rules::handleLeftCollision(const int position)
       // If there is near contact and it's not with the bottom right coord.
       if(playerCoord != bottomLeftPlayerCoord &&
 	 coordChars.find(playerCoord) != coordChars.end() &&
-	 (coordChars.find(playerCoord)->second == boarderChar ||
-	  coordChars.find(playerCoord)->second == platformChar))
+	 coordChars.find(playerCoord)->second == boarderChar)
 	{
 	  stoppingContact = true;
 	  retDir = sprite::DIR_NONE;
@@ -441,7 +439,7 @@ sprite::directions rules::handleLeftCollision(const int position)
   if(!stoppingContact &&
      coordChars.find(bottomLeftPlayerCoord) != coordChars.end() &&
      (coordChars.find(bottomLeftPlayerCoord)->second == boarderChar ||
-	  coordChars.find(bottomLeftPlayerCoord)->second == platformChar))
+      coordChars.find(bottomLeftPlayerCoord)->second == platformChar))
     {
       if(gamePlayer->getPos().y > 0)
 	{

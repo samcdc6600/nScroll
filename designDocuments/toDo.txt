@@ -3,6 +3,8 @@
 "+" mean's done.
 
 
+* ---> (20) Find out (and fix) what is causing a (seemingly) blank line to
+	    occasionally be printed.
 * ---> (19) Convert functions in levelRules.* that deal with the player sprite
 	    to be more general and work with anything that inherits the sprite base
 	    class.
@@ -17,7 +19,7 @@
 	    player.hpp to be private and have two functions that force the
 	    original function to use bottomCollisionDirectOffset or
 	    bottomCollisionOneOffOffset and their equivalents for the x axis.
-*? --> (16) Change all errors to use error handling code from NESEmu (also
+* --> (16) Change all errors to use error handling code from NESEmu (also
 	    replace code that uses exceptions.)?
 * ---> (15) Change all error messages to include the file name. This should be
 	    achieved by adding a static string called NAME_OF_THIS_FILE to the
@@ -33,7 +35,7 @@
 	    leftCollissionOffset using values read in from the sprite file/s.
 	    The values are currently hard coded.
 
-* ---> (11) Add physics code to handle b (boarder) characters.
++ ---> (11) Add physics code to handle b (boarder) characters.
 
 + ---> (10) Figure out problem where input doesn't revert back to 0 on next
 	     loop.
