@@ -77,8 +77,10 @@ void loadAndParseLevelRulesFile(const yx maxyx, const char rulesFileName[],
                                 rules &levelRules, const size_t bgSize);
 // Where rawRules holds the contents of a rules.lev file.
 void parseRulesHeader(const yx maxyx, const char rulesFileName[],
-			  rules & levelRules, const size_t bgSize,
-			  const std::string & rawRules);
+                      rules &levelRules, const size_t bgSize,
+                      const std::string &rawRules);
+void initPlayer(const yx maxyx, rules & levelRules,
+		const std::string & rawRules);
 // /* Extract and parse header info in buff. */
 // void parseLevelRules(const yx maxyx, std::string & buff, const char rulesFileName [],
 // 	   rules & levelRules, cons tsize_t bgSize);

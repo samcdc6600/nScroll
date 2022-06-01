@@ -78,15 +78,21 @@ bool checkRange(const int a, const int min, const int max);
 bool inSingleDigitRange(const int a, const int offset);
 // Returns false if unable to open file at path name.
 bool loadFileIntoString(const char name[], std::string &buff);
-/* Advances buffPos until it reads one past a string that matches one in
-   targets, where buffPos points to somewhere in buff and the strings in targets
-   will be checked in order of the longest string to the shortest and where any
-   two strings are the same length it will check the one that comes first
-   alphabetically. Returns the string that was matched. Returns an empty string
-   if no strings in targets were encountered or if buffPos == buff.end(). */
-std::string skipSpaceUpTo(const std::string & buff,
-			  std::string::const_iterator & buffPos,
-			  std::vector<std::string> & targets);
+/* Advances buffPos until it reads one past a sequence of characters that
+   matches a string in targets, where buffPos points to somewhere in buff and
+   the strings in targets will be checked in order of the longest string to the
+   shortest and where any two strings are the same length it will check the one
+   that comes first alphabetically. Returns the string that was matched. Returns
+   an empty string if no strings in targets were matched. BuffPos may be
+   advanced up to buff.end() (inclusive). */
+std::string skipSpaceUpTo(const std::string &buff,
+                          std::string::const_iterator &buffPos,
+                          std::vector<std::string> &targets);
+/* Finds a target from targets in the buffer pointed to by
+   outerPeekPos. Returns the target found. If no target was found returns "". */
+static std::string findTargetInBuff
+(const std::string::const_iterator & outerPeekPos,
+ const std::vector<std::string> & targets);
 /* Calls endwin() then print's e to std::cerr and finally call's exit() with
    status */
 void exit(const std::string &e, const int status);

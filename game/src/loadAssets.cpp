@@ -65,26 +65,36 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 			  const std::string & rawRules)
 {
   using namespace levelFileStrings;
-  if(strncmp(rawRules.c_str(), RULES_HEADER_START_DENOTATION,
-	     sizeof(RULES_HEADER_START_DENOTATION) -1) != 0)
-    {
-      std::stringstream e {};
-      e<<"Error: header of the .rules.lev file \""<<rulesFileName
-       <<"\" is malformed!";
-      exit(e.str(), ERROR_RULES_LEV_HEADER);
-    }
+  // if(strncmp(rawRules.c_str(), RULES_HEADER_START_DENOTATION,
+  // 	     sizeof(RULES_HEADER_START_DENOTATION) -1) != 0)
+  //   {
+  //     std::stringstream e {};
+  //     e<<"Error: header of the .rules.lev file \""<<rulesFileName
+  //      <<"\" is malformed!";
+  //     exit(e.str(), ERROR_RULES_LEV_HEADER);
+  //   }
 
-  // for(std::string::const_iterator peek
-  std::string::const_iterator buffPos
-    {getAdvancedIter(rawRules.begin(), rawRules.end(),
-		     sizeof(RULES_HEADER_START_DENOTATION),
-		     std::string {"Error: header of the .rules.lev file is "
-		       "malformed. input ended unexpectedly."})};
-  std::vector<std::string> targets {"cat", "ssetsj/s", "#", RULES_HEADER_FIELD_START_DENOTATION};
+  std::string::const_iterator buffPos {rawRules.begin()};
+  // initPlayer(maxyx, levelRules, rawRules, buffPos);
+
+  // std::string::const_iterator buffPos
+  //   {getAdvancedIter(rawRules.begin(), rawRules.end(),
+  // 		     sizeof(RULES_HEADER_START_DENOTATION),
+  // 		     std::string {"Error: header of the .rules.lev file is "
+  // 		       "malformed. input ended unexpectedly."})};
+
+  // initPlayerSprite(readPlayerSpriteFileNames);
+  // //initOtherSprites(readOtherSpriteFileNames)
+  std::vector<std::string> targets {RULES_HEADER_START_DENOTATION};
   std::string targetFound {};
 
-  targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
 
+  endwin();
+  targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+  std::cout<<"targetFound = "<<targetFound<<'\n';
+  exit(-1);
+
+  
 	// current {peek++}; *peek != NULL_BYTE; ++peek, ++current)
 	// {
 	  // std::stringstream e {};
@@ -95,6 +105,22 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 	  // // 		  bgSize);
 	// }
 }
+
+
+// void initPlayer(const yx maxyx, rules & levelRules,
+// 		const std::string & rawRules)
+// {
+//   using namespace levelFileStrings;
+  
+//   std::vector<std::string> targets {RULES_HEADER_START_DENOTATION};
+//   std::string targetFound {};
+  
+//   targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+  
+//   levelRules.gamePlayer =
+// 	(new player(sprites, maxyx, initPos, sprite::DIR_NONE, 25, -0.38, 1.9,
+// 		    1, 3))
+// }
 // void switchOnCurrent
 // (const yx maxyx, std::string & buff, std::string::const_iterator & current,
 //  std::string::const_iterator & peek, std::string::const_iterator max,

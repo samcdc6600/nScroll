@@ -51,55 +51,91 @@ std::string skipSpaceUpTo(const std::string & buff,
 			  std::string::const_iterator & buffPos,
 			  std::vector<std::string> & targets)
 {
-  sort(targets.begin(), targets.end()); // Sort alphabetically.
-  stable_sort(targets.begin(), targets.end(),
-	      [](const std::string & first, const std::string & second)
-	      {
-		return first.size() > second.size();
-	      });			// Stable sort by length in desc order.
-  
+  std::string targetFound {};
   std::string::const_iterator outerPeekPos {buffPos};
-  std::string retVal {};
-
-  // Iterate over characters of buff and check for targets.
-  while(outerPeekPos != buff.end())
+  
+  if(outerPeekPos != buff.end())
     {
-      // Iterate over targets.
-      for(int targetsIter {}; targetsIter < targets.size();
-	  ++targetsIter)
-	{
-	  std::string::const_iterator peekPos {};
-	  peekPos = outerPeekPos;
+      sort(targets.begin(), targets.end()); // Sort alphabetically.
+      stable_sort(targets.begin(), targets.end(),
+		  [](const std::string & first, const std::string & second)
+		  {
+		    return first.size() > second.size();
+		  });			// Stable sort by length in desc order.
 
-	  std::cout<<"Checking target \""<<targets[targetsIter]<<"\"\n";
-	  
-	  bool found {true};
-	  // Iterate over characters in target.
-	  for(int targetIter {}; targetIter < targets[targetsIter].size();
-	      ++targetIter)
+      // If the first char isn't white space.
+      if(*outerPeekPos != ' ' &&
+	 *outerPeekPos != '\n' &&
+	 *outerPeekPos != '\r' &&
+	 *outerPeekPos != '\t')
+	{
+	  // Check for targets at buffPos.
+	  targetFound = findTargetInBuff(outerPeekPos, targets);
+	  outerPeekPos++;		// Move one past target.
+	}
+      else
+	{
+	  // skip spaces.
+	  while(outerPeekPos != buff.end() && (*outerPeekPos == ' ' ||
+					       *outerPeekPos == '\n' ||
+					       *outerPeekPos == '\r' ||
+					       *outerPeekPos == '\t'))
 	    {
-	      std::cout<<"\t*peekPos = "<<*peekPos
-		       <<", targets[targetsIter][targetIter] = "
-		       <<targets[targetsIter][targetIter]<<", targets[targetIter].size() = "<<targets[targetsIter].size()<<"\n";
-	      if(*peekPos != targets[targetsIter][targetIter])
-		{
-		  found = false;
-		  break;
-		}
-	      peekPos++;
+	      outerPeekPos++;
 	    }
-	  if(found)
+
+	  // Check for targets again.
+	  if(outerPeekPos != buff.end())
 	    {
-	      retVal = targets[targetsIter];
-	      goto RETURN;
+	      targetFound = findTargetInBuff(outerPeekPos, targets);
+	      outerPeekPos++;		// Move one past target.
 	    }
 	}
-      outerPeekPos++;
+    }
+
+  buffPos = outerPeekPos;
+  return targetFound;
+ }
+
+
+static std::string findTargetInBuff
+(const std::string::const_iterator & outerPeekPos,
+ const std::vector<std::string> & targets)
+{
+  std::string targetFound {};
+  // Iterate over targets.
+  for(int targetsIter {}; targetsIter < targets.size();
+      ++targetsIter)
+    {
+      std::string::const_iterator peekPos {};
+      peekPos = outerPeekPos;
+
+      std::cout<<"Checking target \""<<targets[targetsIter]<<"\"\n";
+	  
+      bool found {true};
+      // Iterate over characters in target.
+      for(int targetIter {}; targetIter < targets[targetsIter].size();
+	  ++targetIter)
+	{
+	  std::cout<<"\t*peekPos = "<<*peekPos
+		   <<", targets[targetsIter][targetIter] = "
+		   <<targets[targetsIter][targetIter]<<", targets[targetIter].size() = "<<targets[targetsIter].size()<<"\n";
+	  if(*peekPos != targets[targetsIter][targetIter])
+	    {
+	      found = false;
+	      break;
+	    }
+	  peekPos++;
+	}
+      if(found)
+	{
+	  targetFound = targets[targetsIter];
+	  goto RETURN;
+	}
     }
 
  RETURN:
-  buffPos = ++outerPeekPos;
-  return retVal;
+  return targetFound;
 }
 
 
