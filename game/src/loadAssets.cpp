@@ -92,6 +92,11 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
   endwin();
   targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
   std::cout<<"targetFound = "<<targetFound<<'\n';
+  if(buffPos == rawRules.end())
+    {
+      std::cout<<"buffPos = end()\n";
+    }
+  std::cout<<"*buffPos = "<<*buffPos<<'\n';
   exit(-1);
 
   

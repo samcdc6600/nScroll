@@ -78,13 +78,13 @@ bool checkRange(const int a, const int min, const int max);
 bool inSingleDigitRange(const int a, const int offset);
 // Returns false if unable to open file at path name.
 bool loadFileIntoString(const char name[], std::string &buff);
-/* Advances buffPos until it reads one past a sequence of characters that
-   matches a string in targets, where buffPos points to somewhere in buff and
-   the strings in targets will be checked in order of the longest string to the
-   shortest and where any two strings are the same length it will check the one
-   that comes first alphabetically. Returns the string that was matched. Returns
-   an empty string if no strings in targets were matched. BuffPos may be
-   advanced up to buff.end() (inclusive). */
+/* Advances buffPos (past white space) until it reads one past a sequence of
+   characters that matches a string in targets, where buffPos points to
+   somewhere in buff and the strings in targets will be checked in order of the
+   longest string to the shortest and where any two strings are the same length
+   it will check the one that comes first alphabetically. Returns the string
+   that was matched. Returns an empty string if no strings in targets were
+   matched. BuffPos may be advanced up to buff.end() (inclusive). */
 std::string skipSpaceUpTo(const std::string &buff,
                           std::string::const_iterator &buffPos,
                           std::vector<std::string> &targets);
