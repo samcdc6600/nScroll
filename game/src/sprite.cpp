@@ -338,7 +338,7 @@ void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
 {
   // Load sprite asset. --------------------------------------------------------
   std::string rawSprite {};// Holds raw contents of sprite file.
-  if(!loadASCIIFile(spriteFileName, rawSprite))
+  if(!loadFileIntoString(spriteFileName, rawSprite))
     {
       std::stringstream e {};
       e<<"Error opening sprite file \""<<spriteFileName<<"\" :'( .";

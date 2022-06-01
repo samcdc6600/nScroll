@@ -13,10 +13,16 @@ public:
   // The player cannot pass widthin this many character's of the window boarder's (y, x).
   const yx PLAYER_MOVEMENT_INNER_MARGIN {0, 40};
   static constexpr size_t second {1};
+  /* Stores the rule characters read in from the rules.lev file. We though about
+     using a space matrix here, however quickly decided against it because it
+     would be computationally inefficient and we think that the program  would
+     most likely be more computationally bound then memory bound if the program
+     were to reach the limits of the hardware it was running on. */
+  // std::vector<std::vector<char>> & ruleCharacters;
   /* The key's for these maps should be of the form "Y,X" Where Y and X are 
      numbers and the whole thing is a string */
   std::map<std::string, char> coordChars {}; /* For coordinate rules. */
-  // For sprites (holds sprite data (slices) and the rule for the sprite.)
+  //For sprites (holds sprite data (slices) and the rule for the sprite.)
   struct spriteInfo
   { // Sprite data to go here (when I do it.)
     sprite * sp {}; // This has to be a pointer because sprite is an ABC.

@@ -2,6 +2,10 @@
 #define COMMON_H_
 
 
+#include <string>
+#include <vector>
+
+
 struct yx
 {
   yx() {}  
@@ -63,7 +67,7 @@ namespace boarderRuleChars
   /* Same as boarder chars (except the player can move through them if
      moving up.) */
   constexpr char platformChar = 'p';
-};
+}; // namespace boarderRuleChars
 
 
 void sleep(const unsigned long long t);
@@ -72,7 +76,38 @@ bool checkRange(const int a, const int min, const int max);
 /* Return's true if a - offset is within the range [SINGLE_DIGIT_MIN, SINGLE_DIGIT_MAX].
    Return's false otherwise. */
 bool inSingleDigitRange(const int a, const int offset);
-/* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
-void exit(const std::string & e, const int status);
+// Returns false if unable to open file at path name.
+bool loadFileIntoString(const char name[], std::string &buff);
+/* Advances buffPos until it reads one past a string that matches one in
+   targets, where buffPos points to somewhere in buff and the strings in targets
+   will be checked in order of the longest string to the shortest and where any
+   two strings are the same length it will check the one that comes first
+   alphabetically. Returns the string that was matched. Returns an empty string
+   if no strings in targets were encountered or if buffPos == buff.end(). */
+std::string skipSpaceUpTo(const std::string & buff,
+			  std::string::const_iterator & buffPos,
+			  std::vector<std::string> & targets);
+/* Calls endwin() then print's e to std::cerr and finally call's exit() with
+   status */
+void exit(const std::string &e, const int status);
+
+
+/* Increment's i by n, if i equals iEnd before being incremented n times we call
+   exit(str, eNum). */
+template <typename T_A, typename T_B> auto
+getAdvancedIter(T_A i, const T_B iEnd, const size_t n, const std::string & eMsg)
+  -> T_A
+{
+  for(size_t iter {}; iter < n -1; ++iter)
+    {
+      i++;
+      if(*i == *iEnd)
+	{
+	  exit(eMsg, ERROR_GENERIC_RANGE_ERROR);
+	}
+    }
+  return i;
+}
+
 
 #endif
