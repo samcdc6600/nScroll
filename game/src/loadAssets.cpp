@@ -75,7 +75,7 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
   //   }
 
   std::string::const_iterator buffPos {rawRules.begin()};
-  // initPlayer(maxyx, levelRules, rawRules, buffPos);
+  initPlayer(maxyx, rulesFileName, levelRules, rawRules, buffPos);
 
   // std::string::const_iterator buffPos
   //   {getAdvancedIter(rawRules.begin(), rawRules.end(),
@@ -85,19 +85,19 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 
   // initPlayerSprite(readPlayerSpriteFileNames);
   // //initOtherSprites(readOtherSpriteFileNames)
-  std::vector<std::string> targets {RULES_HEADER_START_DENOTATION};
-  std::string targetFound {};
+  // std::vector<std::string> targets {RULES_HEADER_START_DENOTATION};
+  // std::string targetFound {};
 
 
-  endwin();
-  targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
-  std::cout<<"targetFound = "<<targetFound<<'\n';
-  if(buffPos == rawRules.end())
-    {
-      std::cout<<"buffPos = end()\n";
-    }
-  std::cout<<"*buffPos = "<<*buffPos<<'\n';
-  exit(-1);
+  // endwin();
+  // targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+  // std::cout<<"targetFound = "<<targetFound<<'\n';
+  // if(buffPos == rawRules.end())
+  //   {
+  //     std::cout<<"buffPos = end()\n";
+  //   }
+  // std::cout<<"*buffPos = "<<*buffPos<<'\n';
+  // exit(-1);
 
   
 	// current {peek++}; *peek != NULL_BYTE; ++peek, ++current)
@@ -112,20 +112,138 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 }
 
 
-// void initPlayer(const yx maxyx, rules & levelRules,
-// 		const std::string & rawRules)
-// {
-//   using namespace levelFileStrings;
+void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
+		const std::string & rawRules,
+		std::string::const_iterator & buffPos)
+{
+  using namespace levelFileStrings;
+
+  std::vector<std::string> targets {RULES_HEADER_START_DENOTATION};
+  std::string targetFound {};
   
-//   std::vector<std::string> targets {RULES_HEADER_START_DENOTATION};
-//   std::string targetFound {};
+  targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+  targets.clear();
+
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<RULES_HEADER_START_DENOTATION<<"\" first when "
+	"reading rules.lev file \""<<rulesFileName<<"\".";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+
+  std::vector<std::string> spriteFileDirectories
+    {readStringsSection(rawRules, buffPos, "reading sprite file directory strings")};
+
+  endwin();
+  std::cout<<"spriteFileDirectories = \n";
+  for(auto dir: spriteFileDirectories)
+    {
+      std::cout<<dir<<'\n';
+    }
+  exit(-1);
   
-//   targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+
+  /* Read in all valid strings then read in coords then pass to new player
+     object. Player object should check for correct number of strings. (MAKE
+     SURE THIS IS WHAT'S ACTUALLY
+     HAPPENING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!) */
   
-//   levelRules.gamePlayer =
-// 	(new player(sprites, maxyx, initPos, sprite::DIR_NONE, 25, -0.38, 1.9,
-// 		    1, 3))
-// }
+  
+  // levelRules.gamePlayer =
+  // 	(new player(sprites, maxyx, initPos, sprite::DIR_NONE, 25, -0.38, 1.9,
+  // 		    1, 3))
+}
+
+
+std::vector<std::string> readStringsSection(const std::string & buff,
+				     std::string::const_iterator & buffPos,
+				     const std::string & eMsg)
+{
+  using namespace levelFileStrings;
+
+  std::vector<std::string> strings {};
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+
+  endwin();
+
+  while(true)
+    { 
+      targets.push_back(std::string {STRING_START_DENOTATION});
+      // Skip to start of string.
+      targetFound = skipSpaceUpTo(buff, buffPos, targets);
+      targets.clear();
+      if(targetFound == "")
+	{
+	  std::stringstream e {};
+	  e<<"Error: expected \""<<STRING_START_DENOTATION<<"\" to start a "
+	    "string when "<<eMsg<<".\n";
+	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+	}
+      
+
+      if(*buffPos != STRING_END_DENOTATION)
+	{
+	  // WE DON'T HAVE AN EMPTY STRING, SO READ IN STRING.
+	  std::string newString {};		
+	  do
+	    {
+	      std::string::const_iterator peekBuffPos {buffPos};
+	      peekBuffPos++;
+	      
+	      newString.push_back(*buffPos);
+	      
+	      if(*buffPos != STRING_ESC &&
+		 *peekBuffPos == STRING_END_DENOTATION)
+		{
+		  // We've reached the end of the string.
+		  break;
+		}
+	      else if(peekBuffPos == buff.end())
+		{
+		  std::stringstream e {};
+		  e<<"Error: file ended unexpectedly when "<<eMsg<<".\n";
+		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		}
+	      buffPos = peekBuffPos;
+	    }
+	  while(true);
+	  strings.push_back(newString);
+	  newString.clear();
+	}
+      // ++ once to catch up with peekBuffPos and once again to surpass it.
+      ++buffPos;		
+      ++buffPos;
+
+      targets.push_back(std::string {STRING_SEPARATION});
+      targets.push_back(std::string {RULES_HEADER_SECTION_END_DENOTATION});
+      // Skip to string separation.
+      targetFound = skipSpaceUpTo(buff, buffPos, targets);
+      targets.clear();
+      if(targetFound == "")
+	{
+	  std::stringstream e {};
+	  e<<"Error: expected \""<<STRING_SEPARATION<<"\" or \""
+	   <<RULES_HEADER_SECTION_END_DENOTATION<<"\" to separate strings or end "
+	    "the string section when "<<eMsg<<".\n";
+	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+	}
+      else if(targetFound == std::string {RULES_HEADER_SECTION_END_DENOTATION})
+	{
+	  // We've read all the strings in the string section.
+	  break;
+	}
+    }
+
+  return strings;
+
+
+  //   endwin();
+  // std::cout<<"targetFound = "<<targetFound<<", *buffPos = "<<*buffPos<<"\n";
+  // exit(-1);
+}
 // void switchOnCurrent
 // (const yx maxyx, std::string & buff, std::string::const_iterator & current,
 //  std::string::const_iterator & peek, std::string::const_iterator max,

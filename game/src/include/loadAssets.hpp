@@ -13,14 +13,16 @@ namespace levelFileStrings
      parameters section of the rules.lev file. It should be the first thing in
      the file. */
   constexpr char RULES_HEADER_START_DENOTATION [] = {"(p("};
-  // Each new main field in the header should start with this character.
-  constexpr char RULES_HEADER_FIELD_START_DENOTATION [] {"("};
-  constexpr char RULES_HEADER_FIELD_END_DENOTATION [] {")"};
-  constexpr char RULES_HEADER_END_DENOTATION [] = {"\n#"};
-  constexpr char STRING_START_DENOTATION [] {"\""};
-  constexpr char STRING_END_DENOTATION [] {*STRING_START_DENOTATION};
-  constexpr char DIR_START_ABS [] {"/"};
-  constexpr char DIR_START_REL [] {"."};
+  // Each new main section in the header should start with this character.
+  constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
+  constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
+  constexpr char RULES_HEADER_END_DENOTATION [] {"\n#"};
+  constexpr char STRING_START_DENOTATION	{'\"'};
+  constexpr char STRING_END_DENOTATION		{STRING_START_DENOTATION};
+  constexpr char STRING_SEPARATION		{','};
+  constexpr char STRING_ESC			{'\\'};
+  constexpr char DIR_START_ABS			{'/'};
+  constexpr char DIR_START_REL			{'.'};
   /* This character denotes the presence of another string when used after
      STRING_DENOTATION. */
   constexpr char STRINGS_SEPERATION {','};
@@ -74,13 +76,23 @@ void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
    extracted add sprite and rule using sprite coordinate as key to a vector in
    the spriteCoords map in the form of a spriteInfo struct */
 void loadAndParseLevelRulesFile(const yx maxyx, const char rulesFileName[],
-                                rules &levelRules, const size_t bgSize);
+                                rules & levelRules, const size_t bgSize);
 // Where rawRules holds the contents of a rules.lev file.
 void parseRulesHeader(const yx maxyx, const char rulesFileName[],
-                      rules &levelRules, const size_t bgSize,
-                      const std::string &rawRules);
-void initPlayer(const yx maxyx, rules & levelRules,
-		const std::string & rawRules);
+                      rules & levelRules, const size_t bgSize,
+                      const std::string & rawRules);
+void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
+                const std::string &rawRules,
+                std::string::const_iterator &buffPos);
+/* Attempts to read the strings from a string section in a rules.lev file.
+   Should be called when a series of strings is expected. Buff is the buffer
+   where the strings should be located and buffPos is the position to start
+   reading from. EMsg will be embedded in any error message the function spits
+   out and should say something about the context in which readStrings() was
+   called. Returns the strings that were read. */ 
+std::vector<std::string> readStringsSection(const std::string & buff,
+				     std::string::const_iterator & buffPos,
+				     const std::string & eMsg);
 // /* Extract and parse header info in buff. */
 // void parseLevelRules(const yx maxyx, std::string & buff, const char rulesFileName [],
 // 	   rules & levelRules, cons tsize_t bgSize);

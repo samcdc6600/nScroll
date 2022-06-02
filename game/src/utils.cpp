@@ -75,7 +75,6 @@ std::string skipSpaceUpTo(const std::string & buff,
 	    {
 	      outerPeekPos++;
 	    }
-	  // outerPeekPos++;		// Move one past target.
 	}
       else
 	{
@@ -96,7 +95,6 @@ std::string skipSpaceUpTo(const std::string & buff,
 		{
 		  outerPeekPos++;
 		}
-	      // outerPeekPos++;		// Move one past target.
 	    }
 	}
     }
@@ -117,17 +115,12 @@ static std::string findTargetInBuff
       ++targetsIter)
     {
       peekPos = outerPeekPos;
-
-      std::cout<<"Checking target \""<<targets[targetsIter]<<"\"\n";
-	  
       bool found {true};
+      
       // Iterate over characters in target.
       for(int targetIter {}; targetIter < targets[targetsIter].size();
 	  ++targetIter)
 	{
-	  std::cout<<"\t*peekPos = "<<*peekPos
-		   <<", targets[targetsIter][targetIter] = "
-		   <<targets[targetsIter][targetIter]<<", targets[targetIter].size() = "<<targets[targetsIter].size()<<"\n";
 	  if(*peekPos != targets[targetsIter][targetIter])
 	    {
 	      found = false;
