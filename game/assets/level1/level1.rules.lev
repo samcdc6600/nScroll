@@ -1,10 +1,6 @@
-(p("./assets/sprites/sprite(0).sprite",
-
-
-
-"./assets/sprites/sprite(1).sprite",
+(p(	"./assets/sprites/sprite(0).sprite",
+	"./assets/sprites/sprite(1).sprite",
 	"./assets/sprites/sprite(2).sprite",
 	"./assets/sprites/sprite(3).sprite",
-	"./assets/sprites/sprite(4).sprite")
-	(16,60))
+	"./assets/sprites/sprite(4).sprite")(10,60))
 #

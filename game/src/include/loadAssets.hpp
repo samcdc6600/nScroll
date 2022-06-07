@@ -4,23 +4,32 @@
 
 #include <vector>
 #include <string>
-#include <fstream>
+//#include <fstream>
 #include "levelRules.hpp" // For rules.
 
 
 /* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player
    cannot be started at a position with a number with more places then this. */
-constexpr int MAX_COORD_LEN {10};
+constexpr int MAX_COORD_LEN{10};
 namespace levelFileTokens
 {
-  /* Here p stands for player and this string denotes the player sprite
-     parameters section of the rules.lev file. */
-  constexpr char PLAYER_HEADER_SECTION_SPECIFIER {'p'};
-  // Each new main section in the header should start with this character.
+  // Each new section should start with a header char followed by this char.
   constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
   constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
   constexpr char RULES_HEADER_END_DENOTATION [] {"\n#"};
-  constexpr char STRING_DENOTATION	{'\"'};
+  // Header section header chars.
+  constexpr char PLAYER_HEADER_SECTION_SPECIFIER {'p'};
+  // Header sub section header chars.
+  constexpr char SPRITE_FILE_SECTION_HEADER		{'S'};
+  constexpr char SPRITE_INIT_COORD_SECTION_HEADER	{'C'};
+  constexpr char SPRITE_INIT_DIR_SECTION_HEADER		{'D'};
+  constexpr char SPRITE_HEALTH_SECTION_HEADER		{'H'};
+  constexpr char SPRITE_GRAV_CONST_SECTION_HEADER	{'G'};
+  constexpr char SPRITE_MAX_VERT_V_SECTION_HEADER	{'V'};
+  constexpr char SPRITE_MAX_FALL_JMP_SECTION_HEADER	{'F'};
+  constexpr char SPRITE_MAX_JMP_NUM_SECTION_HEADER	{'J'};
+  // Misc.
+  constexpr char STRING_DENOTATION		{'\"'};
   constexpr char STRING_SEPARATION		{','};
   constexpr char STRING_ESC			{'\\'};
   constexpr char COORD_SEPARATION		{','};
@@ -85,9 +94,14 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
                 const std::string &rawRules,
                 std::string::const_iterator &buffPos);
 /* Attempts to read the start of the header in a rules.lev file. */
-void readStartOfHeader(const std::string & buff,
-		       std::string::const_iterator & buffPos,
-		       const std::string & eMsg);
+void readStartOfHeader(const std::string &buff,
+                       std::string::const_iterator &buffPos,
+                       const std::string &eMsg);
+/* Prints error message and exits if *buffPos in not sectionHeader or the next
+   character that is not white space isn't sectionHeader. */
+void verifySectionHeader(const std::string &buff,
+                       std::string::const_iterator &buffPos,
+                       const std::string &eMsg, const char sectionHeader);
 /* Attempts to read the strings from a string section in a rules.lev file.
    Should be called when a series of strings is expected. Buff is the buffer
    where the strings should be located and buffPos is the position to start
@@ -102,14 +116,17 @@ readStringsSection(const std::string & buff,
    Emsg will be embedded in any error message/s the function spits out and
    should say something about the context in which readSingleCoordSection() was
    called. Returns the coordinate read. */
-yx readSingleCoordSection(const std::string &buff,
-                          std::string::const_iterator &buffPos,
-                          const std::string &eMsg);
+yx readSingleCoordSection(const std::string & buff,
+                          std::string::const_iterator & buffPos,
+                          const std::string & eMsg);
 /* Attempts to read a number starting at buffPos (will skip any space before the
    number.) */
-int readSingleNum(const std::string & buff,
-		 std::string::const_iterator & buffPos,
-		 const std::string & eMsg);
+int readSingleNum(const std::string &buff, std::string::const_iterator &buffPos,
+                  const std::string &eMsg);
+// Verifies that the header of a .rules.lev file is present.
+void readEndOfHeader(const std::string & buff,
+		     std::string::const_iterator & buffPos,
+		     const std::string & eMsg);
 // /* Extract and parse header info in buff. */
 // void parseLevelRules(const yx maxyx, std::string & buff, const char rulesFileName [],
 // 	   rules & levelRules, cons tsize_t bgSize);

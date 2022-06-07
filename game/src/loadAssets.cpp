@@ -117,35 +117,41 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
 		std::string::const_iterator & buffPos)
 {
   using namespace levelFileTokens;
-
+      
   readStartOfHeader
     (rawRules, buffPos,
-     concat(std::string("reading start of rules.lev file \""),
+     concat(std::string("reading start of rules.lev header file \""),
 	    rulesFileName, "\""));
 
-  std::vector<std::string> spriteFileDirectories
+  
+  verifySectionHeader
+    (rawRules, buffPos, rulesFileName, SPRITE_FILE_SECTION_HEADER);
+  const std::vector<std::string> spriteFileDirectories
     {readStringsSection
      (rawRules, buffPos,
       concat(std::string("reading player sprite file directory strings "
 			 "from \""), rulesFileName, "\""))};
-
-  endwin();
-  for(auto str: spriteFileDirectories)
-    {
-      std::cout<<str<<"\n";
-    }
-  exit(-1);
-
-  yx initPos {readSingleCoordSection
+  
+  const yx initialPos {readSingleCoordSection
     (rawRules, buffPos,
-     concat(std::string("reading player sprite file coordinate from \""),
+     concat(std::string("reading player sprite coordinate from \""),
 	    rulesFileName, "\""))};
 
-  //     endwin();
-  // std::cout<<"*(--buffPos) = "<<*(--buffPos)<<", *(++buffPos) = "<<*(++buffPos)
-  // 	   <<std::endl;
-  // exit(-1);
+  // const int initialHealth {readSingleNumSection
+  //   (rawRules, buffPos,
+  //    concat(std::string("reading player health from \""),
+  // 	    rulesFileName, "\""))};
+
   
+
+  readEndOfHeader
+    (rawRules, buffPos,
+     concat(std::string("reading end of rules.lev header file \""),
+	    rulesFileName, "\""));
+
+  levelRules.gamePlayer =
+    new player(spriteFileDirectories, maxyx, initialPos, sprite::DIR_RIGHT,
+	       25, -0.38, 1.9, 1, 3);
 
   /* Read in all valid strings then read in coords then pass to new player
      object. Player object should check for correct number of strings. (MAKE
@@ -192,6 +198,25 @@ void readStartOfHeader(const std::string & buff,
       std::stringstream e {};
       e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<"\" to "
 	"denote the start of the header when "<<eMsg
+       <<". Encountered\""<<*buffPos<<"\"\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+}
+
+
+void verifySectionHeader(const std::string &buff,
+                       std::string::const_iterator &buffPos,
+                       const std::string &eMsg, const char sectionHeader)
+{
+  std::vector<std::string> targets {std::string {sectionHeader}};
+  std::string targetFound {};
+
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<sectionHeader<<"\" "
+	"when  "<<eMsg
        <<". Encountered\""<<*buffPos<<"\"\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
@@ -341,7 +366,7 @@ yx readSingleCoordSection(const std::string & buff,
   if(targetFound == "")
     {
       std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<" to "
+      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<"\" to "
 	"denote start of single coordinate section when "<<eMsg<<". Encountered"
        <<"\""<<*buffPos<<"\"\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
@@ -350,22 +375,28 @@ yx readSingleCoordSection(const std::string & buff,
   coord.y = readSingleNum(buff, buffPos, eMsg);
       
   targets = {std::string {COORD_SEPARATION}};
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
   if(targetFound == "")
     {
       std::stringstream e {};
-      e<<"Error: expected \""<<COORD_SEPARATION<<" before second coordinate "
+      e<<"Error: expected \""<<COORD_SEPARATION<<"\" before second coordinate "
 	"component in single coordinate section when "<<eMsg<<". Encountered"
        <<"\""<<*buffPos<<"\"\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
 
-  endwin();
-  std::cout<<"*(--buffPos) = "<<*(buffPos)<<", *(++buffPos) = "
-	   <<*(buffPos)<<" coord.y = "<<coord.y<<", coord.x = "<<coord.x
-	   <<std::endl;
-  exit(-1);
-
   coord.x = readSingleNum(buff, buffPos, eMsg);
+
+  targets = {std::string {RULES_HEADER_SECTION_END_DENOTATION}};
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<RULES_HEADER_SECTION_END_DENOTATION<<"\" to "
+	"denote end of single coordinate section when "<<eMsg<<". Encountered"
+       <<"\""<<*buffPos<<"\"\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
 
   return coord;
 }
@@ -377,12 +408,12 @@ int readSingleNum(const std::string & buff,
 {
   using namespace levelFileTokens;
 
-  std::vector<std::string> targets {};
+  std::vector<std::string> targets
+    {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
   std::string targetFound {};
   
   std::stringstream coordComp {};
       
-  targets = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
   targetFound = skipSpaceUpTo(buff, buffPos, targets);
   if(targetFound == "")
     {
@@ -395,7 +426,8 @@ int readSingleNum(const std::string & buff,
 
   int decPlacesIter {};
   // Read in coordinate component.
-  while(*buffPos != COORD_SEPARATION && *buffPos != ' ' &&
+  while(*buffPos != COORD_SEPARATION &&
+	*buffPos != RULES_HEADER_SECTION_END_DENOTATION &&  *buffPos != ' ' &&
 	*buffPos != '\t' && *buffPos != '\n' && *buffPos != '\r')
     {
       coordComp<<*buffPos;
@@ -423,6 +455,37 @@ int readSingleNum(const std::string & buff,
   int coordCompRet;
   coordComp>>coordCompRet;
   return coordCompRet;
+}
+
+
+void readEndOfHeader(const std::string & buff,
+		     std::string::const_iterator & buffPos,
+		     const std::string & eMsg)
+{
+  using namespace levelFileTokens;
+
+  std::vector<std::string> targets
+    {std::string {RULES_HEADER_SECTION_END_DENOTATION}};
+  std::string targetFound {};
+
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<RULES_HEADER_SECTION_END_DENOTATION<<"\" when "
+       <<eMsg<<". Encountered \""<<*buffPos<<"\".\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+
+  targets = {std::string {RULES_HEADER_END_DENOTATION[1]}};
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  if(*(buffPos -= 2) != RULES_HEADER_END_DENOTATION[0] || targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<RULES_HEADER_END_DENOTATION<<"\" when "
+       <<eMsg<<". Encountered \""<<*buffPos<<*(++buffPos)<<*(++buffPos)<<"\".\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
 }
 
 
