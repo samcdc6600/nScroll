@@ -13,6 +13,12 @@ void sleep(const unsigned long long t)
 }
 
 
+bool isNum(const char c)
+{
+  return (c >= '0' && c <= '9') ? true: false;
+}
+
+
 bool checkRange(const int a, const int min, const int max)
 { 
   return (a >= min && a < max) ? true : false;

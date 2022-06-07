@@ -64,7 +64,7 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 			  rules & levelRules, const size_t bgSize,
 			  const std::string & rawRules)
 {
-  using namespace levelFileStrings;
+  using namespace levelFileTokens;
   // if(strncmp(rawRules.c_str(), RULES_HEADER_START_DENOTATION,
   // 	     sizeof(RULES_HEADER_START_DENOTATION) -1) != 0)
   //   {
@@ -116,32 +116,35 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
 		const std::string & rawRules,
 		std::string::const_iterator & buffPos)
 {
-  using namespace levelFileStrings;
+  using namespace levelFileTokens;
 
-  std::vector<std::string> targets {RULES_HEADER_START_DENOTATION};
-  std::string targetFound {};
-  
-  targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
-  targets.clear();
-
-  if(targetFound == "")
-    {
-      std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_START_DENOTATION<<"\" first when "
-	"reading rules.lev file \""<<rulesFileName<<"\".";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-    }
+  readStartOfHeader
+    (rawRules, buffPos,
+     concat(std::string("reading start of rules.lev file \""),
+	    rulesFileName, "\""));
 
   std::vector<std::string> spriteFileDirectories
-    {readStringsSection(rawRules, buffPos, "reading sprite file directory strings")};
+    {readStringsSection
+     (rawRules, buffPos,
+      concat(std::string("reading player sprite file directory strings "
+			 "from \""), rulesFileName, "\""))};
 
   endwin();
-  std::cout<<"spriteFileDirectories = \n";
-  for(auto dir: spriteFileDirectories)
+  for(auto str: spriteFileDirectories)
     {
-      std::cout<<dir<<'\n';
+      std::cout<<str<<"\n";
     }
   exit(-1);
+
+  yx initPos {readSingleCoordSection
+    (rawRules, buffPos,
+     concat(std::string("reading player sprite file coordinate from \""),
+	    rulesFileName, "\""))};
+
+  //     endwin();
+  // std::cout<<"*(--buffPos) = "<<*(--buffPos)<<", *(++buffPos) = "<<*(++buffPos)
+  // 	   <<std::endl;
+  // exit(-1);
   
 
   /* Read in all valid strings then read in coords then pass to new player
@@ -157,65 +160,137 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
 }
 
 
-std::vector<std::string> readStringsSection(const std::string & buff,
-				     std::string::const_iterator & buffPos,
-				     const std::string & eMsg)
+void readStartOfHeader(const std::string & buff,
+		       std::string::const_iterator & buffPos,
+		       const std::string & eMsg)
 {
-  using namespace levelFileStrings;
+  using namespace levelFileTokens;
+    
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+
+  targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  targets.clear();
+  if(targetFound == std::string {RULES_HEADER_SECTION_START_DENOTATION})
+    {
+      targets.push_back(std::string {PLAYER_HEADER_SECTION_SPECIFIER});
+      targetFound = skipSpaceUpTo(buff, buffPos, targets);
+      targets.clear();
+      if(targetFound != std::string {PLAYER_HEADER_SECTION_SPECIFIER})
+	{
+	  std::stringstream e {};
+	  e<<"Error: expected \""<<PLAYER_HEADER_SECTION_SPECIFIER<<"\" to "
+	    "denote the start of the player section when "<<eMsg<<
+	    ". Encountered\""<<*buffPos<<"\"\n";
+	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+	}
+	
+    }
+  else
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<"\" to "
+	"denote the start of the header when "<<eMsg
+       <<". Encountered\""<<*buffPos<<"\"\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+}
+
+
+std::vector<std::string>
+readStringsSection(const std::string & buff,
+		   std::string::const_iterator & buffPos,
+		   const std::string & eMsg)
+{
+  using namespace levelFileTokens;
 
   std::vector<std::string> strings {};
   std::vector<std::string> targets {};
   std::string targetFound {};
 
-  endwin();
-
-  while(true)
-    { 
-      targets.push_back(std::string {STRING_START_DENOTATION});
-      // Skip to start of string.
-      targetFound = skipSpaceUpTo(buff, buffPos, targets);
-      targets.clear();
-      if(targetFound == "")
+  targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  targets.clear();
+  if(targetFound == std::string {RULES_HEADER_SECTION_START_DENOTATION})
+    {
+      // We're in a new section.
+      while(true)
 	{
-	  std::stringstream e {};
-	  e<<"Error: expected \""<<STRING_START_DENOTATION<<"\" to start a "
-	    "string when "<<eMsg<<".\n";
-	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-	}
-      
-
-      if(*buffPos != STRING_END_DENOTATION)
-	{
-	  // WE DON'T HAVE AN EMPTY STRING, SO READ IN STRING.
-	  std::string newString {};		
-	  do
+	  std::string newString {};
+	  
+	  targets.push_back(std::string {STRING_DENOTATION});
+	  // Skip to start of string.
+	  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+	  targets.clear();
+	  if(targetFound == "")
 	    {
-	      std::string::const_iterator peekBuffPos {buffPos};
-	      peekBuffPos++;
-	      
-	      newString.push_back(*buffPos);
-	      
-	      if(*buffPos != STRING_ESC &&
-		 *peekBuffPos == STRING_END_DENOTATION)
-		{
-		  // We've reached the end of the string.
-		  break;
-		}
-	      else if(peekBuffPos == buff.end())
-		{
-		  std::stringstream e {};
-		  e<<"Error: file ended unexpectedly when "<<eMsg<<".\n";
-		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-		}
-	      buffPos = peekBuffPos;
+	      std::stringstream e {};
+	      e<<"Error: expected \""<<STRING_DENOTATION<<"\" to start a "
+		"string when "<<eMsg<<". Encountered \""<<*buffPos<<"\".\n";
+	      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 	    }
-	  while(true);
+
+	  std::string::const_iterator peekBuffPos {buffPos};
+	  peekBuffPos++;
+
+	  if(*buffPos != STRING_DENOTATION)
+	    {
+	      // We don't have an empty string
+	      do
+		{
+		  if(peekBuffPos == buff.end())
+		    {
+		      std::stringstream e {};
+		      e<<"Error: file ended unexpectedly when "<<eMsg<<".\n";
+		      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		    }
+		  else if(*buffPos == STRING_ESC)
+		    {
+		      if(*peekBuffPos != STRING_DENOTATION &&
+			 *peekBuffPos != STRING_ESC)
+			{
+			  std::stringstream e {};
+			  e<<"Error: encountered character (\""<<*peekBuffPos
+			   <<"\") other then \""<<STRING_ESC<<"\" or \""
+			   <<STRING_DENOTATION<<"\" after escape character \""
+			   <<STRING_ESC<<"\" when "<<eMsg<<".\n";
+			  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+			}
+		      else
+			{
+			  // Skip adding char at buffPos!
+			  newString.push_back(*peekBuffPos);
+			  peekBuffPos++;
+			  if(peekBuffPos == buff.end())
+			    {
+			      std::stringstream e {};
+			      e<<"Error: file ended unexpectedly when "<<eMsg<<".\n";
+			      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+			    }  
+			}
+		    }
+		  else
+		    {
+		      if(*buffPos == STRING_DENOTATION)
+			{
+			  // We've finished reading the string.
+			  break;
+			}
+		      // BuffPos isn't pointing at a STRING_ESC char.
+		      newString.push_back(*buffPos);
+		    }
+		  
+		  
+		  buffPos = peekBuffPos;
+		  peekBuffPos++;
+		} while(true);
+	    }
 	  strings.push_back(newString);
 	  newString.clear();
-	}
-      // ++ once to catch up with peekBuffPos and once again to surpass it.
-      ++buffPos;		
-      ++buffPos;
+
+
+      buffPos++;
 
       targets.push_back(std::string {STRING_SEPARATION});
       targets.push_back(std::string {RULES_HEADER_SECTION_END_DENOTATION});
@@ -227,7 +302,8 @@ std::vector<std::string> readStringsSection(const std::string & buff,
 	  std::stringstream e {};
 	  e<<"Error: expected \""<<STRING_SEPARATION<<"\" or \""
 	   <<RULES_HEADER_SECTION_END_DENOTATION<<"\" to separate strings or end "
-	    "the string section when "<<eMsg<<".\n";
+	    "the string section when "<<eMsg
+	   <<". Encountered \""<<*buffPos<<"\".\n";
 	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 	}
       else if(targetFound == std::string {RULES_HEADER_SECTION_END_DENOTATION})
@@ -236,14 +312,129 @@ std::vector<std::string> readStringsSection(const std::string & buff,
 	  break;
 	}
     }
+    }
+  else
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<" to "
+	"denote start of string section when "<<eMsg
+       <<". Encountered\""<<*buffPos<<"\"\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
 
   return strings;
-
-
-  //   endwin();
-  // std::cout<<"targetFound = "<<targetFound<<", *buffPos = "<<*buffPos<<"\n";
-  // exit(-1);
 }
+
+
+yx readSingleCoordSection(const std::string & buff,
+			  std::string::const_iterator & buffPos,
+			  const std::string & eMsg)
+{
+  using namespace levelFileTokens;
+
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+  yx coord {};
+  
+  targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<" to "
+	"denote start of single coordinate section when "<<eMsg<<". Encountered"
+       <<"\""<<*buffPos<<"\"\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+  
+  coord.y = readSingleNum(buff, buffPos, eMsg);
+      
+  targets = {std::string {COORD_SEPARATION}};
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<COORD_SEPARATION<<" before second coordinate "
+	"component in single coordinate section when "<<eMsg<<". Encountered"
+       <<"\""<<*buffPos<<"\"\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+
+  endwin();
+  std::cout<<"*(--buffPos) = "<<*(buffPos)<<", *(++buffPos) = "
+	   <<*(buffPos)<<" coord.y = "<<coord.y<<", coord.x = "<<coord.x
+	   <<std::endl;
+  exit(-1);
+
+  coord.x = readSingleNum(buff, buffPos, eMsg);
+
+  return coord;
+}
+
+
+int readSingleNum(const std::string & buff,
+			  std::string::const_iterator & buffPos,
+		 const std::string & eMsg)
+{
+  using namespace levelFileTokens;
+
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+  
+  std::stringstream coordComp {};
+      
+  targets = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected non-negative number when "<<eMsg
+       <<". Encountered \""<<*buffPos<<"\".\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+  --buffPos;
+
+  int decPlacesIter {};
+  // Read in coordinate component.
+  while(*buffPos != COORD_SEPARATION && *buffPos != ' ' &&
+	*buffPos != '\t' && *buffPos != '\n' && *buffPos != '\r')
+    {
+      coordComp<<*buffPos;
+      if(!isNum(*buffPos))
+	{
+	  std::stringstream e {};
+	  e<<"Error: expected non-negative number when "<<eMsg
+	   <<". Encountered \""<<*buffPos<<"\".\n";
+	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+	}
+      decPlacesIter++;
+      buffPos++;
+    }
+  
+  // Check if coordinate component was too long.
+  if(decPlacesIter > MAX_COORD_LEN)
+    {
+      std::stringstream e {};
+      e<<"Error: number \""<<coordComp.str()<<"\" too long (longer than \""
+       <<MAX_COORD_LEN<<"\") when "<<eMsg
+       <<". Encountered \""<<*buffPos<<"\".\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+
+  int coordCompRet;
+  coordComp>>coordCompRet;
+  return coordCompRet;
+}
+
+
+
+
+
+
+
+
+
+
+  
 // void switchOnCurrent
 // (const yx maxyx, std::string & buff, std::string::const_iterator & current,
 //  std::string::const_iterator & peek, std::string::const_iterator max,
@@ -644,7 +835,7 @@ std::vector<std::string> readStringsSection(const std::string & buff,
 // (std::string::const_iterator & current, const int SHOW_COUNT,
 //  std::stringstream & e)
 // {
-//   for(int iter {SHOW_COUNT} ; *current != levelFileStrings::NULL_BYTE &&
+//   for(int iter {SHOW_COUNT} ; *current != levelFileTokens::NULL_BYTE &&
 // 	iter > 0; --iter, ++current)
 //     {
 //       e<<*current;

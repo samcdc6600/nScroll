@@ -5,5 +5,6 @@
 "./assets/sprites/sprite(1).sprite",
 	"./assets/sprites/sprite(2).sprite",
 	"./assets/sprites/sprite(3).sprite",
-	"./assets/sprites/sprite(4).sprite")(0,60))
+	"./assets/sprites/sprite(4).sprite")
+	(16,60))
 #

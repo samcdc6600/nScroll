@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 
 struct yx
@@ -71,6 +72,7 @@ namespace boarderRuleChars
 
 
 void sleep(const unsigned long long t);
+bool isNum(const char c);
 /* Returns false if a is not range [min, max). */
 bool checkRange(const int a, const int min, const int max);
 /* Return's true if a - offset is within the range [SINGLE_DIGIT_MIN, SINGLE_DIGIT_MAX].
@@ -96,6 +98,32 @@ static std::string findTargetInBuff
 /* Calls endwin() then print's e to std::cerr and finally call's exit() with
    status */
 void exit(const std::string &e, const int status);
+
+
+template <typename T>
+std::string concat(T newStr)
+{
+  return newStr;
+}
+
+/* This template function in combination with the one above is designed to
+   concatenate it's arguments into a single string in the order in which they
+   are given. The first argument must be an std::string, the rest of the
+   arguments can be anything that std::stringstream can handle. The template
+   function will return the concatenated string. This these template functions
+   probably aren't very efficient since they create a new stringstream for
+   every argument after the first, however it is only really designed for
+   building error messages and so shouldn't be on the critical path. */
+template <typename T, typename... Args>
+std::string concat(std::string newStr,
+		      const T & newStrCompRaw, const Args &... args)
+{
+  std::stringstream newStrCompsS {};
+  newStrCompsS<<newStrCompRaw;
+  newStr += newStrCompsS.str();
+  return concat(newStr, args...);
+}
+
 
 
 /* Increment's i by n, if i equals iEnd before being incremented n times we call

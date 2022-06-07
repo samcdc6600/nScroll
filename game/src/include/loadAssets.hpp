@@ -7,25 +7,25 @@
 #include <fstream>
 #include "levelRules.hpp" // For rules.
 
-namespace levelFileStrings
+
+/* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player
+   cannot be started at a position with a number with more places then this. */
+constexpr int MAX_COORD_LEN {10};
+namespace levelFileTokens
 {
   /* Here p stands for player and this string denotes the player sprite
-     parameters section of the rules.lev file. It should be the first thing in
-     the file. */
-  constexpr char RULES_HEADER_START_DENOTATION [] = {"(p("};
+     parameters section of the rules.lev file. */
+  constexpr char PLAYER_HEADER_SECTION_SPECIFIER {'p'};
   // Each new main section in the header should start with this character.
   constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
   constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
   constexpr char RULES_HEADER_END_DENOTATION [] {"\n#"};
-  constexpr char STRING_START_DENOTATION	{'\"'};
-  constexpr char STRING_END_DENOTATION		{STRING_START_DENOTATION};
+  constexpr char STRING_DENOTATION	{'\"'};
   constexpr char STRING_SEPARATION		{','};
   constexpr char STRING_ESC			{'\\'};
+  constexpr char COORD_SEPARATION		{','};
   constexpr char DIR_START_ABS			{'/'};
   constexpr char DIR_START_REL			{'.'};
-  /* This character denotes the presence of another string when used after
-     STRING_DENOTATION. */
-  constexpr char STRINGS_SEPERATION {','};
   /* The character used for escape sequences (within a string) in .rules.lev
      files. */
   constexpr char ESCAPE_CHAR {'\\'};
@@ -84,15 +84,32 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
                 const std::string &rawRules,
                 std::string::const_iterator &buffPos);
+/* Attempts to read the start of the header in a rules.lev file. */
+void readStartOfHeader(const std::string & buff,
+		       std::string::const_iterator & buffPos,
+		       const std::string & eMsg);
 /* Attempts to read the strings from a string section in a rules.lev file.
    Should be called when a series of strings is expected. Buff is the buffer
    where the strings should be located and buffPos is the position to start
-   reading from. EMsg will be embedded in any error message the function spits
-   out and should say something about the context in which readStrings() was
-   called. Returns the strings that were read. */ 
-std::vector<std::string> readStringsSection(const std::string & buff,
-				     std::string::const_iterator & buffPos,
-				     const std::string & eMsg);
+   reading from. EMsg will be embedded in any error message/s the function spits
+   out and should say something about the context in which readStringsSection()
+   was called. Returns the strings that were read. */
+std::vector<std::string>
+readStringsSection(const std::string & buff,
+                   std::string::const_iterator & buffPos,
+                   const std::string & eMsg);
+/* Attempts to read one coordinate from a section in buff starting at buffPos.
+   Emsg will be embedded in any error message/s the function spits out and
+   should say something about the context in which readSingleCoordSection() was
+   called. Returns the coordinate read. */
+yx readSingleCoordSection(const std::string &buff,
+                          std::string::const_iterator &buffPos,
+                          const std::string &eMsg);
+/* Attempts to read a number starting at buffPos (will skip any space before the
+   number.) */
+int readSingleNum(const std::string & buff,
+		 std::string::const_iterator & buffPos,
+		 const std::string & eMsg);
 // /* Extract and parse header info in buff. */
 // void parseLevelRules(const yx maxyx, std::string & buff, const char rulesFileName [],
 // 	   rules & levelRules, cons tsize_t bgSize);
@@ -104,7 +121,7 @@ std::vector<std::string> readStringsSection(const std::string & buff,
 //  std::string::const_iterator & peek, std::string::const_iterator max,
 //  rules & levelRules, const size_t bgSize, bool & inHeader);
 // /* Dispatches functions based on the value of *peek. Should only be called when
-//  *current == FIELD_START_DENOTATION */
+//  *current == SECTION_START_DENOTATION */
 // void handleCurrentIsFieldStartDenotation
 // (const yx maxyx, std::string & buff, std::string::const_iterator & current,
 //  std::string::const_iterator & peek, std::string::const_iterator max,
