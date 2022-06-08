@@ -64,7 +64,7 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 			  rules & levelRules, const size_t bgSize,
 			  const std::string & rawRules)
 {
-  using namespace levelFileTokens;
+  using namespace levelFileKeywords;
   // if(strncmp(rawRules.c_str(), RULES_HEADER_START_DENOTATION,
   // 	     sizeof(RULES_HEADER_START_DENOTATION) -1) != 0)
   //   {
@@ -116,26 +116,33 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
 		const std::string & rawRules,
 		std::string::const_iterator & buffPos)
 {
-  using namespace levelFileTokens;
-      
+  using namespace levelFileKeywords;
+
   readStartOfHeader
     (rawRules, buffPos,
      concat(std::string("reading start of rules.lev header file \""),
 	    rulesFileName, "\""));
 
+  // Setup keyword actions associations.
+  std::vector<keywordAction::headerKeywordAction> playerHeaderKeywordActions
+    {keywordAction::headerKeywordAction {
+	SPRITE_FILE_SECTION_HEADER, "", &playerSpriteFileDefaultVal,
+	readStringsSection},
+     keywordAction::headerKeywordAction {
+       SPRITE_INIT_COORD_SECTION_HEADER, "yx", &playerCoordDefaultVal,
+       readSingleCoordSection}};
+
   
-  verifySectionHeader
-    (rawRules, buffPos, rulesFileName, SPRITE_FILE_SECTION_HEADER);
-  const std::vector<std::string> spriteFileDirectories
-    {readStringsSection
-     (rawRules, buffPos,
-      concat(std::string("reading player sprite file directory strings "
-			 "from \""), rulesFileName, "\""))};
+  // const std::vector<std::string> spriteFileDirectories
+  //   {readStringsSection
+  //    (rawRules, buffPos,
+  //     concat(std::string("reading player sprite file directory strings "
+  // 			 "from \""), rulesFileName, "\""))};
   
-  const yx initialPos {readSingleCoordSection
-    (rawRules, buffPos,
-     concat(std::string("reading player sprite coordinate from \""),
-	    rulesFileName, "\""))};
+  // const yx initialPos {readSingleCoordSection
+  //   (rawRules, buffPos,
+  //    concat(std::string("reading player sprite coordinate from \""),
+  // 	    rulesFileName, "\""))};
 
   // const int initialHealth {readSingleNumSection
   //   (rawRules, buffPos,
@@ -149,9 +156,9 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
      concat(std::string("reading end of rules.lev header file \""),
 	    rulesFileName, "\""));
 
-  levelRules.gamePlayer =
-    new player(spriteFileDirectories, maxyx, initialPos, sprite::DIR_RIGHT,
-	       25, -0.38, 1.9, 1, 3);
+  // levelRules.gamePlayer =
+  //   new player(spriteFileDirectories, maxyx, initialPos, sprite::DIR_RIGHT,
+  // 	       25, -0.38, 1.9, 1, 3);
 
   /* Read in all valid strings then read in coords then pass to new player
      object. Player object should check for correct number of strings. (MAKE
@@ -170,7 +177,7 @@ void readStartOfHeader(const std::string & buff,
 		       std::string::const_iterator & buffPos,
 		       const std::string & eMsg)
 {
-  using namespace levelFileTokens;
+  using namespace levelFileKeywords;
     
   std::vector<std::string> targets {};
   std::string targetFound {};
@@ -204,33 +211,12 @@ void readStartOfHeader(const std::string & buff,
 }
 
 
-void verifySectionHeader(const std::string &buff,
-                       std::string::const_iterator &buffPos,
-                       const std::string &eMsg, const char sectionHeader)
+void readStringsSection(const std::string & buff,
+			std::string::const_iterator & buffPos,
+			const std::string & eMsg, void * strings)
 {
-  std::vector<std::string> targets {std::string {sectionHeader}};
-  std::string targetFound {};
-
-  targetFound = skipSpaceUpTo(buff, buffPos, targets);
-  if(targetFound == "")
-    {
-      std::stringstream e {};
-      e<<"Error: expected \""<<sectionHeader<<"\" "
-	"when  "<<eMsg
-       <<". Encountered\""<<*buffPos<<"\"\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-    }
-}
-
-
-std::vector<std::string>
-readStringsSection(const std::string & buff,
-		   std::string::const_iterator & buffPos,
-		   const std::string & eMsg)
-{
-  using namespace levelFileTokens;
-
-  std::vector<std::string> strings {};
+  using namespace levelFileKeywords;
+  
   std::vector<std::string> targets {};
   std::string targetFound {};
 
@@ -311,7 +297,7 @@ readStringsSection(const std::string & buff,
 		  peekBuffPos++;
 		} while(true);
 	    }
-	  strings.push_back(newString);
+	  ((std::vector<std::string>*)strings)->push_back(newString);
 	  newString.clear();
 
 
@@ -346,20 +332,17 @@ readStringsSection(const std::string & buff,
        <<". Encountered\""<<*buffPos<<"\"\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
-
-  return strings;
 }
 
 
-yx readSingleCoordSection(const std::string & buff,
+void readSingleCoordSection(const std::string & buff,
 			  std::string::const_iterator & buffPos,
-			  const std::string & eMsg)
+			    const std::string & eMsg, void * coord)
 {
-  using namespace levelFileTokens;
+  using namespace levelFileKeywords;
 
   std::vector<std::string> targets {};
   std::string targetFound {};
-  yx coord {};
   
   targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
   targetFound = skipSpaceUpTo(buff, buffPos, targets);
@@ -372,7 +355,7 @@ yx readSingleCoordSection(const std::string & buff,
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
   
-  coord.y = readSingleNum(buff, buffPos, eMsg);
+  ((yx*)coord)->y = readSingleNum(buff, buffPos, eMsg);
       
   targets = {std::string {COORD_SEPARATION}};
   targetFound = skipSpaceUpTo(buff, buffPos, targets);
@@ -385,7 +368,7 @@ yx readSingleCoordSection(const std::string & buff,
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
 
-  coord.x = readSingleNum(buff, buffPos, eMsg);
+  ((yx*)coord)->x = readSingleNum(buff, buffPos, eMsg);
 
   targets = {std::string {RULES_HEADER_SECTION_END_DENOTATION}};
   targetFound = skipSpaceUpTo(buff, buffPos, targets);
@@ -397,8 +380,6 @@ yx readSingleCoordSection(const std::string & buff,
        <<"\""<<*buffPos<<"\"\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
-
-  return coord;
 }
 
 
@@ -406,7 +387,7 @@ int readSingleNum(const std::string & buff,
 			  std::string::const_iterator & buffPos,
 		 const std::string & eMsg)
 {
-  using namespace levelFileTokens;
+  using namespace levelFileKeywords;
 
   std::vector<std::string> targets
     {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
@@ -462,7 +443,7 @@ void readEndOfHeader(const std::string & buff,
 		     std::string::const_iterator & buffPos,
 		     const std::string & eMsg)
 {
-  using namespace levelFileTokens;
+  using namespace levelFileKeywords;
 
   std::vector<std::string> targets
     {std::string {RULES_HEADER_SECTION_END_DENOTATION}};
@@ -898,7 +879,7 @@ void readEndOfHeader(const std::string & buff,
 // (std::string::const_iterator & current, const int SHOW_COUNT,
 //  std::stringstream & e)
 // {
-//   for(int iter {SHOW_COUNT} ; *current != levelFileTokens::NULL_BYTE &&
+//   for(int iter {SHOW_COUNT} ; *current != levelFileKeywords::NULL_BYTE &&
 // 	iter > 0; --iter, ++current)
 //     {
 //       e<<*current;
