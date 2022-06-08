@@ -105,25 +105,25 @@ namespace levelFileKeywords
     {
       void dummy() {};
       const T val;
+      const bool hasDefault;      
       
     public:      
-      defaultVal(T v) : val(v) {}
+      defaultVal(T v, bool has) : val(v), hasDefault(has) {}
     };
   
     struct headerKeywordAction
     {
-      headerKeywordAction(const std::string & kword, const std::string rType,
-			  const defaultValABS * dVal,
+      headerKeywordAction(const std::string & kword, const defaultValABS * dVal,
 			  void (* a)(const std::string & buff,
 				     std::string::const_iterator & buffPos,
 				     const std::string & eMsg, void * retObj))
-	: keyword(kword), returnType(rType), defaultVal(dVal), action(a)
+	: keyword(kword), defaultVal(dVal), action(a)
       { }      
       const std::string keyword;
       bool found {false};			// Found this keyword already.
-      /* Tells what to cast default and retObj to (if an empty string then assume
-	 there is no default value.) */
-      const std::string returnType;
+      // /* Tells what to cast default and retObj to (if an empty string then assume
+      // 	 there is no default value.) */
+      // const std::string returnType;
       // Default value for this keyword.
       const defaultValABS * defaultVal;
       /* If action needs to return anything the address of a variable of the
@@ -144,10 +144,8 @@ namespace levelFileKeywords
   constexpr char PLAYER_HEADER_SECTION_SPECIFIER {'p'};
   // Header sub section headers.
   // Sub section headers for general player and sprites.
-  const std::string SPRITE_FILE_SECTION_HEADER{"sprites"};
-  const keywordAction::defaultVal<std::string>  playerSpriteFileDefaultVal {""};
+  const std::string SPRITE_FILE_SECTION_HEADER		{"sprites"};
   const std::string SPRITE_INIT_COORD_SECTION_HEADER	{"initialCoordinate"};
-  const keywordAction::defaultVal<yx>	playerCoordDefaultVal {yx {0, 1}};
   // Sub section headers for player sprite.
   const std::string SPRITE_INIT_DIR_SECTION_HEADER	{"initialDirection"};
   const std::string SPRITE_HEALTH_SECTION_HEADER	{"initialHealth"};
@@ -155,6 +153,23 @@ namespace levelFileKeywords
   const std::string SPRITE_MAX_VERT_V_SECTION_HEADER	{"maxVelocity"};
   const std::string SPRITE_MAX_FALL_JMP_SECTION_HEADER	{"maxJumpsAfterFall"};
   const std::string SPRITE_MAX_JMP_NUM_SECTION_HEADER	{"maxJumps"};
+
+  const keywordAction::defaultVal<std::string> playerSpriteFileDefaultVal
+    {"", false};
+  const keywordAction::defaultVal<yx> playerCoordDefaultVal
+    {yx {0, 1}, true};
+  /* Used to map keywords to unique int values so appropriate action can be
+     taken for those keywords. */
+  std::map<std::string, int> keywordToId {
+    {SPRITE_FILE_SECTION_HEADER, 0},
+    {SPRITE_INIT_COORD_SECTION_HEADER, 1},
+    {SPRITE_INIT_DIR_SECTION_HEADER, 2},
+    {SPRITE_HEALTH_SECTION_HEADER, 3},
+    {SPRITE_GRAV_CONST_SECTION_HEADER, 4},
+    {SPRITE_MAX_VERT_V_SECTION_HEADER, 5},
+    {SPRITE_MAX_FALL_JMP_SECTION_HEADER, 6},
+    {SPRITE_MAX_JMP_NUM_SECTION_HEADER, 7}
+  };
   // Misc.
   constexpr char STRING_DENOTATION		{'\"'};
   constexpr char STRING_SEPARATION		{','};

@@ -123,33 +123,65 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
      concat(std::string("reading start of rules.lev header file \""),
 	    rulesFileName, "\""));
 
-  // Setup keyword actions associations.
+  // Setup keyword actions associations for player section.
   std::vector<keywordAction::headerKeywordAction> playerHeaderKeywordActions
     {keywordAction::headerKeywordAction {
-	SPRITE_FILE_SECTION_HEADER, "", &playerSpriteFileDefaultVal,
+	SPRITE_FILE_SECTION_HEADER, &playerSpriteFileDefaultVal,
 	readStringsSection},
      keywordAction::headerKeywordAction {
-       SPRITE_INIT_COORD_SECTION_HEADER, "yx", &playerCoordDefaultVal,
+       SPRITE_INIT_COORD_SECTION_HEADER, &playerCoordDefaultVal,
        readSingleCoordSection}};
-
   
-  // const std::vector<std::string> spriteFileDirectories
-  //   {readStringsSection
-  //    (rawRules, buffPos,
-  //     concat(std::string("reading player sprite file directory strings "
-  // 			 "from \""), rulesFileName, "\""))};
-  
-  // const yx initialPos {readSingleCoordSection
-  //   (rawRules, buffPos,
-  //    concat(std::string("reading player sprite coordinate from \""),
-  // 	    rulesFileName, "\""))};
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+  for(auto keywordAction: playerHeaderKeywordActions)
+    {
+      targets.push_back(keywordAction.keyword);
+    }
 
-  // const int initialHealth {readSingleNumSection
-  //   (rawRules, buffPos,
-  //    concat(std::string("reading player health from \""),
-  // 	    rulesFileName, "\""))};
+  // Parse player sub sections.
+  for(int targetIter {}; targetIter < playerHeaderKeywordActions.size();
+      targetIter++)
+    {
+      targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+      if(targetFound == "")
+	{
+	  break;
+	}
+      /* Target found, now check which object it's associated with and perform
+	 targets associated action. */
+      for(int foundIter {}; foundIter < playerHeaderKeywordActions.size();
+	  foundIter++)
+	{
+	  if(targetFound == playerHeaderKeywordActions[foundIter].keyword)
+	    {
+	      playerHeaderKeywordActions[foundIter].found = true;
+	      switch(keywordToId[targetFound])
+		{
+		case 0:
+		  // 
+		  playerHeaderKeywordActions[foundIter].action(rawRules, buffPos,
+							       "eMsg", retObj);
+		  break;
+		case 1:
+		  break;
+		case 2:
+		  break;
+		case 3:
+		  break;
+		case 4:
+		  break;
+		case 5:
+		  break;
+		case 6:
+		  break;
+		case 7:
+		  break;
+		}
+	    }
+	}
+    }
 
-  
 
   readEndOfHeader
     (rawRules, buffPos,
