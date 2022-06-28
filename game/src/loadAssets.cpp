@@ -127,11 +127,9 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
   // Setup keyword actions associations for player section.
   std::vector<keywordAction::headerKeywordAction> playerHeaderKeywordActions
     {keywordAction::headerKeywordAction {
-	SPRITE_FILE_SECTION_HEADER, &playerSpriteFileDefaultVal,
-	readStringsSection},
+	SPRITE_FILE_SECTION_HEADER, readStringsSection},
      keywordAction::headerKeywordAction {
-       SPRITE_INIT_COORD_SECTION_HEADER, &playerCoordDefaultVal,
-       readSingleCoordSection}};
+       SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSection}};
   
   std::vector<std::string> targets {};
   std::string targetFound {};
@@ -163,7 +161,7 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
 	  if(targetFound == playerHeaderKeywordActions[foundIter].keyword)
 	    {
 	      playerHeaderKeywordActions[foundIter].found = true;
-	      switch(keywordToId.at(targetFound))
+	      switch(playerSectionKeywordToId.at(targetFound))
 		{
 		case 0:
 		  playerHeaderKeywordActions[foundIter].action
@@ -958,31 +956,44 @@ void checkForDefaultPlayerValues
  const char rulesFileName [])
 {
   using namespace levelFileKeywords;
-  
-  if(keywordAction.defaultVal->hasDefault)
-	    {
-	      
-	      if(typeid(*(keywordAction.defaultVal)) ==
-		 typeid(keywordAction::defaultVal<std::string>))
-		{
-		}
-	      else if(typeid(*(keywordAction.defaultVal)) ==
-		 typeid(keywordAction::defaultVal<yx>))
-		{
-		}
 
-	      // Initialise default.
-	    }
-	  else
-	    {
-	      std::stringstream e {};
-	      e<<"Error: expected section\\s \"";
-	      for(auto keywordAction: playerHeaderKeywordActions)
-		{
-		  e<<keywordAction.keyword<<", ";
-		}
-	      e<<"\" in player section. Encountered character\""<<*buffPos
-	       <<"\"\n";
-	      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-	    }
+  std::cout<<"Hello\n";
+
+  if(!playerSectionHasDefaultValue.at(keywordAction.keyword))
+    {
+      goto DEFAULT;
+    }
+  
+  switch(playerSectionKeywordToId.at(keywordAction.keyword))
+    {
+    case 0:
+      playerInitData.spritePaths = playerSpriteFileDefaultVal;
+      break;
+    case 1:
+      playerInitData.playerCoordDefaultVal = playerCoordDefaultVal;
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    case 4:
+      break;
+    case 5:
+      break;
+    case 6:
+      break;
+    case 7:
+      break;
+    default:
+    DEFAULT:
+      std::stringstream e {};
+      e<<"Error: expected section\\s \"";
+      for(auto keywordAction: playerHeaderKeywordActions)
+	{
+	  e<<keywordAction.keyword<<", ";
+	}
+      e<<"\" in player section. Encountered character \""<<*buffPos
+       <<"\", when reading \""<<rulesFileName<<"\" file\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
 }

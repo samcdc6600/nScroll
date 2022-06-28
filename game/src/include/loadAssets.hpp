@@ -95,43 +95,17 @@ namespace levelFileKeywords
 {
   namespace keywordAction
   {
-    class defaultValABS
-    {
-      virtual void dummy() = 0;
-
-    public:
-      defaultValABS(const bool has) : hasDefault(has) {}
-      
-      const bool hasDefault;
-    };
-
-    // Used to get default values of different types dynamically.
-    template <typename T> class defaultVal : public defaultValABS
-    {
-      void dummy() {};		// Make class concrete.
-      const T val;
-      
-    public:
-      defaultVal(const T v, const bool has) :
-	defaultValABS(hasDefault), val(v) {}
-    };
-  
     struct headerKeywordAction
     {
-      headerKeywordAction(const std::string & kword, const defaultValABS * dVal,
+      headerKeywordAction(const std::string & kword,
 			  void (* a)(const std::string & buff,
 				     std::string::const_iterator & buffPos,
 				     const std::string & eMsg, void * retObj))
-	: keyword(kword), defaultVal(dVal), action(a)
+	: keyword(kword), action(a)
       { }
 
       const std::string keyword;
       bool found {false};			// Found this keyword already.
-      // /* Tells what to cast default and retObj to (if an empty string then assume
-      // 	 there is no default value.) */
-      // const std::string returnType;
-      // Default value for this keyword.
-      const defaultValABS * defaultVal;
       /* If action needs to return anything the address of a variable of the
 	 appropriate type should be passed to the function via retObj. If the
 	 function doesn't encounter any error (in which case it should print a
@@ -159,21 +133,10 @@ namespace levelFileKeywords
   const std::string SPRITE_MAX_VERT_V_SECTION_HEADER	{"maxVelocity"};
   const std::string SPRITE_MAX_FALL_JMP_SECTION_HEADER	{"maxJumpsAfterFall"};
   const std::string SPRITE_MAX_JMP_NUM_SECTION_HEADER	{"maxJumps"};
-
-  const keywordAction::defaultVal<std::string> playerSpriteFileDefaultVal
-    {"", false};
-  const keywordAction::defaultVal<yx> playerCoordDefaultVal
-    {yx {0, 1}, true};
-  /* This struct should be populated with the values that the player will
-     eventually be initialised with. */
-  struct playerInitialData
-  {
-    std::vector<std::string> spritePaths {};
-    yx playerCoordDefaultVal {};
-  };
   /* Used to map keywords to unique int values so appropriate action can be
-     taken for those keywords. */
-  const std::map<std::string, int> keywordToId {
+     taken for those keywords when parsing player section. KEY ORDER SHOULD
+     MATCH playerSectionHasDefaultValue! */
+  const std::map<std::string, int> playerSectionKeywordToId {
     {SPRITE_FILE_SECTION_HEADER, 0},
     {SPRITE_INIT_COORD_SECTION_HEADER, 1},
     {SPRITE_INIT_DIR_SECTION_HEADER, 2},
@@ -182,6 +145,27 @@ namespace levelFileKeywords
     {SPRITE_MAX_VERT_V_SECTION_HEADER, 5},
     {SPRITE_MAX_FALL_JMP_SECTION_HEADER, 6},
     {SPRITE_MAX_JMP_NUM_SECTION_HEADER, 7}
+  };
+  // KEY ORDER SHOULD MATCH playerSectionKeywordToId!
+  const std::map<std::string, bool> playerSectionHasDefaultValue
+    {
+      {SPRITE_FILE_SECTION_HEADER, false},
+      {SPRITE_INIT_COORD_SECTION_HEADER, false},
+      {SPRITE_INIT_DIR_SECTION_HEADER, false},
+      {SPRITE_HEALTH_SECTION_HEADER, false},
+      {SPRITE_GRAV_CONST_SECTION_HEADER, false},
+      {SPRITE_MAX_VERT_V_SECTION_HEADER, false},
+      {SPRITE_MAX_FALL_JMP_SECTION_HEADER, false},
+      {SPRITE_MAX_JMP_NUM_SECTION_HEADER, false}
+    };
+  const std::vector<std::string> playerSpriteFileDefaultVal {{""}};
+  const yx playerCoordDefaultVal {0, 1};
+  /* This struct should be populated with the values that the player will
+     eventually be initialised with. */
+  struct playerInitialData
+  {
+    std::vector<std::string> spritePaths {};
+    yx playerCoordDefaultVal {};
   };
   // Misc.
   constexpr char STRING_DENOTATION		{'\"'};
