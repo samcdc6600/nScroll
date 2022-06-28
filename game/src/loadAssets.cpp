@@ -56,6 +56,7 @@ void loadAndParseLevelRulesFile
       e<<"Error: unable to open \""<<rulesFileName<<"\".";
       exit(e.str(), ERROR_OPENING_FILE);
     }
+
   parseRulesHeader(maxyx, rulesFileName, levelRules, bgSize, rawRules);
 }
 
@@ -139,29 +140,34 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
       targets.push_back(keywordAction.keyword);
     }
 
+  playerInitialData playerInitData {};
+
   // Parse player sub sections.
-  for(int targetIter {}; targetIter < playerHeaderKeywordActions.size();
+  for(int targetIter {}; targetIter < (int)playerHeaderKeywordActions.size();
       targetIter++)
     {
       targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+
+      endwin();
+      std::cout<<"targetFound = "<<targetFound<<'\n';
+      
       if(targetFound == "")
 	{
 	  break;
 	}
       /* Target found, now check which object it's associated with and perform
 	 targets associated action. */
-      for(int foundIter {}; foundIter < playerHeaderKeywordActions.size();
+      for(int foundIter {}; foundIter < (int)playerHeaderKeywordActions.size();
 	  foundIter++)
 	{
 	  if(targetFound == playerHeaderKeywordActions[foundIter].keyword)
 	    {
 	      playerHeaderKeywordActions[foundIter].found = true;
-	      switch(keywordToId[targetFound])
+	      switch(keywordToId.at(targetFound))
 		{
 		case 0:
-		  // 
-		  playerHeaderKeywordActions[foundIter].action(rawRules, buffPos,
-							       "eMsg", retObj);
+		  playerHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos, "eMsg", &playerInitData.spritePaths);
 		  break;
 		case 1:
 		  break;
@@ -182,6 +188,16 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
 	}
     }
 
+  // Check that we've encountered all keywords that were searched for.
+  for(auto keywordAction: playerHeaderKeywordActions)
+    {
+      if(!keywordAction.found)
+	{
+	  checkForDefaultPlayerValues
+	    (playerHeaderKeywordActions, keywordAction, playerInitData,
+	     buffPos, rulesFileName);
+	}
+    }
 
   readEndOfHeader
     (rawRules, buffPos,
@@ -222,12 +238,29 @@ void readStartOfHeader(const std::string & buff,
       targets.push_back(std::string {PLAYER_HEADER_SECTION_SPECIFIER});
       targetFound = skipSpaceUpTo(buff, buffPos, targets);
       targets.clear();
-      if(targetFound != std::string {PLAYER_HEADER_SECTION_SPECIFIER})
+      if(targetFound == std::string {PLAYER_HEADER_SECTION_SPECIFIER})
+	{
+	  targets.push_back
+	    (std::string {RULES_HEADER_SECTION_START_DENOTATION});
+	  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+	  targets.clear();
+	  if(targetFound != std::string {RULES_HEADER_SECTION_START_DENOTATION})
+	    {
+	      std::stringstream e {};
+	      e<<"Error: expected \""<<PLAYER_HEADER_SECTION_SPECIFIER
+	       <<RULES_HEADER_SECTION_START_DENOTATION<<"\" to denote the start"
+		"of the player section when "<<eMsg<<". Encountered\""
+	       <<*buffPos<<"\"\n";
+	      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+	    }
+	}
+      else
 	{
 	  std::stringstream e {};
-	  e<<"Error: expected \""<<PLAYER_HEADER_SECTION_SPECIFIER<<"\" to "
-	    "denote the start of the player section when "<<eMsg<<
-	    ". Encountered\""<<*buffPos<<"\"\n";
+	  e<<"Error: expected \""<<PLAYER_HEADER_SECTION_SPECIFIER
+	   <<RULES_HEADER_SECTION_START_DENOTATION<<"\" to denote the start of "
+	    "the player section when "<<eMsg<<". Encountered\""<<*buffPos
+	   <<"\"\n";
 	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 	}
 	
@@ -500,9 +533,6 @@ void readEndOfHeader(const std::string & buff,
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
 }
-
-
-
 
 
 
@@ -917,3 +947,42 @@ void readEndOfHeader(const std::string & buff,
 //       e<<*current;
 //     }
 // }
+
+
+void checkForDefaultPlayerValues
+(std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+ playerHeaderKeywordActions,
+ levelFileKeywords::keywordAction::headerKeywordAction & keywordAction,
+ levelFileKeywords::playerInitialData playerInitData, 
+ std::string::const_iterator & buffPos,
+ const char rulesFileName [])
+{
+  using namespace levelFileKeywords;
+  
+  if(keywordAction.defaultVal->hasDefault)
+	    {
+	      
+	      if(typeid(*(keywordAction.defaultVal)) ==
+		 typeid(keywordAction::defaultVal<std::string>))
+		{
+		}
+	      else if(typeid(*(keywordAction.defaultVal)) ==
+		 typeid(keywordAction::defaultVal<yx>))
+		{
+		}
+
+	      // Initialise default.
+	    }
+	  else
+	    {
+	      std::stringstream e {};
+	      e<<"Error: expected section\\s \"";
+	      for(auto keywordAction: playerHeaderKeywordActions)
+		{
+		  e<<keywordAction.keyword<<", ";
+		}
+	      e<<"\" in player section. Encountered character\""<<*buffPos
+	       <<"\"\n";
+	      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+	    }
+}

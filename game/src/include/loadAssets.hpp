@@ -98,17 +98,22 @@ namespace levelFileKeywords
     class defaultValABS
     {
       virtual void dummy() = 0;
+
+    public:
+      defaultValABS(const bool has) : hasDefault(has) {}
+      
+      const bool hasDefault;
     };
 
     // Used to get default values of different types dynamically.
     template <typename T> class defaultVal : public defaultValABS
     {
-      void dummy() {};
+      void dummy() {};		// Make class concrete.
       const T val;
-      const bool hasDefault;      
       
-    public:      
-      defaultVal(T v, bool has) : val(v), hasDefault(has) {}
+    public:
+      defaultVal(const T v, const bool has) :
+	defaultValABS(hasDefault), val(v) {}
     };
   
     struct headerKeywordAction
@@ -118,7 +123,8 @@ namespace levelFileKeywords
 				     std::string::const_iterator & buffPos,
 				     const std::string & eMsg, void * retObj))
 	: keyword(kword), defaultVal(dVal), action(a)
-      { }      
+      { }
+
       const std::string keyword;
       bool found {false};			// Found this keyword already.
       // /* Tells what to cast default and retObj to (if an empty string then assume
@@ -158,9 +164,16 @@ namespace levelFileKeywords
     {"", false};
   const keywordAction::defaultVal<yx> playerCoordDefaultVal
     {yx {0, 1}, true};
+  /* This struct should be populated with the values that the player will
+     eventually be initialised with. */
+  struct playerInitialData
+  {
+    std::vector<std::string> spritePaths {};
+    yx playerCoordDefaultVal {};
+  };
   /* Used to map keywords to unique int values so appropriate action can be
      taken for those keywords. */
-  std::map<std::string, int> keywordToId {
+  const std::map<std::string, int> keywordToId {
     {SPRITE_FILE_SECTION_HEADER, 0},
     {SPRITE_INIT_COORD_SECTION_HEADER, 1},
     {SPRITE_INIT_DIR_SECTION_HEADER, 2},
@@ -186,5 +199,17 @@ namespace levelFileKeywords
   // function.
 }
 
+
+/* Should be called after checking for all header sections related to the
+   player. Checks if all sections were found. If a section is encountered that
+   wasn't found, then we check if it has a default value. If so we apply the
+   default value. If it doesn't have a default value then call exit()*/
+void checkForDefaultPlayerValues
+(std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+ playerHeaderKeywordActions,
+ levelFileKeywords::keywordAction::headerKeywordAction & keywordAction,
+ levelFileKeywords::playerInitialData playerInitData, 
+ std::string::const_iterator & buffPos,
+ const char rulesFileName []);
 
 #endif
