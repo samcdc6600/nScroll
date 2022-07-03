@@ -67,7 +67,7 @@ public:
       DOWN_CHAR ='s',
     };
 
-  player(std::vector<std::string> spriteFileNames, const yx max,
+  player(std::vector<std::string> spritePaths, const yx max,
                const yx pos, const sprite::directions dir, const int h,
                const double g, const double v, const unsigned maxFallingJmpNum,
 	 const unsigned maxJmpNum);

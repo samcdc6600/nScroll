@@ -10,11 +10,11 @@
 //extern setColorMode colorMode; // must be included for the draw function
 
 
-player::player(std::vector<std::string> spriteFileNames, const yx max,
+player::player(std::vector<std::string> spritePaths, const yx max,
                const yx pos, const sprite::directions dir, const int h,
                const double g, const double v, const unsigned maxFallingJmpNum,
 	       const unsigned maxJmpNum)
-    : sprite(spriteFileNames, max, pos, dir), health(h),
+    : sprite(spritePaths, max, pos, dir), health(h),
       gravitationalConstant(g), maxVertVelocity(v),
       maxFallingJumpNum(maxFallingJmpNum), maxJumpNum(maxJmpNum)
 {

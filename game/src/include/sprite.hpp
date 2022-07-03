@@ -30,9 +30,9 @@ private:
     };
   
 protected:
-  /* Sprites should only have these numbers of sets of slices. 5 and 9 and not
-     4 and 8 because we must account for DIR_NONE. */
-  static constexpr int spriteNums1 {1}, spriteNums2 {5}, spriteNums3 {9};
+  /* Sprites should only have these numbers of sets of slices. 5
+     and not 4 because we must account for DIR_NONE. */
+  static constexpr int spriteNums1 {1}, spriteNums2 {5};
   // Stores the animation directions a sprite instance can use.
   std::vector<directions> spriteAnimationDirections {};
   /* Position of the top left corner of the sprite object relative to the

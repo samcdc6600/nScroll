@@ -146,26 +146,46 @@ namespace levelFileKeywords
     {SPRITE_MAX_FALL_JMP_SECTION_HEADER, 6},
     {SPRITE_MAX_JMP_NUM_SECTION_HEADER, 7}
   };
-  // KEY ORDER SHOULD MATCH playerSectionKeywordToId!
-  const std::map<std::string, bool> playerSectionHasDefaultValue
+  namespace defaultValues
+  {
+    // KEY ORDER SHOULD MATCH playerSectionKeywordToId!
+    const std::map<std::string, bool> playerSectionHasDefaultValue
+      {
+	{SPRITE_FILE_SECTION_HEADER, false},
+	{SPRITE_INIT_COORD_SECTION_HEADER, false},
+	{SPRITE_INIT_DIR_SECTION_HEADER, true},
+	{SPRITE_HEALTH_SECTION_HEADER, true},
+	{SPRITE_GRAV_CONST_SECTION_HEADER, true},
+	{SPRITE_MAX_VERT_V_SECTION_HEADER, true},
+	{SPRITE_MAX_FALL_JMP_SECTION_HEADER, true},
+	{SPRITE_MAX_JMP_NUM_SECTION_HEADER, true}
+      };
+
+    // Default values for the player.
+    namespace player
     {
-      {SPRITE_FILE_SECTION_HEADER, false},
-      {SPRITE_INIT_COORD_SECTION_HEADER, false},
-      {SPRITE_INIT_DIR_SECTION_HEADER, false},
-      {SPRITE_HEALTH_SECTION_HEADER, false},
-      {SPRITE_GRAV_CONST_SECTION_HEADER, false},
-      {SPRITE_MAX_VERT_V_SECTION_HEADER, false},
-      {SPRITE_MAX_FALL_JMP_SECTION_HEADER, false},
-      {SPRITE_MAX_JMP_NUM_SECTION_HEADER, false}
-    };
-  const std::vector<std::string> playerSpriteFileDefaultVal {{""}};
-  const yx playerCoordDefaultVal {0, 1};
+      const std::vector<std::string> spritePaths {{""}};
+      const yx coordinate {0, 1};
+      const sprite::directions direction {sprite::DIR_NONE};
+      const int health {16};
+      const double gravitationalConstant {-0.38};
+      const double maxVerticalVelocity {1.9};
+      const unsigned maxFallingJumpNumber {1};
+      const unsigned maxJumpNumber {3};
+    }
+  }
   /* This struct should be populated with the values that the player will
      eventually be initialised with. */
   struct playerInitialData
   {
     std::vector<std::string> spritePaths {};
-    yx playerCoordDefaultVal {};
+    yx coordinate {};
+    sprite::directions direction {};
+    int health {};
+    double gravitationalConstant {};
+    double maxVerticalVelocity {};
+    unsigned maxFallingJumpNumber {};
+    unsigned maxJumpNumber {};
   };
   // Misc.
   constexpr char STRING_DENOTATION		{'\"'};
@@ -179,8 +199,8 @@ namespace levelFileKeywords
   constexpr char ESCAPE_CHAR {'\\'};
   constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
   constexpr char NULL_BYTE {'\0'};
-  constexpr int SHOW_COUNT {45}; // How many characters to print in printN
-  // function.
+  // constexpr int SHOW_COUNT {45}; // How many characters to print in printN
+  // // function.
 }
 
 
@@ -192,7 +212,7 @@ void checkForDefaultPlayerValues
 (std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
  playerHeaderKeywordActions,
  levelFileKeywords::keywordAction::headerKeywordAction & keywordAction,
- levelFileKeywords::playerInitialData playerInitData, 
+ levelFileKeywords::playerInitialData & playerInitData, 
  std::string::const_iterator & buffPos,
  const char rulesFileName []);
 

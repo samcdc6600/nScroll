@@ -374,9 +374,9 @@ void sprite::initialiseDirectionsVector()
       break;
     default:
       std::stringstream e {};
-      e<<"Error (in initialiseDirectionsVector() in sprite.cpp): SpriteS::size ("
-       <<spriteS.size()<<") not equal to "<<spriteNums1<<", "<<spriteNums2
-       <<" or "<<spriteNums3<<".";
+      e<<"Error (in initialiseDirectionsVector() in sprite.cpp): SpriteS::size "
+	"("<<spriteS.size()<<") not equal to "<<spriteNums1<<" or "<<spriteNums2
+       <<".\n";
 	
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
