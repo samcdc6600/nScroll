@@ -587,13 +587,13 @@ void parseRulesMain(const yx maxyx, const char bgFileName [],
       exit(e.str().c_str(), ERROR_BACKGROUND);
     }
 
-  if(levelRules.coordRules.size() > bgSize)
+  if(levelRules.coordRules.size() != bgSize)
     {
       std::stringstream e {};
       e << "Error: reading rules.lev header file \"" << rulesFileName
-	<< "\". Size of main section of file larger ("
-	<<levelRules.coordRules.size()<<") then size ("<<bgSize
-	<<") of background file \""<<bgFileName<<"\".";
+	<< "\". Size ("<<levelRules.coordRules.size()<<") of main section of "
+	"file not equal to size ("<<bgSize<<") of background file \""
+	<<bgFileName<<"\".";
       exit(e.str().c_str(), ERROR_BACKGROUND);
     }
 }

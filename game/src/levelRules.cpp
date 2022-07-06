@@ -451,31 +451,45 @@ void rules::startJumping(const int position,
 #ifdef DEBUG
 #include <sstream>
 
-// void rules::printRuleChars(const int position, const int maxX)
-// {
-//   for(std::map<std::string, char>::iterator iter {coordChars.begin()};
-//       iter != coordChars.end(); ++iter)
-//     {
-//       std::stringstream coord {};
-//       std::string strChar {};
-//       int y, x;
-//       char eat;
+void rules::printRuleChars(const int position, const int maxY, const int maxX)
+{
+  // for(std::map<std::string, char>::iterator iter {coordRules.begin()};
+  //     iter != coordChars.end(); ++iter)
+  //   for(char ruleChar: coordRules)
+  //   {
+  //     std::stringstream coord {};
+  //     std::string strChar {};
+  //     int y, x;
+  //     char eat;
 	
-//       coord<<iter->first;
-//       coord>>y;
-//       coord>>eat;
-//       coord>>x;
+  //     coord<<iter->first;
+  //     coord>>y;
+  //     coord>>eat;
+  //     coord>>x;
 
-//       if((x - position) < maxX)
-// 	{
-// 	  strChar = iter->second;
+  //     if((x - position) < maxX)
+  // 	{
+  // 	  strChar = iter->second;
       
-// 	  mvprintw(y, (x - position), strChar.c_str());
-// 	  refresh();
-// 	}
-//       coord.clear();
-//     }
-// }
+  // 	  mvprintw(y, (x - position), strChar.c_str());
+  // 	  refresh();
+  // 	}
+  //     coord.clear();
+  //   }
+
+  for(int y {}; y < maxY; ++y)
+    {
+      for(int x {}; x < (coordRules.size() / backgroundHeight); ++x)
+	{
+	  const char coordRule {getChoordRule(y, x)};
+	  if(coordRule != ' ' && (x - position) < maxX)
+	    {
+	      mvprintw(y, (x - position), (std::string {coordRule}).c_str());
+	    }
+	}
+    }
+  refresh();
+}
 #endif
 
 
@@ -485,11 +499,24 @@ void rules::physics
  std::__1::chrono::steady_clock::time_point & secStartTime)
 {
 #ifdef DEBUG
-  // printRuleChars(position, maxyx.x);
+  printRuleChars(position, maxyx.y, maxyx.x);
 #endif
   
   movePlayer(player::convertDirectionCharsToDirections(input), position,
-	     maxyx, backgroundLength);      
+	     maxyx, backgroundLength);
   sleep(engineSleepTime);
   resetOldTime(secStartTime);
+}
+
+
+char rules::getCoordRule(const yx & pos)
+{
+  return getChoordRule(pos.y, pos.x);
+}
+
+  
+char rules::getChoordRule(const int y, const int x)
+{
+  int linearAddress = {y * ((int)coordRules.size() / backgroundHeight) + x};
+  return coordRules[linearAddress];
 }

@@ -109,7 +109,8 @@ private:
 		    const std::map<std::string, char> & coordChars);
 
 #ifdef DEBUG
-  // void printRuleChars(const int position, const int maxX);
+  // Where maxX should be the maximum size of the window and not the level.
+  void printRuleChars(const int position, const int maxY, const int maxX);
 #endif
 
 public:
@@ -120,6 +121,28 @@ public:
   {
     delete(gamePlayer);
   }
+
+  // // Converts linear address to y x pos.
+  // char getCoordRule(const int linearAddress)
+  // {
+  //   int y {linearAddress / backgroundHeight};
+  //   int x {linearAddress % backgroundHeight};
+    
+  //   if(y > backgroundHeight)
+  //     {
+  // 	// Error
+  //     }
+  //   if(x > (coordRules.size() % backgroundHeight))
+  //     {
+  // 	// Error
+  //     }
+
+  //   getCoordRule(y, x);
+  // }
+
+  char getCoordRule(const yx & pos);
+
+  char getChoordRule(const int y, const int x);
 };
 
 
