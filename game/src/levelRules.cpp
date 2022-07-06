@@ -77,57 +77,37 @@ void rules::movePlayer(sprite::directions input,
   /* We intend to alter this later to have it read in from the level rules
      file */
   double g {-3.2666};
-  /*  if(noVertCollision)
-      {*/
-  /*  if(timer)
-    {*/
   vertVelocity *= g;
-    //    }
-  //    }
 
-  
-  /**/
-
-
-  
-
-  // if(gamePlayer->isJumping() || input == sprite::DIR_UP)
-  //   {
-      // const int boarderCharDistance {
-      // 	getClosestBoarderCharAbove(position, true)};
       if(input == sprite::DIR_UP)
 	{
 	  // Start jump.
-	  startJumping(position, coordChars);
+	  // startJumping(position, coordRules);
 	  // We wan't to keep moving in the direction we were moving in before.
 	  input = (sprite::directions)currDir;
-
 	}
       else
 	{
 	  // We are not jumping or we are past the start of a jump.
 	  // If we can move down.
-	  gamePlayer->handleJumpingAndFalling(position, maxyx, coordChars);
-	  // We wan't to keep moving in the direction we were moving in before.
-	  //      input = (sprite::directions)currDir;
+	  // gamePlayer->handleJumpingAndFalling(position, maxyx, coordChars);
 	}
-    // }
 
    // Handle contact with boarder characters.
   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
      input == sprite::DIR_DOWN)
     {
-      input = handleGroundCollision(position);
+      // input = handleGroundCollision(position);
     }
   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
     {
-      input = handleRightCollision(position);
+      // input = handleRightCollision(position);
     }
   else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_LEFT)
     {
-      input = handleLeftCollision(position);
+      // input = handleLeftCollision(position);
     }
 
   handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
@@ -345,157 +325,157 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
 
 /* Checks for contact with boarder characters when moving down. Returns the
    direction that the player should be moving in. */
-sprite::directions rules::handleGroundCollision(const int position)
-{
-  sprite::directions retDir {sprite::DIR_DOWN};
-  for(std::string coord:
-	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
-    {
-      if(coordChars.find(coord) != coordChars.end() &&
-	 (coordChars.find(coord)->second == 'b'  ||
-	  (coordChars.find(coord))->second == 'p'))
-	{
-	  retDir = sprite::DIR_NONE;
-	  break;
-	}
-    }
-  return retDir;
-}
+// sprite::directions rules::handleGroundCollision(const int position)
+// {
+//   sprite::directions retDir {sprite::DIR_DOWN};
+//   for(std::string coord:
+// 	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
+//     {
+//       if(coordChars.find(coord) != coordChars.end() &&
+// 	 (coordChars.find(coord)->second == 'b'  ||
+// 	  (coordChars.find(coord))->second == 'p'))
+// 	{
+// 	  retDir = sprite::DIR_NONE;
+// 	  break;
+// 	}
+//     }
+//   return retDir;
+// }
 
 
 /* Checks for contact with boarder characters when moving right. Moves the
    player up one character if a "step" is encountered (as long as the player
    will not go out of bounds.) Returns the direction the player should move in.
 */
-sprite::directions rules::handleRightCollision(const int position)
-{
-  using namespace boarderRuleChars;
-  sprite::directions retDir {sprite::DIR_RIGHT};
-  const std::vector<std::string> playerCoords
-    {gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position)};
-  const std::string bottomRightPlayerCoord
-    {playerCoords[playerCoords.size() -1]};
-  bool stoppingContact {false};
+// sprite::directions rules::handleRightCollision(const int position)
+// {
+//   using namespace boarderRuleChars;
+//   sprite::directions retDir {sprite::DIR_RIGHT};
+//   const std::vector<std::string> playerCoords
+//     {gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position)};
+//   const std::string bottomRightPlayerCoord
+//     {playerCoords[playerCoords.size() -1]};
+//   bool stoppingContact {false};
     
-  for(std::string playerCoord: playerCoords)
-    {
-      // If there is near contact and it's not with the bottom right coord.
-      if(playerCoord != bottomRightPlayerCoord &&
-	 coordChars.find(playerCoord) != coordChars.end() &&
-	 coordChars.find(playerCoord)->second == boarderChar)
-	{
-	  stoppingContact = true;
-	  retDir = sprite::DIR_NONE;
-	  break;
-	}
-    }
+//   for(std::string playerCoord: playerCoords)
+//     {
+//       // If there is near contact and it's not with the bottom right coord.
+//       if(playerCoord != bottomRightPlayerCoord &&
+// 	 coordChars.find(playerCoord) != coordChars.end() &&
+// 	 coordChars.find(playerCoord)->second == boarderChar)
+// 	{
+// 	  stoppingContact = true;
+// 	  retDir = sprite::DIR_NONE;
+// 	  break;
+// 	}
+//     }
   
-  if(!stoppingContact &&
-     coordChars.find(bottomRightPlayerCoord) != coordChars.end() &&
-     (coordChars.find(bottomRightPlayerCoord)->second == boarderChar ||
-      coordChars.find(bottomRightPlayerCoord)->second == platformChar))
-    {
-      if(gamePlayer->getPos().y > 0)
-	{
-	  /* If we've hit a "step" (as in the things that constitute staircases)
-	     and we are not at the minimum (top of window) y position, then
-	     "step up" :). */
-	  gamePlayer->updatePosRel(sprite::DIR_UP);
-	}
-      else
-	{
-	  // We've hit the top of the window.
-	  retDir = sprite::DIR_NONE;
-	}
-    }
+//   if(!stoppingContact &&
+//      coordChars.find(bottomRightPlayerCoord) != coordChars.end() &&
+//      (coordChars.find(bottomRightPlayerCoord)->second == boarderChar ||
+//       coordChars.find(bottomRightPlayerCoord)->second == platformChar))
+//     {
+//       if(gamePlayer->getPos().y > 0)
+// 	{
+// 	  /* If we've hit a "step" (as in the things that constitute staircases)
+// 	     and we are not at the minimum (top of window) y position, then
+// 	     "step up" :). */
+// 	  gamePlayer->updatePosRel(sprite::DIR_UP);
+// 	}
+//       else
+// 	{
+// 	  // We've hit the top of the window.
+// 	  retDir = sprite::DIR_NONE;
+// 	}
+//     }
   
-  return retDir;
-}
+//   return retDir;
+// }
 
 
-sprite::directions rules::handleLeftCollision(const int position)
-{
-  using namespace boarderRuleChars;
-  sprite::directions retDir {sprite::DIR_LEFT};
-  const std::vector<std::string> playerCoords
-    {gamePlayer->getLeftYAbsRangeAsStrsForOneOffContact(position)};
-  const std::string bottomLeftPlayerCoord
-    {playerCoords[playerCoords.size() -1]};
-  bool stoppingContact {false};
+// sprite::directions rules::handleLeftCollision(const int position)
+// {
+//   using namespace boarderRuleChars;
+//   sprite::directions retDir {sprite::DIR_LEFT};
+//   const std::vector<std::string> playerCoords
+//     {gamePlayer->getLeftYAbsRangeAsStrsForOneOffContact(position)};
+//   const std::string bottomLeftPlayerCoord
+//     {playerCoords[playerCoords.size() -1]};
+//   bool stoppingContact {false};
 
-  for(std::string playerCoord: playerCoords)
-    {
-      // If there is near contact and it's not with the bottom right coord.
-      if(playerCoord != bottomLeftPlayerCoord &&
-	 coordChars.find(playerCoord) != coordChars.end() &&
-	 coordChars.find(playerCoord)->second == boarderChar)
-	{
-	  stoppingContact = true;
-	  retDir = sprite::DIR_NONE;
-	  break;
-	}
-    }
+//   for(std::string playerCoord: playerCoords)
+//     {
+//       // If there is near contact and it's not with the bottom right coord.
+//       if(playerCoord != bottomLeftPlayerCoord &&
+// 	 coordChars.find(playerCoord) != coordChars.end() &&
+// 	 coordChars.find(playerCoord)->second == boarderChar)
+// 	{
+// 	  stoppingContact = true;
+// 	  retDir = sprite::DIR_NONE;
+// 	  break;
+// 	}
+//     }
 
-  if(!stoppingContact &&
-     coordChars.find(bottomLeftPlayerCoord) != coordChars.end() &&
-     (coordChars.find(bottomLeftPlayerCoord)->second == boarderChar ||
-      coordChars.find(bottomLeftPlayerCoord)->second == platformChar))
-    {
-      if(gamePlayer->getPos().y > 0)
-	{
-	  /* If we've hit a "step" and we are not at the minimum (top of window)
-	     y position, then "step up" :) */
-	  gamePlayer->updatePosRel(sprite::DIR_UP);
-	}
-      else
-	{
-	  // We've hit the top of the window.
-	  retDir = sprite::DIR_NONE;
-	}
-    }
+//   if(!stoppingContact &&
+//      coordChars.find(bottomLeftPlayerCoord) != coordChars.end() &&
+//      (coordChars.find(bottomLeftPlayerCoord)->second == boarderChar ||
+//       coordChars.find(bottomLeftPlayerCoord)->second == platformChar))
+//     {
+//       if(gamePlayer->getPos().y > 0)
+// 	{
+// 	  /* If we've hit a "step" and we are not at the minimum (top of window)
+// 	     y position, then "step up" :) */
+// 	  gamePlayer->updatePosRel(sprite::DIR_UP);
+// 	}
+//       else
+// 	{
+// 	  // We've hit the top of the window.
+// 	  retDir = sprite::DIR_NONE;
+// 	}
+//     }
 
-  return retDir;
-}
+//   return retDir;
+// }
 
 
 void rules::startJumping(const int position,
 			 const std::map<std::string, char> & coordChars)
 {
-  if(!gamePlayer->startJumping(position, coordChars))
-    {
-      //      gamePlayer->keepJumping(obstructionNAbove, obstructionNBelow);
-    }
+  // if(!gamePlayer->startJumping(position, coordChars))
+  //   {
+  //     //      gamePlayer->keepJumping(obstructionNAbove, obstructionNBelow);
+  //   }
 }
 
 
 #ifdef DEBUG
 #include <sstream>
 
-void rules::printRuleChars(const int position, const int maxX)
-{
-  for(std::map<std::string, char>::iterator iter {coordChars.begin()};
-      iter != coordChars.end(); ++iter)
-    {
-      std::stringstream coord {};
-      std::string strChar {};
-      int y, x;
-      char eat;
+// void rules::printRuleChars(const int position, const int maxX)
+// {
+//   for(std::map<std::string, char>::iterator iter {coordChars.begin()};
+//       iter != coordChars.end(); ++iter)
+//     {
+//       std::stringstream coord {};
+//       std::string strChar {};
+//       int y, x;
+//       char eat;
 	
-      coord<<iter->first;
-      coord>>y;
-      coord>>eat;
-      coord>>x;
+//       coord<<iter->first;
+//       coord>>y;
+//       coord>>eat;
+//       coord>>x;
 
-      if((x - position) < maxX)
-	{
-	  strChar = iter->second;
+//       if((x - position) < maxX)
+// 	{
+// 	  strChar = iter->second;
       
-	  mvprintw(y, (x - position), strChar.c_str());
-	  refresh();
-	}
-      coord.clear();
-    }
-}
+// 	  mvprintw(y, (x - position), strChar.c_str());
+// 	  refresh();
+// 	}
+//       coord.clear();
+//     }
+// }
 #endif
 
 
@@ -505,7 +485,7 @@ void rules::physics
  std::__1::chrono::steady_clock::time_point & secStartTime)
 {
 #ifdef DEBUG
-  printRuleChars(position, maxyx.x);
+  // printRuleChars(position, maxyx.x);
 #endif
   
   movePlayer(player::convertDirectionCharsToDirections(input), position,

@@ -86,8 +86,8 @@ public:
      Returns true if the the player started a new jump (this will only happen if
      maxJumpNum hasn't been reached.) If the player didn't start a new jump then
      keepJumping should be called (but only if the player can move down). */
-  bool startJumping(const int position,
-		    const std::map<std::string, char> & coordChars);
+  // bool startJumping(const int position,
+  // 		    const std::vector<char> & coordRules);
   /* Keeps jumping if the player is jumping. That is as long as the player will
      not collide with any boarder characters or the bottom or top of the level.
      If the player is falling keep falling unless the player is above a boarder

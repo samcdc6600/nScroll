@@ -2,6 +2,7 @@
 #include <sstream>
 #include <cstring>
 #include <ncurses.h>
+#include <string>
 #include "include/utils.hpp"
 #include "include/loadAssets.hpp"
 #include "include/collapse.hpp"
@@ -15,7 +16,7 @@ void loadAssets
   loadAndParseBackgroundFile(maxyx, bgFileName, background);
   /* Initialise player and non-player sprites (rules file) and initialise
      levelRules array. */
-  loadAndParseLevelRulesFile(maxyx, rulesFileName, levelRules,
+  loadAndParseLevelRulesFile(maxyx, bgFileName, rulesFileName, levelRules,
 			     background.size());
 }
 
@@ -45,9 +46,9 @@ void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
 }
 
 
-void loadAndParseLevelRulesFile
-(const yx maxyx, const char rulesFileName [], rules & levelRules,
- const size_t bgSize)
+void loadAndParseLevelRulesFile(const yx maxyx, const char bgFileName [],
+				const char rulesFileName[],
+                                rules &levelRules, const size_t bgSize)
 {
   std::string rawRules {};
   if(!loadFileIntoString(rulesFileName, rawRules))
@@ -57,51 +58,20 @@ void loadAndParseLevelRulesFile
       exit(e.str(), ERROR_OPENING_FILE);
     }
 
-  parseRulesHeader(maxyx, rulesFileName, levelRules, bgSize, rawRules);
+  std::string::const_iterator buffPos {rawRules.begin()};
+  parseRulesHeader(maxyx, rulesFileName, levelRules, bgSize, rawRules, buffPos);
+  parseRulesMain(maxyx, bgFileName, rulesFileName, levelRules, bgSize, rawRules, buffPos);
 }
 
 
 void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 			  rules & levelRules, const size_t bgSize,
-			  const std::string & rawRules)
+		      const std::string & rawRules,
+		      std::string::const_iterator & buffPos)
 {
   using namespace levelFileKeywords;
 
-  std::string::const_iterator buffPos {rawRules.begin()};
   initPlayer(maxyx, rulesFileName, levelRules, rawRules, buffPos);
-
-  // std::string::const_iterator buffPos
-  //   {getAdvancedIter(rawRules.begin(), rawRules.end(),
-  // 		     sizeof(RULES_HEADER_START_DENOTATION),
-  // 		     std::string {"Error: header of the .rules.lev file is "
-  // 		       "malformed. input ended unexpectedly."})};
-
-  // initPlayerSprite(readPlayerSpriteFileNames);
-  // //initOtherSprites(readOtherSpriteFileNames)
-  // std::vector<std::string> targets {RULES_HEADER_START_DENOTATION};
-  // std::string targetFound {};
-
-
-  // endwin();
-  // targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
-  // std::cout<<"targetFound = "<<targetFound<<'\n';
-  // if(buffPos == rawRules.end())
-  //   {
-  //     std::cout<<"buffPos = end()\n";
-  //   }
-  // std::cout<<"*buffPos = "<<*buffPos<<'\n';
-  // exit(-1);
-
-  
-	// current {peek++}; *peek != NULL_BYTE; ++peek, ++current)
-	// {
-	  // std::stringstream e {};
-	  // e<<"*current = "<<*current<<", *peek = "<<*peek<<'\n';
-	  // exit(e.str().c_str(), 0);
-	  // if(*current == STRING_DENOTATION && *peek == 
-	  // // switchOnCurrent(maxyx, rawRules, current, peek, rawRules.end(), levelRules,
-	  // // 		  bgSize);
-	// }
 }
 
 
@@ -422,7 +392,7 @@ void readSingleCoordSection(const std::string & buff,
     {
       std::stringstream e {};
       e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<"\" to "
-	"denote start of single coordinate section when "<<eMsg<<". Encountered"
+	"denote start of single coordinate section when "<<eMsg<<". Encountered "
        <<"\""<<*buffPos<<"\"\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
@@ -435,7 +405,7 @@ void readSingleCoordSection(const std::string & buff,
     {
       std::stringstream e {};
       e<<"Error: expected \""<<COORD_SEPARATION<<"\" before second coordinate "
-	"component in single coordinate section when "<<eMsg<<". Encountered"
+	"component in single coordinate section when "<<eMsg<<". Encountered "
        <<"\""<<*buffPos<<"\"\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
@@ -448,7 +418,7 @@ void readSingleCoordSection(const std::string & buff,
     {
       std::stringstream e {};
       e<<"Error: expected \""<<RULES_HEADER_SECTION_END_DENOTATION<<"\" to "
-	"denote end of single coordinate section when "<<eMsg<<". Encountered"
+	"denote end of single coordinate section when "<<eMsg<<". Encountered "
        <<"\""<<*buffPos<<"\"\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
@@ -465,8 +435,9 @@ int readSingleNum(const std::string & buff,
     {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
   std::string targetFound {};
   
-  std::stringstream coordComp {};
-      
+  std::stringstream number {};
+
+  // Skip space up until the start of the number.
   targetFound = skipSpaceUpTo(buff, buffPos, targets);
   if(targetFound == "")
     {
@@ -478,36 +449,27 @@ int readSingleNum(const std::string & buff,
   --buffPos;
 
   int decPlacesIter {};
-  // Read in coordinate component.
-  while(*buffPos != COORD_SEPARATION &&
-	*buffPos != RULES_HEADER_SECTION_END_DENOTATION &&  *buffPos != ' ' &&
-	*buffPos != '\t' && *buffPos != '\n' && *buffPos != '\r')
+  // Read in number.
+  while(isNum(*buffPos))
     {
-      coordComp<<*buffPos;
-      if(!isNum(*buffPos))
-	{
-	  std::stringstream e {};
-	  e<<"Error: expected non-negative number when "<<eMsg
-	   <<". Encountered \""<<*buffPos<<"\".\n";
-	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-	}
+      number<<*buffPos;
       decPlacesIter++;
       buffPos++;
     }
   
-  // Check if coordinate component was too long.
+  // Check if number was too long.
   if(decPlacesIter > MAX_COORD_LEN)
     {
       std::stringstream e {};
-      e<<"Error: number \""<<coordComp.str()<<"\" too long (longer than \""
+      e<<"Error: number \""<<number.str()<<"\" too long (longer than \""
        <<MAX_COORD_LEN<<"\") when "<<eMsg
        <<". Encountered \""<<*buffPos<<"\".\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
 
-  int coordCompRet;
-  coordComp>>coordCompRet;
-  return coordCompRet;
+  int numberRet;
+  number>>numberRet;
+  return numberRet;
 }
 
 
@@ -549,10 +511,92 @@ void readEndOfHeader(const std::string & buff,
        <<eMsg<<". Encountered \""<<*buffPos<<*(++buffPos)<<*(++buffPos)<<"\".\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
+  buffPos += 2;
 }
 
 
+void parseRulesMain(const yx maxyx, const char bgFileName [],
+		    const char rulesFileName[], rules & levelRules,
+		    const size_t bgSize,
+		    const std::string & rawRules,
+		    std::string::const_iterator & buffPos)
+{
+  // Main body of rules file should start on a new line (account for if.)
+  buffPos++;			
+  const size_t expectedLineLength {bgSize / maxyx.y};
+  int lineNumber {};
+  int lineLength {};
+  
+  while(buffPos < rawRules.end())
+    {
+      if(*buffPos == levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR)
+	{
+	  // We've encountered a run-length encoding character.
+	  const char ruleChar {*(++buffPos)};
+	  ++buffPos;
 
+	  const int runLength {readSingleNum
+	    (rawRules, buffPos,
+	     concat(std::string {"reading run-length encoding length as a "
+				 "result of encountering run-length encoding "
+				 "character \""},
+	       levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR,
+	       std::string {"\" while parsing main section of \""},
+	       rulesFileName,
+	       std::string {"\""}))};
+	  --buffPos;
+
+	  for(int lengthIter {}; lengthIter < runLength; ++lengthIter)
+	    {
+	      levelRules.coordRules.push_back(ruleChar);
+	    }
+	  lineLength += runLength;
+	}
+      else
+	{
+	  levelRules.coordRules.push_back(*buffPos);
+	  lineLength++;
+	}
+      
+      buffPos++;
+      if(*buffPos == '\n')
+	{
+	  if(lineLength != expectedLineLength)
+	    {
+	      std::stringstream e {};
+	      e<<"Error: reading rules.lev header file \""<<rulesFileName
+	       <<"\". Encountered line of length ("<<lineLength<<") (on line "
+	       <<lineNumber<<" of main section) when reading main section of "
+		"file. Expected a line of length ("<<expectedLineLength<<").";
+
+	      exit(e.str().c_str(), ERROR_BACKGROUND);
+	    }
+	  lineLength = 0;
+	  lineNumber++;
+	  buffPos++;
+	}
+    }
+
+  if(lineLength != expectedLineLength)
+    {
+      std::stringstream e {};
+      e<<"Error: reading rules.lev header file \""<<rulesFileName
+       <<"\". Encountered line of length ("<<lineLength<<") (on line "
+       <<lineNumber<<") when reading main section of file. Expected a line "
+	"of length ("<<expectedLineLength<<").";
+      exit(e.str().c_str(), ERROR_BACKGROUND);
+    }
+
+  if(levelRules.coordRules.size() > bgSize)
+    {
+      std::stringstream e {};
+      e << "Error: reading rules.lev header file \"" << rulesFileName
+	<< "\". Size of main section of file larger ("
+	<<levelRules.coordRules.size()<<") then size ("<<bgSize
+	<<") of background file \""<<bgFileName<<"\".";
+      exit(e.str().c_str(), ERROR_BACKGROUND);
+    }
+}
 
 
 
@@ -1016,7 +1060,7 @@ void checkForDefaultPlayerValues
       e<<"Error: expected section\\s \"";
       for(auto keywordAction: playerHeaderKeywordActions)
 	{
-	  if(!keywordAction.found)
+	  if(!keywordAction.found && keywordAction.action != nullptr)
 	    {
 	      e<<keywordAction.keyword<<", ";
 	    }

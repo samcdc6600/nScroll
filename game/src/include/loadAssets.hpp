@@ -49,12 +49,14 @@ void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
    other information. When a sprite coordinate, sprite and rule triple has been
    extracted add sprite and rule using sprite coordinate as key to a vector in
    the spriteCoords map in the form of a spriteInfo struct */
-void loadAndParseLevelRulesFile(const yx maxyx, const char rulesFileName[],
-                                rules & levelRules, const size_t bgSize);
+void loadAndParseLevelRulesFile(const yx maxyx, const char bgFileName [],
+				const char rulesFileName[],
+                                rules &levelRules, const size_t bgSize);
 // Where rawRules holds the contents of a rules.lev file.
 void parseRulesHeader(const yx maxyx, const char rulesFileName[],
-                      rules & levelRules, const size_t bgSize,
-                      const std::string & rawRules);
+			  rules & levelRules, const size_t bgSize,
+		      const std::string & rawRules,
+		      std::string::const_iterator & buffPos);
 void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
                 const std::string &rawRules,
                 std::string::const_iterator &buffPos);
@@ -83,9 +85,14 @@ void readSingleCoordSection(const std::string & buff,
 int readSingleNum(const std::string &buff, std::string::const_iterator &buffPos,
                   const std::string &eMsg);
 // Verifies that the header of a .rules.lev file is present.
-void readEndOfHeader(const std::string & buff,
-		     std::string::const_iterator & buffPos,
-		     const std::string & eMsg);
+void readEndOfHeader(const std::string &buff,
+                     std::string::const_iterator &buffPos,
+                     const std::string &eMsg);
+void parseRulesMain(const yx maxyx, const char bgFileName [],
+		    const char rulesFileName[], rules & levelRules,
+		    const size_t bgSize,
+		    const std::string & rawRules,
+		    std::string::const_iterator & buffPos);
 
 
 /* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player
@@ -199,8 +206,12 @@ namespace levelFileKeywords
   constexpr char ESCAPE_CHAR {'\\'};
   constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
   constexpr char NULL_BYTE {'\0'};
-  // constexpr int SHOW_COUNT {45}; // How many characters to print in printN
-  // // function.
+  /* If this character is encountered in the main section of a rules.lev file
+     the character 2 places after it should be an ASCII number. After this
+     number there can be a string of contiguous ASCII numbers (up to some
+     maximum) that together represent some larger number. This number is the
+     number of times the ASCII character before the number should be repeated. */
+  constexpr char RULES_MAIN_RUNLENGTH_BEGIN_CHAR {'R'};
 }
 
 

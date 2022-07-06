@@ -13,15 +13,8 @@ public:
   // The player cannot pass widthin this many character's of the window boarder's (y, x).
   const yx PLAYER_MOVEMENT_INNER_MARGIN {0, 40};
   static constexpr size_t second {1};
-  /* Stores the rule characters read in from the rules.lev file. We though about
-     using a space matrix here, however quickly decided against it because it
-     would be computationally inefficient and we think that the program  would
-     most likely be more computationally bound then memory bound if the program
-     were to reach the limits of the hardware it was running on. */
-  // std::vector<std::vector<char>> & ruleCharacters;
-  /* The key's for these maps should be of the form "Y,X" Where Y and X are 
-     numbers and the whole thing is a string */
-  std::map<std::string, char> coordChars {}; /* For coordinate rules. */
+  // Contains position based rules.
+  std::vector<char> coordRules {};
   //For sprites (holds sprite data (slices) and the rule for the sprite.)
   struct spriteInfo
   { // Sprite data to go here (when I do it.)
@@ -98,16 +91,16 @@ private:
      Input should be the player input direction and the current absolute
      position of the player sprite in the x dimension. Returns updated
      direction. */
-  sprite::directions handleGroundCollision(const int position);
+  // sprite::directions handleGroundCollision(const int position);
   /* Handles collision with boarder characters when the player sprite is moving
      right. If there is only one character to the bottom right then the player
      will continue moving in the right direction but be moved up by one
      character unless the player has a y position of 0, in which case the
      player will be stopped. The player sprite will also be stopped if there is
      more then one character directly to the right of it. */
-  sprite::directions handleRightCollision(const int position);
-  // Analogous to handleRightCollision but of course for leftward movement.
-  sprite::directions handleLeftCollision(const int position);
+  // sprite::directions handleRightCollision(const int position);
+  // // Analogous to handleRightCollision but of course for leftward movement.
+  // sprite::directions handleLeftCollision(const int position);
   /* Called when the player is trying to jump (by pressing the jump button.)
      obstructionAbove and obstructionBelow should be set to true if there is an
      obstruction above or an obstruction below (respectively) that would stop
@@ -116,7 +109,7 @@ private:
 		    const std::map<std::string, char> & coordChars);
 
 #ifdef DEBUG
-  void printRuleChars(const int position, const int maxX);
+  // void printRuleChars(const int position, const int maxX);
 #endif
 
 public:
