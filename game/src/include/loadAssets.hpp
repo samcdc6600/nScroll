@@ -88,11 +88,14 @@ int readSingleNum(const std::string &buff, std::string::const_iterator &buffPos,
 void readEndOfHeader(const std::string &buff,
                      std::string::const_iterator &buffPos,
                      const std::string &eMsg);
-void parseRulesMain(const yx maxyx, const char bgFileName [],
-		    const char rulesFileName[], rules & levelRules,
-		    const size_t bgSize,
-		    const std::string & rawRules,
-		    std::string::const_iterator & buffPos);
+void parseRulesMain(const yx maxyx, const char bgFileName[],
+                    const char rulesFileName[], rules &levelRules,
+                    const size_t bgSize, const std::string &rawRules,
+                    std::string::const_iterator &buffPos);
+/* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
+   Or if the argument is a space character. If either of these is true then
+   returns. Otherwise calls exit() */
+void checkRuleChar(const char potentialRule, const std::string eMsg);
 
 
 /* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player

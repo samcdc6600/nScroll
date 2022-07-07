@@ -7,6 +7,19 @@
 #include "include/utils.hpp"
 
 
+namespace boarderRuleChars
+{
+  /* NOTE: when adding boarder rule characters you must also add them to the
+     CHARS array and add the extern declarations to utils.hpp. */
+  // The player cannot move through boarder chars.
+  constexpr char BOARDER_CHAR = 'b';
+  /* Same as boarder chars (except the player can move through them if
+     moving up.) */
+  constexpr char PLATFORM_CHAR = 'p';
+  const std::vector<char> CHARS {BOARDER_CHAR, PLATFORM_CHAR};
+};
+
+
 void sleep(const unsigned long long t)
 {
   std::this_thread::sleep_for(std::chrono::milliseconds(t));

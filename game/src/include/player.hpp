@@ -112,7 +112,7 @@ private:
      dictates whether to calculate y from the bottom of the sprite or the top of
      the sprite directContact dictates whether to use
      bottomCollisionDirectOffset or bottomCollisionOneOffOffset */
-  std::vector<std::string> getXAbsRangeAsStrs(const int position,
+  std::vector<yx> getXAbsRangeAsStrs(const int position,
 					      const int bottomSide,
 					      const bool directContact)
   {
@@ -125,14 +125,15 @@ private:
       (directContact ? topCollisionDirectOffset: topCollisionOneOffOffset)};
     const int y {(bottomSide ? this->maxBottomRightOffset.y: 0) + collisionOffset + this->position.y};
 
-    std::vector<std::string> retCoords {};
+    std::vector<yx> retCoords {};
     for(int pos {absLeftPos}; pos <= absRightPos; pos++)
       {
-	std::stringstream ss {};
-	ss<<y<<','<<pos;
+	retCoords.push_back(yx(y, pos));
+	// std::stringstream ss {};
+	// ss<<y<<','<<pos;
 	
-	retCoords.push_back(ss.str());
-	ss.clear();
+	// retCoords.push_back(ss.str());
+	// ss.clear();
       }
 
     return retCoords;
@@ -173,21 +174,21 @@ private:
   
   
 public:
-    std::vector<std::string>
+  /*    std::vector<std::string>
   getBottomXAbsRangeAsStrsForDirectContact(const int position)
   {
     return getXAbsRangeAsStrs(position, true, true);
-  }
+    }*/
 
   
-  std::vector<std::string>
+  std::vector<yx>
   getBottomXAbsRangeAsStrsForOneOffContact(const int position)
   {
     return getXAbsRangeAsStrs(position, true, false);
   }
 
 
-  std::vector<std::string>
+  /*  std::vector<std::string>
   getTopXAbsRangeAsStrsForDirectContact(const int position)
   {
     return getXAbsRangeAsStrs(position, false, true);
@@ -239,7 +240,7 @@ public:
   std::string
   getOneBelowBottomLeft(const int position)
   {
-  }
+  }*/
 };
 
 #endif

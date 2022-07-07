@@ -97,7 +97,7 @@ void rules::movePlayer(sprite::directions input,
   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
      input == sprite::DIR_DOWN)
     {
-      // input = handleGroundCollision(position);
+      input = handleGroundCollision(position);
     }
   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
@@ -325,22 +325,22 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
 
 /* Checks for contact with boarder characters when moving down. Returns the
    direction that the player should be moving in. */
-// sprite::directions rules::handleGroundCollision(const int position)
-// {
-//   sprite::directions retDir {sprite::DIR_DOWN};
-//   for(std::string coord:
-// 	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
-//     {
-//       if(coordChars.find(coord) != coordChars.end() &&
-// 	 (coordChars.find(coord)->second == 'b'  ||
-// 	  (coordChars.find(coord))->second == 'p'))
-// 	{
-// 	  retDir = sprite::DIR_NONE;
-// 	  break;
-// 	}
-//     }
-//   return retDir;
-// }
+sprite::directions rules::handleGroundCollision(const int position)
+{
+  sprite::directions retDir {sprite::DIR_DOWN};
+  for(yx coord:
+	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
+    {
+      // if(coordChars.find(coord) != coordChars.end() &&
+      // 	 (coordChars.find(coord)->second == 'b'  ||
+      // 	  (coordChars.find(coord))->second == 'p'))
+      // 	{
+      // 	  retDir = sprite::DIR_NONE;
+      // 	  break;
+      // 	}
+    }
+  return retDir;
+}
 
 
 /* Checks for contact with boarder characters when moving right. Moves the
@@ -453,35 +453,12 @@ void rules::startJumping(const int position,
 
 void rules::printRuleChars(const int position, const int maxY, const int maxX)
 {
-  // for(std::map<std::string, char>::iterator iter {coordRules.begin()};
-  //     iter != coordChars.end(); ++iter)
-  //   for(char ruleChar: coordRules)
-  //   {
-  //     std::stringstream coord {};
-  //     std::string strChar {};
-  //     int y, x;
-  //     char eat;
-	
-  //     coord<<iter->first;
-  //     coord>>y;
-  //     coord>>eat;
-  //     coord>>x;
-
-  //     if((x - position) < maxX)
-  // 	{
-  // 	  strChar = iter->second;
-      
-  // 	  mvprintw(y, (x - position), strChar.c_str());
-  // 	  refresh();
-  // 	}
-  //     coord.clear();
-  //   }
-
   for(int y {}; y < maxY; ++y)
     {
       for(int x {}; x < (coordRules.size() / backgroundHeight); ++x)
 	{
-	  const char coordRule {getChoordRule(y, x)};
+	  char coordRule;
+	  getChoordRule(y, x, coordRule);
 	  if(coordRule != ' ' && (x - position) < maxX)
 	    {
 	      mvprintw(y, (x - position), (std::string {coordRule}).c_str());
@@ -509,14 +486,20 @@ void rules::physics
 }
 
 
-char rules::getCoordRule(const yx & pos)
+bool rules::getCoordRule(const yx & pos, char & coordRulesRet)
 {
-  return getChoordRule(pos.y, pos.x);
+  return getChoordRule(pos.y, pos.x, coordRulesRet);
 }
 
   
-char rules::getChoordRule(const int y, const int x)
+bool rules::getChoordRule(const int y, const int x, char & coordRulesRet)
 {
+  bool ret {false};
   int linearAddress = {y * ((int)coordRules.size() / backgroundHeight) + x};
-  return coordRules[linearAddress];
+  if(linearAddress < coordRules.size())
+    {
+      ret = true;
+      coordRulesRet = coordRules[linearAddress];
+    }
+  return ret;
 }

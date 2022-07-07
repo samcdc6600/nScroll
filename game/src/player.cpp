@@ -141,7 +141,7 @@ void player::setVertVelocity(const double newVV)
 // }
 
 
-void player::handleJumpingAndFalling(const int bgPosition, const yx & maxyx,
+/*void player::handleJumpingAndFalling(const int bgPosition, const yx & maxyx,
 			 const std::map<std::string, char> & coordChars)
 {
   if(jumping == notJumping)
@@ -244,7 +244,7 @@ void player::handleJumping(const int bgPosition, const yx & maxyx,
     }
 }
 
-
+*//*
 void player::handleFallingSimple(const int bgPosition, const yx & maxyx,
 				 const std::map<std::string, char> & coordChars)
 {
@@ -263,7 +263,7 @@ void player::handleFallingSimple(const int bgPosition, const yx & maxyx,
 	}
       /* This is a simpler check but probably much less common, so we put it
 	 second. */
-      if((position.y + maxBottomRightOffset.y) == (maxyx.y -1))
+/*      if((position.y + maxBottomRightOffset.y) == (maxyx.y -1))
 	{
 	  // We're going to hit the bottom of the level (stop jumping!)
 	  vertVelocity = 0;
@@ -274,4 +274,4 @@ void player::handleFallingSimple(const int bgPosition, const yx & maxyx,
       updatePosRel(sprite::DIR_DOWN);
     }
 
-}
+}*/

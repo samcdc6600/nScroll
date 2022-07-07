@@ -91,7 +91,7 @@ private:
      Input should be the player input direction and the current absolute
      position of the player sprite in the x dimension. Returns updated
      direction. */
-  // sprite::directions handleGroundCollision(const int position);
+  sprite::directions handleGroundCollision(const int position);
   /* Handles collision with boarder characters when the player sprite is moving
      right. If there is only one character to the bottom right then the player
      will continue moving in the right direction but be moved up by one
@@ -140,9 +140,8 @@ public:
   //   getCoordRule(y, x);
   // }
 
-  char getCoordRule(const yx & pos);
-
-  char getChoordRule(const int y, const int x);
+  bool getCoordRule(const yx & pos, char & coordRulesRet);
+  bool getChoordRule(const int y, const int x, char & coordRulesRet);
 };
 
 

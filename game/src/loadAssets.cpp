@@ -535,6 +535,12 @@ void parseRulesMain(const yx maxyx, const char bgFileName [],
 	  const char ruleChar {*(++buffPos)};
 	  ++buffPos;
 
+	  checkRuleChar(ruleChar,
+			concat(std::string {"parsing main section of \""},
+			       rulesFileName, std::string {"\""},
+			       std::string {" (on line "}, lineNumber,
+			       std::string {" of main section)"}));
+
 	  const int runLength {readSingleNum
 	    (rawRules, buffPos,
 	     concat(std::string {"reading run-length encoding length as a "
@@ -554,6 +560,11 @@ void parseRulesMain(const yx maxyx, const char bgFileName [],
 	}
       else
 	{
+	  checkRuleChar(*buffPos,
+			concat(std::string {"parsing main section of \""},
+			       rulesFileName, std::string {"\""},
+			       std::string {" (on line "}, lineNumber,
+			       std::string {" of main section)"}));
 	  levelRules.coordRules.push_back(*buffPos);
 	  lineLength++;
 	}
@@ -596,6 +607,28 @@ void parseRulesMain(const yx maxyx, const char bgFileName [],
 	<<bgFileName<<"\".";
       exit(e.str().c_str(), ERROR_BACKGROUND);
     }
+}
+
+
+void checkRuleChar(const char potentialRule, const std::string eMsg)
+{
+  for(char rule: boarderRuleChars::CHARS)
+    {
+      if(potentialRule == rule || potentialRule == ' ')
+	{
+	  return;
+	}
+    }
+  std::stringstream e {};
+  e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
+    "line, \""<<levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR<<"\" or in "
+    "the set of rule characters (";
+  for(char rule: boarderRuleChars::CHARS)
+    {
+      e<<rule<<", ";
+    }
+  e<<") when "<<eMsg<<'.';
+  exit(e.str().c_str(), ERROR_CHARACTER_RANGE);
 }
 
 

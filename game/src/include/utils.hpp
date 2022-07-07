@@ -58,17 +58,14 @@ enum errorsCodes {                     /* Error codes. */
 };
 
 
-/* NOTE: THE CODE IN LOADASSETS.CPP THAT CHECKS FOR INCORRECT BOARDER RULE
-   CHARACTERS SHOULD BE UPDATED AFTER AFTER ADDING A NEW BOARDER RULE
-   CHARACTER */
 namespace boarderRuleChars
 {
-  // The player cannot move through boarder chars.
-  constexpr char boarderChar = 'b';
-  /* Same as boarder chars (except the player can move through them if
-     moving up.) */
-  constexpr char platformChar = 'p';
-}; // namespace boarderRuleChars
+  /* NOTE: when adding boarder rule characters you must add then to utils.cpp as
+     well as adding the corresponding extern declarations here. */
+  extern const char BOARDER_CHAR;
+  extern const char PLATFORM_CHAR;
+  extern const std::vector<char> CHARS;
+};
 
 
 void sleep(const unsigned long long t);
