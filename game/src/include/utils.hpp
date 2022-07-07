@@ -15,6 +15,21 @@ struct yx
     this->y = y;
     this->x = x;
   }
+
+  bool operator==(const yx & rhs)
+  {
+    if(y != rhs.y || x != rhs.x)
+      {
+	return false;
+      }
+    return true;
+  }
+
+  bool operator!=(const yx & rhs)
+  {
+    return !operator==(rhs);
+  }
+
   int y;
   int x;
 };

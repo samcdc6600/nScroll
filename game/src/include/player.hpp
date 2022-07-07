@@ -129,11 +129,6 @@ private:
     for(int pos {absLeftPos}; pos <= absRightPos; pos++)
       {
 	retCoords.push_back(yx(y, pos));
-	// std::stringstream ss {};
-	// ss<<y<<','<<pos;
-	
-	// retCoords.push_back(ss.str());
-	// ss.clear();
       }
 
     return retCoords;
@@ -143,9 +138,8 @@ private:
   /* Calculates all the points between the absolute position of the top right +
      topCollisionOffset and the absolute position of the bottom right +
      bottomCollisionOffset. Return value is a vector of strings of the pos's. */
-  std::vector<std::string> getYAbsRangeAsStrs(const int position,
-					      const bool rightSide,
-					      const bool directContact)
+  std::vector<yx> getYAbsRangeAsStrs(const int position, const bool rightSide,
+				     const bool directContact)
   {
     const int absTopPos {this->position.y + topCollisionDirectOffset};
     const int absBottomPos {this->position.y + maxBottomRightOffset.y +
@@ -159,14 +153,10 @@ private:
     collisionOffset + position + this->position.x};
 
     
-    std::vector<std::string> retCoords {};
+    std::vector<yx> retCoords {};
     for(int pos {absTopPos}; pos <= absBottomPos; pos++)
       {
-	std::stringstream ss {};
-	ss<<pos<<','<<x;
-
-	retCoords.push_back(ss.str());
-	ss.clear();
+	retCoords.push_back(yx(pos, x));
       }
     
     return retCoords;
@@ -207,15 +197,15 @@ public:
   {
     return   getYAbsRangeAsStrs(position, true, true);
   }
+  */
 
-
-  std::vector<std::string>
+  std::vector<yx>
   getRightYAbsRangeAsStrsForOneOffContact(const int position)
   {
     return   getYAbsRangeAsStrs(position, true, false);
   }
 
-  
+  /*
   std::vector<std::string>
   getLeftYAbsRangeAsStrsForDirectContact(const int position)
   {

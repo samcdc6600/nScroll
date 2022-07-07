@@ -102,7 +102,7 @@ void rules::movePlayer(sprite::directions input,
   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
     {
-      // input = handleRightCollision(position);
+      input = handleRightCollision(position);
     }
   else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_LEFT)
@@ -348,50 +348,50 @@ sprite::directions rules::handleGroundCollision(const int position)
    player up one character if a "step" is encountered (as long as the player
    will not go out of bounds.) Returns the direction the player should move in.
 */
-// sprite::directions rules::handleRightCollision(const int position)
-// {
-//   using namespace boarderRuleChars;
-//   sprite::directions retDir {sprite::DIR_RIGHT};
-//   const std::vector<std::string> playerCoords
-//     {gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position)};
-//   const std::string bottomRightPlayerCoord
-//     {playerCoords[playerCoords.size() -1]};
-//   bool stoppingContact {false};
-    
-//   for(std::string playerCoord: playerCoords)
-//     {
-//       // If there is near contact and it's not with the bottom right coord.
-//       if(playerCoord != bottomRightPlayerCoord &&
-// 	 coordChars.find(playerCoord) != coordChars.end() &&
-// 	 coordChars.find(playerCoord)->second == boarderChar)
-// 	{
-// 	  stoppingContact = true;
-// 	  retDir = sprite::DIR_NONE;
-// 	  break;
-// 	}
-//     }
+sprite::directions rules::handleRightCollision(const int position)
+{
+  using namespace boarderRuleChars;
+  sprite::directions retDir {sprite::DIR_RIGHT};
+  const std::vector<yx> playerCoords
+    {gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position)};
+  const yx bottomRightPlayerCoord
+    {playerCoords[playerCoords.size() -1]};
+  bool stoppingContact {false};
+
+  char rule {};
+  for(yx playerCoord: playerCoords)
+    {
+      // If there is near contact and it's not with the bottom right coord.
+      if(playerCoord != bottomRightPlayerCoord &&
+	 getCoordRule(playerCoord, rule) &&
+	 rule == BOARDER_CHAR)
+	{
+	  stoppingContact = true;
+	  retDir = sprite::DIR_NONE;
+	  break;
+	}
+    }
   
-//   if(!stoppingContact &&
-//      coordChars.find(bottomRightPlayerCoord) != coordChars.end() &&
-//      (coordChars.find(bottomRightPlayerCoord)->second == boarderChar ||
-//       coordChars.find(bottomRightPlayerCoord)->second == platformChar))
-//     {
-//       if(gamePlayer->getPos().y > 0)
-// 	{
-// 	  /* If we've hit a "step" (as in the things that constitute staircases)
-// 	     and we are not at the minimum (top of window) y position, then
-// 	     "step up" :). */
-// 	  gamePlayer->updatePosRel(sprite::DIR_UP);
-// 	}
-//       else
-// 	{
-// 	  // We've hit the top of the window.
-// 	  retDir = sprite::DIR_NONE;
-// 	}
-//     }
+  if(!stoppingContact &&
+     getCoordRule(bottomRightPlayerCoord, rule) &&
+     (rule == BOARDER_CHAR || rule == PLATFORM_CHAR))
+    {
+      if(gamePlayer->getPos().y > 0)
+	{
+	  /* If we've hit a "step" (as in the things that constitute staircases)
+	     and we are not at the minimum (top of window) y position, then
+	     "step up" :). */
+	  gamePlayer->updatePosRel(sprite::DIR_UP);
+	}
+      else
+	{
+	  // We've hit the top of the window.
+	  retDir = sprite::DIR_NONE;
+	}
+    }
   
-//   return retDir;
-// }
+  return retDir;
+}
 
 
 // sprite::directions rules::handleLeftCollision(const int position)

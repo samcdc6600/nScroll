@@ -98,7 +98,7 @@ private:
      character unless the player has a y position of 0, in which case the
      player will be stopped. The player sprite will also be stopped if there is
      more then one character directly to the right of it. */
-  // sprite::directions handleRightCollision(const int position);
+  sprite::directions handleRightCollision(const int position);
   // // Analogous to handleRightCollision but of course for leftward movement.
   // sprite::directions handleLeftCollision(const int position);
   /* Called when the player is trying to jump (by pressing the jump button.)
