@@ -141,7 +141,7 @@ public:
   // }
 
   bool getCoordRule(const yx & pos, char & coordRulesRet);
-  bool getChoordRule(const int y, const int x, char & coordRulesRet);
+  bool getCoordRule(const int y, const int x, char & coordRulesRet);
 };
 
 

@@ -331,13 +331,14 @@ sprite::directions rules::handleGroundCollision(const int position)
   for(yx coord:
 	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
     {
-      // if(coordChars.find(coord) != coordChars.end() &&
-      // 	 (coordChars.find(coord)->second == 'b'  ||
-      // 	  (coordChars.find(coord))->second == 'p'))
-      // 	{
-      // 	  retDir = sprite::DIR_NONE;
-      // 	  break;
-      // 	}
+      char rule {};
+      if(getCoordRule(coord, rule) &&
+	 (rule == boarderRuleChars::BOARDER_CHAR ||
+	  rule == boarderRuleChars::PLATFORM_CHAR))
+	{
+	  retDir = sprite::DIR_NONE;
+	  break;
+	}
     }
   return retDir;
 }
@@ -458,7 +459,7 @@ void rules::printRuleChars(const int position, const int maxY, const int maxX)
       for(int x {}; x < (coordRules.size() / backgroundHeight); ++x)
 	{
 	  char coordRule;
-	  getChoordRule(y, x, coordRule);
+	  getCoordRule(y, x, coordRule);
 	  if(coordRule != ' ' && (x - position) < maxX)
 	    {
 	      mvprintw(y, (x - position), (std::string {coordRule}).c_str());
@@ -488,11 +489,11 @@ void rules::physics
 
 bool rules::getCoordRule(const yx & pos, char & coordRulesRet)
 {
-  return getChoordRule(pos.y, pos.x, coordRulesRet);
+  return getCoordRule(pos.y, pos.x, coordRulesRet);
 }
 
   
-bool rules::getChoordRule(const int y, const int x, char & coordRulesRet)
+bool rules::getCoordRule(const int y, const int x, char & coordRulesRet)
 {
   bool ret {false};
   int linearAddress = {y * ((int)coordRules.size() / backgroundHeight) + x};
