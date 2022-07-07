@@ -212,12 +212,13 @@ public:
     return   getYAbsRangeAsStrs(position, false, true);
   }
 
-  
-  std::vector<std::string>
+  */
+  std::vector<yx>
   getLeftYAbsRangeAsStrsForOneOffContact(const int position)
   {
     return   getYAbsRangeAsStrs(position, false, false);
   }
+  /*
 
   std::string
   getOneBelowBottomRight(const int position)
