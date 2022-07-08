@@ -104,9 +104,9 @@ std::string skipSpaceUpTo(const std::string &buff,
                           std::vector<std::string> &targets);
 /* Finds a target from targets in the buffer pointed to by
    outerPeekPos. Returns the target found. If no target was found returns "". */
-static std::string findTargetInBuff
-(const std::string::const_iterator & outerPeekPos,
- const std::vector<std::string> & targets);
+static std::string
+findTargetInBuff(const std::string::const_iterator &outerPeekPos,
+		 const std::vector<std::string> &targets);
 /* Calls endwin() then print's e to std::cerr and finally call's exit() with
    status */
 void exit(const std::string &e, const int status);
@@ -153,6 +153,29 @@ getAdvancedIter(T_A i, const T_B iEnd, const size_t n, const std::string & eMsg)
 	}
     }
   return i;
+}
+
+
+template<typename T>
+bool getCoordRule(const int y, const int x, const std::vector<T> & rules,
+		  int bgHeight, T & coordRulesRet)
+{
+  bool ret {false};
+  int linearAddress = {y * ((int)rules.size() / bgHeight) + x};
+  if(linearAddress < rules.size())
+    {
+      ret = true;
+      coordRulesRet = rules[linearAddress];
+    }
+  return ret;
+}
+
+
+template<typename T>
+bool getCoordRule(const yx & pos, const std::vector<T> & rules, int bgHeight,
+		  T & coordRulesRet)
+{
+  return getCoordRule(pos.y, pos.x, rules, bgHeight, coordRulesRet);
 }
 
 

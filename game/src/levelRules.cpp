@@ -82,15 +82,16 @@ void rules::movePlayer(sprite::directions input,
       if(input == sprite::DIR_UP)
 	{
 	  // Start jump.
-	  // startJumping(position, coordRules);
+	  gamePlayer->startJumping(position, coordRules, backgroundHeight);
 	  // We wan't to keep moving in the direction we were moving in before.
 	  input = (sprite::directions)currDir;
 	}
       else
 	{
-	  // We are not jumping or we are past the start of a jump.
-	  // If we can move down.
-	  // gamePlayer->handleJumpingAndFalling(position, maxyx, coordChars);
+          /* We are not jumping or we are past the start of a jump.
+	     If we can move down. */
+	  gamePlayer->handleJumpingAndFalling(position, maxyx, coordRules,
+					      backgroundHeight);
 	}
 
    // Handle contact with boarder characters.
@@ -332,7 +333,7 @@ sprite::directions rules::handleGroundCollision(const int position)
 	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
     {
       char rule {};
-      if(getCoordRule(coord, rule) &&
+      if(getCoordRule(coord, coordRules, backgroundHeight, rule) &&
 	 (rule == boarderRuleChars::BOARDER_CHAR ||
 	  rule == boarderRuleChars::PLATFORM_CHAR))
 	{
@@ -363,7 +364,7 @@ sprite::directions rules::handleRightCollision(const int position)
     {
       // If there is near contact and it's not with the bottom right coord.
       if(playerCoord != bottomRightPlayerCoord &&
-	 getCoordRule(playerCoord, rule) &&
+	 getCoordRule(playerCoord, coordRules, backgroundHeight, rule) &&
 	 rule == BOARDER_CHAR)
 	{
 	  stoppingContact = true;
@@ -373,7 +374,7 @@ sprite::directions rules::handleRightCollision(const int position)
     }
   
   if(!stoppingContact &&
-     getCoordRule(bottomRightPlayerCoord, rule) &&
+     getCoordRule(bottomRightPlayerCoord, coordRules, backgroundHeight, rule) &&
      (rule == BOARDER_CHAR || rule == PLATFORM_CHAR))
     {
       if(gamePlayer->getPos().y > 0)
@@ -409,7 +410,7 @@ sprite::directions rules::handleLeftCollision(const int position)
     {
       // If there is near contact and it's not with the bottom right coord.
       if(playerCoord != bottomLeftPlayerCoord &&
-	 getCoordRule(playerCoord, rule) &&
+	 getCoordRule(playerCoord, coordRules, backgroundHeight, rule) &&
 	 rule == BOARDER_CHAR)
 	{
 	  stoppingContact = true;
@@ -419,7 +420,7 @@ sprite::directions rules::handleLeftCollision(const int position)
     }
 
   if(!stoppingContact &&
-     getCoordRule(bottomLeftPlayerCoord, rule) &&
+     getCoordRule(bottomLeftPlayerCoord, coordRules, backgroundHeight, rule) &&
      (rule == BOARDER_CHAR ||
       rule == PLATFORM_CHAR))
     {
@@ -440,16 +441,6 @@ sprite::directions rules::handleLeftCollision(const int position)
 }
 
 
-void rules::startJumping(const int position,
-			 const std::map<std::string, char> & coordChars)
-{
-  // if(!gamePlayer->startJumping(position, coordChars))
-  //   {
-  //     //      gamePlayer->keepJumping(obstructionNAbove, obstructionNBelow);
-  //   }
-}
-
-
 #ifdef DEBUG
 #include <sstream>
 
@@ -460,7 +451,7 @@ void rules::printRuleChars(const int position, const int maxY, const int maxX)
       for(int x {}; x < (coordRules.size() / backgroundHeight); ++x)
 	{
 	  char coordRule;
-	  getCoordRule(y, x, coordRule);
+	  getCoordRule(y, x, coordRules, backgroundHeight, coordRule);
 	  if(coordRule != ' ' && (x - position) < maxX)
 	    {
 	      mvprintw(y, (x - position), (std::string {coordRule}).c_str());
@@ -485,23 +476,4 @@ void rules::physics
 	     maxyx, backgroundLength);
   sleep(engineSleepTime);
   resetOldTime(secStartTime);
-}
-
-
-bool rules::getCoordRule(const yx & pos, char & coordRulesRet)
-{
-  return getCoordRule(pos.y, pos.x, coordRulesRet);
-}
-
-  
-bool rules::getCoordRule(const int y, const int x, char & coordRulesRet)
-{
-  bool ret {false};
-  int linearAddress = {y * ((int)coordRules.size() / backgroundHeight) + x};
-  if(linearAddress < coordRules.size())
-    {
-      ret = true;
-      coordRulesRet = coordRules[linearAddress];
-    }
-  return ret;
 }

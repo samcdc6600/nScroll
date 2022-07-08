@@ -82,29 +82,33 @@ public:
   /* Starts jump (by altering various variables) and moves the player up X
      characters, where position is the absolute x position of the player and X
      is dictated by (int)gravitationalConstant and only as long as the player
-     will not hit any boarder characters in coordChars or the top of the level.
+     will not hit any boarder characters in coordRules or the top of the level.
      Returns true if the the player started a new jump (this will only happen if
      maxJumpNum hasn't been reached.) If the player didn't start a new jump then
      keepJumping should be called (but only if the player can move down). */
-  // bool startJumping(const int position,
-  // 		    const std::vector<char> & coordRules);
+  bool startJumping
+  (const int bgPosition, const std::vector<char> & coordRules,
+   const int bgHeight);
   /* Keeps jumping if the player is jumping. That is as long as the player will
      not collide with any boarder characters or the bottom or top of the level.
      If the player is falling keep falling unless the player is above a boarder
      character or the bottom of the level. If the player isn't above any baorder
      character and isn't at the bottom of the level then start falling. */
-  void handleJumpingAndFalling(const int bgPosition, const yx & maxyx,
-		   const std::map<std::string, char> & coordChars);
+  void handleJumpingAndFalling
+  (const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules,
+   const int bgHeight);
   bool isJumping() {return jumping != notJumping;};
   
 private:
-  void handleFalling(const int bgPosition, const yx & maxyx,
-		     const std::map<std::string, char> & coordChars);
+  void handleFalling
+  (const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules,
+   const int bgHeight);
   void handleFallingSimple
-  (const int bgPosition, const yx & maxyx,
-   const std::map<std::string, char> & coordChars);
-  void handleJumping(const int bgPosition, const yx & maxyx,
-		     const std::map<std::string, char> & coordChars);
+  (const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules,
+   const int bgHeight);
+  void handleJumping
+  (const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules,
+   const int bgHeight);
   /* Calculates all the points between the absolute position of the left +
      leftCollisionOffset and the absolute position of the right +
      rightCollisionOffset. Return value is a vector of strings of the pos's.

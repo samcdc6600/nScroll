@@ -103,54 +103,54 @@ void player::setVertVelocity(const double newVV)
 }
 
 
-// bool player::startJumping(const int bgPosition,
-// 			  const std::vector<char> & coordRules)
-// {
-//   bool retVar {false};
-//   if(jumpNum < maxJumpNum)
-//     {
-//       jumpNum++;
-//       vertVelocity = -gravitationalConstant;
-//       jumping = jumpingUp;
-//       retVar = true;
+bool player::startJumping
+(const int bgPosition, const std::vector<char> & coordRules, const int bgHeight)
+{
+  bool retVar {false};
+  if(jumpNum < maxJumpNum)
+    {
+      jumpNum++;
+      vertVelocity = -gravitationalConstant;
+      jumping = jumpingUp;
+      retVar = true;
 
-//       for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
-// 	{
-// 	  for(auto coord: this->getXAbsRangeAsStrs(bgPosition, false, false))
-// 	    {
-// 	      if(coordChars.find(coord) != coordChars.end() &&
-// 		 coordChars.find(coord)->second ==
-// 		 boarderRuleChars::boarderChar)
-// 		{
-// 		  // We're going to hit something.
-// 		  goto RETURN;
-// 		}
-// 	    }
-// 	  // We don't want to hit the top of the level.
-// 	  if(position.y == 0)
-// 	    {
-// 	      goto RETURN;
-// 	    }
-// 	  // We're not going to hit anything, so jump!
-// 	  updatePosRel(sprite::DIR_UP);
-// 	}
-//     }
+      for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
+	{
+	  for(auto coord: this->getXAbsRangeAsStrs(bgPosition, false, false))
+	    {
+	      char rule {};
+	      if(getCoordRule(coord, coordRules, bgHeight, rule) &&
+		 rule == boarderRuleChars::BOARDER_CHAR)
+		{
+		  // We're going to hit something.
+		  goto RETURN;
+		}
+	    }
+	  // We don't want to hit the top of the level.
+	  if(position.y == 0)
+	    {
+	      goto RETURN;
+	    }
+	  // We're not going to hit anything, so jump!
+	  updatePosRel(sprite::DIR_UP);
+	}
+    }
 
-//  RETURN:
-//   return retVar;
-// }
+ RETURN:
+  return retVar;
+}
 
 
-/*void player::handleJumpingAndFalling(const int bgPosition, const yx & maxyx,
-			 const std::map<std::string, char> & coordChars)
+void player::handleJumpingAndFalling(const int bgPosition, const yx & maxyx,
+				     const std::vector<char> & coordRules, const int bgHeight)
 {
   if(jumping == notJumping)
     {
-      handleFalling(bgPosition, maxyx, coordChars);
+      handleFalling(bgPosition, maxyx, coordRules, bgHeight);
     }
   else
     {
-      handleJumping(bgPosition, maxyx, coordChars);
+      handleJumping(bgPosition, maxyx, coordRules, bgHeight);
     }
 
   
@@ -159,8 +159,9 @@ void player::setVertVelocity(const double newVV)
  }
 
 
-void player::handleFalling(const int bgPosition, const yx &maxyx,
-			   const std::map<std::string, char> &coordChars)
+void player::handleFalling
+(const int bgPosition, const yx &maxyx, const std::vector<char> &coordRules,
+ const int bgHeight)
 {
   using namespace boarderRuleChars;
   
@@ -173,11 +174,12 @@ void player::handleFalling(const int bgPosition, const yx &maxyx,
     {
       for(auto coord: this->getXAbsRangeAsStrs(bgPosition, true, false))
 	{
-	  if(coordChars.find(coord) != coordChars.end() &&
-	     (coordChars.find(coord)->second == boarderChar ||
-	      coordChars.find(coord)->second == platformChar))
+	  char rule {};
+	  if(getCoordRule(coord, coordRules, bgHeight, rule) &&
+	     (rule == BOARDER_CHAR ||
+	      rule == PLATFORM_CHAR))
 	    {
-	      // There's a rule character below up stopping us from falling.
+	      // There's a rule character below stopping us from falling.
 	      return;
 	    }
 	}
@@ -188,12 +190,13 @@ void player::handleFalling(const int bgPosition, const yx &maxyx,
   jumping = jumpingDown;
 
   // We're jumping down.
-  handleFallingSimple(bgPosition, maxyx, coordChars);
+  handleFallingSimple(bgPosition, maxyx, coordRules, bgHeight);
 }
 
 
-void player::handleJumping(const int bgPosition, const yx & maxyx,
-		   const std::map<std::string, char> & coordChars)
+void player::handleJumping
+(const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules,
+ const int bgHeight)
 {
   if(jumping == jumpingUp)
     {
@@ -222,9 +225,9 @@ void player::handleJumping(const int bgPosition, const yx & maxyx,
 	{
 	  for(auto coord: this->getXAbsRangeAsStrs(bgPosition, false, false))
 	    {
-	      if(coordChars.find(coord) != coordChars.end() &&
-		 coordChars.find(coord)->second ==
-		 boarderRuleChars::boarderChar)
+	      char rule {};
+	      if(getCoordRule(coord, coordRules, bgHeight, rule) &&
+		 rule == boarderRuleChars::BOARDER_CHAR)
 		{
 		  // We're going to hit something.
 		  return;
@@ -240,19 +243,21 @@ void player::handleJumping(const int bgPosition, const yx & maxyx,
   else
     {
       // We're jumping down.
-      handleFallingSimple(bgPosition, maxyx, coordChars);
+      handleFallingSimple(bgPosition, maxyx, coordRules, bgHeight);
     }
 }
 
-*//*
-void player::handleFallingSimple(const int bgPosition, const yx & maxyx,
-				 const std::map<std::string, char> & coordChars)
+
+void player::handleFallingSimple
+(const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules,
+ const int bgHeight)
 {
   for(int jumps {(int)-vertVelocity}; jumps > 0; jumps--)
     {
       for(auto coord: this->getXAbsRangeAsStrs(bgPosition, true, false))
 	{
-	  if(coordChars.find(coord) != coordChars.end())
+	  char rule {};
+	  if(getCoordRule(coord, coordRules, bgHeight, rule))
 	    {
 	      // We're going to hit something (stop jumping!)
 	      vertVelocity = 0;
@@ -263,7 +268,7 @@ void player::handleFallingSimple(const int bgPosition, const yx & maxyx,
 	}
       /* This is a simpler check but probably much less common, so we put it
 	 second. */
-/*      if((position.y + maxBottomRightOffset.y) == (maxyx.y -1))
+      if((position.y + maxBottomRightOffset.y) == (maxyx.y -1))
 	{
 	  // We're going to hit the bottom of the level (stop jumping!)
 	  vertVelocity = 0;
@@ -274,4 +279,4 @@ void player::handleFallingSimple(const int bgPosition, const yx & maxyx,
       updatePosRel(sprite::DIR_DOWN);
     }
 
-}*/
+}

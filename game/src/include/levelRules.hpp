@@ -101,12 +101,6 @@ private:
   sprite::directions handleRightCollision(const int position);
   // // Analogous to handleRightCollision but of course for leftward movement.
   sprite::directions handleLeftCollision(const int position);
-  /* Called when the player is trying to jump (by pressing the jump button.)
-     obstructionAbove and obstructionBelow should be set to true if there is an
-     obstruction above or an obstruction below (respectively) that would stop
-     the player from jumping. */
-  void startJumping(const int position,
-		    const std::map<std::string, char> & coordChars);
 
 #ifdef DEBUG
   // Where maxX should be the maximum size of the window and not the level.
@@ -139,9 +133,6 @@ public:
 
   //   getCoordRule(y, x);
   // }
-
-  bool getCoordRule(const yx & pos, char & coordRulesRet);
-  bool getCoordRule(const int y, const int x, char & coordRulesRet);
 };
 
 
