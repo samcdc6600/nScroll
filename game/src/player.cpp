@@ -91,18 +91,6 @@ void player::updatePosRel(const sprite::directions dir)
 }
 
 
-double player::getVertVelocity()
-{
-  return vertVelocity;
-}
-
-
-void player::setVertVelocity(const double newVV)
-{
-  vertVelocity = newVV;
-}
-
-
 bool player::startJumping
 (const int bgPosition, const std::vector<char> & coordRules, const int bgHeight)
 {

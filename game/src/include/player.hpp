@@ -77,8 +77,6 @@ public:
   static directions convertDirectionCharsToDirections(const directionChars dir);
   static bool isDirectionCharInputValid(const int input);
   virtual void updatePosRel(const sprite::directions dir);
-  double getVertVelocity();
-  void setVertVelocity(const double newVV);
   /* Starts jump (by altering various variables) and moves the player up X
      characters, where position is the absolute x position of the player and X
      is dictated by (int)gravitationalConstant and only as long as the player

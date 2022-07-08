@@ -72,13 +72,7 @@ void rules::movePlayer(sprite::directions input,
      either end of the level then the player cannot move further of
      course. */
   const int currDir {gamePlayer->getDirection()};
-  double vertVelocity {gamePlayer->getVertVelocity()};
-
-  /* We intend to alter this later to have it read in from the level rules
-     file */
-  double g {-3.2666};
-  vertVelocity *= g;
-
+  
       if(input == sprite::DIR_UP)
 	{
 	  // Start jump.
