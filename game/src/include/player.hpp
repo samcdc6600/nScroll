@@ -85,7 +85,7 @@ public:
      maxJumpNum hasn't been reached.) If the player didn't start a new jump then
      keepJumping should be called (but only if the player can move down). */
   bool startJumping
-  (const int bgPosition, const std::vector<char> & coordRules,
+  (const int bgPosition, yx maxyx, const std::vector<char> & coordRules,
    const int bgHeight);
   /* Keeps jumping if the player is jumping. That is as long as the player will
      not collide with any boarder characters or the bottom or top of the level.

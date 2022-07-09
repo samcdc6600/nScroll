@@ -73,22 +73,23 @@ void rules::movePlayer(sprite::directions input,
      course. */
   const int currDir {gamePlayer->getDirection()};
   
-      if(input == sprite::DIR_UP)
-	{
-	  // Start jump.
-	  gamePlayer->startJumping(position, coordRules, backgroundHeight);
-	  // We wan't to keep moving in the direction we were moving in before.
-	  input = (sprite::directions)currDir;
-	}
-      else
-	{
-          /* We are not jumping or we are past the start of a jump.
-	     If we can move down. */
-	  gamePlayer->handleJumpingAndFalling(position, maxyx, coordRules,
-					      backgroundHeight);
-	}
+  if(input == sprite::DIR_UP // && !gamePlayer->isJumpNumMaxedOut()
+     )
+    {
+      // Start jump.
+      gamePlayer->startJumping(position, maxyx, coordRules, backgroundHeight);
+      // We wan't to keep moving in the direction we were moving in before.
+      input = (sprite::directions)currDir;
+    }
+  else
+    {
+      /* We are not jumping or we are past the start of a jump.
+	 If we can move down. */
+      gamePlayer->handleJumpingAndFalling(position, maxyx, coordRules,
+					  backgroundHeight);
+    }
 
-   // Handle contact with boarder characters.
+  // Handle contact with boarder characters.
   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
      input == sprite::DIR_DOWN)
     {

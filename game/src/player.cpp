@@ -92,7 +92,7 @@ void player::updatePosRel(const sprite::directions dir)
 
 
 bool player::startJumping
-(const int bgPosition, const std::vector<char> & coordRules, const int bgHeight)
+(const int bgPosition, yx maxyx, const std::vector<char> & coordRules, const int bgHeight)
 {
   bool retVar {false};
   if(jumpNum < maxJumpNum)
@@ -122,6 +122,13 @@ bool player::startJumping
 	  // We're not going to hit anything, so jump!
 	  updatePosRel(sprite::DIR_UP);
 	}
+    }
+  else
+    {
+      /* We must call this here because this function is called (INSTEAD OF HANDLEJUMPINGANDFALLING())  when
+         sprite::DIR_UP is pressed and if we can't perform a new jump we must
+         continue the current jump / fall. */
+      handleJumpingAndFalling(bgPosition, maxyx, coordRules, bgHeight);
     }
 
  RETURN:
