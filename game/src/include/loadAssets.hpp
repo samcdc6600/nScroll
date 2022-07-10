@@ -8,27 +8,17 @@
 #include "levelRules.hpp" // For rules.
 
 
-// /* Coordinate character's. I have decided to add an uppercase alternative for
-//    each character. This is so that rules.lev file's will be more forgiving of
-//    "mistakes." */
 // constexpr char BOARDER_CHAR {'b'}; // Player character's cannot pass through coordinate's marked as this.
-// constexpr char BOARDER_CHAR_UPPER {'B'};
 // /* Player character's are killed uppon intersection with coordinate's marked as
 //    this. */
 // constexpr char KILL_CHAR {'k'};
-// constexpr char KILL_CHAR_UPPER {'K'};
 // constexpr char DEGRADE_HEALTH_CHAR {'d'}; // Player character's loose health uppon intersection with coordinate's
-// constexpr char DEGRADE_HEALTH_CHAR_UPPER {'D'}; // marked as this.
 // constexpr char DEGRADE_HEALTH_BOARDER_CHAR {'i'}; // Combination of DEGRADE_HEALTH_CHAR and BOARDER_CHAR.
-// constexpr char DEGRADE_HEALTH_BOARDER_CHAR_UPPER {'I'};
 // /* Player character's "win" the level uppon intersection with coordinates
 //    marked. */
 // constexpr char END_LEV_CHAR {'e'};
-// constexpr char END_LEV_CHAR_UPPER {'E'}; // as this.
 // // Player character's gain health point's when comming into contact
 // constexpr char LIFE_POWER_UP_CHAR {'l'};
-// constexpr char LIFE_POWER_UP_CHAR_UPPER {'L'};
-
 
 /* This function should initialise the argument background that is passed to it.
    This variable should then contain the "grphical data" of the level. It should
@@ -60,6 +50,11 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
                 const std::string &rawRules,
                 std::string::const_iterator &buffPos);
+/* This function should be called for each background sprite section that's
+   encountered. */
+void initBgSprites(const yx maxyx, const char rulesFileName[], rules & levelRules,
+		const std::string & rawRules,
+		   std::string::const_iterator & buffPos);
 /* Attempts to read the start of the header in a rules.lev file. */
 void readStartOfHeader(const std::string &buff,
                        std::string::const_iterator &buffPos,
@@ -197,6 +192,14 @@ namespace levelFileKeywords
     unsigned maxFallingJumpNumber {};
     unsigned maxJumpNumber {};
   };
+  /* This struct should be populated with the values read in for use with the
+     constructor of the next background sprite to be created. */
+  struct bgSpriteInitialData
+  {
+    std::vector<std::string> spritePaths {};
+    yx coordinate {};
+    sprite::directions direction {};
+  };
   // Misc.
   constexpr char STRING_DENOTATION		{'\"'};
   constexpr char STRING_SEPARATION		{','};
@@ -222,11 +225,17 @@ namespace levelFileKeywords
    player. Checks if all sections were found. If a section is encountered that
    wasn't found, then we check if it has a default value. If so we apply the
    default value. If it doesn't have a default value then call exit()*/
-void checkForDefaultPlayerValues
+void checkForDefaultPlayerValues(
+				 std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+				 playerHeaderKeywordActions,
+				 levelFileKeywords::keywordAction::headerKeywordAction &keywordAction,
+				 levelFileKeywords::playerInitialData &playerInitData,
+				 std::string::const_iterator &buffPos, const char rulesFileName[]);
+void checkForDefaultBgSpriteValues
 (std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
- playerHeaderKeywordActions,
+ bgSpriteHeaderKeywordActions,
  levelFileKeywords::keywordAction::headerKeywordAction & keywordAction,
- levelFileKeywords::playerInitialData & playerInitData, 
+ levelFileKeywords::bgSpriteInitialData & bgSpriteInitData, 
  std::string::const_iterator & buffPos,
  const char rulesFileName []);
 

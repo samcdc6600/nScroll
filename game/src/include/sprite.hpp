@@ -60,7 +60,7 @@ private:
     int offset;	// Horizontal offset of sliceLine from current curser position.
   };
   struct sliceData
-  { // A slice is essential one frame of a sprite animation.
+  { // A slice is essentially one frame of a sprite animation.
     std::vector<sliceLine> slice {};
     // // Hold's a list of boundry coordinates for the slice.
     // std::vector<yx> sliceBoundryCoords {};
