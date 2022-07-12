@@ -5,6 +5,7 @@
 #include <vector>
 #include "sprite.hpp"
 #include "player.hpp"
+#include "backgroundSprite.hpp"
 
 
 class rules
@@ -21,9 +22,10 @@ public:
     sprite * sp {}; // This has to be a pointer because sprite is an ABC.
     std::string rule {};
   };
-  /* Sprites (multiple sprites can map to the same coord, thus the vector.) */
-  std::map<std::string, std::vector<spriteInfo>> spriteCoords {};
+  // /* Sprites (multiple sprites can map to the same coord, thus the vector.) */
+  // std::map<std::string, std::vector<spriteInfo>> spriteCoords {};
   player * gamePlayer; /* Info about user controlled sprite (AKA player.) */
+  std::vector<bgSprite *> bgSprites;
   /* The player cannot pass widthin this many character's of the left and right
      window boarders (y, x). */
   const yx playerMovementInnerLRBoarder {0, 44};

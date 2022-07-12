@@ -11,8 +11,8 @@ extern const int yHeight;
 
 
 void draw(const std::vector<int> & buff,
-	  const std::map<std::string, std::vector<rules::spriteInfo>> & nonPlayerSprites,
-	  player * playerSprite, const yx maxyx, const unsigned long offset); /* Draws all that is visible :) */
+	  player * playerSprite, std::vector<bgSprite *> bgSprites,
+	  const yx maxyx, const unsigned long offset);
 /* Places curser at (0,0) and iterates over the current background slice, calling draw for each character. */
 void drawBackground(const std::vector<int> & buff, const yx maxyx, const unsigned long offset);
 /* Checks that y and x are in range and then calls mvprintw(y, x, "") */

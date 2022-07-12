@@ -3,7 +3,7 @@
 #include <iostream>
 #include "include/sprite.hpp"
 #include "include/loadAssets.hpp"
-#include "include/collapse.hpp"// For second phase
+#include "include/collapse.hpp"
 #include "include/draw.hpp"
 #include "include/utils.hpp"
 
@@ -540,7 +540,7 @@ void sprite::updatePosRel(const sprite::directions dir)
   position = getNewPos(dir);
 }
 
-//int spriteNum, 
+
 void sprite::draw(bool updateSlice)
 {
   for(size_t sliceLine{}; sliceLine <

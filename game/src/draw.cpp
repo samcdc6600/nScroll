@@ -16,8 +16,8 @@ setColorMode colorMode{56}; //If argument to object constructor is changed it mu
 
 
 void draw(const std::vector<int> & buff,
-	  const std::map<std::string, std::vector<rules::spriteInfo>> & nonPlayerSprites,
-	  player * playerSprite, const yx maxyx, const unsigned long offset)
+	  player * playerSprite, std::vector<bgSprite *> bgSprites,
+	  const yx maxyx, const unsigned long offset)
 {
   drawBackground(buff, maxyx, offset);
   /*
@@ -30,6 +30,10 @@ void draw(const std::vector<int> & buff,
 	 it.second->draw(true);
     }
   */
+  for(auto bgS: bgSprites)
+    {
+      bgS->draw(false, offset);
+    }
   /* The physics functions should ensure that the palyer should never be out of the visible range, so no check should
      be required. */
   playerSprite->draw(true);

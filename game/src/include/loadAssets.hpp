@@ -138,35 +138,35 @@ namespace levelFileKeywords
   const std::string SPRITE_MAX_VERT_V_SECTION_HEADER	{"maxVelocity"};
   const std::string SPRITE_MAX_FALL_JMP_SECTION_HEADER	{"maxJumpsAfterFall"};
   const std::string SPRITE_MAX_JMP_NUM_SECTION_HEADER	{"maxJumps"};
+  // Used to store the order of a keyword and whether it has a default value.
+  struct orderAndDefaultVal
+  {
+    int order;
+    bool defaultVal;
+  };
   /* Used to map keywords to unique int values so appropriate action can be
      taken for those keywords when parsing player section. KEY ORDER SHOULD
      MATCH playerSectionHasDefaultValue! */
-  const std::map<std::string, int> playerSectionKeywordToId {
-    {SPRITE_FILE_SECTION_HEADER, 0},
-    {SPRITE_INIT_COORD_SECTION_HEADER, 1},
-    {SPRITE_INIT_DIR_SECTION_HEADER, 2},
-    {SPRITE_HEALTH_SECTION_HEADER, 3},
-    {SPRITE_GRAV_CONST_SECTION_HEADER, 4},
-    {SPRITE_MAX_VERT_V_SECTION_HEADER, 5},
-    {SPRITE_MAX_FALL_JMP_SECTION_HEADER, 6},
-    {SPRITE_MAX_JMP_NUM_SECTION_HEADER, 7}
+  const std::map<std::string, orderAndDefaultVal> playerSectionKeywordToId {
+    {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
+    {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
+    {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
+    {SPRITE_HEALTH_SECTION_HEADER,	orderAndDefaultVal {3, true}},
+    {SPRITE_GRAV_CONST_SECTION_HEADER,	orderAndDefaultVal {4, true}},
+    {SPRITE_MAX_VERT_V_SECTION_HEADER,	orderAndDefaultVal {5, true}},
+    {SPRITE_MAX_FALL_JMP_SECTION_HEADER, orderAndDefaultVal {6, true}},
+    {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {7, true}}
+  };
+  const std::map<std::string, orderAndDefaultVal> bgSpriteSectionKeywordToId {
+    {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
+    {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
+    {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}}
   };
   namespace defaultValues
   {
-    // KEY ORDER SHOULD MATCH playerSectionKeywordToId!
-    const std::map<std::string, bool> playerSectionHasDefaultValue
-      {
-	{SPRITE_FILE_SECTION_HEADER, false},
-	{SPRITE_INIT_COORD_SECTION_HEADER, false},
-	{SPRITE_INIT_DIR_SECTION_HEADER, true},
-	{SPRITE_HEALTH_SECTION_HEADER, true},
-	{SPRITE_GRAV_CONST_SECTION_HEADER, true},
-	{SPRITE_MAX_VERT_V_SECTION_HEADER, true},
-	{SPRITE_MAX_FALL_JMP_SECTION_HEADER, true},
-	{SPRITE_MAX_JMP_NUM_SECTION_HEADER, true}
-      };
-
-    // Default values for the player.
+    /* These default values can only be used if defaultVal is set to true in
+       orderAndDefaultVal for the values corresponding section in it's
+       associated XXXSectionKeywordToId map (see above). */
     namespace player
     {
       const std::vector<std::string> spritePaths {{""}};
@@ -177,6 +177,12 @@ namespace levelFileKeywords
       const double maxVerticalVelocity {1.9};
       const unsigned maxFallingJumpNumber {1};
       const unsigned maxJumpNumber {3};
+    }
+    namespace bgSprites
+    {
+      const std::vector<std::string> spritePaths {{""}};
+      const yx coordinate {20, 62};
+      const sprite::directions direction {sprite::DIR_NONE};
     }
   }
   /* This struct should be populated with the values that the player will

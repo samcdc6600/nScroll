@@ -22,7 +22,6 @@ public:
     };
   
 private:
-  const yx maxyx;		// Window size.
   enum sliceLineIndex
     {				// Used as index into sliceLine vector.
       SLICE_LINE_ONE,
@@ -30,6 +29,7 @@ private:
     };
   
 protected:
+    const yx maxyx;		// Window size.
   /* Sprites should only have these numbers of sets of slices. 5
      and not 4 because we must account for DIR_NONE. */
   static constexpr int spriteNums1 {1}, spriteNums2 {5};
@@ -42,9 +42,7 @@ protected:
      (along with position) for inital collision detection and bounds checking */
   yx maxBottomRightOffset {};
   directions direction {DIR_NONE};
-    
-private:
-  /* Holds the sprite animation (slice) that we are upto in the sequences.
+    /* Holds the sprite animation (slice) that we are upto in the sequences.
      Should not go above spriteSlices.size(); and should wrape back around to
      zero. */
   int currentSliceNumber;
@@ -54,6 +52,8 @@ private:
     std::chrono::high_resolution_clock::now();
   std::chrono::high_resolution_clock::time_point currentTime =
     std::chrono::high_resolution_clock::now();  
+    
+private:
   struct sliceLine
   {
     std::vector<int> sliceLine;	// Holds line of slice.
