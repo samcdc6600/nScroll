@@ -11,7 +11,7 @@ extern const int yHeight;
 
 
 void draw(const std::vector<int> & buff,
-	  player * playerSprite, std::vector<bgSprite *> bgSprites,
+	  player * playerSprite, std::vector<bgSprite *> & bgSprites,
 	  const yx maxyx, const unsigned long offset);
 /* Places curser at (0,0) and iterates over the current background slice, calling draw for each character. */
 void drawBackground(const std::vector<int> & buff, const yx maxyx, const unsigned long offset);

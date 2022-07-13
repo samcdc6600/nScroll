@@ -4,7 +4,7 @@
 
 void bgSprite::draw(const bool updateSlice, const int bgPos)
 {
-  if((position.x - bgPos) < 125)
+  if(position.x > bgPos && position.x < (bgPos + 125))
     {
       for(size_t sliceLine{}; sliceLine <
 	    spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
@@ -14,7 +14,7 @@ void bgSprite::draw(const bool updateSlice, const int bgPos)
 		spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine.size();
 	      ++sliceLineIter)
 	    { // Move curser to the right position.
-	      setCursor(position.y + sliceLine, position.x +
+	      setCursor(position.y + sliceLine, position.x -bgPos +
 			spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].offset +
 			sliceLineIter, maxyx);
 	      // Get the character.

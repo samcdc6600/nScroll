@@ -8,13 +8,9 @@
     "./assets/sprites/sprite(3).sprite",
     "./assets/sprites/sprite(4).sprite")
   )
-  initialCoordinate(10,60)
+  initialCoordinate(13,60)
   sprites
-  ("./assets/sprites/sprite(0).sprite",
-    "./assets/sprites/sprite(1).sprite",
-    "./assets/sprites/sprite(2).sprite",
-    "./assets/sprites/sprite(3).sprite",
-    "./assets/sprites/sprite(4).sprite")
+  ("./assets/sprites/tree1BlueBg(0).sprite")
 ))
 #
 R 250
