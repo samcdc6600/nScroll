@@ -1,17 +1,21 @@
 (
- p (
+  player
+  (
     initialCoordinate(10,60)
-
     sprites("./assets/sprites/sprite(0).sprite",
     "./assets/sprites/sprite(1).sprite",
     "./assets/sprites/sprite(2).sprite",
     "./assets/sprites/sprite(3).sprite",
     "./assets/sprites/sprite(4).sprite")
   )
-  initialCoordinate(13,67)
-  sprites
-  ("./assets/sprites/tree1BlueBg(0).sprite")
-))
+  
+  
+  backgroundSprite(
+    initialCoordinate(13,67)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
+)
 #
 R 250
 R 250

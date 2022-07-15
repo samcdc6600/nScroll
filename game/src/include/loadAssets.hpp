@@ -102,15 +102,23 @@ namespace levelFileKeywords
   {
     struct headerKeywordAction
     {
-      headerKeywordAction(const std::string & kword,
-			  void (* a)(const std::string & buff,
-				     std::string::const_iterator & buffPos,
-				     const std::string & eMsg, void * retObj))
-	: keyword(kword), action(a)
+      headerKeywordAction
+      (const std::string & kword, void (* a)
+       (const std::string & buff, std::string::const_iterator & buffPos,
+	const std::string & eMsg, void * retObj),
+       void (*hA)(const yx maxyx, const char rulesFileName[],
+		  rules &levelRules, const std::string &rawRules,
+		  std::string::const_iterator &buffPos) = nullptr,
+       const bool fMO = false)
+	: keyword(kword), action(a), headerAction(hA), foundMultipleOptional(fMO)
       { }
 
       const std::string keyword;
-      bool found {false};			// Found this keyword already.
+      // Found this keyword already (for keywords that can only appear once.).
+      bool found{false};
+      /* Set to true in the constructor if keyword is optional and can appear
+	 multiple times. */
+      const bool foundMultipleOptional;
       /* If action needs to return anything the address of a variable of the
 	 appropriate type should be passed to the function via retObj. If the
 	 function doesn't encounter any error (in which case it should print a
@@ -119,14 +127,20 @@ namespace levelFileKeywords
       void (*action)(const std::string &buff,
 		     std::string::const_iterator &buffPos,
 		     const std::string &eMsg, void *retObj);
+      /* This function should be used as the action instead of the above if we
+	 are at the top level of the header (in terms of sections). */
+      void (*headerAction)(const yx maxyx, const char rulesFileName[],
+			   rules &levelRules, const std::string &rawRules,
+			   std::string::const_iterator &buffPos);
     };
   };
   // Each new section should start with a header char followed by this char.
   constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
   constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
   constexpr char RULES_HEADER_END_DENOTATION [] {"\n#"};
-  // Header section header chars.
-  constexpr char PLAYER_HEADER_SECTION_SPECIFIER {'p'};
+  // Header section header.
+  const std::string PLAYER_HEADER_SECTION_SPECIFIER {"player"};
+  const std::string BG_SPRITE_HEADER_SECTION_SPECIFIER {"backgroundSprite"};
   // Header sub section headers.
   // Sub section headers for general player and sprites.
   const std::string SPRITE_FILE_SECTION_HEADER		{"sprites"};
@@ -145,8 +159,13 @@ namespace levelFileKeywords
     bool defaultVal;
   };
   /* Used to map keywords to unique int values so appropriate action can be
-     taken for those keywords when parsing player section. KEY ORDER SHOULD
-     MATCH playerSectionHasDefaultValue! */
+     taken for those keywords when parsing specific section section. KEY ORDER
+     (first value of orderAndDefaultVal) OF THESE OBJECTS SHOULD MATCH switches
+     that use these objects.! */
+  const std::map<std::string, orderAndDefaultVal> headerSectionKeywordToId {
+    {PLAYER_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {0, false}},
+    {BG_SPRITE_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {1, false}}
+  };
   const std::map<std::string, orderAndDefaultVal> playerSectionKeywordToId {
     {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
     {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
