@@ -11,8 +11,6 @@ public:
   {
     
   }
-
-  void draw(const bool updateSlice, const int bgPos);
 };
 
 #endif

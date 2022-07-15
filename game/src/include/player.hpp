@@ -166,12 +166,6 @@ private:
   
   
 public:
-  /*    std::vector<std::string>
-  getBottomXAbsRangeAsStrsForDirectContact(const int position)
-  {
-    return getXAbsRangeAsStrs(position, true, true);
-    }*/
-
   
   std::vector<yx>
   getBottomXAbsRangeAsStrsForOneOffContact(const int position)
@@ -180,60 +174,23 @@ public:
   }
 
 
-  /*  std::vector<std::string>
-  getTopXAbsRangeAsStrsForDirectContact(const int position)
-  {
-    return getXAbsRangeAsStrs(position, false, true);
-  }
-
-
-    std::vector<std::string>
-  getTopXAbsRangeAsStrsForOneOffContact(const int position)
-  {
-    return getXAbsRangeAsStrs(position, false, false);
-  }
-
-  
-  std::vector<std::string>
-  getRightYAbsRangeAsStrsForDirectContact(const int position)
-  {
-    return   getYAbsRangeAsStrs(position, true, true);
-  }
-  */
-
   std::vector<yx>
   getRightYAbsRangeAsStrsForOneOffContact(const int position)
   {
     return   getYAbsRangeAsStrs(position, true, false);
   }
 
-  /*
-  std::vector<std::string>
-  getLeftYAbsRangeAsStrsForDirectContact(const int position)
-  {
-    return   getYAbsRangeAsStrs(position, false, true);
-  }
-
-  */
+  
   std::vector<yx>
   getLeftYAbsRangeAsStrsForOneOffContact(const int position)
   {
     return   getYAbsRangeAsStrs(position, false, false);
   }
-  /*
 
-  std::string
-  getOneBelowBottomRight(const int position)
-  {
-    const int absLeftPos {this->position.x + leftCollisionDirectOffset + position};
-    const int absRightPos {this->position.x + maxBottomRightOffset.x +
-      rightCollisionDirectOffset + position};
-  }
-
-  std::string
-  getOneBelowBottomLeft(const int position)
-  {
-  }*/
+  
+  /* Since the player sprite can never go off screen we declare a simpler draw
+     function for it here */
+  void draw(bool updateSlice);
 };
 
 #endif

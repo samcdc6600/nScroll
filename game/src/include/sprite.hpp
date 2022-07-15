@@ -220,8 +220,7 @@ public:
   /* update's sprite's y and x position value's by a difference of no more then
      1. The direction depends on the value of ch. */
   virtual void updatePosRel(const directions dir);
-  // displays sprite (potentially more then one file's worth of sprites.)
-  virtual void draw(bool updateSlice);
+  void draw(const bool updateSlice, const int bgPos);
 };
 
 #endif

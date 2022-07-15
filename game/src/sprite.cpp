@@ -231,6 +231,7 @@ void sprite::getMaxYXOffset()
 	  max = s.slice.size() > max ? s.slice.size() : s.slice.size();
 	}
     }
+  endwin();
   // The upper left of the sprite is (0,0) so we need size -1 :).
   maxBottomRightOffset.y = max -1;
   max = 0;
@@ -240,98 +241,13 @@ void sprite::getMaxYXOffset()
 	  {
 	    for(sliceLine sl: s.slice)
 	      {
-		max = sl.sliceLine.size() > max ? sl.sliceLine.size() : max;
+		max = (sl.sliceLine.size() + sl.offset) > max ?
+		  (sl.sliceLine.size() + sl.offset) : max;
 	      }
 	  }
     }
   maxBottomRightOffset.x = max -1;
 }
-
-
-// void sprite::setUpBoundryCoordsVector(spriteData & sD)
-// {
-//   for(auto s: sD.spriteSlices)
-//     {
-//       switch(s.slice.size())
-// 	{
-// 	case 0:
-// 	  continue;		// Nothing to do
-// 	case 1:			// Only one line in slice.
-// 	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_ONE,
-// 						  s.sliceBoundryCoords);      
-// 	  break;
-// 	case 2:			// Only two lines in slice.
-// 	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_ONE,
-// 						  s.sliceBoundryCoords);
-// 	  getBoundryCoordsForWholeSingleSliceLine(s.slice, SLICE_LINE_TWO,
-// 						  s.sliceBoundryCoords);
-// 	  break;
-// 	default:     		// More then two lines (general case.)
-// 	  {
-// 	    size_t iter {SLICE_LINE_ONE};
-// 	    constexpr int endOffset {1};
-// 	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter,
-// 						    s.sliceBoundryCoords);
-// 	    iter++;		// Advance to next slice line.
-// 	    for( ; iter < s.slice.size() -endOffset; ++iter)
-// 	      getBoundryCoordsForEndSofSingleSliceLine(s.slice, iter,
-// 						       s.sliceBoundryCoords);
-// 	    getBoundryCoordsForWholeSingleSliceLine(s.slice, iter,
-// 						    s.sliceBoundryCoords);
-// 	  }
-// 	}
-//     }
-// }
-
-
-// void sprite::getBoundryCoordsForWholeSingleSliceLine
-// (std::vector<sliceLine> & s,const int y, std::vector<yx> & sliceBoundryCoords)
-// {
-//   for(int iter {}; iter < s[y].sliceLine.size(); ++iter)
-//     {
-//       if(s[y].sliceLine[iter] != TRANS_SP)
-// 	{
-// 	  yx c {y, iter + s[y].offset};
-// 	  sliceBoundryCoords.push_back(c);
-// 	}
-//     }
-// }
-
-
-// /* Operation is the same as getBoundryCoordsForWholeSingleSliceLine with the
-//    exception that only the coordinates plus s[y].offset of end (non TRANS_SP)
-//    chars are added to sliceBoundryCoords. If all character's are TRANS_SP then
-//    no coords are added and if there is only one non TRANS_SP character then only
-//    it's coordinate plus offset is added. */
-// void sprite::getBoundryCoordsForEndSofSingleSliceLine
-// (std::vector<sliceLine> & s, const int y, std::vector<yx> & sliceBoundryCoords)
-// {
-//   constexpr int subZero {-1};
-//   /* Keep track of the first non TRANS_SP char and of the last non TRANS_SP
-//      char. */
-//   int first {subZero}, last {subZero};
-//   for(size_t iter {}; iter < s[y].sliceLine.size(); ++iter)
-//     {
-//       if(s[y].sliceLine[iter] != TRANS_SP)
-// 	{			// We have seen a non TRANS_SP char.
-// 	  if(first < 0)
-// 	    {			// It's the first one.
-// 	      first = iter;
-// 	      yx c {y, first + s[y].offset};
-// 	      sliceBoundryCoords.push_back(c); // Add first choord.
-// 	    }
-// 	  else
-// 	    {
-// 	      last = iter;
-// 	    }
-// 	}
-//     }
-//   if(first != last && last != subZero)
-//     {				// Add last choord.
-//       yx c {y, last + s[y].offset};
-//       sliceBoundryCoords.push_back(c);
-//     }
-// }
 
 
 void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
@@ -541,41 +457,57 @@ void sprite::updatePosRel(const sprite::directions dir)
 }
 
 
-void sprite::draw(bool updateSlice)
+void sprite::draw(const bool updateSlice, const int bgPos)
 {
-  for(size_t sliceLine{}; sliceLine <
-	spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
-      ++sliceLine)
-    {      
-      for(size_t sliceLineIter{}; sliceLineIter <
-	    spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine.size();
-	  ++sliceLineIter)
-	{ // Move curser to the right position.
-	  setCursor(position.y + sliceLine, position.x +
-		    spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].offset +
-		    sliceLineIter, maxyx);
-	  // Get the character.
-	  int ch {spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine[sliceLineIter]};
-	  drawCh(ch);
-
-	  if(updateSlice)
+  // Only display sprite if part of it is in the visible region.
+  if((position.x + maxBottomRightOffset.x) >= bgPos && position.x <=
+     (bgPos + maxyx.x -1))
+    {
+      if(updateSlice)
+	{
+	  currentTime = std::chrono::high_resolution_clock::now();
+	  if(std::chrono::duration_cast
+	     <std::chrono::milliseconds>(currentTime - startTime).count() >
+	     spriteS[direction].cycleSpeed)
 	    {
-	      currentTime = std::chrono::high_resolution_clock::now();
-	      if(std::chrono::duration_cast<std::chrono::milliseconds>(currentTime -
-								       startTime).count() >
-		 spriteS[direction].cycleSpeed)
+	      startTime = std::chrono::high_resolution_clock::now();
+	      currentSliceNumber++; // Move to next slice
+	      /* -1 because indexing from 0, so currentSliceNumber shouldn't
+		 be bigger then size() -1 */
+	      if(currentSliceNumber >
+		 (spriteS[direction].spriteSlices.size() -1))
+		{ /* We have displayed all the slices so the value should
+		     wrape arround. */
+		  currentSliceNumber = 0;
+		}
+	    }      
+	}
+      
+      for(int sliceLine{}; sliceLine <
+	    spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
+	  ++sliceLine)
+	{      
+	  for(int sliceLineIter{}; sliceLineIter <
+		spriteS[direction].spriteSlices[currentSliceNumber].
+		slice[sliceLine].sliceLine.size(); ++sliceLineIter)
+	    { // Move curser to the right position.
+	      int xPosRel;
+	      xPosRel = {position.x + spriteS[direction].
+		spriteSlices[currentSliceNumber].slice[sliceLine].offset +
+		sliceLineIter};
+	      int xPosAbs;
+	      xPosAbs = {xPosRel - bgPos};
+
+              /* Sprite can be partially in the visible region, so only print if
+		 char is in window. */
+	      if(xPosRel >= bgPos && xPosRel <= (bgPos + maxyx.x -1))
 		{
-		  startTime = std::chrono::high_resolution_clock::now();
-		  currentSliceNumber++; // Move to next slice
-		  /* -1 because indexing from 0, so currentSliceNumber shouldn't
-		     be bigger then size() -1 */
-		  if(currentSliceNumber >
-		     (spriteS[direction].spriteSlices.size() -1))
-		    { /* We have displayed all the slices so the value should
-			 wrape arround. */
-		      currentSliceNumber = 0;
-		    }
-		}      
+		  setCursor(position.y + sliceLine, xPosAbs, maxyx);
+		  // Get the character.
+		  int ch {spriteS[direction].spriteSlices[currentSliceNumber].
+		    slice[sliceLine].sliceLine[sliceLineIter]};
+		  drawCh(ch);
+		}
 	    }
 	}
     }

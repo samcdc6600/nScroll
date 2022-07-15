@@ -8,7 +8,7 @@
     "./assets/sprites/sprite(3).sprite",
     "./assets/sprites/sprite(4).sprite")
   )
-  initialCoordinate(13,60)
+  initialCoordinate(13,67)
   sprites
   ("./assets/sprites/tree1BlueBg(0).sprite")
 ))
