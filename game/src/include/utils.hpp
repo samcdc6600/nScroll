@@ -35,7 +35,7 @@ struct yx
 };
 
 
-constexpr int yHeight {33}, xWidth{125}; // The window must be these dimensions.
+constexpr int yHeight {48}, xWidth {170}; // The window must be these dimensions.
 constexpr int MONO_CH_MAX {158};
 constexpr int COLOR_CH_MAX {63};
 constexpr int ASCII_NUMBER_OFFSET {48};

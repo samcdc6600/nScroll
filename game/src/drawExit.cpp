@@ -13,8 +13,8 @@ void drawExit(const yx maxyx)
   int padding {1};
   bool direction {true};	// True indicates a "growing" direction (i.e. depletion zone around swanSong.)
   int sleepTime {1};	// :)
-  constexpr int sleepTimeStep {4};	// How much to increment or decrement sleep time by.
-  constexpr int frames {34};
+  constexpr int sleepTimeStep {1};	// How much to increment or decrement sleep time by.
+  constexpr int frames {1};
   int ch {};  
   srand(time(NULL));
   

@@ -100,7 +100,7 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
       int input {};
 
       const size_t backgroundLen {background.size() /
-	levelRules.backgroundHeight};
+	maxyx.y};
 
       input = getch();
       switch(input)

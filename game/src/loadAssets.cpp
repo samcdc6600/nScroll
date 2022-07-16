@@ -34,14 +34,15 @@ void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
     }
   collapse(levelBackGround, background); //collapse nonColor escape
   //sequences.
-  if((background.size() % (maxyx.x * maxyx.y)) != 0)
-    {
+  if(background.size() < (maxyx.x * maxyx.y) || (background.size() % maxyx.y) != 0)
+    { 
       std::stringstream err {};
       err<<"Error: wrong number of characters in background after collapsing "
-	"escaped characters. (background size (after processing) % (window "
-	"length * window height)) != 0, where background size = "
-	 <<background.size()<<", window length = "<<maxyx.x<<" and window "
-	"height = "<<maxyx.y<<".";
+	"escaped characters. "
+	"background size (after processing) < (window length * window height) "
+	"or (background size (after processing) % window height) != 0."
+	" Where background size = "<<background.size()<<", window length = "
+	 <<maxyx.x<<" and window height = "<<maxyx.y<<".";
       exit(err.str(), ERROR_BACKGROUND);
     }
 }

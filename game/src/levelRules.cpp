@@ -77,7 +77,7 @@ void rules::movePlayer(sprite::directions input,
      )
     {
       // Start jump.
-      gamePlayer->startJumping(position, maxyx, coordRules, backgroundHeight);
+      gamePlayer->startJumping(position, maxyx, coordRules);
       // We wan't to keep moving in the direction we were moving in before.
       input = (sprite::directions)currDir;
     }
@@ -85,25 +85,24 @@ void rules::movePlayer(sprite::directions input,
     {
       /* We are not jumping or we are past the start of a jump.
 	 If we can move down. */
-      gamePlayer->handleJumpingAndFalling(position, maxyx, coordRules,
-					  backgroundHeight);
+      gamePlayer->handleJumpingAndFalling(position, maxyx, coordRules);
     }
 
   // Handle contact with boarder characters.
   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
      input == sprite::DIR_DOWN)
     {
-      input = handleGroundCollision(position);
+      input = handleGroundCollision(position, maxyx.y);
     }
   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
     {
-      input = handleRightCollision(position);
+      input = handleRightCollision(position, maxyx.y);
     }
   else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_LEFT)
     {
-      input = handleLeftCollision(position);
+      input = handleLeftCollision(position, maxyx.y);
     }
 
   handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
@@ -116,7 +115,7 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
  const size_t backgroundLength)
 {
   const yx peekPos {gamePlayer->peekAtPos(newDir)};
-  if(gamePlayer->inLevelY(peekPos.y, backgroundHeight) &&
+  if(gamePlayer->inLevelY(peekPos.y, maxyx.y) &&
      gamePlayer->inLevelX(peekPos.x + position, backgroundLength))
     {
       // We won't be outside of the level if we move.
@@ -156,16 +155,6 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractions
       movePlayerWhenInteractingWithInnerMargin(newDir, position, maxyx,
 					       backgroundLength, peekPos);
     }
-    // if(gamePlayer->inWindowInnerMargin(peekPos.y, peekPos.x,
-  // 				PLAYER_MOVEMENT_INNER_MARGIN.y,
-  // 				PLAYER_MOVEMENT_INNER_MARGIN.x))
-  //   {				// The player is moving within the inner margin
-  //     gamePlayer->updatePosRel(newDir);
-  //   }
-  // else
-  //   {
-      
-  //   }
 }
 
 
@@ -321,7 +310,8 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
 
 /* Checks for contact with boarder characters when moving down. Returns the
    direction that the player should be moving in. */
-sprite::directions rules::handleGroundCollision(const int position)
+sprite::directions rules::handleGroundCollision(const int position,
+						const int backgroundHeight)
 {
   sprite::directions retDir {sprite::DIR_DOWN};
   for(yx coord:
@@ -344,7 +334,8 @@ sprite::directions rules::handleGroundCollision(const int position)
    player up one character if a "step" is encountered (as long as the player
    will not go out of bounds.) Returns the direction the player should move in.
 */
-sprite::directions rules::handleRightCollision(const int position)
+sprite::directions rules::handleRightCollision(const int position,
+					       const int backgroundHeight)
 {
   using namespace boarderRuleChars;
   sprite::directions retDir {sprite::DIR_RIGHT};
@@ -390,7 +381,8 @@ sprite::directions rules::handleRightCollision(const int position)
 }
 
 
-sprite::directions rules::handleLeftCollision(const int position)
+sprite::directions rules::handleLeftCollision(const int position,
+					      const int backgroundHeight)
 {
   using namespace boarderRuleChars;
   sprite::directions retDir {sprite::DIR_LEFT};
@@ -443,10 +435,10 @@ void rules::printRuleChars(const int position, const int maxY, const int maxX)
 {
   for(int y {}; y < maxY; ++y)
     {
-      for(int x {}; x < (coordRules.size() / backgroundHeight); ++x)
+      for(int x {}; x < (coordRules.size() / maxY); ++x)
 	{
 	  char coordRule;
-	  getCoordRule(y, x, coordRules, backgroundHeight, coordRule);
+	  getCoordRule(y, x, coordRules, maxY, coordRule);
 	  if(coordRule != ' ' && (x - position) < maxX)
 	    {
 	      mvprintw(y, (x - position), (std::string {coordRule}).c_str());
@@ -467,8 +459,8 @@ void rules::physics
   printRuleChars(position, maxyx.y, maxyx.x);
 #endif
   
-  movePlayer(player::convertDirectionCharsToDirections(input), position,
-	     maxyx, backgroundLength);
+  movePlayer(player::convertDirectionCharsToDirections(input), position, maxyx,
+	     backgroundLength);
   sleep(engineSleepTime);
   resetOldTime(secStartTime);
 }

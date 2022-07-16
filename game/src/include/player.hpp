@@ -85,28 +85,27 @@ public:
      maxJumpNum hasn't been reached.) If the player didn't start a new jump then
      keepJumping should be called (but only if the player can move down). */
   bool startJumping
-  (const int bgPosition, yx maxyx, const std::vector<char> & coordRules,
-   const int bgHeight);
+  (const int bgPosition, yx maxyx, const std::vector<char> & coordRules);
   /* Keeps jumping if the player is jumping. That is as long as the player will
      not collide with any boarder characters or the bottom or top of the level.
      If the player is falling keep falling unless the player is above a boarder
      character or the bottom of the level. If the player isn't above any baorder
      character and isn't at the bottom of the level then start falling. */
   void handleJumpingAndFalling
-  (const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules,
-   const int bgHeight);
+  (const int bgPosition, const yx & maxyx,
+   const std::vector<char> & coordRules);
   bool isJumping() {return jumping != notJumping;};
   
 private:
   void handleFalling
-  (const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules,
-   const int bgHeight);
+  (const int bgPosition, const yx & maxyx,
+   const std::vector<char> & coordRules);
   void handleFallingSimple
-  (const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules,
-   const int bgHeight);
+  (const int bgPosition, const yx & maxyx,
+   const std::vector<char> & coordRules);
   void handleJumping
-  (const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules,
-   const int bgHeight);
+  (const int bgPosition, const yx & maxyx,
+   const std::vector<char> & coordRules);
   /* Calculates all the points between the absolute position of the left +
      leftCollisionOffset and the absolute position of the right +
      rightCollisionOffset. Return value is a vector of strings of the pos's.

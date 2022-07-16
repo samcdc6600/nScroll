@@ -12,7 +12,7 @@ class rules
 {
 public:
   // The player cannot pass widthin this many character's of the window boarder's (y, x).
-  const yx PLAYER_MOVEMENT_INNER_MARGIN {0, 40};
+  const yx PLAYER_MOVEMENT_INNER_MARGIN {0, 52};
   static constexpr size_t second {1};
   // Contains position based rules.
   std::vector<char> coordRules {};
@@ -29,7 +29,6 @@ public:
   /* The player cannot pass widthin this many character's of the left and right
      window boarders (y, x). */
   const yx playerMovementInnerLRBoarder {0, 44};
-  const int backgroundHeight {33};
   
 private:
   const size_t millisecondsInSec {1000*second};
@@ -54,8 +53,7 @@ private:
 		const std::vector<int> spChoords);
   // Moves the player 
   void movePlayer(sprite::directions input,
-		  int & position, const yx maxyx,
-		  const size_t backgroundLength);
+		  int & position, const yx maxyx, const size_t backgroundLength);
   /* No functions that change the position of the player should be called after
      this one for a given frame. */
   /* Calls handleFinalPlayerMovementAndWindowAndMarginInteractions after
@@ -93,16 +91,19 @@ private:
      Input should be the player input direction and the current absolute
      position of the player sprite in the x dimension. Returns updated
      direction. */
-  sprite::directions handleGroundCollision(const int position);
+  sprite::directions handleGroundCollision(const int position,
+					   const int backgroundHeight);
   /* Handles collision with boarder characters when the player sprite is moving
      right. If there is only one character to the bottom right then the player
      will continue moving in the right direction but be moved up by one
      character unless the player has a y position of 0, in which case the
      player will be stopped. The player sprite will also be stopped if there is
      more then one character directly to the right of it. */
-  sprite::directions handleRightCollision(const int position);
+  sprite::directions handleRightCollision(const int position,
+					  const int backgroundHeight);
   // // Analogous to handleRightCollision but of course for leftward movement.
-  sprite::directions handleLeftCollision(const int position);
+  sprite::directions handleLeftCollision(const int position,
+					 const int backgroundHeight);
 
 #ifdef DEBUG
   // Where maxX should be the maximum size of the window and not the level.
@@ -117,24 +118,6 @@ public:
   {
     delete(gamePlayer);
   }
-
-  // // Converts linear address to y x pos.
-  // char getCoordRule(const int linearAddress)
-  // {
-  //   int y {linearAddress / backgroundHeight};
-  //   int x {linearAddress % backgroundHeight};
-    
-  //   if(y > backgroundHeight)
-  //     {
-  // 	// Error
-  //     }
-  //   if(x > (coordRules.size() % backgroundHeight))
-  //     {
-  // 	// Error
-  //     }
-
-  //   getCoordRule(y, x);
-  // }
 };
 
 

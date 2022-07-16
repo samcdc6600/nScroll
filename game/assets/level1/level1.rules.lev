@@ -1,6 +1,6 @@
 (
   player(
-    initialCoordinate(10,60)
+    initialCoordinate(0,60)
     sprites("./assets/sprites/sprite(0).sprite",
     "./assets/sprites/sprite(1).sprite",
     "./assets/sprites/sprite(2).sprite",
@@ -9,31 +9,43 @@
   )
   backgroundSprite
   (
-    initialCoordinate(13,67)
+    initialCoordinate(28,67)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
   backgroundSprite
   (
-    initialCoordinate(13,97)
+    initialCoordinate(28,97)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
   backgroundSprite
   (
-    initialCoordinate(14,125)
+    initialCoordinate(15,125)
     sprites
     ("./assets/sprites/platform1(0).sprite")
   )
   backgroundSprite
   (
-    initialCoordinate(3,135)
+    initialCoordinate(4,135)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
   backgroundSprite
   (
-    initialCoordinate(13,172)
+    initialCoordinate(28,172)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
+  backgroundSprite
+  (
+    initialCoordinate(12,188)
+    sprites
+    ("./assets/sprites/platform1(0).sprite")
+  )
+  backgroundSprite
+  (
+    initialCoordinate(2,194)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
@@ -52,9 +64,24 @@ R 250
 R 250
 R 250
 R 250
+R 189ppppppppppppppppppppppppppppppppR 29
 R 250
 R 250
-R 126pppppppppppppppppppppppppppppppp R 91
+R 126ppppppppppppppppppppppppppppppppR 92
+R 250
+R 250
+R 250
+R 250
+R 250
+R 250
+R 250
+R 250
+R 250
+R 250
+R 250
+R 250
+R 250
+R 250
 R 250
 R 250
 R 250

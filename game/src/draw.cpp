@@ -43,7 +43,7 @@ void draw(const std::vector<int> & buff,
 
 void drawBackground(const std::vector<int> & buff, const yx maxyx, const unsigned long offset)
 {
-  std::vector<int> slice {getSlice(buff, offset, maxyx.y, maxyx.x)};      
+  std::vector<int> slice {getSlice(buff, offset, maxyx.y, maxyx.x)};
   //  getSlice(buff, offSet, winWidth, slice);
   //  printw("%s", slice.c_str());
 
