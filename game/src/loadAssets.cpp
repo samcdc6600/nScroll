@@ -99,12 +99,10 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
     {
       targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
       
-      if(targetFound == "" ||
-	 targetFound == std::string {RULES_HEADER_SECTION_END_DENOTATION})
+      if(targetFound == "")
 	{
 	  break;
 	}
-
       
       /* Target found, now check which object it's associated with and perform
 	 targets associated action. */
@@ -133,11 +131,11 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 		   headerKeywordActions[foundIter].headerAction
 		     (maxyx, rulesFileName, levelRules, rawRules, buffPos);
 		   break;
+		 case 1:
 		   /* We don't set found here because this keyword should have
 		      headerKeywordAction.foundMultipleOptional set to true. */
 		   headerKeywordActions[foundIter].headerAction
 		     (maxyx, rulesFileName, levelRules, rawRules, buffPos);
-		 case 1:
 		   break;
 		 }
 
@@ -192,7 +190,7 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
   
   readEndOfHeader
     (rawRules, buffPos,
-     concat(std::string("reading end of rules.lev header file \""),
+     concat(std::string("reading end of rules.lev header \""),
 	    rulesFileName, "\""));
 }
 
@@ -385,7 +383,7 @@ void initBgSprites(const yx maxyx, const char rulesFileName[], rules & levelRule
     {
       std::stringstream e {};
       e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<" to "
-	"denote the  start of a background sprite section when reading header "
+	"denote the start of a background sprite section when reading header "
 	"sub section background sprite. Encountered \""<<*buffPos<<"\"\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
@@ -763,7 +761,7 @@ void readEndOfHeader(const std::string & buff,
   std::vector<std::string> targets {};
   std::string targetFound {};
 
-  constexpr int nestingLevel {2};
+  constexpr int nestingLevel {1};
 
   for(int iter {}; iter < nestingLevel; ++iter)
     {
@@ -778,7 +776,8 @@ void readEndOfHeader(const std::string & buff,
 	      e<<RULES_HEADER_SECTION_END_DENOTATION;
 	    }
 	  e<<"\" when "
-	   <<eMsg<<". Encountered \""<<*buffPos<<"\".\n";
+	   <<eMsg<<". Encountered \""<<*(--buffPos)<<*(++buffPos)
+	   <<*(++buffPos)<<"\".\n";
 	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 	}
     }
