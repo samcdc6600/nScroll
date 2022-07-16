@@ -19,6 +19,24 @@
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
+  backgroundSprite
+  (
+    initialCoordinate(14,125)
+    sprites
+    ("./assets/sprites/platform1(0).sprite")
+  )
+  backgroundSprite
+  (
+    initialCoordinate(3,135)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
+  backgroundSprite
+  (
+    initialCoordinate(13,172)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
 )
 #
 R 250
