@@ -91,7 +91,7 @@ protected:
 public:
   /* The constructor reads the sprite file located at spriteFileName and
      converts it's contents to the internal data structure needed by sprite. */
-  sprite(std::vector<std::string> & spriteFileNames, const yx max,
+  sprite(std::vector<std::string> & spritePaths, const yx max,
 	 const size_t bgSize, const yx pos, const directions dir);
   ~sprite();
 private:
@@ -119,16 +119,16 @@ private:
      position. These values are used for collision detection and bounds
      checking. */
   void getMaxYXOffset();
+  
+protected:
   /* Checks that the sprite at pos is in the level (at least one character must
      be in the range of the level
      [(0,0), (backgroundHeight, backgroundLength)].) Exit with error message
      otherwise. GetMaxYXOffset() should be called before this function to set 
      maxBottomRightOffset. */ 
   void checkInitialPosIsInRangeOfLevel
-  (std::vector<std::string> & spriteFileNames, const yx maxBottomRightOffset,
+  (std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
    const size_t bgSize, const yx pos);
-  
-protected:
   /* Initialises sD_base */
   void loadSprite(const char spriteFileName [], spriteData & sD);
   void resetCurrentSliceNum()

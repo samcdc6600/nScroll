@@ -30,9 +30,6 @@ class player: public sprite
   const unsigned maxFallingJumpNum;
   const unsigned maxJumpNum;
 
-  // This function is not intended for use in player (and thus is private.)
-  virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
-
   // These values are used for collision checking in the physics code.
   /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      NOTE THAT WE INTEND TO HAVE THESE VALUES INITIALLY POPULATED FROM A SPRITE
@@ -52,6 +49,12 @@ class player: public sprite
   const int leftCollisionDirectOffset {1};
   const int leftCollisionOneOffOffset {leftCollisionDirectOffset -1};
 
+
+  // This function is not intended for use in player (and thus is private.)
+  virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
+  void checkInitialPosIsInRangeOfLevel
+  (std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
+   const size_t bgSize, const yx pos);
   
 public:
   enum directionChars

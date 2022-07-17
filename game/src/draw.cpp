@@ -20,22 +20,32 @@ void draw(const std::vector<int> & buff,
 	  const yx maxyx, const unsigned long offset)
 {
   drawBackground(buff, maxyx, offset);
-  /*
-    /* Draw non player sprites. All this should be needed to be able to uncomment this and have it compile and work is
-    to add in a check to make sure that the sprite "it" is in a visible part of the screen (to make sure we're not
-    doing useless work!) * /
-  for(MapType::iterator it = nonPlayerSprites.begin(); it != nonPlayerSprites.end; ++it)
-    {
-      if(it.second.in_range(maxyx, iter);
-	 it.second->draw(true);
-    }
-  */
+
+  /* NOTE THAT A FLAG THAT IS SETTABLE FROM A RULES.LEV FILE SHOULD BE ADDED TO
+     THE SPRITE CLASS THAT SPECIFIES IF A SPRITE SHOULD BE DISPLAYED IN FRONT
+     OF THE PLAY (AS OPPOSED TO BEHIND.) THEN THIS FLAG CAN BE CHECK FOR IN THE
+     BELOW FOR LOOP. IT'S INDEX CAN BE SAVED IF IT IS TO BE DISPLAYED IN FRONT
+     OF THE PLAYER SPRITE AND THEN INSTEAD OF BEING DISPLAYED IN THE BELOW FOR
+     LOOP IT CAN BE DISPLAYED AFTER THE PLAYER IS. THEN WE CAN HAVE THE PLAYER
+     APPEAR TO SPAWN FROM AN EGG ORB SPACESHIP THING THAT OPENS AND CLOSES AND
+     JUST SO HAPPENS TO OPEN AS THE PLAYER SPAWNS AND DROPS TO THE GROUND. WE
+     COULD ALSO ADD SOME MECHANISM WHERE BY THE ANIMATION OF THE SPRITE WOULD
+     ONLY BE PLAYED ONCE. THIS COULD BE EASILY DONE BY ADDING ANOTHER OPTION TO
+     RULES.LEV FILES. THIS FOREGROUND OPTION WOULD ALSO ALLOW FOR THE APPEARANCE
+     OF TREES AND COLUMNS BEING IN FRONT OF THE PLAYER.
+
+     NOTE THAT WE ALSO SHOULD CHANGE THE WAY THAT THIS FUNCTION AND THE
+     FUNCTIONS IT CALLS WORK SO THAT THEY PRINT INTO A BUFFER THAT IS THE SAME
+     SIZE AS THE WINDOW AND THEN THIS BUFFER IS PRINTED. ALSO WE SHOULD
+     EXPERIMENT WITH PRINTING NON ACS CHARACTERS THAT ARE CONTIGUOUS AND OF THE
+     SAME COLOUR USING ONE FUNCTION CALL (AS AS FAR AS WE CAN TELL THE ACS
+     CHARACTERS REQUIRE A DIFFERENT FUNCTION CALL. HOPEFULLY THE ABOVE WILL
+     IMPROVE THE POOR PERFORMANCE A LITTLE. */
   for(auto bgS: bgSprites)
     {
       bgS->draw(true, offset);
     }
-  /* The physics functions should ensure that the palyer should never be out of the visible range, so no check should
-     be required. */
+  
   playerSprite->draw(true);
   refresh();
 }

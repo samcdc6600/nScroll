@@ -8,15 +8,15 @@
 #include "include/utils.hpp"
 
 
-sprite::sprite(std::vector<std::string> & spriteFileNames, const yx max,
+sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
 	       const size_t bgSize, const yx pos, const directions dir)
   : maxyx(max), position(pos), direction(checkDirection(dir)),
     currentSliceNumber(0),
     startTime(std::chrono::high_resolution_clock::now()),
     currentTime(std::chrono::high_resolution_clock::now())
 {
-  for(auto spriteFileName {spriteFileNames.begin()};
-      spriteFileName != spriteFileNames.end(); spriteFileName++)
+  for(auto spriteFileName {spritePaths.begin()};
+      spriteFileName != spritePaths.end(); spriteFileName++)
     {
       spriteSliceSets.push_back(new spriteData ());
       loadSprite(spriteFileName->c_str(), *spriteSliceSets.back());
@@ -24,7 +24,7 @@ sprite::sprite(std::vector<std::string> & spriteFileNames, const yx max,
   initialiseDirectionsVector();
   getMaxYXOffset();
   checkInitialPosIsInRangeOfLevel
-    (spriteFileNames, maxBottomRightOffset, bgSize, pos);
+    (spritePaths, maxBottomRightOffset, bgSize, pos);
 }
 
 
@@ -253,7 +253,7 @@ void sprite::getMaxYXOffset()
 
 
 void sprite::checkInitialPosIsInRangeOfLevel
-(std::vector<std::string> & spriteFileNames, const yx maxBottomRightOffset,
+(std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
  const size_t bgXSize, const yx pos)
 {
   const size_t bgLen {bgXSize / maxyx.y};
@@ -261,8 +261,8 @@ void sprite::checkInitialPosIsInRangeOfLevel
      (pos.y + maxBottomRightOffset.y) < 0 || pos.y > maxyx.y -1)
     {
       std::stringstream e {};
-      e<<"Error: initial position for sprite (of any type) with file/s (";
-      for(std::string name: spriteFileNames)
+      e<<"Error: initial position for non player sprite with file/s (";
+      for(std::string name: spritePaths)
 	{
 	  e<<"\""<<name<<"\", ";
 	}
@@ -270,7 +270,7 @@ void sprite::checkInitialPosIsInRangeOfLevel
       e<<") is out of range. ("<<pos.y<<','<<pos.x<<") given for position, but"
 	" sprite has maximum size ("<<maxBottomRightOffset.y + 1<<','
        <<maxBottomRightOffset.x + 1<<") and background has size ("<<maxyx.y<<','
-       <<bgLen<<"). Remember coords start at 0 and are in the form (y,x)\n";
+       <<bgLen<<"). Remember coords start at 0 and are in the form (y,x).\n";
       exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
     }
 }
