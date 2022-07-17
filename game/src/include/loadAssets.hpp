@@ -48,12 +48,12 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 		      const std::string & rawRules,
 		      std::string::const_iterator & buffPos);
 void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
-                const std::string &rawRules,
+		const size_t bgSize, const std::string &rawRules,
                 std::string::const_iterator &buffPos);
 /* This function should be called for each background sprite section that's
    encountered. */
 void initBgSprites(const yx maxyx, const char rulesFileName[], rules & levelRules,
-		const std::string & rawRules,
+		   const size_t bgSize, const std::string & rawRules,
 		   std::string::const_iterator & buffPos);
 /* Attempts to read the start of the header in a rules.lev file. */
 void readStartOfHeader(const std::string &buff,
@@ -70,15 +70,27 @@ void readStringsSection(const std::string & buff,
                    const std::string & eMsg, void * retObj);
 /* Attempts to read one coordinate from a section in buff starting at buffPos.
    Emsg will be embedded in any error message/s the function spits out and
-   should say something about the context in which readSingleCoordSection() was
-   called. Returns the coordinate read. */
+   should say something about the context in which the function was
+   called. Returns the coordinate read. Only reads natural numbers (inclusive
+   of 0.)*/
+void readSingleCoordSectionInNNumbers(const std::string &buff,
+                                      std::string::const_iterator &buffPos,
+                                      const std::string &eMsg, void *coord);
+/* Same as readSingleCoordSectionInNNumbers() with the exception that it can
+   read integers. */
+void readSingleCoordSectionInZNumbers(const std::string &buff,
+                                      std::string::const_iterator &buffPos,
+                                      const std::string &eMsg, void *coord);
+/* This function should be called through readSingleCoordSectionInNNumbers() or
+   readSingleCoordSectionInZNumbers() */
 void readSingleCoordSection(const std::string & buff,
-                          std::string::const_iterator & buffPos,
-                          const std::string & eMsg, void * coord);
+			  std::string::const_iterator & buffPos,
+			    const std::string & eMsg, const bool useIntegers,
+			    void * coord, const std::string typeOfNumber);
 /* Attempts to read a number starting at buffPos (will skip any space before the
    number.) */
 int readSingleNum(const std::string &buff, std::string::const_iterator &buffPos,
-                  const std::string &eMsg);
+                  const std::string &eMsg, const bool useIntegers);
 // Verifies that the header of a .rules.lev file is present.
 void readEndOfHeader(const std::string &buff,
                      std::string::const_iterator &buffPos,
@@ -107,7 +119,8 @@ namespace levelFileKeywords
        (const std::string & buff, std::string::const_iterator & buffPos,
 	const std::string & eMsg, void * retObj),
        void (*hA)(const yx maxyx, const char rulesFileName[],
-		  rules &levelRules, const std::string &rawRules,
+		  rules &levelRules, const size_t bgSize,
+		  const std::string &rawRules,
 		  std::string::const_iterator &buffPos) = nullptr,
        const bool fMO = false)
 	: keyword(kword), action(a), headerAction(hA), foundMultipleOptional(fMO)
@@ -130,7 +143,8 @@ namespace levelFileKeywords
       /* This function should be used as the action instead of the above if we
 	 are at the top level of the header (in terms of sections). */
       void (*headerAction)(const yx maxyx, const char rulesFileName[],
-			   rules &levelRules, const std::string &rawRules,
+			   rules &levelRules, const size_t bgSize,
+			   const std::string &rawRules,
 			   std::string::const_iterator &buffPos);
     };
   };

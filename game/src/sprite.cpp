@@ -8,8 +8,8 @@
 #include "include/utils.hpp"
 
 
-sprite::sprite(std::vector<std::string> spriteFileNames, const yx max,
-	       const yx pos, const directions dir)
+sprite::sprite(std::vector<std::string> & spriteFileNames, const yx max,
+	       const size_t bgSize, const yx pos, const directions dir)
   : maxyx(max), position(pos), direction(checkDirection(dir)),
     currentSliceNumber(0),
     startTime(std::chrono::high_resolution_clock::now()),
@@ -23,6 +23,8 @@ sprite::sprite(std::vector<std::string> spriteFileNames, const yx max,
     }
   initialiseDirectionsVector();
   getMaxYXOffset();
+  checkInitialPosIsInRangeOfLevel
+    (spriteFileNames, maxBottomRightOffset, bgSize, pos);
 }
 
 
@@ -250,6 +252,30 @@ void sprite::getMaxYXOffset()
 }
 
 
+void sprite::checkInitialPosIsInRangeOfLevel
+(std::vector<std::string> & spriteFileNames, const yx maxBottomRightOffset,
+ const size_t bgXSize, const yx pos)
+{
+  const size_t bgLen {bgXSize / maxyx.y};
+  if((pos.x + maxBottomRightOffset.x) < 0 || pos.x > (long)bgLen -1 ||
+     (pos.y + maxBottomRightOffset.y) < 0 || pos.y > maxyx.y -1)
+    {
+      std::stringstream e {};
+      e<<"Error: initial position for sprite (of any type) with file/s (";
+      for(std::string name: spriteFileNames)
+	{
+	  e<<"\""<<name<<"\", ";
+	}
+      char eat;
+      e<<") is out of range. ("<<pos.y<<','<<pos.x<<") given for position, but"
+	" sprite has maximum size ("<<maxBottomRightOffset.y + 1<<','
+       <<maxBottomRightOffset.x + 1<<") and background has size ("<<maxyx.y<<','
+       <<bgLen<<"). Remember coords start at 0 and are in the form (y,x)\n";
+      exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
+    }
+}
+
+
 void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
 {
   // Load sprite asset. --------------------------------------------------------
@@ -272,7 +298,6 @@ void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
   /* Set currentSliceNumber to 0. This variable should only take on values
      between 0 and (spriteSlices.size() -1) */
   currentSliceNumber = 0;
-  // setUpBoundryCoordsVector(sD);
 }
 
 
@@ -461,7 +486,8 @@ void sprite::draw(const bool updateSlice, const int bgPos)
 {
   // Only display sprite if part of it is in the visible region.
   if((position.x + maxBottomRightOffset.x) >= bgPos && position.x <=
-     (bgPos + maxyx.x -1))
+     (bgPos + maxyx.x -1) && (position.y + maxBottomRightOffset.y) >= 0
+     && (position.y < maxyx.y))
     {
       if(updateSlice)
 	{
@@ -491,22 +517,33 @@ void sprite::draw(const bool updateSlice, const int bgPos)
 		spriteS[direction].spriteSlices[currentSliceNumber].
 		slice[sliceLine].sliceLine.size(); ++sliceLineIter)
 	    { // Move curser to the right position.
-	      int xPosRel;
-	      xPosRel = {position.x + spriteS[direction].
-		spriteSlices[currentSliceNumber].slice[sliceLine].offset +
-		sliceLineIter};
-	      int xPosAbs;
-	      xPosAbs = {xPosRel - bgPos};
-
-              /* Sprite can be partially in the visible region, so only print if
-		 char is in window. */
-	      if(xPosRel >= bgPos && xPosRel <= (bgPos + maxyx.x -1))
+	      if(position.y + sliceLine >= 0)
 		{
-		  setCursor(position.y + sliceLine, xPosAbs, maxyx);
-		  // Get the character.
-		  int ch {spriteS[direction].spriteSlices[currentSliceNumber].
-		    slice[sliceLine].sliceLine[sliceLineIter]};
-		  drawCh(ch);
+		  if(position.y + sliceLine < maxyx.y)
+		    {
+		      int xPosRel;
+		      xPosRel = {position.x + spriteS[direction].
+			spriteSlices[currentSliceNumber].slice[sliceLine].offset +
+			sliceLineIter};
+		      int xPosAbs;
+		      xPosAbs = {xPosRel - bgPos};
+
+		      /* Sprite can be partially in the visible region, so only
+			 print if char is in window. */
+		      if(xPosRel >= bgPos && xPosRel <= (bgPos + maxyx.x -1))
+			{
+			  setCursor(position.y + sliceLine, xPosAbs, maxyx);
+			  // Get the character.
+			  int ch {spriteS[direction].spriteSlices[currentSliceNumber].
+			    slice[sliceLine].sliceLine[sliceLineIter]};
+			  drawCh(ch);
+			}
+		    }
+		  else
+		    {
+		      // We've drawn to the last line of the window.
+		      break;
+		    }
 		}
 	    }
 	}

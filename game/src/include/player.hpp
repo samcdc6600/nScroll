@@ -67,10 +67,10 @@ public:
       DOWN_CHAR ='s',
     };
 
-  player(std::vector<std::string> spritePaths, const yx max,
-               const yx pos, const sprite::directions dir, const int h,
-               const double g, const double v, const unsigned maxFallingJmpNum,
-	 const unsigned maxJmpNum);
+  player
+  (std::vector<std::string> spritePaths, const yx max, const size_t bgSize,
+   const yx pos, const sprite::directions dir, const int h, const double g,
+   const double v, const unsigned maxFallingJmpNum, const unsigned maxJmpNum);
   
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.
