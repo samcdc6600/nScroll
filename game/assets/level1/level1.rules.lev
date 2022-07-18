@@ -21,21 +21,21 @@
   )
   backgroundSprite
   (
-    initialCoordinate(15,125)
+    initialCoordinate(19,125)
     sprites
     ("./assets/sprites/platform1(0).sprite")
   )
   backgroundSprite
   (
-    initialCoordinate(4,135)
+    initialCoordinate(8,135)
     sprites
-    ("./assets/sprites/tree1BlueBg(0).sprite")
+    ("./assets/sprites/tree2BlueBg(0).sprite")
   )
   backgroundSprite
   (
-    initialCoordinate(28,172)
+    initialCoordinate(30,172)
     sprites
-    ("./assets/sprites/tree1BlueBg(0).sprite")
+    ("./assets/sprites/tree2BlueBg(0).sprite")
   )
   backgroundSprite
   (
@@ -53,19 +53,25 @@
   (
     initialCoordinate(3,271)
     sprites
-    ("./assets/sprites/tree1BlueBg(0).sprite")
+    ("./assets/sprites/tree2BlueBg(0).sprite")
   )
   backgroundSprite
   (
     initialCoordinate(0,310)
     sprites
-    ("./assets/sprites/tree1BlueBg(0).sprite")
+    ("./assets/sprites/tree2BlueBg(0).sprite")
   )
   backgroundSprite
   (
     initialCoordinate(2,335)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
+  backgroundSprite
+  (
+    initialCoordinate(21,441)
+    sprites
+    ("./assets/sprites/tree2BlueBg(0).sprite")
   )
 )
 #
@@ -85,11 +91,11 @@ R 298bbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 173
 R 189ppppppppppppppppppppppppppppppppR 65bbbbbbbbbbbbR 29bbbbbbR 167
 R 274bbbbbbbbbbbbR 47bbbbbbbbbbR 157
 R 271bbbR 69bR 156
-R 126ppppppppppppppppppppppppppppppppR 111bbR 72bR 156
+R 126R 143bbR 72bR 156
 R 261bbbbbbbbR 75bbR 154
 R 261bbbR 77bbbbbR 154
 R 264bbbbbbbbbbR 64bbbR 159
-R 274bbbbbbbR 51bbbbbbR 162
+R 126ppppppppppppppppppppppppppppppppR 116bbbbbbbR 51bbbbbbR 162
 R 281bbbbbbR 42bbbR 168
 R 287bbbbbbbR 28bbbbbbbR 171
 R 294bbbbbbbbbbbbbbbbbbbbbbbbbbbbR 178
