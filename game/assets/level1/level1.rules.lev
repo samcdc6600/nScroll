@@ -49,6 +49,24 @@
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
+  backgroundSprite
+  (
+    initialCoordinate(3,271)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
+  backgroundSprite
+  (
+    initialCoordinate(0,310)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
+  backgroundSprite
+  (
+    initialCoordinate(2,335)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
 )
 #
 R 500
@@ -63,13 +81,13 @@ R 500
 R 500
 R 500
 R 500
-R 500
-R 189ppppppppppppppppppppppppppppppppR 279
-R 500
-R 500
-R 126ppppppppppppppppppppppppppppppppR 342
-R 500
-R 500
+R 298bbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 173
+R 189ppppppppppppppppppppppppppppppppR 65bbbbbbbbbbbbR 202
+R 274bbbbbbbbbbbbR 214
+R 271bbbR 226
+R 126ppppppppppppppppppppppppppppppppR 111bbR 229
+R 261bbbbbbbbR 231
+R 261bR 238
 R 500
 R 500
 R 500
@@ -91,11 +109,11 @@ R 500
 R 500
 R 500
 R 57bbbbbbbbbbbbbbbbbbbbbbR 16bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 57bbbbbbbbbbbbbbbbbbbbbbR 296
-R 49bbbbbbbbR 21bR 16bR 29bR 48bbbbbbbbR 21bR 296
-R 39bbbbbbbbbbR 29bR 16bR 30bR 37bbbbbbbbbbR 29bR 16bbbbbR 275
-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 39bR 16bR 31bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 39bR 16bR 4bbbbbbR 269
-R 78bR 16bR 107bR 16bR 10bbbbbbbbbbbbbbbbbbbR 250
-R 78bR 16bR 107bR 16bR 279
-R 78bR 16bR 107bR 16bR 279
+R 49bbbbbbbbR 21bR 16bR 29bR 48bbbbbbbbR 21bR 202bR 93
+R 39bbbbbbbbbbR 29bR 16bR 30bR 37bbbbbbbbbbR 29bR 16bbbbbR 179bbR 94
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 39bR 16bR 31bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 39bR 16bR 4bbbbbbR 136bbbbbbbbbbbbbbR 22bR 96
+R 78bR 16bR 107bR 16bR 10bbbbbbbbbbbbbbbbbbbR 111bbbbbbR 14bR 20bR 97
+R 78bR 16bR 107bR 16bR 29bR 109bR 21bbbbbbbbbbbbbbbbbbbbR 98
+R 78bR 16bR 107bR 16bR 30bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 140
 R 78bR 16bR 107bR 16bR 279
 R 78bR 16bR 107bR 16bR 279
