@@ -50,12 +50,28 @@ void draw(const std::vector<int> & buff,
      OFF BY DEFAULT. WE COULD JUST HAVE THE CYCLE TIME IGNORED, THIS WAY WE
      WOULDN'T HAVE TO ADD ANY EXTRA COMPLEXITY TO SPRITE FILES (THE CODE FOR
      WHICH DEFINITELY NEEDS SOME ATTENTION HAHA.) */
+  std::vector<bgSprite *> drawInForground;
+
   for(auto bgS: bgSprites)
     {
-      bgS->draw(true, offset);
+      if(!bgS->displayInForground)
+	{
+	  bgS->draw(true, offset);
+	}
+      else
+	{
+	  /* We think this will probably be faster than searching the whole list
+	     again if the list is of a large size (and taking into consideration
+	     that most sprites will probably be behind the player). */
+	  drawInForground.push_back(bgS);
+	}
+    }
+  playerSprite->draw(true);
+  for(auto bgSF: drawInForground)
+    {
+      bgSF->draw(true, offset);
     }
   
-  playerSprite->draw(true);
   refresh();
 }
 

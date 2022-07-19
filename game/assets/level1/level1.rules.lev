@@ -9,6 +9,7 @@
   )
   backgroundSprite
   (
+    displayInForground(true)
     initialCoordinate(28,67)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")

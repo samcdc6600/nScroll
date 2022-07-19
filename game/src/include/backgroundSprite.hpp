@@ -1,17 +1,25 @@
-#ifndef BACKGROUND_SPRITE_H_
-#define BACKGROUND_SPRITE_H_
-#include "sprite.hpp"
+#ifndef BACKGROUND_SPRITE_HPP_
+#define BACKGROUND_SPRITE_HPP_
+#include "nonPlayerSprite.hpp"
 
 
-class bgSprite : public sprite
+class bgSprite : public nonPlayerSprite
 {
 public:
+  /* Draw sprite after player sprite? Note that this doesn't effect the sprite
+     draw routine and must be check and appropriately handled in the main draw
+     routine. */
+  const bool displayInForground; 
+
+  
   bgSprite(std::vector<std::string> spriteFileNames, const yx max,
-	   const size_t bgSize, const yx pos, const directions dir) :
-    sprite(spriteFileNames, max, bgSize, pos, dir)
+	   const size_t bgSize, const yx pos, const directions dir,
+	   const bool dispInFg) :
+    nonPlayerSprite(spriteFileNames, max, bgSize, pos, dir),
+    displayInForground(dispInFg)
   {
     
-  }
+  }  
 };
 
 #endif

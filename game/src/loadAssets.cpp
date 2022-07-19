@@ -75,8 +75,7 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
 
   readStartOfHeader
     (rawRules, buffPos,
-     concat(std::string("reading start of rules.lev header file \""),
-	    rulesFileName, "\""));
+     concat("reading start of rules.lev header file \"", rulesFileName, "\""));
 
   /* Setup keyword actions associations for header section. If there is a
      section that is needed but we don't want to be specifiable in rules.lev
@@ -193,8 +192,7 @@ void parseRulesHeader(const yx maxyx, const char rulesFileName[],
   
   readEndOfHeader
     (rawRules, buffPos,
-     concat(std::string("reading end of rules.lev header \""),
-	    rulesFileName, "\""));
+     concat("reading end of rules.lev header \"", rulesFileName, "\""));
 }
 
 
@@ -230,18 +228,11 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
   std::vector<std::string> targets {};
   std::string targetFound {};
 
-  targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
-  targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
-  targets.clear();
-  if(targetFound != std::string {RULES_HEADER_SECTION_START_DENOTATION})
-    {
-      std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<" to "
-	"denote the  start of a player section when reading header sub section "
-	"player. Encountered \""<<*buffPos<<"\"\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-    }
-  
+  readSectionOpeningBracket
+    (rawRules, buffPos,
+     concat("reading header sub section ", PLAYER_HEADER_SECTION_SPECIFIER,
+	    " from \"", rulesFileName, "\""),
+     concat("a ", PLAYER_HEADER_SECTION_SPECIFIER, " section"));
   
   for(auto keywordAction: playerHeaderKeywordActions)
     {
@@ -282,18 +273,17 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
 		  playerHeaderKeywordActions[foundIter].found = true;
 		  playerHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
-		     concat(std::string("reading sprite dir strings from "
-					"rules.lev header file \""),
-			    rulesFileName, "\""), &playerInitData.spritePaths);
+		     concat("reading sprite dir strings from rules.lev header "
+			    "file \"", rulesFileName, "\""),
+		     &playerInitData.spritePaths);
 		 
 		  break;
 		case 1:
 		  playerHeaderKeywordActions[foundIter].found = true;
 		  playerHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
-		     concat(std::string("reading single coord section from "
-					"rules.lev header file  \""),
-			    rulesFileName, "\""),
+		     concat("reading single coord section from rules.lev header"
+			    " file  \"", rulesFileName, "\""),
 		     &playerInitData.coordinate);
 		  break;
 		case 2:
@@ -324,18 +314,12 @@ void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
 	}
     }
 
-  targets.push_back(std::string {RULES_HEADER_SECTION_END_DENOTATION});
-  targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
-  targets.clear();
-  if(targetFound != std::string {RULES_HEADER_SECTION_END_DENOTATION})
-    {
-      std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_SECTION_END_DENOTATION<<" to "
-	"denote the end of a player section when reading header sub section "
-	"player. Encountered \""<<*buffPos<<"\"\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-    }
-
+  readSectionEndingBracket
+    (rawRules, buffPos,
+     concat("reading header sub section ", PLAYER_HEADER_SECTION_SPECIFIER,
+	    " from \"", rulesFileName, "\""),
+     concat(PLAYER_HEADER_SECTION_SPECIFIER, " section"));
+  
   // Check that we've encountered all keywords that were searched for.
   for(auto keywordAction: playerHeaderKeywordActions)
     {
@@ -375,22 +359,18 @@ void initBgSprites(const yx maxyx, const char rulesFileName[],
      keywordAction::headerKeywordAction
      {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInZNumbers},
      keywordAction::headerKeywordAction
-     {SPRITE_INIT_DIR_SECTION_HEADER, nullptr}};
+     {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
+     keywordAction::headerKeywordAction
+     {SPRITE_DISPLAY_IN_FORGROUND, readBoolSection}};
 
   std::vector<std::string> targets {};
   std::string targetFound {};
 
-  targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
-  targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
-  targets.clear();
-  if(targetFound != std::string {RULES_HEADER_SECTION_START_DENOTATION})
-    {
-      std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<" to "
-	"denote the start of a background sprite section when reading header "
-	"sub section background sprite. Encountered \""<<*buffPos<<"\"\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-    }
+    readSectionOpeningBracket
+    (rawRules, buffPos,
+     concat("reading header sub section ", BG_SPRITE_HEADER_SECTION_SPECIFIER,
+	    " from \"", rulesFileName, "\""),
+     concat("a ", BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
   
   for(auto keywordAction: bgSpriteHeaderKeywordActions)
     {
@@ -409,6 +389,7 @@ void initBgSprites(const yx maxyx, const char rulesFileName[],
 	{
 	  break;
 	}
+
       /* Target found, now check which object it's associated with and perform
 	 targets associated action. */
       for(int foundIter {}; foundIter < (int)bgSpriteHeaderKeywordActions.size();
@@ -432,21 +413,28 @@ void initBgSprites(const yx maxyx, const char rulesFileName[],
 		  bgSpriteHeaderKeywordActions[foundIter].found = true;
 		  bgSpriteHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
-		     concat(std::string("reading background sprite dir strings "
-					"from rules.lev header file \""),
-			    rulesFileName, "\""), &bgSpriteInitData.spritePaths);
+		     concat("reading background sprite dir strings from "
+			    "rules.lev header file \"", rulesFileName, "\""),
+		     &bgSpriteInitData.spritePaths);
 		  break;
 		case 1:
 		  bgSpriteHeaderKeywordActions[foundIter].found = true;
 		  bgSpriteHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
-		     concat(std::string("reading single coord section from "
-					"rules.lev header file  \""),
-			    rulesFileName, "\""),
+		     concat("reading single coord section from rules.lev header"
+			    "file  \"", rulesFileName, "\""),
 		     &bgSpriteInitData.coordinate);
 		  break;
 		case 2:
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+		case 3:
+		  bgSpriteHeaderKeywordActions[foundIter].found = true;
+		  bgSpriteHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat("reading boolean section from rules.lev header file"
+			    " \"", rulesFileName, "\""),
+		     &bgSpriteInitData.displayInForground);
+		  break;
 		}
 
 	      if(false)
@@ -463,17 +451,11 @@ void initBgSprites(const yx maxyx, const char rulesFileName[],
 	}
     }
 
-  targets.push_back(std::string {RULES_HEADER_SECTION_END_DENOTATION});
-  targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
-  targets.clear();
-  if(targetFound != std::string {RULES_HEADER_SECTION_END_DENOTATION})
-    {
-      std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_SECTION_END_DENOTATION<<" to "
-	"denote the end of a background header section when reading header sub "
-	"section background sprite. Encountered \""<<*buffPos<<"\"\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-    }
+    readSectionEndingBracket
+    (rawRules, buffPos,
+     concat("reading header sub section ", BG_SPRITE_HEADER_SECTION_SPECIFIER,
+	    " from \"", rulesFileName, "\""),
+     concat("a ", BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
 
     // Check that we've encountered all keywords that were searched for.
   for(auto keywordAction: bgSpriteHeaderKeywordActions)
@@ -489,13 +471,23 @@ void initBgSprites(const yx maxyx, const char rulesFileName[],
 
   levelRules.bgSprites.push_back
     (new bgSprite(bgSpriteInitData.spritePaths, maxyx, bgSize,
-		  bgSpriteInitData.coordinate, bgSpriteInitData.direction));
+		  bgSpriteInitData.coordinate, bgSpriteInitData.direction,
+		  bgSpriteInitData.displayInForground));
 }
 
 
 void readStartOfHeader(const std::string & buff,
 		       std::string::const_iterator & buffPos,
 		       const std::string & eMsg)
+{
+  readSectionOpeningBracket(buff, buffPos, eMsg, std::string{"the header"});
+}
+
+
+void readSectionOpeningBracket(const std::string & buff,
+			       std::string::const_iterator & buffPos,
+			       const std::string & eMsg,
+			       const std::string & section)
 {
   using namespace levelFileKeywords;
     
@@ -508,34 +500,33 @@ void readStartOfHeader(const std::string & buff,
     {
       std::stringstream e {};
       e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<"\" to "
-	"denote the start of the header when "<<eMsg
-       <<". Encountered\""<<*buffPos<<"\"\n";
+	"denote the start of "<<section<<" when "<<eMsg
+       <<". Encountered \""<<*buffPos<<"\"\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
-  
-  // targets = {std::string {PLAYER_HEADER_SECTION_SPECIFIER}};
-  // targetFound = skipSpaceUpTo(buff, buffPos, targets);
-  // if(targetFound != std::string {PLAYER_HEADER_SECTION_SPECIFIER})
-  //   {
-  //     std::stringstream e {};
-  //     e<<"Error: expected \""<<PLAYER_HEADER_SECTION_SPECIFIER
-  //      <<RULES_HEADER_SECTION_START_DENOTATION<<"\" to denote the start of "
-  // 	"the player section when "<<eMsg<<". Encountered\""<<*buffPos
-  //      <<"\"\n";
-  //     exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-  //   }
-  
-  // targets = {std::string {RULES_HEADER_SECTION_START_DENOTATION}};
-  // targetFound = skipSpaceUpTo(buff, buffPos, targets);
-  // if(targetFound != std::string {RULES_HEADER_SECTION_START_DENOTATION})
-  //   {
-  //     std::stringstream e {};
-  //     e<<"Error: expected \""<<PLAYER_HEADER_SECTION_SPECIFIER
-  //      <<RULES_HEADER_SECTION_START_DENOTATION<<"\" to denote the start"
-  // 	"of the player section when "<<eMsg<<". Encountered\""
-  //      <<*buffPos<<"\"\n";
-  //     exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-  //   }
+}
+
+
+void readSectionEndingBracket(const std::string & buff,
+			      std::string::const_iterator & buffPos,
+			      const std::string & eMsg,
+			      const std::string & section)
+{
+  using namespace levelFileKeywords;
+    
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+
+  targets = {std::string {RULES_HEADER_SECTION_END_DENOTATION}};
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<RULES_HEADER_SECTION_END_DENOTATION<<"\" to "
+	"denote the end of "<<section<<" when "<<eMsg<<". Encountered "<<"\""
+       <<*buffPos<<"\"\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
 }
 
 
@@ -548,91 +539,83 @@ void readStringsSection(const std::string & buff,
   std::vector<std::string> targets {};
   std::string targetFound {};
 
-  targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
-  targetFound = skipSpaceUpTo(buff, buffPos, targets);
-  targets.clear();
-  if(targetFound != std::string {RULES_HEADER_SECTION_START_DENOTATION})
+  readSectionOpeningBracket
+    (buff, buffPos, eMsg, concat("string section"));
+  
+  // We're in a new section.
+  while(true)
     {
-      std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<" to "
-	"denote start of string section when "<<eMsg
-       <<". Encountered\""<<*buffPos<<"\"\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-    }
-      // We're in a new section.
-      while(true)
-	{
-	  std::string newString {};
+      std::string newString {};
 	  
-	  targets.push_back(std::string {STRING_DENOTATION});
-	  // Skip to start of string.
-	  targetFound = skipSpaceUpTo(buff, buffPos, targets);
-	  targets.clear();
-	  if(targetFound == "")
-	    {
-	      std::stringstream e {};
-	      e<<"Error: expected \""<<STRING_DENOTATION<<"\" to start a "
-		"string when "<<eMsg<<". Encountered \""<<*buffPos<<"\".\n";
-	      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-	    }
+      targets.push_back(std::string {STRING_DENOTATION});
+      // Skip to start of string.
+      targetFound = skipSpaceUpTo(buff, buffPos, targets);
+      targets.clear();
+      if(targetFound == "")
+	{
+	  std::stringstream e {};
+	  e<<"Error: expected \""<<STRING_DENOTATION<<"\" to start a "
+	    "string when "<<eMsg<<". Encountered \""<<*buffPos<<"\".\n";
+	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+	}
 
-	  std::string::const_iterator peekBuffPos {buffPos};
-	  peekBuffPos++;
+      std::string::const_iterator peekBuffPos {buffPos};
+      peekBuffPos++;
 
-	  if(*buffPos != STRING_DENOTATION)
+      if(*buffPos != STRING_DENOTATION)
+	{
+	  // We don't have an empty string
+	  do
 	    {
-	      // We don't have an empty string
-	      do
+	      if(peekBuffPos == buff.end())
 		{
-		  if(peekBuffPos == buff.end())
+		  std::stringstream e {};
+		  e<<"Error: file ended unexpectedly when "<<eMsg<<".\n";
+		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		}
+	      else if(*buffPos == STRING_ESC)
+		{
+		  if(*peekBuffPos != STRING_DENOTATION &&
+		     *peekBuffPos != STRING_ESC)
 		    {
 		      std::stringstream e {};
-		      e<<"Error: file ended unexpectedly when "<<eMsg<<".\n";
+		      e<<"Error: encountered character (\""<<*peekBuffPos
+		       <<"\") other then \""<<STRING_ESC<<"\" or \""
+		       <<STRING_DENOTATION<<"\" after escape character \""
+		       <<STRING_ESC<<"\" when "<<eMsg<<".\n";
 		      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-		    }
-		  else if(*buffPos == STRING_ESC)
-		    {
-		      if(*peekBuffPos != STRING_DENOTATION &&
-			 *peekBuffPos != STRING_ESC)
-			{
-			  std::stringstream e {};
-			  e<<"Error: encountered character (\""<<*peekBuffPos
-			   <<"\") other then \""<<STRING_ESC<<"\" or \""
-			   <<STRING_DENOTATION<<"\" after escape character \""
-			   <<STRING_ESC<<"\" when "<<eMsg<<".\n";
-			  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-			}
-		      else
-			{
-			  // Skip adding char at buffPos!
-			  newString.push_back(*peekBuffPos);
-			  peekBuffPos++;
-			  if(peekBuffPos == buff.end())
-			    {
-			      std::stringstream e {};
-			      e<<"Error: file ended unexpectedly when "<<eMsg<<".\n";
-			      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-			    }  
-			}
 		    }
 		  else
 		    {
-		      if(*buffPos == STRING_DENOTATION)
+		      // Skip adding char at buffPos!
+		      newString.push_back(*peekBuffPos);
+		      peekBuffPos++;
+		      if(peekBuffPos == buff.end())
 			{
-			  // We've finished reading the string.
-			  break;
-			}
-		      // BuffPos isn't pointing at a STRING_ESC char.
-		      newString.push_back(*buffPos);
+			  std::stringstream e {};
+			  e<<"Error: file ended unexpectedly when "<<eMsg<<".\n";
+			  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+			}  
 		    }
+		}
+	      else
+		{
+		  if(*buffPos == STRING_DENOTATION)
+		    {
+		      // We've finished reading the string.
+		      break;
+		    }
+		  // BuffPos isn't pointing at a STRING_ESC char.
+		  newString.push_back(*buffPos);
+		}
 		  
 		  
-		  buffPos = peekBuffPos;
-		  peekBuffPos++;
-		} while(true);
-	    }
-	  ((std::vector<std::string>*)strings)->push_back(newString);
-	  newString.clear();
+	      buffPos = peekBuffPos;
+	      peekBuffPos++;
+	    } while(true);
+	}
+      ((std::vector<std::string>*)strings)->push_back(newString);
+      newString.clear();
 
 
       buffPos++;
@@ -646,8 +629,8 @@ void readStringsSection(const std::string & buff,
 	{
 	  std::stringstream e {};
 	  e<<"Error: expected \""<<STRING_SEPARATION<<"\" or \""
-	   <<RULES_HEADER_SECTION_END_DENOTATION<<"\" to separate strings or end "
-	    "the string section when "<<eMsg
+	   <<RULES_HEADER_SECTION_END_DENOTATION<<"\" to separate strings or "
+	    "end the string section when "<<eMsg
 	   <<". Encountered \""<<*buffPos<<"\".\n";
 	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 	}
@@ -686,17 +669,10 @@ void readSingleCoordSection(const std::string & buff,
 
   std::vector<std::string> targets {};
   std::string targetFound {};
-  
-  targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
-  targetFound = skipSpaceUpTo(buff, buffPos, targets);
-  if(targetFound == "")
-    {
-      std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<"\" to "
-	"denote start of single coordinate section (with "<<typeOfNumber
-       <<") when "<<eMsg<<". Encountered "<<"\""<<*buffPos<<"\"\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-    }
+
+  readSectionOpeningBracket
+    (buff, buffPos, eMsg,
+     concat("single coordinate section (with " , typeOfNumber, ")"));
   
   ((yx*)coord)->y = readSingleNum(buff, buffPos, eMsg, useIntegers);
       
@@ -713,16 +689,48 @@ void readSingleCoordSection(const std::string & buff,
 
   ((yx*)coord)->x = readSingleNum(buff, buffPos, eMsg, useIntegers);
 
-  targets = {std::string {RULES_HEADER_SECTION_END_DENOTATION}};
+  readSectionEndingBracket
+    (buff, buffPos, eMsg,
+     concat("single coordinate section (with ", typeOfNumber, ")"));
+}
+
+
+void readBoolSection(const std::string & buff,
+		    std::string::const_iterator & buffPos,
+		    const std::string & eMsg, void * boolean)
+{
+  using namespace levelFileKeywords;
+
+  std::string sFalse {"false"}, sTrue {"true"}, nFalse {"0"}, nTrue {"1"};
+  std::vector<std::string> targets
+    {sFalse, sTrue, nFalse, nTrue};
+  std::string targetFound {};
+
+  readSectionOpeningBracket(buff, buffPos, eMsg, concat("bool section"));
+
   targetFound = skipSpaceUpTo(buff, buffPos, targets);
-  if(targetFound == "")
+  if(targetFound == sFalse || targetFound == nFalse)
+  {
+    *((bool *)boolean) = false;
+  }
+  else if(targetFound == sTrue || targetFound == nTrue)
+    {
+      *((bool *)boolean) = true;
+    }
+  else
     {
       std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_SECTION_END_DENOTATION<<"\" to "
-	"denote end of single coordinate section (with "<<typeOfNumber
-       <<") when "<<eMsg<<". Encountered "<<"\""<<*buffPos<<"\"\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+      e<<"Error: expected one of (";
+	for(auto target: targets)
+	  {
+	    e<<target<<", ";
+	  }
+	e<<") in boolean section. When "<<eMsg<<". Encountered \""
+	 <<*buffPos<<"\".\n";
+	exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
+
+  readSectionEndingBracket(buff, buffPos, eMsg, concat("bool section"));
 }
 
 
@@ -846,21 +854,18 @@ void parseRulesMain(const yx maxyx, const char bgFileName [],
 	  const char ruleChar {*(++buffPos)};
 	  ++buffPos;
 
-	  checkRuleChar(ruleChar,
-			concat(std::string {"parsing main section of \""},
-			       rulesFileName, std::string {"\""},
-			       std::string {" (on line "}, lineNumber,
-			       std::string {" of main section)"}));
+	  checkRuleChar
+	    (ruleChar,
+	     concat("parsing main section of \"", rulesFileName, "\" (on line ",
+		    lineNumber, " of main section)"));
 
 	  const int runLength {readSingleNum
 	    (rawRules, buffPos,
-	     concat(std::string {"reading run-length encoding length as a "
-				 "result of encountering run-length encoding "
-				 "character \""},
-	       levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR,
-	       std::string {"\" while parsing main section of \""},
-	       rulesFileName,
-	       std::string {"\""}), false)};
+	     concat("reading run-length encoding length as a result of "
+		    "encountering run-length encoding character \"",
+		    levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR,
+		    "\" while parsing main section of \"", rulesFileName,
+		    "\""), false)};
 	  --buffPos;
 
 	  for(int lengthIter {}; lengthIter < runLength; ++lengthIter)
@@ -872,10 +877,9 @@ void parseRulesMain(const yx maxyx, const char bgFileName [],
       else
 	{
 	  checkRuleChar(*buffPos,
-			concat(std::string {"parsing main section of \""},
-			       rulesFileName, std::string {"\""},
-			       std::string {" (on line "}, lineNumber,
-			       std::string {" of main section)"}));
+			concat("parsing main section of \"",
+			       rulesFileName,  "\" (on line ", lineNumber,
+			       " of main section)"));
 	  levelRules.coordRules.push_back(*buffPos);
 	  lineLength++;
 	}
@@ -1030,6 +1034,10 @@ void checkForDefaultBgSpriteValues
       break;
     case 2:
       bgSpriteInitData.direction = defaultValues::bgSprites::direction;
+      break;
+    case 3:
+      bgSpriteInitData.displayInForground =
+	defaultValues::bgSprites::displayInForground;
       break;
     default:
     DEFAULT:

@@ -59,6 +59,18 @@ void initBgSprites(const yx maxyx, const char rulesFileName[], rules & levelRule
 void readStartOfHeader(const std::string &buff,
                        std::string::const_iterator &buffPos,
                        const std::string &eMsg);
+/* Attempts to read the bracket at the start of a section. Calls exit with eMsg 
+   and section if there is an error. */
+void readSectionOpeningBracket(const std::string &buff,
+                               std::string::const_iterator &buffPos,
+                               const std::string &eMsg,
+                               const std::string &section);
+/* Attempts to read the bracket at the end of a section. Calls exit with eMsg 
+   and section if there is an error. */
+void readSectionEndingBracket(const std::string & buff,
+			      std::string::const_iterator & buffPos,
+			      const std::string & eMsg,
+			      const std::string & section);
 /* Attempts to read the strings from a string section in a rules.lev file.
    Should be called when a series of strings is expected. Buff is the buffer
    where the strings should be located and buffPos is the position to start
@@ -83,10 +95,18 @@ void readSingleCoordSectionInZNumbers(const std::string &buff,
                                       const std::string &eMsg, void *coord);
 /* This function should be called through readSingleCoordSectionInNNumbers() or
    readSingleCoordSectionInZNumbers() */
-void readSingleCoordSection(const std::string & buff,
-			  std::string::const_iterator & buffPos,
-			    const std::string & eMsg, const bool useIntegers,
-			    void * coord, const std::string typeOfNumber);
+void readSingleCoordSection(const std::string &buff,
+                            std::string::const_iterator &buffPos,
+                            const std::string &eMsg, const bool useIntegers,
+                            void *coord, const std::string typeOfNumber);
+/* Attempts to read a boolean for a section in buff starting at buffPos. Emsg
+   will be embedded in any error message/s the function spits out and should
+   say something about the context in which the function was called. Returns
+   the bool read. Can read a boolean in a string or integer format i.e. "true" /
+   "false" or 1 / 0. */
+void readBoolSection(const std::string & buff,
+		    std::string::const_iterator & buffPos,
+		    const std::string & eMsg, void * boolean);
 /* Attempts to read a number starting at buffPos (will skip any space before the
    number.) */
 int readSingleNum(const std::string &buff, std::string::const_iterator &buffPos,
@@ -166,6 +186,8 @@ namespace levelFileKeywords
   const std::string SPRITE_MAX_VERT_V_SECTION_HEADER	{"maxVelocity"};
   const std::string SPRITE_MAX_FALL_JMP_SECTION_HEADER	{"maxJumpsAfterFall"};
   const std::string SPRITE_MAX_JMP_NUM_SECTION_HEADER	{"maxJumps"};
+  // Sub section headers for background sprite.
+  const std::string SPRITE_DISPLAY_IN_FORGROUND         {"displayInForground"};
   // Used to store the order of a keyword and whether it has a default value.
   struct orderAndDefaultVal
   {
@@ -193,7 +215,8 @@ namespace levelFileKeywords
   const std::map<std::string, orderAndDefaultVal> bgSpriteSectionKeywordToId {
     {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
     {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
-    {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}}
+    {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
+    {SPRITE_DISPLAY_IN_FORGROUND,       orderAndDefaultVal {3, true}}
   };
   namespace defaultValues
   {
@@ -216,6 +239,7 @@ namespace levelFileKeywords
       const std::vector<std::string> spritePaths {{""}};
       const yx coordinate {20, 62};
       const sprite::directions direction {sprite::DIR_NONE};
+      const bool displayInForground {false};
     }
   }
   /* This struct should be populated with the values that the player will
@@ -238,6 +262,7 @@ namespace levelFileKeywords
     std::vector<std::string> spritePaths {};
     yx coordinate {};
     sprite::directions direction {};
+    bool displayInForground {};
   };
   // Misc.
   constexpr char STRING_DENOTATION		{'\"'};
