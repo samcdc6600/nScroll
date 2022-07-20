@@ -56,17 +56,16 @@ startCpuMonAndCreateIpcFiles()
 }
 
 
-stopCpuMonAndGetResults()
+stopCpuMonAndGetAndPrintResults()
 {
     # NOTE THAT THIS SCRIPT SHOULD NOT FINISH TOO SOON OR ELSE THE MESSAGE
     # FROM CPUMON WILL NOT BE RECEIVED PROPERLY (HENCE THE SLEEP AT THE END OF
     # THIS FUNCTION.)
-    echo $IPC_TO_CLIENT
-    $ECHO_PROG "t3rmin4t3" > $IPC_TO_CLIENT
-    $READ_PROG messageFromClient < $IPC_TO_SERVER
+    $ECHO_PROG "t3rmin4t3" > ${IPC_TO_CLIENT}
+    $READ_PROG MESSAGE_FROM_CLIENT < ${IPC_TO_SERVER}
 
-    $ECHO_PROG "Received reply ${messageFromClient}"
-
+    $ECHO_PROG -e "${CR_AND_KILL_LINE}Performance results = \
+${MESSAGE_FROM_CLIENT}."
 }
 
 
@@ -75,14 +74,14 @@ progCommSeq()
     # Move right.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key d
-    $SLEEP_PROG 1.6
+    $SLEEP_PROG 1.7
     # Jump first hole.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $SLEEP_PROG 0.4
     $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 1.1
+    $SLEEP_PROG 1.3
     # Jump onto first platform.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
@@ -92,7 +91,7 @@ progCommSeq()
     $SLEEP_PROG 0.40
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 0.80
+    $SLEEP_PROG 0.85
     # Jump onto second platform.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
@@ -155,7 +154,7 @@ progCommSeq()
     $SLEEP_PROG 0.5
     $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 3.1
+    $SLEEP_PROG 2.7
 }
 
 
@@ -172,20 +171,27 @@ main()
     $ECHO_PROG -e "Starting program (./${NSCRL})..."
     sendSequenceOfKeyEventsAsLocalCommand "$NSCRL"
     $XDOTOOL_PROG key return
-
-    startCpuMonAndCreateIpcFiles
     
     $ECHO_PROG -e "Starting program command sequence..."
     progCommSeq
+    # We start this hear because it takes a little while to get accurate
+    # performance results.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE}Starting performance counter..."
+    startCpuMonAndCreateIpcFiles
     # # Run again.
-    # progCommSeq
+    progCommSeq
+    progCommSeq
+    progCommSeq
 
-    stopCpuMonAndGetResults
+    stopCpuMonAndGetAndPrintResults
     
     # Exit.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $XDOTOOL_PROG key Escape
+
+    $ECHO_PROG -e "${CR_AND_KILL_LINE}Switching window..."
+    $XDOTOOL_PROG key super+space
 
     $ECHO_PROG -e "${NO_COLOR}"
 }
