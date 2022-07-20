@@ -1,0 +1,150 @@
+#!/bin/sh
+
+
+NSCRL="nscrl"
+CR_AND_KILL_LINE="\r\033[K"	# Does a carriage return and then kills line.
+SUPRESS_POSTFIX="\c"		# Suppresses output after it's self.
+NO_COLOR="\033[0m"
+RED="\033[0;31m"		# Indicates bad things :'(
+GREEN="\033[0;32m"		# Indicates all is well in the world :)
+
+ECHO_PROG="echo"		# "Built in echo supports changing colours.
+SEQ_PROG="/usr/bin/seq"
+CUT_PROG="/usr/bin/cut"
+XDOTOOL_PROG="/usr/local/bin/xdotool"
+SLEEP_PROG="/bin/sleep"
+
+
+sendSequenceOfKeyEventsAsLocalCommand()
+{
+    $XDOTOOL_PROG key period
+    $XDOTOOL_PROG key slash
+    
+    for INDEX in $($SEQ_PROG 1 ${#1})
+    do
+	KEY="`$ECHO_PROG $1 | $CUT_PROG -c$INDEX-$INDEX`"
+	$XDOTOOL_PROG key $KEY
+    done
+
+    $XDOTOOL_PROG key return
+    $SLEEP_PROG 0.2
+}
+
+
+progCommSeq()
+{
+    # Move right.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key d
+    $SLEEP_PROG 2.26
+    # Jump first hole.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.4
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 1.24
+    # Jump onto first platform.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.40
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.40
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.80
+    # Jump onto second platform.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.50
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 2.0
+    # Jump onto top of cave.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.90
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 4.0
+    # Jump off of cave and down.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 1.1
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key s
+    $SLEEP_PROG 0.45
+    # Go left for a bit.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key a
+    $SLEEP_PROG 5.8
+    # Jump up and then "turn around".
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.45
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key d
+    $SLEEP_PROG 0.0
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.45
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 6.5
+    # Jump onto small cliff at end of level.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 3.7
+    # Go left for a bit.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key a
+    $SLEEP_PROG 10.8
+    # Jump over 2nd hole.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.5
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 4.5
+    # Jump over 1st hole.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.5
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 3.1
+}
+
+
+main()
+{
+    $ECHO_PROG -e "${GREEN}PerfTest started...\n${RED}PLEASE REFRAIN FROM\
+ TOUCHING YOUR MOUSE AND KEYBOARD!${GREEN}"
+    
+    $ECHO_PROG -e "Switching window..."
+    $XDOTOOL_PROG key super+space
+    $SLEEP_PROG 0.25
+
+    
+    $ECHO_PROG -e "Starting program (./${NSCRL})..."
+    sendSequenceOfKeyEventsAsLocalCommand "$NSCRL"
+
+    
+    $ECHO_PROG -e "Starting program command sequence..."
+    progCommSeq
+    # Run again.
+    progCommSeq
+
+        # Exit.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $XDOTOOL_PROG key Escape
+
+
+    $ECHO_PROG -e "${NO_COLOR}"
+}
+
+
+main
+

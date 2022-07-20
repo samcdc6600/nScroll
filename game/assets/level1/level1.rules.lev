@@ -9,7 +9,6 @@
   )
   backgroundSprite
   (
-    displayInForground(true)
     initialCoordinate(28,67)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
@@ -55,6 +54,13 @@
     initialCoordinate(3,271)
     sprites
     ("./assets/sprites/tree2BlueBg(0).sprite")
+  )
+  backgroundSprite
+  (
+    initialCoordinate(16,285)
+    displayInForground(true)
+    sprites
+    ("./assets/sprites/caveForground1(0).sprite")
   )
   backgroundSprite
   (
@@ -120,7 +126,7 @@ R 58bbbbbbbbbbbbbbbbbbbbbR 16bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 58bbbbbbbbbbbbbbbbb
 R 50bbbbbbbbR 20bR 16bR 29bR 49bbbbbbbbR 20bR 202bR 93
 R 40bbbbbbbbbbR 28bR 16bR 30bR 38bbbbbbbbbbR 28bR 16bbbbbR 142R 37bbR 94
 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 38bR 16bR 31bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 38bR 16bR 4bbbbbbR 137bbbbbbbbbbbbR 23bR 96
-R 78bR 16bR 107bR 16bR 10bbbbbbbbbbbbbbbbbbbR 111bbbbbbbR 12bbbbbbbbbbbbbbbbbbbbbbbbR 96
-R 78bR 16bR 107bR 16bR 29bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbR 139
-R 78bR 16bR 107bR 16bR 279
+R 78bR 16bR 107bR 16bR 10bbbbbbbbbbbbbbbbbbbR 41bR 41bbbbbbbR 22bbbbbbR 12bbbbbbbbbbbbbbbbbbbbbbbbR 96
+R 78bR 16bR 107bR 16bR 29bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb                        bbbbbbbbR 7bbbbbbbbbbbbbbbbbbbbbR 139
+R 78bR 16bR 107bR 16bR 80bbbbbbbbbbbbbbbbbbbbbbbbR 175
 R 78bR 16bR 107bR 16bR 279
