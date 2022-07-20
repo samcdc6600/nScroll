@@ -1,4 +1,0 @@
-#!/bin/sh
-
-messageFromServer < ${1}
-echo messageFromServer
