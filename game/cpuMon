@@ -15,31 +15,40 @@ AWK_PROG="/usr/bin/awk"
 HEAD_PROG="/usr/bin/head"
 TIMEOUT_PROG="/usr/bin/timeout"
 EXPR_PROG="/bin/expr"
+BC_PROG="/usr/bin/bc"
 
 
 main()
 {
     IPC_TO_CLIENT="${1}"
     IPC_TO_SERVER="${2}"
-    PERF_MEASURE_INTERVAL="0.5"
+    PERF_MEASURE_INTERVAL="5"
     PERF_MEASURE_COUNTER="1"
     
     while true
     do
-	PERF_STATS="${PERF_STATS},`${PS_PROG} -u | ${GREP_PROG} ${NSCRL} | ${AWK_PROG} \
-'{print $3}' | ${HEAD_PROG} -n 1`"
-
-	$ECHO_PROG $PERF_STATS
+	PERF_STATS="${PERF_STATS},`${PS_PROG} -u | ${GREP_PROG} ${NSCRL} | \
+${AWK_PROG} '{print $3}' | ${HEAD_PROG} -n 1`"
 	
 	# Get message from server. Timeout after n seconds.
 	MESSAGE_FROM_SERVER=`${TIMEOUT_PROG} ${PERF_MEASURE_INTERVAL} \
 cat $IPC_TO_CLIENT`
-
-	
 	if [ "${MESSAGE_FROM_SERVER}" != "" ]
 	then
-	    $ECHO_PROG `${PS_PROG} -u | ${GREP_PROG} ${NSCRL} | ${AWK_PROG} \
-'{print $3}' | ${HEAD_PROG} -n 1` > $IPC_TO_SERVER
+	    # Remove "," prefix.
+	    PERF_STATS=`${ECHO_PROG} ${PERF_STATS} | cut -c 2-`
+	    # Sum up stats.
+	    IFS=","
+	    for STAT in $PERF_STATS
+	    do
+		PERF_STATS_SUM=`${ECHO_PROG} 0${PERF_STATS_SUM} + ${STAT} | \
+${BC_PROG} -l`
+	    done
+	    # Average stats.
+	    PERF_STATS_AVG=`${ECHO_PROG} ${PERF_STATS_SUM} / \
+${PERF_MEASURE_COUNTER} | ${BC_PROG} -l`
+	    # Report stats back to server.
+	    $ECHO_PROG "${PERF_STATS_AVG}" > $IPC_TO_SERVER
 	    exit
 	fi
 

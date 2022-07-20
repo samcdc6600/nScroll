@@ -61,7 +61,6 @@ stopCpuMonAndGetResults()
     # NOTE THAT THIS SCRIPT SHOULD NOT FINISH TOO SOON OR ELSE THE MESSAGE
     # FROM CPUMON WILL NOT BE RECEIVED PROPERLY (HENCE THE SLEEP AT THE END OF
     # THIS FUNCTION.)
-    $SLEEP_PROG 10
     echo $IPC_TO_CLIENT
     $ECHO_PROG "t3rmin4t3" > $IPC_TO_CLIENT
     $READ_PROG messageFromClient < $IPC_TO_SERVER
@@ -76,14 +75,14 @@ progCommSeq()
     # Move right.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key d
-    $SLEEP_PROG 2.26
+    $SLEEP_PROG 1.6
     # Jump first hole.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $SLEEP_PROG 0.4
     $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 1.24
+    $SLEEP_PROG 1.1
     # Jump onto first platform.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
@@ -100,25 +99,25 @@ progCommSeq()
     $SLEEP_PROG 0.50
     $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 2.0
+    $SLEEP_PROG 1.8
     # Jump onto top of cave.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $SLEEP_PROG 0.90
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 4.0
+    $SLEEP_PROG 3.8
     # Jump off of cave and down.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 1.1
+    $SLEEP_PROG 1
     $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key s
-    $SLEEP_PROG 0.45
+    $SLEEP_PROG 0.43
     # Go left for a bit.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key a
-    $SLEEP_PROG 5.8
+    $SLEEP_PROG 5.4
     # Jump up and then "turn around".
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
@@ -131,22 +130,25 @@ progCommSeq()
     $SLEEP_PROG 0.45
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 6.5
+    $SLEEP_PROG 5.45
     # Jump onto small cliff at end of level.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.3
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $SLEEP_PROG 3.7
     # Go left for a bit.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key a
-    $SLEEP_PROG 10.8
+    $SLEEP_PROG 9.25
     # Jump over 2nd hole.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $SLEEP_PROG 0.5
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 4.5
+    $SLEEP_PROG 4.3
     # Jump over 1st hole.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
@@ -174,7 +176,7 @@ main()
     startCpuMonAndCreateIpcFiles
     
     $ECHO_PROG -e "Starting program command sequence..."
-    # progCommSeq
+    progCommSeq
     # # Run again.
     # progCommSeq
 
