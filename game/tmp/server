@@ -1,0 +1,17 @@
+#!/bin/sh
+
+pipe=/tmp/testpipe
+
+trap "rm -f $pipe" EXIT
+
+
+    mkfifo $pipe
+
+
+while true
+do
+read line <$pipe
+        echo "the fat ${line} and the hair"
+done
+
+echo "Reader exiting"

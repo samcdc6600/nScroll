@@ -1,1 +1,51 @@
 #!/bin/sh
+
+
+NSCRL="nscrl"
+# IPC_TO_CLIENT="/tmp/${NSCRL}_perf_test_ipc_to_client"
+# IPC_TO_SERVER="/tmp/${NSCRL}_perf_test_ipc_to_server"
+
+
+ECHO_PROG="echo"
+READ_PROG="/read"		# NOTE THAT /USR/BIN/READ DOESN'T WORK!
+SLEEP_PROG="/bin/sleep"
+PS_PROG="/bin/ps"
+GREP_PROG="/usr/bin/grep"
+AWK_PROG="/usr/bin/awk"
+HEAD_PROG="/usr/bin/head"
+TIMEOUT_PROG="/usr/bin/timeout"
+EXPR_PROG="/bin/expr"
+
+
+main()
+{
+    IPC_TO_CLIENT="${1}"
+    IPC_TO_SERVER="${2}"
+    PERF_MEASURE_INTERVAL="0.5"
+    PERF_MEASURE_COUNTER="1"
+    
+    while true
+    do
+	PERF_STATS="${PERF_STATS},`${PS_PROG} -u | ${GREP_PROG} ${NSCRL} | ${AWK_PROG} \
+'{print $3}' | ${HEAD_PROG} -n 1`"
+
+	$ECHO_PROG $PERF_STATS
+	
+	# Get message from server. Timeout after n seconds.
+	MESSAGE_FROM_SERVER=`${TIMEOUT_PROG} ${PERF_MEASURE_INTERVAL} \
+cat $IPC_TO_CLIENT`
+
+	
+	if [ "${MESSAGE_FROM_SERVER}" != "" ]
+	then
+	    $ECHO_PROG `${PS_PROG} -u | ${GREP_PROG} ${NSCRL} | ${AWK_PROG} \
+'{print $3}' | ${HEAD_PROG} -n 1` > $IPC_TO_SERVER
+	    exit
+	fi
+
+	PERF_MEASURE_COUNTER=`${EXPR_PROG} ${PERF_MEASURE_COUNTER} + 1`
+    done
+}
+
+
+main "${1}" "${2}"

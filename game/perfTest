@@ -7,12 +7,21 @@ SUPRESS_POSTFIX="\c"		# Suppresses output after it's self.
 NO_COLOR="\033[0m"
 RED="\033[0;31m"		# Indicates bad things :'(
 GREEN="\033[0;32m"		# Indicates all is well in the world :)
+IPC_TO_CLIENT="/tmp/${NSCRL}_perf_test_ipc_to_client"
+IPC_TO_SERVER="/tmp/${NSCRL}_perf_test_ipc_to_server"
 
 ECHO_PROG="echo"		# "Built in echo supports changing colours.
+READ_PROG="read"		# NOTE THAT /USR/BIN/READ DOESN'T WORK!
+CPU_MON_PROG="./cpuMon"
+TRAP_PROG="trap"
+RM_PROG="/bin/rm"
+MKFIFO_PROG="/usr/bin/mkfifo"
 SEQ_PROG="/usr/bin/seq"
 CUT_PROG="/usr/bin/cut"
 XDOTOOL_PROG="/usr/local/bin/xdotool"
 SLEEP_PROG="/bin/sleep"
+EXIT_PROG="exit"
+JOT_PROG="/usr/bin/jot"
 
 
 sendSequenceOfKeyEventsAsLocalCommand()
@@ -25,9 +34,40 @@ sendSequenceOfKeyEventsAsLocalCommand()
 	KEY="`$ECHO_PROG $1 | $CUT_PROG -c$INDEX-$INDEX`"
 	$XDOTOOL_PROG key $KEY
     done
+}
 
-    $XDOTOOL_PROG key return
-    $SLEEP_PROG 0.2
+
+startCpuMonAndCreateIpcFiles()
+{
+    RAND_NUM=`${JOT_PROG} -r 1 1 999999999`
+    # Make named pipe names unique.
+    IPC_TO_CLIENT="${IPC_TO_CLIENT}${RAND_NUM}"
+    IPC_TO_SERVER="${IPC_TO_SERVER}${RAND_NUM}"
+    
+    # Create named pipes for IPC with cpuMon.
+    $ECHO_PROG -e "${NO_COLOR}${SUPRESS_POSTFIX}"
+    $MKFIFO_PROG -m 660 $IPC_TO_CLIENT
+    $MKFIFO_PROG -m 660 $IPC_TO_SERVER
+    $ECHO_PROG -e "${GREEN}${SUPRESS_POSTFIX}"
+    # Destroy named piped on exit!
+    $TRAP_PROG "${RM_PROG} -f ${IPC_TO_CLIENT} ${IPC_TO_SERVER}" $EXIT_PROG
+
+    $CPU_MON_PROG "${IPC_TO_CLIENT}" "${IPC_TO_SERVER}" &
+}
+
+
+stopCpuMonAndGetResults()
+{
+    # NOTE THAT THIS SCRIPT SHOULD NOT FINISH TOO SOON OR ELSE THE MESSAGE
+    # FROM CPUMON WILL NOT BE RECEIVED PROPERLY (HENCE THE SLEEP AT THE END OF
+    # THIS FUNCTION.)
+    $SLEEP_PROG 10
+    echo $IPC_TO_CLIENT
+    $ECHO_PROG "t3rmin4t3" > $IPC_TO_CLIENT
+    $READ_PROG messageFromClient < $IPC_TO_SERVER
+
+    $ECHO_PROG "Received reply ${messageFromClient}"
+
 }
 
 
@@ -121,26 +161,29 @@ main()
 {
     $ECHO_PROG -e "${GREEN}PerfTest started...\n${RED}PLEASE REFRAIN FROM\
  TOUCHING YOUR MOUSE AND KEYBOARD!${GREEN}"
-    
+
     $ECHO_PROG -e "Switching window..."
     $XDOTOOL_PROG key super+space
-    $SLEEP_PROG 0.25
+    $SLEEP_PROG 0.7
 
-    
+    # Type program path out.
     $ECHO_PROG -e "Starting program (./${NSCRL})..."
     sendSequenceOfKeyEventsAsLocalCommand "$NSCRL"
+    $XDOTOOL_PROG key return
 
+    startCpuMonAndCreateIpcFiles
     
     $ECHO_PROG -e "Starting program command sequence..."
-    progCommSeq
-    # Run again.
-    progCommSeq
+    # progCommSeq
+    # # Run again.
+    # progCommSeq
 
-        # Exit.
+    stopCpuMonAndGetResults
+    
+    # Exit.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $XDOTOOL_PROG key Escape
-
 
     $ECHO_PROG -e "${NO_COLOR}"
 }

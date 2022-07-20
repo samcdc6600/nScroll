@@ -1,0 +1,10 @@
+#!/bin/sh
+
+pipe=/tmp/testpipe
+
+
+
+
+
+
+    echo "$1" >$pipe
