@@ -10,16 +10,20 @@
 #include "include/colorS.hpp"
 
 
-// Class handels the setting of color when printing characters (used in draw.cpp) argument is the default color pair.
-setColorMode colorMode{56}; //If argument to object constructor is changed it must also be changed in main.cpp.
+const std::string FILE_NAME {"draw.cpp"};
 
 
+/* Class handels the setting of color when printing characters (used in
+   draw.cpp) argument is the default color pair. */
+//If argument to object constructor is changed it must also be changed in main.cpp.    
+setColorMode colorMode{56};
 
-void draw(const std::vector<int> & buff,
+
+void draw(int * unprocessedDrawBuffer, const std::vector<int> & buff,
 	  player * playerSprite, std::vector<bgSprite *> & bgSprites,
 	  const yx maxyx, const unsigned long offset)
 {
-  drawBackground(buff, maxyx, offset);
+  drawBackground(unprocessedDrawBuffer, buff, maxyx, offset);
 
   /* NOTE THAT A FLAG THAT IS SETTABLE FROM A RULES.LEV FILE SHOULD BE ADDED TO
      THE SPRITE CLASS THAT SPECIFIES IF A SPRITE SHOULD BE DISPLAYED IN FRONT
@@ -56,7 +60,7 @@ void draw(const std::vector<int> & buff,
     {
       if(!bgS->displayInForground)
 	{
-	  bgS->draw(true, offset);
+	  bgS->draw(unprocessedDrawBuffer, true, offset);
 	}
       else
 	{
@@ -65,303 +69,245 @@ void draw(const std::vector<int> & buff,
 	     that most sprites will probably be behind the player). */
 	  drawInForground.push_back(bgS);
 	}
-    }
-  playerSprite->draw(true);
+    }  
+  playerSprite->draw(unprocessedDrawBuffer, true);
   for(auto bgSF: drawInForground)
     {
-      bgSF->draw(true, offset);
+      bgSF->draw(unprocessedDrawBuffer, true, offset);
     }
-  
+      
+  drawDrawBuffer(unprocessedDrawBuffer, maxyx);
   refresh();
 }
 
 
-void drawBackground(const std::vector<int> & buff, const yx maxyx, const unsigned long offset)
+void drawBackground(int * unprocessedDrawBuffer, const std::vector<int> & buff,
+		    const yx maxyx, const unsigned long offset)
 {
   std::vector<int> slice {getSlice(buff, offset, maxyx.y, maxyx.x)};
-  //  getSlice(buff, offSet, winWidth, slice);
-  //  printw("%s", slice.c_str());
 
-  setCursor(0, 0, maxyx);//move curser back to start of screen
   for(auto iter: slice)
     {
-      drawCh(iter);
+      *unprocessedDrawBuffer=iter;
+      ++unprocessedDrawBuffer;
     }
 }
 
 
-void setCursor(const int y, const int x, const yx maxyx)
+void drawDrawBuffer(int * unprocessedDrawBuffer, const yx maxyx)
 {
-  if(checkRange(y, 0, maxyx.y) && checkRange(x, 0, maxyx.x))
+  mvprintw(0, 0, "");
+
+  for(int iter {}; iter < (maxyx.y * maxyx.x);
+      ++iter)
     {
-      mvprintw(y, x, "");
-    }
-  else
-    {
-      std::stringstream e {};
-      e<<"Error invalid cursor position ("<<y<<", "<<x<<") encountered.";
-      exit(e.str().c_str(), ERROR_BAD_LOGIC);
+      std::string contiguousColorChars;
+      int acsCode;
+      bool foundAcsCode;
+
+      setColor(unprocessedDrawBuffer[iter]);
+      foundAcsCode = getContiguouslyColordString
+	(unprocessedDrawBuffer, iter, maxyx, contiguousColorChars, acsCode);
+
+      if(contiguousColorChars.size() != 0)
+	{
+	  // Print ASCII chars.
+	  printw(contiguousColorChars.c_str());
+	}
+      if(foundAcsCode)
+	{
+	  // Print ACS char if found.
+	  printAcs(acsCode, false);
+	}
+
+      contiguousColorChars.clear();
     }
 }
 
 
-inline void drawCh(int ch)
-{				/* Although this function is large I have decided to make it inline to increase the
-				   possiblility that it will be inlined because it will typically be called many
-				   times. */
-  if(inColorRange(ch)) //-----------------print in non default color-------------------------------------
+void setColor(const int charCodeWithColor)
+{
+      if(inColorRange(charCodeWithColor))
+	{
+	  int colorCode = getColor(charCodeWithColor);
+	  colorMode.setColor(colorCode);
+	}
+      else
+	{
+	  colorMode.clearColor();
+	}
+}
+
+
+inline bool getContiguouslyColordString
+(const int * const unprocessedDrawBuffer, int & buffIndex, const yx maxyx,
+ std::string & contiguousColorChars, int & acsCode)
+{
+  const int startColorCode = getColor(unprocessedDrawBuffer[buffIndex]);
+  const int startIndex {buffIndex};
+
+
+  for( ; buffIndex < (maxyx.y * maxyx.x) &&
+	 getColor(unprocessedDrawBuffer[buffIndex]) == startColorCode; buffIndex++)
     {
-      if(ch == DRAW_NO_OP)
-	{}	// No OP. Used for sprites!
+      int ch;
+      ch = unprocessedDrawBuffer[buffIndex];
+
+      // Remove colour information (if any) from ch.
+      if(inColorRange(ch))
+	{
+	  ch -= (getColor(ch) * (MONO_CH_MAX + 1));
+	}
+
+      if(ch <= ASCII_CH_MAX)
+	{
+	  // We have an ASCII char.
+	  contiguousColorChars.push_back(ch);
+	}
+      else if(ch <= MONO_CH_MAX)
+	{
+	  // We have an ACS char. 
+	  acsCode = ch;
+	  return true;
+	}
       else
 	{
-	  int colorCode = getColor(ch); // Get color information from ch.
-	  colorMode.setColor(colorCode); // Set ncurses color pair using colorCode.
-	  ch -= (colorCode * 159); // Remove color information from ch so that it may be printed.
+	  exit(concat("Error: encountered default colour character (",
+		      (int)ch, ") that is greater than ", MONO_CH_MAX,".!"),
+	       ERROR_CHARACTER_RANGE);
 	}
-      if(ch < 128)
-	{			// Normal ASCII ch.
-	  printw((char *)(&ch));
-	}
-      else
-	{
-	  switch(ch)
-	    {
-	    case 128:		  
-	      addch(ACS_ULCORNER);
-	      break;
-	    case 129:
-	      addch(ACS_LLCORNER);
-	      break;
-	    case 130:
-	      addch(ACS_LRCORNER);
-	      break;
-	    case 131:
-	      addch(ACS_LTEE);
-	      break;	      
-	    case 132:
-	      addch(ACS_RTEE);
-	      break;
-	    case 133:
-	      addch(ACS_BTEE);
-	      break;
-	    case 134:
-	      addch(ACS_TTEE);
-	      break;
-	    case 135:
-	      addch(ACS_HLINE);
-	      break;
-	    case 136:
-	      addch(ACS_VLINE);
-	      break;
-	    case 137:
-	      addch(ACS_PLUS);
-	      break;
-	    case 138:
-	      addch(ACS_S1);
-	      break;
-	    case 139:
-	      addch(ACS_S3);
-	      break;
-	    case 140:
-	      addch(ACS_S7);
-	      break;
-	    case 141:
-	      addch(ACS_S9);
-	      break;
-	    case 142:
-	      addch(ACS_DIAMOND);
-	      break;
-	    case 143:
-	      addch(ACS_CKBOARD);
-	      break;
-	    case 144:
-	      addch(ACS_DEGREE);
-	      break;
-	    case 145:
-	      addch(ACS_PLMINUS);
-	      break;
-	    case 146:
-	      addch(ACS_BULLET);
-	      break;
-	    case 147:
-	      addch(ACS_LARROW);
-	      break;
-	    case 148:
-	      addch(ACS_RARROW);
-	      break;
-	    case 149:
-	      addch(ACS_DARROW);
-	      break;
-	    case 150:
-	      addch(ACS_UARROW);
-	      break;
-	    case 151:
-	      addch(ACS_BOARD);
-	      break;
-	    case 152:
-	      addch(ACS_LANTERN);
-	      break;
-	    case 153:
-	      addch(ACS_BLOCK);
-	      break;
-	    case 154:
-	      addch(ACS_LEQUAL);
-	      break;
-	    case 155:
-	      addch(ACS_GEQUAL);
-	      break;
-	    case 156:
-	      addch(ACS_PI);
-	      break;
-	    case 157:
-	      addch(ACS_NEQUAL);
-	      break;
-	    case 158:
-	      addch(ACS_STERLING);
-	      break;
-	    case DRAW_NO_OP:
-	      break;	      
-	    default:
-	      std::stringstream e;
-	      e<<"in draw.cpp void draw(const std::vector<int> & buff, const int offSet, "
-		"const int winWidth). Case = default. Ch = "<<ch;
-	      exit(e.str(), ERROR_CHARACTER_RANGE);
-	      break;
-	    }
-	}
-      colorMode.clearColor(); // Set color mode back to default
     }
-  else
-    { //----------------------------------print in default color-------------------------------------------
-      if(ch < 128)
-	printw((char *)(&ch));
-      else
-	{
-	  switch(ch)
-	    {
-	    case 128:		  
-	      addch(ACS_ULCORNER);
-	      break;
-	    case 129:
-	      addch(ACS_LLCORNER);
-	      break;
-	    case 130:
-	      addch(ACS_LRCORNER);
-	      break;
-	    case 131:
-	      addch(ACS_LTEE);
-	      break;	      
-	    case 132:
-	      addch(ACS_RTEE);
-	      break;
-	    case 133:
-	      addch(ACS_BTEE);
-	      break;
-	    case 134:
-	      addch(ACS_TTEE);
-	      break;
-	    case 135:
-	      addch(ACS_HLINE);
-	      break;
-	    case 136:
-	      addch(ACS_VLINE);
-	      break;
-	    case 137:
-	      addch(ACS_PLUS);
-	      break;
-	    case 138:
-	      addch(ACS_S1);
-	      break;
-	    case 139:
-	      addch(ACS_S3);
-	      break;
-	    case 140:
-	      addch(ACS_S7);
-	      break;
-	    case 141:
-	      addch(ACS_S9);
-	      break;
-	    case 142:
-	      addch(ACS_DIAMOND);
-	      break;
-	    case 143:
-	      addch(ACS_CKBOARD);
-	      break;
-	    case 144:
-	      addch(ACS_DEGREE);
-	      break;
-	    case 145:
-	      addch(ACS_PLMINUS);
-	      break;
-	    case 146:
-	      addch(ACS_BULLET);
-	      break;
-	    case 147:
-	      addch(ACS_LARROW);
-	      break;
-	    case 148:
-	      addch(ACS_RARROW);
-	      break;
-	    case 149:
-	      addch(ACS_DARROW);
-	      break;
-	    case 150:
-	      addch(ACS_UARROW);
-	      break;
-	    case 151:
-	      addch(ACS_BOARD);
-	      break;
-	    case 152:
-	      addch(ACS_LANTERN);
-	      break;
-	    case 153:
-	      addch(ACS_BLOCK);
-	      break;
-	    case 154:
-	      addch(ACS_LEQUAL);
-	      break;
-	    case 155:
-	      addch(ACS_GEQUAL);
-	      break;
-	    case 156:
-	      addch(ACS_PI);
-	      break;
-	    case 157:
-	      addch(ACS_NEQUAL);
-	      break;
-	    case 158:
-	      addch(ACS_STERLING);
-	      break;
-	    case DRAW_NO_OP:
-	      break;	      
-	    default:
-	      std::stringstream e;
-	      e<<"in draw.cpp void draw(const std::vector<int> & buff, const int offSet, "
-		"const int winWidth). Case = default (no colour.). Ch = "<<ch;
-	      exit(e.str(), ERROR_CHARACTER_RANGE);
-	      break;
-	    }
-	}
+
+  /* We must decrement buffIndex here because it is incremented at the end of
+     the loop but the loop isn't run again and thus the next character isn't
+     added. */
+  buffIndex--;
+  return false;
+}
+
+
+void printAcs(const int acsCode, const bool inColor)
+{
+  switch(acsCode)
+    {
+    case 128:		  
+      addch(ACS_ULCORNER);
+      break;
+    case 129:
+      addch(ACS_LLCORNER);
+      break;
+    case 130:
+      addch(ACS_LRCORNER);
+      break;
+    case 131:
+      addch(ACS_LTEE);
+      break;	      
+    case 132:
+      addch(ACS_RTEE);
+      break;
+    case 133:
+      addch(ACS_BTEE);
+      break;
+    case 134:
+      addch(ACS_TTEE);
+      break;
+    case 135:
+      addch(ACS_HLINE);
+      break;
+    case 136:
+      addch(ACS_VLINE);
+      break;
+    case 137:
+      addch(ACS_PLUS);
+      break;
+    case 138:
+      addch(ACS_S1);
+      break;
+    case 139:
+      addch(ACS_S3);
+      break;
+    case 140:
+      addch(ACS_S7);
+      break;
+    case 141:
+      addch(ACS_S9);
+      break;
+    case 142:
+      addch(ACS_DIAMOND);
+      break;
+    case 143:
+      addch(ACS_CKBOARD);
+      break;
+    case 144:
+      addch(ACS_DEGREE);
+      break;
+    case 145:
+      addch(ACS_PLMINUS);
+      break;
+    case 146:
+      addch(ACS_BULLET);
+      break;
+    case 147:
+      addch(ACS_LARROW);
+      break;
+    case 148:
+      addch(ACS_RARROW);
+      break;
+    case 149:
+      addch(ACS_DARROW);
+      break;
+    case 150:
+      addch(ACS_UARROW);
+      break;
+    case 151:
+      addch(ACS_BOARD);
+      break;
+    case 152:
+      addch(ACS_LANTERN);
+      break;
+    case 153:
+      addch(ACS_BLOCK);
+      break;
+    case 154:
+      addch(ACS_LEQUAL);
+      break;
+    case 155:
+      addch(ACS_GEQUAL);
+      break;
+    case 156:
+      addch(ACS_PI);
+      break;
+    case 157:
+      addch(ACS_NEQUAL);
+      break;
+    case 158:
+      addch(ACS_STERLING);
+      break;
+    default:
+      exit(concat("Error: encountered ", inColor ? "colour": "",
+		  " ACS character code (", (int)acsCode,
+		  ") that is greater than 158",
+		  inColor ? "after having colour information removed.": "."),
+	   ERROR_CHARACTER_RANGE);
+      break;
     }
 }
+
 
 bool inColorRange(const int ch)
 {
   if(ch > MONO_CH_MAX)
-    return true;		// In color range
-  return false;			// Not in color range
+    return true;
+  return false;
 }
 int getColor(const int ch)
 {
-  int color {ch / (MONO_CH_MAX +1)};		// Ch modulo 158 equals the color code
-  if(color <= COLOR_CH_MAX)		// If the color code is in range 0 - 63
+  // Ch modulo MONO_CH_MAX equals the color code.
+  int color {ch / (MONO_CH_MAX +1)};		
+  if(color <= COLOR_CH_MAX)
     return color;
 
-  // If the color code is out of range
-  std::string e {"in draw.cpp->getColor(const int ch). color = "};
-  e += color;
-  e += "\n";
-  exit(e, ERROR_COLOR_CODE_RANGE);
-  throw std::logic_error(e);
+  exit(concat("Error (in ", FILE_NAME, "): encountered colour (", color, ") "
+	      "code that is out of range.\n"),
+       ERROR_COLOR_CODE_RANGE);
 }

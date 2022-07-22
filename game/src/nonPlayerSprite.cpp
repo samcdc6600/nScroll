@@ -1,8 +1,11 @@
 #include "include/nonPlayerSprite.hpp"
 #include "include/draw.hpp"
 
+#include <curses.h>
 
-void nonPlayerSprite::draw(const bool updateSlice, const int bgPos)
+
+void nonPlayerSprite::draw(int * unprocessedDrawBuffer, const bool updateSlice,
+	    const int bgPos)
 {
   // Only display sprite if part of it is in the visible region.
   if((position.x + maxBottomRightOffset.x) >= bgPos && position.x <=
@@ -43,8 +46,8 @@ void nonPlayerSprite::draw(const bool updateSlice, const int bgPos)
 		    {
 		      int xPosRel;
 		      xPosRel = {position.x + spriteS[direction].
-			spriteSlices[currentSliceNumber].slice[sliceLine].offset +
-			sliceLineIter};
+			spriteSlices[currentSliceNumber].slice[sliceLine].
+			offset + sliceLineIter};
 		      int xPosAbs;
 		      xPosAbs = {xPosRel - bgPos};
 
@@ -52,11 +55,17 @@ void nonPlayerSprite::draw(const bool updateSlice, const int bgPos)
 			 print if char is in window. */
 		      if(xPosRel >= bgPos && xPosRel <= (bgPos + maxyx.x -1))
 			{
-			  setCursor(position.y + sliceLine, xPosAbs, maxyx);
-			  // Get the character.
-			  int ch {spriteS[direction].spriteSlices[currentSliceNumber].
-			    slice[sliceLine].sliceLine[sliceLineIter]};
-			  drawCh(ch);
+			  int ch;
+			  ch = spriteS[direction].
+			    spriteSlices[currentSliceNumber].slice[sliceLine].
+			    sliceLine[sliceLineIter];
+			  
+			  if(ch != DRAW_NO_OP)
+			    {
+			      
+			      unprocessedDrawBuffer[((position.y + sliceLine) *
+						     maxyx.x) + xPosAbs] = ch;
+			    }
 			}
 		    }
 		  else

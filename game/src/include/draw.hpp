@@ -10,20 +10,29 @@
 extern const int yHeight;
 
 
-void draw(const std::vector<int> & buff,
+void draw(int * unprocessedDrawBuffer, const std::vector<int> & buff,
 	  player * playerSprite, std::vector<bgSprite *> & bgSprites,
 	  const yx maxyx, const unsigned long offset);
-/* Places curser at (0,0) and iterates over the current background slice, calling draw for each character. */
-void drawBackground(const std::vector<int> & buff, const yx maxyx, const unsigned long offset);
-/* Checks that y and x are in range and then calls mvprintw(y, x, "") */
-void setCursor(const int y, const int x, const yx maxyx);
-/* Does the actual drawing (e.g. calls printw() or addch() and set's colour appropriately. 
-   NOTE: I had to rename this function "drawCh" from "draw" because I was getting a segmentation fault when
-   calling it from sprie::draw in sprite.cpp. Sprite does not contain a member function with the same signature as
-   this function, so I'm really not sure what the problem is. I suspect it has something to do with sprite::draw
-   being a memeber function and maybe I had unwittingly strayed into undefined behaviour :O. In any case I think
-   drawCh is a more apt name anyway :)*/
-void drawCh(int ch);
+/* Draws background at current position into unprocessedDrawBuffer. */
+void drawBackground(int * unprocessedDrawBuffer, const std::vector<int> &buff,
+		    const yx maxyx, const unsigned long offset);
+void drawDrawBuffer(int *unprocessedDrawBuffer, const yx maxyx);
+// Set's or clears the colour code based on the value of charCodeWithColor.
+void setColor(const int charCodeWithColor);
+/* Pushes sucessive characters from unprocessedDrawBuffer (starting at
+   buffIndex) into contiguouscolorchars untill either reaching the end of
+   unprocessedDrawBuffer, reaching a character that has a different colour or
+   an ACS character. If a the end of unprocessedDrawBuffer is reached or a
+   character with a different colour is reached returns false with
+   contiguousColorChars populated and buffIndex pointing to the character after
+   the last that was pushed into contiguousColorChars. If an ACS
+   character is encountered returns true with acsChar set to the character
+   found and with contiguousColorChars and buffIndex set as they are with the
+   situation where an ACS character isn't found. */
+inline bool getContiguouslyColordString
+(const int * const unprocessedDrawBuffer, int & buffIndex, const yx maxyx,
+ std::string & contiguousColorChars, int & acsChar);
+void printAcs(const int acsCode, const bool inColor);
 bool inColorRange(const int ch); /* Checks whethere ch is a colour character or not. */
 int getColor(const int ch);	 /* Returns colour code encoded in ch. */
 #endif

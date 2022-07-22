@@ -26,25 +26,29 @@ enum gameFuncRetCodes
   };
 
 
-void menu(const yx maxyx); // Game menu
+void menu(const yx maxyx, int * unprocessedDrawBuffer);
 /* Where the horror happens
    (returns a game menu switch option.) :) */
-int gameLoop(const yx maxyx, const std::vector<int> & background,
-	     rules & levelRules);
+int gameLoop(int * unprocessedDrawBuffer,
+	     const std::vector<int> & background,
+	     rules & levelRules, const yx maxyx);
 
 
 int main()
 {
-  yx maxyx;		// Holds the window size.
+  yx maxyx;			// Holds the window size.
   initialiseCurses(maxyx);	// Start and setup ncurses
-  menu(maxyx);
+  // Allocate memory for drawBuffer.
+  int * unprocessedDrawBuffer = new int [maxyx.y * maxyx.x];
+  menu(maxyx, unprocessedDrawBuffer);
   
-  endwin();//end curses mode!
+  endwin(); //end curses mode!
+  delete [] unprocessedDrawBuffer;
   return 0;
 }
 
 
-void menu(const yx maxyx)
+void menu(const yx maxyx, int * unprocessedDrawBuffer)
 {
   std::vector<int> background {};	// Hold's the background
   /* Hold's the "rules" for the current level. (see physics.h and
@@ -56,21 +60,12 @@ void menu(const yx maxyx)
   
   loadAssets(maxyx, "assets/level1/level1.backgound.lev", background,
 	     "assets/level1/level1.rules.lev", levelRules);
-
-
-  // TMP ======================================== VVVVVVV
-  // for(std::map<std::string, char>::iterator iter {levelRules.coordChars.begin()}; iter != levelRules.coordChars.end(); iter++)
-  //   {
-  //     std::cout<<iter->first<<':'<<iter->second<<'\n';
-  //   }
-  // endwin();
-  // return;
-  // TMP ======================================== ^^^^^^^
   
   bool run = true;
   while(run)
     {
-      switch(gameLoop(maxyx, background, levelRules))
+      switch(gameLoop
+	     (unprocessedDrawBuffer, background, levelRules, maxyx))
 	{
 	case M_QUIT_GAME:
 	  run = false;
@@ -80,13 +75,13 @@ void menu(const yx maxyx)
 	  break;
 	}
     }
-  //  freeResources(levelRules);
+
   drawExit(maxyx);  
 }
 
 
-int gameLoop(const yx maxyx, const std::vector<int> & background,
-	     rules & levelRules)
+int gameLoop(int * unprocessedDrawBuffer, const std::vector<int> & background,
+	     rules & levelRules, const yx maxyx)
 {
   /* Position seems to be re-initialized on each iteration of the following
      while loop. We feel like this is not what should be happening but we also
@@ -115,7 +110,7 @@ int gameLoop(const yx maxyx, const std::vector<int> & background,
 
       levelRules.physics(player::directionChars(input), position, maxyx,
 			 backgroundLen, secStartTime);
-      draw(background, levelRules.gamePlayer, levelRules.bgSprites,
-	   maxyx, position);
+      draw(unprocessedDrawBuffer, background, levelRules.gamePlayer,
+	   levelRules.bgSprites, maxyx, position);
     }
 }

@@ -192,7 +192,7 @@ public:
   
   /* Since the player sprite can never go off screen we declare a simpler draw
      function for it here */
-  void draw(bool updateSlice);
+  void draw(int * unprocessedDrawBuffer, const bool updateSlice);
 };
 
 #endif

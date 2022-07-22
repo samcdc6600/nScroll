@@ -91,32 +91,36 @@ progCommSeq()
     $SLEEP_PROG 0.40
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 0.85
+    $SLEEP_PROG 1.1
     # Jump onto second platform.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 0.50
+    $SLEEP_PROG 0.45
     $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 1.8
+    $SLEEP_PROG 0.45
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 1.35
     # Jump onto top of cave.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 0.90
+    $SLEEP_PROG 0.45
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 3.8
+    $SLEEP_PROG 0.55
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 4.3
     # Jump off of cave and down.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $SLEEP_PROG 1
     $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key s
-    $SLEEP_PROG 0.43
+    $SLEEP_PROG 0.52
     # Go left for a bit.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key a
-    $SLEEP_PROG 5.4
+    $SLEEP_PROG 5.68
     # Jump up and then "turn around".
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
@@ -129,19 +133,25 @@ progCommSeq()
     $SLEEP_PROG 0.45
     $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 5.45
+    $SLEEP_PROG 5.6
     # Jump onto small cliff at end of level.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $SLEEP_PROG 0.3
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 3.7
+    $SLEEP_PROG 0.3
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 4.1
     # Go left for a bit.
     $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key a
-    $SLEEP_PROG 9.25
+    $SLEEP_PROG 9.96
     # Jump over 2nd hole.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.5
     $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $SLEEP_PROG 0.5
@@ -152,9 +162,12 @@ progCommSeq()
     $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
     $SLEEP_PROG 0.5
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.5
     $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
     $XDOTOOL_PROG key w
-    $SLEEP_PROG 2.7
+    $SLEEP_PROG 3.34
 }
 
 

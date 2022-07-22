@@ -84,13 +84,13 @@ sprite::directions player::convertDirectionCharsToDirections
       break;
     case RIGHT_CHAR:
       ret = DIR_RIGHT;
-	break;
+      break;
     case DOWN_CHAR:
       ret = DIR_DOWN;
-	break;
+      break;
     case LEFT_CHAR:
       ret = DIR_LEFT;
-	break;
+      break;
     }
   return ret;
 }
@@ -170,7 +170,7 @@ void player::handleJumpingAndFalling(const int bgPosition, const yx & maxyx,
   
  RETURN:
   return;			// Required by RETURN label I guess.
- }
+}
 
 
 void player::handleFalling
@@ -293,37 +293,46 @@ void player::handleFallingSimple
 }
 
 
-void player::draw(bool updateSlice)
+void player::draw(int * unprocessedDrawBuffer, const bool updateSlice)
 {
   for(size_t sliceLine{}; sliceLine <
 	spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
       ++sliceLine)
     {      
       for(size_t sliceLineIter{}; sliceLineIter <
-	    spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine.size();
+	    spriteS[direction].spriteSlices[currentSliceNumber].
+	    slice[sliceLine].sliceLine.size();
 	  ++sliceLineIter)
-	{ // Move curser to the right position.
-	  setCursor(position.y + sliceLine, position.x +
-		    spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].offset +
-		    sliceLineIter, maxyx);
-	  // Get the character.
-	  int ch {spriteS[direction].spriteSlices[currentSliceNumber].slice[sliceLine].sliceLine[sliceLineIter]};
-	  drawCh(ch);
+	{
+	  int ch;
+	  ch = spriteS[direction].spriteSlices[currentSliceNumber].
+	    slice[sliceLine].sliceLine[sliceLineIter];
+
+	  if(ch != DRAW_NO_OP)
+	    {
+	      // Add character (if not DRAW_NO_OP.)
+	      unprocessedDrawBuffer
+		[((position.y + sliceLine) * maxyx.x) +
+		 position.x + spriteS[direction].
+		 spriteSlices[currentSliceNumber].slice[sliceLine].offset +
+		 sliceLineIter] = ch;
+	    }
 
 	  if(updateSlice)
 	    {
 	      currentTime = std::chrono::high_resolution_clock::now();
-	      if(std::chrono::duration_cast<std::chrono::milliseconds>(currentTime -
-								       startTime).count() >
+	      if(std::chrono::duration_cast<std::chrono::milliseconds>
+		 (currentTime - startTime).count() >
 		 spriteS[direction].cycleSpeed)
 		{
 		  startTime = std::chrono::high_resolution_clock::now();
-		  currentSliceNumber++; // Move to next slice
+		  currentSliceNumber++; // Move to next slice.
 		  /* -1 because indexing from 0, so currentSliceNumber shouldn't
-		     be bigger then size() -1 */
+		     be bigger then size() -1. */
 		  if(currentSliceNumber >
 		     (spriteS[direction].spriteSlices.size() -1))
-		    { /* We have displayed all the slices so the value should
+		    {
+		      /* We have displayed all the slices so the value should
 			 wrape arround. */
 		      currentSliceNumber = 0;
 		    }

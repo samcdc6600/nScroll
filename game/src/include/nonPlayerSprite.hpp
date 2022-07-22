@@ -11,7 +11,8 @@ public:
    const yx pos, const directions dir) :
     sprite(spritePaths, max, bgSize, pos, dir)
   { }
-    void draw(const bool updateSlice, const int bgPos);
+  void draw(int * unprocessedDrawBuffer, const bool updateSlice,
+	    const int bgPos);
 };
 
 

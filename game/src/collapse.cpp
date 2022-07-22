@@ -20,7 +20,7 @@ void thirdPassOfCollapse(std::vector<int> & preRet, std::vector<int> & ret);
 
 chMap::chMap()
 {
-  int chVal {128};		// 128 is one above the ascii character set
+  int chVal {ASCII_CH_MAX + 1};
   /* insert all the spcial character types into the map along with their key
   values */
   for(std::string strIter: characters)
