@@ -13,18 +13,28 @@ void loadAssets
 (const yx maxyx, const char bgFileName [], std::vector<int> & background,
  const char rulesFileName [], rules & levelRules)
 {
+  mvprintw(0, 0, "Loading Assets...");
   // Initialise background array.
   loadAndParseBackgroundFile(maxyx, bgFileName, background);
   /* Initialise player and non-player sprites (rules file) and initialise
      levelRules array. */
   loadAndParseLevelRulesFile(maxyx, bgFileName, rulesFileName, levelRules,
 			     background.size());
+  // This will enable potentially faster drawing.
+  sort(levelRules.bgSprites.begin(), levelRules.bgSprites.end(),
+       [] (const bgSprite * bgS1, const bgSprite * bgS2) -> bool
+       {
+	 // Sort in ascending order.
+	 return bgS1->getPos().x < bgS2->getPos().x;
+       });
 }
 
 
 void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
 				std::vector<int> & background)
 {
+  mvprintw(1, 0, concat("Loading level background file \"", bgFileName,
+			"\".").c_str());
   std::string levelBackGround {};
   if(!loadFileIntoString(bgFileName, levelBackGround))
     {
@@ -52,6 +62,8 @@ void loadAndParseLevelRulesFile(const yx maxyx, const char bgFileName [],
 				const char rulesFileName[],
                                 rules &levelRules, const size_t bgSize)
 {
+  mvprintw(1, 0, concat("Loading level rules file \"", bgFileName,
+			"\".").c_str());
   std::string rawRules {};
   if(!loadFileIntoString(rulesFileName, rawRules))
     {

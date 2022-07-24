@@ -56,28 +56,81 @@ void draw(int * unprocessedDrawBuffer, const std::vector<int> & buff,
      WHICH DEFINITELY NEEDS SOME ATTENTION HAHA.) */
   std::vector<bgSprite *> drawInForground;
 
-  for(auto bgS: bgSprites)
+
+  static long long closestPos, newClosestPos;
+
+  newClosestPos = findIndexOfClosestElement
+    (bgSprites, offset,
+     [](const bgSprite & bgS) -> long
     {
-      if(!bgS->displayInForground)
-	{
-	  bgS->draw(unprocessedDrawBuffer, true, offset);
-	}
-      else
-	{
-	  /* We think this will probably be faster than searching the whole list
-	     again if the list is of a large size (and taking into consideration
-	     that most sprites will probably be behind the player). */
-	  drawInForground.push_back(bgS);
-	}
-    }  
-  playerSprite->draw(unprocessedDrawBuffer, true);
-  for(auto bgSF: drawInForground)
+      return bgS.getPos().x;
+    },
+    [](const long a, const long b) -> long
     {
-      bgSF->draw(unprocessedDrawBuffer, true, offset);
-    }
+      return a - b;
+    },
+     [](const long a, const long b) -> bool
+     {
+       return a == b;
+     },
+     [](const long a, const long b) -> bool
+     {
+       return a > b;
+     });
+    
+
+
+  // if(bgSprites.size() > 500)
+  //   {
+  
+  // long l {}, r {(long)bgSprites.size()};
+  // long mid;
       
-  drawDrawBuffer(unprocessedDrawBuffer, maxyx);
-  refresh();
+  // while(l <= r)
+  //   {
+  //     mid = (l + r) / 2;
+
+  //     if(bgSprites[mid]->getPos().x )
+  //     else if(bgSprites[mid]->getPos().x < offset )
+  // 	{
+  // 	  l = mid + 1;
+  // 	}
+  //     else if(bgSprites[mid]->getPos().x > offset)
+  // 	{
+  // 	  r = mid - 1;
+  // 	}
+  //     else
+  // 	{
+  // 	  // Found
+  // 	  break;
+  // 	}
+  //   }
+  //   }
+  // else
+  //   {
+  //     for(auto bgS: bgSprites)
+  // 	{
+  // 	  if(!bgS->displayInForground)
+  // 	    {
+  // 	      bgS->draw(unprocessedDrawBuffer, true, offset);
+  // 	    }
+  // 	  else
+  // 	    {
+  // 	      /* We think this will probably be faster than searching the whole list
+  // 		 again if the list is of a large size (and taking into consideration
+  // 		 that most sprites will probably be behind the player). */
+  // 	      drawInForground.push_back(bgS);
+  // 	    }
+  // 	}  
+  //     playerSprite->draw(unprocessedDrawBuffer, true);
+  //     for(auto bgSF: drawInForground)
+  // 	{
+  // 	  bgSF->draw(unprocessedDrawBuffer, true, offset);
+  // 	}
+  //   // }
+      
+  // drawDrawBuffer(unprocessedDrawBuffer, maxyx);
+  // refresh();
 }
 
 
@@ -162,7 +215,7 @@ inline bool getContiguouslyColordString
       if(ch <= ASCII_CH_MAX)
 	{
 	  // We have an ASCII char.
-	  contiguousColorChars.push_back(ch);
+	  contiguousColorChars.push_back((char)ch);
 	}
       else if(ch <= MONO_CH_MAX)
 	{

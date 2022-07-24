@@ -183,7 +183,7 @@ public:
      diagonal movement) in the direction dir */
   yx peekAtPos(const directions dir);
   // Returns the sprite position.
-  yx getPos() {return position;}
+  yx getPos() const {return position;}
   std::string getXPosAsStr() const
   {
     std::stringstream ss {};

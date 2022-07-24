@@ -15,6 +15,8 @@ sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
   for(auto spriteFileName {spritePaths.begin()};
       spriteFileName != spritePaths.end(); spriteFileName++)
     {
+      mvprintw(1, 0, concat("Loading sprite file \"",
+			    spriteFileName->c_str(), "\".").c_str());
       spriteSliceSets.push_back(new spriteData ());
       loadSprite(spriteFileName->c_str(), *spriteSliceSets.back());
     }
