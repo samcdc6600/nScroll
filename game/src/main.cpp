@@ -84,6 +84,9 @@ void menu(const yx maxyx, int * unprocessedDrawBuffer)
 int gameLoop(int * unprocessedDrawBuffer, const std::vector<int> & background,
 	     rules & levelRules, const yx maxyx)
 {
+  /* Position seems to be re-initialized on each iteration of the following
+     while loop. We feel like this is not what should be happening but we also
+     know that we are probably wrong. */
   int position {};
   std::__1::chrono::steady_clock::time_point secStartTime
     {std::chrono::high_resolution_clock::now()};

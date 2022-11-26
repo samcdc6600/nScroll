@@ -62,12 +62,6 @@
     sprites
     ("./assets/sprites/caveForground1(0).sprite")
   )
-    backgroundSprite
-  (
-    initialCoordinate(21,441)
-    sprites
-    ("./assets/sprites/tree2BlueBg(0).sprite")
-  )
   backgroundSprite
   (
     initialCoordinate(0,310)
@@ -80,11 +74,12 @@
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
-
-
-
-
-
+  backgroundSprite
+  (
+    initialCoordinate(21,441)
+    sprites
+    ("./assets/sprites/tree2BlueBg(0).sprite")
+  )
 )
 #
 R 500
