@@ -36,7 +36,8 @@ int gameLoop(int * unprocessedDrawBuffer,
 
 int main()
 {
-  yx maxyx;			// Holds the window size.
+  // Holds the window size (currently (should hole the video port size in the future.)
+  yx maxyx;
   initialiseCurses(maxyx);	// Start and setup ncurses
   // Allocate memory for drawBuffer.
   int * unprocessedDrawBuffer = new int [maxyx.y * maxyx.x];

@@ -44,7 +44,8 @@ void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
     }
   collapse(levelBackGround, background); //collapse nonColor escape
   //sequences.
-  if(background.size() < (maxyx.x * maxyx.y) || (background.size() % maxyx.y) != 0)
+  if(background.size() < (size_t(maxyx.x) * maxyx.y) ||
+     (background.size() % maxyx.y) != 0)
     {
       std::stringstream err {};
       err<<"Error: wrong number of characters in background after collapsing "
@@ -899,7 +900,7 @@ void parseRulesMain(const yx maxyx, const char bgFileName [],
       buffPos++;
       if(*buffPos == '\n')
 	{
-	  if(lineLength != expectedLineLength)
+	  if(size_t(lineLength) != expectedLineLength)
 	    {
 	      std::stringstream e {};
 	      e<<"Error: reading rules.lev header file \""<<rulesFileName
@@ -915,7 +916,7 @@ void parseRulesMain(const yx maxyx, const char bgFileName [],
 	}
     }
 
-  if(lineLength != expectedLineLength)
+  if(size_t(lineLength) != expectedLineLength)
     {
       std::stringstream e {};
       e<<"Error: reading rules.lev header file \""<<rulesFileName

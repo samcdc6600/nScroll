@@ -199,12 +199,12 @@ void rules::movePlayerRightWhenInteractingWithInnerMargin
     { // We are to the left of the inner right margin.
       gamePlayer->updatePosRel(input);
     }
-  else if((position + maxyx.x) < backgroundLength)
+  else if(size_t(position + maxyx.x) < backgroundLength)
     { // There is still background left to spare.
       gamePlayer->updateDirection(input);
       position++;	// Move background.
     }
-  else if((position + maxyx.x) == backgroundLength)
+  else if(size_t(position + maxyx.x) == backgroundLength)
     { /* No background left, so move the player to the right
 	 edge of the background. */
       gamePlayer->updatePosRel(input);
