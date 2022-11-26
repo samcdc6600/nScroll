@@ -164,7 +164,7 @@ bool getCoordRule(const int y, const int x, const std::vector<T> & rules,
 {
   bool ret {false};
   int linearAddress = {y * ((int)rules.size() / bgHeight) + x};
-  if(linearAddress < rules.size())
+  if(size_t(linearAddress) < rules.size())
     {
       coordRulesRet = rules[linearAddress];
       for(auto rule: boarderRuleChars::CHARS)

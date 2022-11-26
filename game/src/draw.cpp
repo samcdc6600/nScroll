@@ -144,7 +144,7 @@ inline bool getContiguouslyColordString
  std::string & contiguousColorChars, int & acsCode)
 {
   const int startColorCode = getColor(unprocessedDrawBuffer[buffIndex]);
-  const int startIndex {buffIndex};
+  // const int startIndex {buffIndex};
 
 
   for( ; buffIndex < (maxyx.y * maxyx.x) &&

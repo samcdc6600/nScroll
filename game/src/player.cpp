@@ -23,7 +23,6 @@ void player::checkInitialPosIsInRangeOfLevel
 	{
 	  e<<"\""<<name<<"\", ";
 	}
-      char eat;
       e<<") is out of range. ("<<pos.y<<','<<pos.x<<") given for position, but"
 	" sprite has maximum size ("<<maxBottomRightOffset.y + 1<<','
        <<maxBottomRightOffset.x + 1<<") and window has size ("<<maxyx.y<<','
@@ -167,8 +166,6 @@ void player::handleJumpingAndFalling(const int bgPosition, const yx & maxyx,
       handleJumping(bgPosition, maxyx, coordRules);
     }
 
-  
- RETURN:
   return;			// Required by RETURN label I guess.
 }
 
@@ -329,7 +326,7 @@ void player::draw(int * unprocessedDrawBuffer, const bool updateSlice)
 		  currentSliceNumber++; // Move to next slice.
 		  /* -1 because indexing from 0, so currentSliceNumber shouldn't
 		     be bigger then size() -1. */
-		  if(currentSliceNumber >
+		  if(size_t(currentSliceNumber) >
 		     (spriteS[direction].spriteSlices.size() -1))
 		    {
 		      /* We have displayed all the slices so the value should

@@ -23,7 +23,7 @@ void nonPlayerSprite::draw(int * unprocessedDrawBuffer, const bool updateSlice,
 	      currentSliceNumber++; // Move to next slice
 	      /* -1 because indexing from 0, so currentSliceNumber shouldn't
 		 be bigger then size() -1 */
-	      if(currentSliceNumber >
+	      if(size_t(currentSliceNumber) >
 		 (spriteS[direction].spriteSlices.size() -1))
 		{ /* We have displayed all the slices so the value should
 		     wrape arround. */
@@ -32,11 +32,11 @@ void nonPlayerSprite::draw(int * unprocessedDrawBuffer, const bool updateSlice,
 	    }      
 	}
       
-      for(int sliceLine{}; sliceLine <
+      for(int sliceLine{}; size_t(sliceLine) <
 	    spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
 	  ++sliceLine)
 	{      
-	  for(int sliceLineIter{}; sliceLineIter <
+	  for(int sliceLineIter{}; size_t(sliceLineIter) <
 		spriteS[direction].spriteSlices[currentSliceNumber].
 		slice[sliceLine].sliceLine.size(); ++sliceLineIter)
 	    { // Move curser to the right position.

@@ -143,7 +143,7 @@ namespace levelFileKeywords
 		  const std::string &rawRules,
 		  std::string::const_iterator &buffPos) = nullptr,
        const bool fMO = false)
-	: keyword(kword), action(a), headerAction(hA), foundMultipleOptional(fMO)
+	: keyword(kword), foundMultipleOptional(fMO), action(a), headerAction(hA)
       { }
 
       const std::string keyword;

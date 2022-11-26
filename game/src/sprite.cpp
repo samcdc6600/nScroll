@@ -59,7 +59,7 @@ sprite::parserPhaseOne(const std::string & spriteFile, spriteData & sD)
       bool runGetCs {true}; 
       for( ; runGetCs; ++iter)
 	{
-	  if(iter >= spriteFile.size())
+	  if(size_t(iter) >= spriteFile.size())
 	    {			// Malformed cs value.
 	      std::stringstream errorMsg;
 	      errorMsg<<"in sprite/sprite.cpp "
@@ -263,7 +263,6 @@ void sprite::checkInitialPosIsInRangeOfLevel
 	{
 	  e<<"\""<<name<<"\", ";
 	}
-      char eat;
       e<<") is out of range. ("<<pos.y<<','<<pos.x<<") given for position, but"
 	" sprite has maximum size ("<<maxBottomRightOffset.y + 1<<','
        <<maxBottomRightOffset.x + 1<<") and background has size ("<<maxyx.y<<','
@@ -432,14 +431,14 @@ bool sprite::leftOfWindowInnerRightMargin(const int x, const int xBound,
 					  const yx maxyx)
 { // Return true if we are to the left of the windows right inner margin.
   checkBoundValue(xBound);
-  return ((x + maxBottomRightOffset.x) < size_t(maxyx.x - xBound));
+  return ((x + maxBottomRightOffset.x) < (maxyx.x - xBound));
 }
 
 
 bool sprite::rightOfWindowInnerLeftMargin(const int x, const int xBound)
 { // Return true if we are to the right of the windows left inner margin.
     checkBoundValue(xBound);
-    return (size_t(xBound) < x);
+    return (xBound < x);
 }
 
 

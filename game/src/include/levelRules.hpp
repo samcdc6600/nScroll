@@ -31,10 +31,10 @@ public:
   const yx playerMovementInnerLRBoarder {0, 44};
   
 private:
-  const size_t millisecondsInSec {1000*second};
+  // const size_t millisecondsInSec {1000*second};
   // The duration of time we call sleep() for (in milliseconds.)
   const size_t engineSleepTime {32};
-  const double sleepTimeAsAPercentageOfASecond {double(engineSleepTime / millisecondsInSec)};
+  // const double sleepTimeAsAPercentageOfASecond {double(engineSleepTime / millisecondsInSec)};
 
   /* Set's oldTime to the current time if
      (oldTime - (the current time) >= second). */
