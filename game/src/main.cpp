@@ -2,6 +2,7 @@
 #include <string>
 #include "include/initCurses.hpp"
 #include "include/utils.hpp"
+#include "include/background.hpp"
 #include "include/loadAssets.hpp"
 #include "include/checkBoundsOfBounds.hpp"
 #include "include/levelRules.hpp"
@@ -30,7 +31,8 @@ void menu(const yx maxyx, int * unprocessedDrawBuffer);
 /* Where the horror happens
    (returns a game menu switch option.) :) */
 int gameLoop(int * unprocessedDrawBuffer,
-	     const std::vector<int> & background,
+	     // const std::vector<int> & background,
+	     const backgroundData &,
 	     rules & levelRules, const yx maxyx);
 
 
@@ -51,7 +53,8 @@ int main()
 
 void menu(const yx maxyx, int * unprocessedDrawBuffer)
 {
-  std::vector<int> background {};	// Hold's the background
+  // std::vector<int> background {};	// Hold's the background
+  backgroundData background {maxyx};
   /* Hold's the "rules" for the current level. (see physics.h and
      rules.lev.txt.) */
   rules levelRules {};
@@ -81,7 +84,9 @@ void menu(const yx maxyx, int * unprocessedDrawBuffer)
 }
 
 
-int gameLoop(int * unprocessedDrawBuffer, const std::vector<int> & background,
+int gameLoop(int * unprocessedDrawBuffer, // const std::vector<int> &
+					  // background,
+	     const backgroundData &,
 	     rules & levelRules, const yx maxyx)
 {
   /* Position seems to be re-initialized on each iteration of the following
@@ -95,8 +100,8 @@ int gameLoop(int * unprocessedDrawBuffer, const std::vector<int> & background,
     {
       int input {};
 
-      const size_t backgroundLen {background.size() /
-	maxyx.y};
+      // const size_t backgroundLen {background.size() /
+      // 	maxyx.y};
 
       input = getch();
       switch(input)
@@ -109,9 +114,9 @@ int gameLoop(int * unprocessedDrawBuffer, const std::vector<int> & background,
 	  break;
 	}
 
-      levelRules.physics(player::directionChars(input), position, maxyx,
-			 backgroundLen, secStartTime);
-      draw(unprocessedDrawBuffer, background, levelRules.gamePlayer,
-	   levelRules.bgSprites, maxyx, position);
+      // levelRules.physics(player::directionChars(input), position, maxyx,
+      // 			 backgroundLen, secStartTime);
+      // draw(unprocessedDrawBuffer, background, levelRules.gamePlayer,
+      // 	   levelRules.bgSprites, maxyx, position);
     }
 }

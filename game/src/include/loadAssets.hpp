@@ -6,6 +6,7 @@
 #include <string>
 //#include <fstream>
 #include "levelRules.hpp" // For rules.
+#include "background.hpp"
 
 
 // constexpr char BOARDER_CHAR {'b'}; // Player character's cannot pass through coordinate's marked as this.
@@ -28,10 +29,12 @@
    that should be read in and parsed to initialise the background and levelRules
    arguments. */
 void loadAssets
-(const yx maxyx, const char bgFileName [], std::vector<int> & background,
+(const yx maxyx, const char bgFileName [], // std::vector<int> & background,
+ backgroundData & background,
  const char rulesFileName [], rules & levelRules);
 void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
-				std::vector<int> & background);
+				backgroundData & background);
+				// std::vector<int> & background);
 /* Load rules file, parse header, extract sprite coordinates and sprite name/s
    and process sprites. extract sprite rule after processing each sprite. Header
    should contain file location and starting position of player sprite and the
@@ -88,16 +91,24 @@ void readStringsSection(const std::string & buff,
 void readSingleCoordSectionInNNumbers(const std::string &buff,
                                       std::string::const_iterator &buffPos,
                                       const std::string &eMsg, void *coord);
+/* Simillar to the above function (readSingleCoordSectionInNNumbers()), however
+   with more general error messages and with the exception that the coordinate
+   has to be on the same line as buffPos (this function is intended for use
+   with the code that reads in background chunks and rule chunks and the
+   coordinates must be on their own lines.) */
+void readSingleCoordSectionInNNumbersOnSameLineAsPos
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, yx & coord);
 /* Same as readSingleCoordSectionInNNumbers() with the exception that it can
    read integers. */
-void readSingleCoordSectionInZNumbers(const std::string &buff,
-                                      std::string::const_iterator &buffPos,
-                                      const std::string &eMsg, void *coord);
+void readSingleCoordSectionInZNumbers(const std::string & buff,
+                                      std::string::const_iterator & buffPos,
+                                      const std::string & eMsg, yx & coord);
 /* This function should be called through readSingleCoordSectionInNNumbers() or
    readSingleCoordSectionInZNumbers() */
-void readSingleCoordSection(const std::string &buff,
+void readSingleCoordSection(const std::string & buff,
                             std::string::const_iterator &buffPos,
-                            const std::string &eMsg, const bool useIntegers,
+                            const std::string & eMsg, const bool useIntegers,
                             void *coord, const std::string typeOfNumber);
 /* Attempts to read a boolean for a section in buff starting at buffPos. Emsg
    will be embedded in any error message/s the function spits out and should

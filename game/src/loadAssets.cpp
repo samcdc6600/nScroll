@@ -5,47 +5,49 @@
 #include <string>
 #include "include/utils.hpp"
 #include "include/loadAssets.hpp"
-#include "include/collapse.hpp"
 //#include "include/backgroundSprite.hpp"
 
 
 void loadAssets
-(const yx maxyx, const char bgFileName [], std::vector<int> & background,
+(const yx maxyx, const char bgFileName [],
+ backgroundData & background,
  const char rulesFileName [], rules & levelRules)
 {
   // Initialise background array.
   loadAndParseBackgroundFile(maxyx, bgFileName, background);
   /* Initialise player and non-player sprites (rules file) and initialise
      levelRules array. */
-  loadAndParseLevelRulesFile(maxyx, bgFileName, rulesFileName, levelRules,
-			     background.size());
+  // loadAndParseLevelRulesFile(maxyx, bgFileName, rulesFileName, levelRules,
+  // 			     background.size());
 }
 
 
 void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
-				std::vector<int> & background)
+				backgroundData & background)
+				// std::vector<int> & background)
 {
-  std::string levelBackGround {};
-  if(!loadFileIntoString(bgFileName, levelBackGround))
+  std::string levelBackground {};
+  if(!loadFileIntoString(bgFileName, levelBackground))
     {
       std::stringstream err {};
       err<<"Error: unable to open \""<<bgFileName<<"\".";
       exit(err.str(), ERROR_OPENING_FILE);
     }
-  collapse(levelBackGround, background); //collapse nonColor escape
+  background.initialiseBackgroundData(false, levelBackground);
+  // collapse(levelBackground, background); //collapse nonColor escape
   //sequences.
-  if(background.size() < (size_t(maxyx.x) * maxyx.y) ||
-     (background.size() % maxyx.y) != 0)
-    {
-      std::stringstream err {};
-      err<<"Error: wrong number of characters in background after collapsing "
-	"escaped characters. "
-	"background size (after processing) < (window length * window height) "
-	"or (background size (after processing) % window height) != 0."
-	" Where background size = "<<background.size()<<", window length = "
-	 <<maxyx.x<<" and window height = "<<maxyx.y<<".";
-      exit(err.str(), ERROR_BACKGROUND);
-    }
+  // if(background.size() < (size_t(maxyx.x) * maxyx.y) ||
+  //    (background.size() % maxyx.y) != 0)
+  //   {
+  //     std::stringstream err {};
+  //     err<<"Error: wrong number of characters in background after collapsing "
+  // 	"escaped characters. "
+  // 	"background size (after processing) < (window length * window height) "
+  // 	"or (background size (after processing) % window height) != 0."
+  // 	" Where background size = "<<background.size()<<", window length = "
+  // 	 <<maxyx.x<<" and window height = "<<maxyx.y<<".";
+  //     exit(err.str(), ERROR_BACKGROUND);
+  //   }
 }
 
 
@@ -650,6 +652,57 @@ void readSingleCoordSectionInNNumbers(const std::string & buff,
 {
   readSingleCoordSection(buff, buffPos, eMsg, false, coord,
 			 "natural numbers");
+}
+
+
+void readSingleCoordSectionInNNumbersOnSameLineAsPos(
+    const std::string &buff, std::string::const_iterator &buffPos,
+    const std::string &eMsg, yx &coord)
+{
+  //   using namespace levelFileKeywords;
+
+  // std::vector<std::string> targets {};
+  // std::string targetFound {};
+
+  // readSectionOpeningBracket
+  //   (buff, buffPos, eMsg,
+  //    concat("single coordinate section (with " , typeOfNumber, ")"));
+  
+  // ((yx*)coord)->y = readSingleNum(buff, buffPos, eMsg, useIntegers);
+      
+  // targets = {std::string {COORD_SEPARATION}};
+  // targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  // if(targetFound == "")
+  //   {
+  //     std::stringstream e {};
+  //     e<<"Error: expected \""<<COORD_SEPARATION<<"\" before second coordinate "
+  // 	"component in single coordinate section (with "<<typeOfNumber
+  //      <<") when "<<eMsg<<". Encountered "<<"\""<<*buffPos<<"\"\n";
+  //     exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+  //   }
+
+  // ((yx*)coord)->x = readSingleNum(buff, buffPos, eMsg, useIntegers);
+
+  // readSectionEndingBracket
+  //   (buff, buffPos, eMsg,
+  //    concat("single coordinate section (with ", typeOfNumber, ")"));
+
+  using namespace levelFileKeywords;
+
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+
+  NOTE THAT WE WAN'T TO REUSE FUNCTIONS FROM LOAD ASSETS, HOWEVER THEY ALL USE
+    SKIP SPACE UP TO AND IT WILL SKIP '\n' WHICH WE DON'T WAN'T TO SKIP.
+    WE NEED TO COME UP WITH A GOOD SOLUTION FOR THIS. RIGHT NOW WE THINK THAT
+    MAYBE WE SHOULD ADD A FLAG FOR THIS. WE DON'T WANT TO USE A GLOBAL FLAG.
+    HOWEVER WE WILL PROBABLY NEED TO ADD FLAGS TO A BUNCH OF FUNCTIONS IF WE
+    DON'T. MAYBE WE COULD JUST REUSE SOME OF THE FUNCTIONS LOWER IN THE CALL
+    HIGHERARCHY AND THAT WAY WE WOULDN'T TO ADD AS MANY FLAGS TO OTHER FUNCTIONS
+    AND WORRY ABOUT COMPLICATING (AND ALSO MESSING UP THE CODE WE ALREADY HAVE
+    HERE), BUT WE WOULD HAVE A BIT MORE CODE DUPLICATION.
+
+  // readSectionOpeningBracket
 }
 
 
