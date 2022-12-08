@@ -31,15 +31,18 @@ private:
   static constexpr int TRANS_SP {10176};
 
 
-  /* Uses: void readSingleCoordSectionInNNumbersOnSameLineAsPos()
-     from loadAssets.hpp / .cpp. First checks if buffPos is in range. If a it is
-     calls readSingleCoordSectionInNNumbersOnSameLineAsPos, which will abort the
-     program with eMsg if no coordinate is found. Otherwise returns false.
-     However if readSingleCoordSectionInNNumbersOnSameLineAsPos is called and
-     doesn't abort the program then chunkCoord will hold the value read. */
+  /* First checks if buffPos is in range. Returns false if it is not. Otherwise
+   attempts to read the coordinates into chunkCoord. If this succeeds returns
+   true (with chunkCoord being set to the coordinates read.) If there is a
+   failure in reading the coordinates then the program will be aborted with eMsg
+   being displayed. */
   bool getChunkCoordinate(const std::string & bgData,
 			  std::string::const_iterator & buffPos,
 			  const std::string & eMsg, yx & chunkCoord);
+
+  void getChunk(const std::string & bgData,
+		std::string::const_iterator & buffPos, const std::string & eMsg,
+		std::string & chunk);
 
   // ========================== MEMBER FUNCTIONS START =========================
   // ===========================================================================
@@ -49,8 +52,9 @@ public:
 								 linearChunkSize(maxyx.y * maxyx.x)*/
   {
   }
-
-  void initialiseBackgroundData(const bool rawData, const std::string bgData);
+  
+  void initialiseBackgroundData(const bool rawData, const char bgFileName [],
+				const std::string & bgData);
 
   // std::vector<int> & getChunkFromCoord(const yx coord)
   // {

@@ -8,22 +8,19 @@
 constexpr char NAME_OF_THIS_FILE[] = "background.cpp";
 
 
-/* Uses: void readSingleCoordSectionInNNumbersOnSameLineAsPos
-   (const std::string & buff, std::string::const_iterator & buffPos,
-   const std::string & eMsg, yx & coord)
-   from loadAssets.hpp / .cpp. First checks if buffPos is in range. If a it is
-   calls readSingleCoordSectionInNNumbersOnSameLineAsPos, which will abort the
-   program with eMsg if no coordinate is found. Otherwise returns false. However
-   if readSingleCoordSectionInNNumbersOnSameLineAsPos is called and doesn't
-   abort the program then chunkCoord will hold the value read. */
-bool getChunkCoordinate(const std::string & bgData,
+/* First checks if buffPos is in range. Returns false if it is not. Otherwise
+   attempts to read the coordinates into chunkCoord. If this succeeds returns
+   true (with chunkCoord being set to the coordinates read.) If there is a
+   failure in reading the coordinates then the program will be aborted with eMsg
+   being displayed. */
+bool backgroundData::getChunkCoordinate(const std::string & bgData,
 			std::string::const_iterator & buffPos,
 			const std::string & eMsg, yx & chunkCoord)
 {
   if(buffPos != std::end(bgData))
     {
-      readSingleCoordSectionInNNumbersOnSameLineAsPos
-	(bgData, buffPos, eMsg, &chunkCoord);
+      readSingleCoordSectionInNNumbers(bgData, buffPos, eMsg, &chunkCoord);
+      return true;
     }
   else
     {
@@ -32,8 +29,24 @@ bool getChunkCoordinate(const std::string & bgData,
 }
 
 
-void backgroundData::initialiseBackgroundData(const bool rawData,
-					      const std::string & bgData)
+void backgroundData::getChunk(const std::string & bgData,
+	      std::string::const_iterator & buffPos, const std::string & eMsg,
+	      std::string & chunk)
+{
+  chunk.clear();
+  while(chunk.size() != (maxyx.y * maxyx.x) && buffPos != std::end(bgData))
+    {
+      chunk += *buffPos++;	// It's weird that it works like this LOL.
+    }
+  if(chunk.size() != (maxyx.y * maxyx.x))
+    {
+      exit(eMsg, ERROR_BACKGROUND);
+    }
+}
+
+
+void backgroundData::initialiseBackgroundData
+    (const bool rawData, const char bgFileName [], const std::string & bgData)
 {
   if(backgroundModifiable)
     {
@@ -52,26 +65,34 @@ void backgroundData::initialiseBackgroundData(const bool rawData,
 	  //    to the code to support that feature. */
 	  // const yx chunkSize {getChunkSize(bgData)};
 	  yx chunkCoord {};
-	  std::string rawChunk {};
-	  std::vector<int> chunk {};
-	  std::string::const_iterator buffPos {std::begin(bgData)}
+	  std::string chunk {};
+	  backgroundChunk rawChunk {};
+	  std::string::const_iterator buffPos {std::begin(bgData)};
 	  
 	  while(true)
 	    {
+	      ssize_t chunksReadIn {};
 	      /* Each chunk should have a header that contains it's coordinates
 		 in the level. The unit of the coordinates should be chunks. So
 		 for a chunk that starts at (0, 170) in character coordinates
 		 (assuming the size of chunks for this file are 170 in the x
 		 dimension), the coordinate in the header would be (0, 1) and
 		 for (0, 340) it would be (0, 2), etc... */
-	      if(getChunkCoordinate(bgData, buffPos, chunkCoord));
+	      if(getChunkCoordinate(bgData, buffPos,
+				    concat("trying to read coord no. ",
+					   chunksReadIn, " from background.lev "
+					   "file \"", bgFileName, "\""),
+				    chunkCoord))
 	      {
 		// Get chunk from background data read from file.
-		getChunk(bgData, rawChunk);
-		// Collapse rawChunk and return in chunk.
-		collapse(rawChunk, chunk);
+		getChunk(bgData, buffPos,
+			 concat("Error: reading in chunk no. ", chunksReadIn,
+				" from background.lev file \"", bgFileName,
+				"\""), chunk);
+		// Collapse chunk and return in rawChunk.
+		// collapse(chunk, rawChunk);
 
-		/* Store chunk in this.background with a key that should be
+		/* Store rawChunk in this.background with a key that should be
 		   calculated according to the following:
 		   Concatenate (y / maxyx.y) and (x / maxyx.y) and use as
 		   index into map. Then
@@ -80,9 +101,10 @@ void backgroundData::initialiseBackgroundData(const bool rawData,
 		   the map (as the stage 1 draw buffer will be 3 by 3
 		   chunks.)
 		*/
-		
+
+		chunksReadIn++;
+		// GetChunk() clears it's argument (chunk).
 		rawChunk.clear();
-		chunk.clear();
 	      }
 	      else
 		{

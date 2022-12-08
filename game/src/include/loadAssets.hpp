@@ -88,22 +88,14 @@ void readStringsSection(const std::string & buff,
    should say something about the context in which the function was
    called. Returns the coordinate read. Only reads natural numbers (inclusive
    of 0.)*/
-void readSingleCoordSectionInNNumbers(const std::string &buff,
-                                      std::string::const_iterator &buffPos,
-                                      const std::string &eMsg, void *coord);
-/* Simillar to the above function (readSingleCoordSectionInNNumbers()), however
-   with more general error messages and with the exception that the coordinate
-   has to be on the same line as buffPos (this function is intended for use
-   with the code that reads in background chunks and rule chunks and the
-   coordinates must be on their own lines.) */
-void readSingleCoordSectionInNNumbersOnSameLineAsPos
-(const std::string & buff, std::string::const_iterator & buffPos,
- const std::string & eMsg, yx & coord);
+void readSingleCoordSectionInNNumbers(const std::string & buff,
+                                      std::string::const_iterator & buffPos,
+                                      const std::string & eMsg, void * coord);
 /* Same as readSingleCoordSectionInNNumbers() with the exception that it can
    read integers. */
 void readSingleCoordSectionInZNumbers(const std::string & buff,
                                       std::string::const_iterator & buffPos,
-                                      const std::string & eMsg, yx & coord);
+                                      const std::string & eMsg, void * coord);
 /* This function should be called through readSingleCoordSectionInNNumbers() or
    readSingleCoordSectionInZNumbers() */
 void readSingleCoordSection(const std::string & buff,

@@ -33,7 +33,7 @@ void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
       err<<"Error: unable to open \""<<bgFileName<<"\".";
       exit(err.str(), ERROR_OPENING_FILE);
     }
-  background.initialiseBackgroundData(false, levelBackground);
+  background.initialiseBackgroundData(false, bgFileName, levelBackground);
   // collapse(levelBackground, background); //collapse nonColor escape
   //sequences.
   // if(background.size() < (size_t(maxyx.x) * maxyx.y) ||
@@ -652,57 +652,6 @@ void readSingleCoordSectionInNNumbers(const std::string & buff,
 {
   readSingleCoordSection(buff, buffPos, eMsg, false, coord,
 			 "natural numbers");
-}
-
-
-void readSingleCoordSectionInNNumbersOnSameLineAsPos(
-    const std::string &buff, std::string::const_iterator &buffPos,
-    const std::string &eMsg, yx &coord)
-{
-  //   using namespace levelFileKeywords;
-
-  // std::vector<std::string> targets {};
-  // std::string targetFound {};
-
-  // readSectionOpeningBracket
-  //   (buff, buffPos, eMsg,
-  //    concat("single coordinate section (with " , typeOfNumber, ")"));
-  
-  // ((yx*)coord)->y = readSingleNum(buff, buffPos, eMsg, useIntegers);
-      
-  // targets = {std::string {COORD_SEPARATION}};
-  // targetFound = skipSpaceUpTo(buff, buffPos, targets);
-  // if(targetFound == "")
-  //   {
-  //     std::stringstream e {};
-  //     e<<"Error: expected \""<<COORD_SEPARATION<<"\" before second coordinate "
-  // 	"component in single coordinate section (with "<<typeOfNumber
-  //      <<") when "<<eMsg<<". Encountered "<<"\""<<*buffPos<<"\"\n";
-  //     exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-  //   }
-
-  // ((yx*)coord)->x = readSingleNum(buff, buffPos, eMsg, useIntegers);
-
-  // readSectionEndingBracket
-  //   (buff, buffPos, eMsg,
-  //    concat("single coordinate section (with ", typeOfNumber, ")"));
-
-  using namespace levelFileKeywords;
-
-  std::vector<std::string> targets {};
-  std::string targetFound {};
-
-  NOTE THAT WE WAN'T TO REUSE FUNCTIONS FROM LOAD ASSETS, HOWEVER THEY ALL USE
-    SKIP SPACE UP TO AND IT WILL SKIP '\n' WHICH WE DON'T WAN'T TO SKIP.
-    WE NEED TO COME UP WITH A GOOD SOLUTION FOR THIS. RIGHT NOW WE THINK THAT
-    MAYBE WE SHOULD ADD A FLAG FOR THIS. WE DON'T WANT TO USE A GLOBAL FLAG.
-    HOWEVER WE WILL PROBABLY NEED TO ADD FLAGS TO A BUNCH OF FUNCTIONS IF WE
-    DON'T. MAYBE WE COULD JUST REUSE SOME OF THE FUNCTIONS LOWER IN THE CALL
-    HIGHERARCHY AND THAT WAY WE WOULDN'T TO ADD AS MANY FLAGS TO OTHER FUNCTIONS
-    AND WORRY ABOUT COMPLICATING (AND ALSO MESSING UP THE CODE WE ALREADY HAVE
-    HERE), BUT WE WOULD HAVE A BIT MORE CODE DUPLICATION.
-
-  // readSectionOpeningBracket
 }
 
 
