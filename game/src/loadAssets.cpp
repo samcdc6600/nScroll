@@ -33,6 +33,7 @@ void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
       err<<"Error: unable to open \""<<bgFileName<<"\".";
       exit(err.str(), ERROR_OPENING_FILE);
     }
+  
   background.initialiseBackgroundData(false, bgFileName, levelBackground);
   // collapse(levelBackground, background); //collapse nonColor escape
   //sequences.
@@ -487,24 +488,27 @@ void readStartOfHeader(const std::string & buff,
 }
 
 
+// SkipSpace has a default value.
 void readSectionOpeningBracket(const std::string & buff,
 			       std::string::const_iterator & buffPos,
 			       const std::string & eMsg,
-			       const std::string & section)
+			       const std::string & section,
+			       const bool skipSpace)
 {
   using namespace levelFileKeywords;
     
   std::vector<std::string> targets {};
   std::string targetFound {};
-
+      
   targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
-  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  targetFound = skipSpaceUpTo(buff, buffPos, targets, skipSpace);
   if(targetFound != std::string {RULES_HEADER_SECTION_START_DENOTATION})
     {
       std::stringstream e {};
       e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<"\" to "
 	"denote the start of "<<section<<" when "<<eMsg
        <<". Encountered \""<<*buffPos<<"\"\n";
+      
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
 }
@@ -655,6 +659,16 @@ void readSingleCoordSectionInNNumbers(const std::string & buff,
 }
 
 
+void readSingleCoordSectionInNNumbersNoSkpSp(const std::string & buff,
+			  std::string::const_iterator & buffPos,
+			    const std::string & eMsg, void * coord)
+{
+  readSingleCoordSection(buff, buffPos, eMsg, false, coord,
+			 "natural numbers (without "
+			 "skipping space up until the coordinate)", false);
+}
+
+
 void readSingleCoordSectionInZNumbers(const std::string & buff,
 			  std::string::const_iterator & buffPos,
 			    const std::string & eMsg, void * coord)
@@ -663,24 +677,27 @@ void readSingleCoordSectionInZNumbers(const std::string & buff,
 }
 
 
+// SkipSpace has a default value.
 void readSingleCoordSection(const std::string & buff,
 			  std::string::const_iterator & buffPos,
 			    const std::string & eMsg, const bool useIntegers,
-			    void * coord, const std::string typeOfNumber)
+			    void * coord, const std::string typeOfNumber,
+			    const bool skipSpace)
 {
   using namespace levelFileKeywords;
 
   std::vector<std::string> targets {};
   std::string targetFound {};
-
   readSectionOpeningBracket
     (buff, buffPos, eMsg,
-     concat("single coordinate section (with " , typeOfNumber, ")"));
+     concat("single coordinate section (with " , typeOfNumber, ")"),
+     skipSpace);
   
   ((yx*)coord)->y = readSingleNum(buff, buffPos, eMsg, useIntegers);
       
   targets = {std::string {COORD_SEPARATION}};
-  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  targetFound = skipSpaceUpTo
+    (buff, buffPos, targets);
   if(targetFound == "")
     {
       std::stringstream e {};

@@ -67,7 +67,8 @@ void readStartOfHeader(const std::string &buff,
 void readSectionOpeningBracket(const std::string &buff,
                                std::string::const_iterator &buffPos,
                                const std::string &eMsg,
-                               const std::string &section);
+                               const std::string &section,
+			       const bool skipSpace = true);
 /* Attempts to read the bracket at the end of a section. Calls exit with eMsg 
    and section if there is an error. */
 void readSectionEndingBracket(const std::string & buff,
@@ -88,7 +89,14 @@ void readStringsSection(const std::string & buff,
    should say something about the context in which the function was
    called. Returns the coordinate read. Only reads natural numbers (inclusive
    of 0.)*/
-void readSingleCoordSectionInNNumbers(const std::string & buff,
+void readSingleCoordSectionInNNumbers(const std::string &buff,
+                                      std::string::const_iterator &buffPos,
+                                      const std::string &eMsg, void *coord);
+/* This function is the same as readSingleCoordSectionInNNumbers() with the one
+   exception that it does not skip any spaces i.e. the first character of the
+   coordinate (the "(" terminal) should be at *buffPos. Otherwise the program will
+   be halted with an error message. */
+void readSingleCoordSectionInNNumbersNoSkpSp(const std::string & buff,
                                       std::string::const_iterator & buffPos,
                                       const std::string & eMsg, void * coord);
 /* Same as readSingleCoordSectionInNNumbers() with the exception that it can
@@ -97,11 +105,13 @@ void readSingleCoordSectionInZNumbers(const std::string & buff,
                                       std::string::const_iterator & buffPos,
                                       const std::string & eMsg, void * coord);
 /* This function should be called through readSingleCoordSectionInNNumbers() or
-   readSingleCoordSectionInZNumbers() */
+   readSingleCoordSectionInZNumbers(). SkipSpace suppresses the skipping of
+   spaces before the opening terminal "(". */
 void readSingleCoordSection(const std::string & buff,
                             std::string::const_iterator &buffPos,
                             const std::string & eMsg, const bool useIntegers,
-                            void *coord, const std::string typeOfNumber);
+                            void *coord, const std::string typeOfNumber,
+			    const bool skipSpace = true);
 /* Attempts to read a boolean for a section in buff starting at buffPos. Emsg
    will be embedded in any error message/s the function spits out and should
    say something about the context in which the function was called. Returns

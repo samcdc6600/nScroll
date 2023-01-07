@@ -4,6 +4,9 @@
 #include <iterator>
 //#include "include/collapse.hpp"
 
+#include <iostream>
+#include <curses.h>
+
 
 constexpr char NAME_OF_THIS_FILE[] = "background.cpp";
 
@@ -19,7 +22,9 @@ bool backgroundData::getChunkCoordinate(const std::string & bgData,
 {
   if(buffPos != std::end(bgData))
     {
-      readSingleCoordSectionInNNumbers(bgData, buffPos, eMsg, &chunkCoord);
+      readSingleCoordSectionInNNumbersNoSkpSp
+	(bgData, buffPos, eMsg, &chunkCoord);
+
       return true;
     }
   else
@@ -34,14 +39,23 @@ void backgroundData::getChunk(const std::string & bgData,
 	      std::string & chunk)
 {
   chunk.clear();
-  while(chunk.size() != (maxyx.y * maxyx.x) && buffPos != std::end(bgData))
+
+  int lnCount {};
+  for( ; lnCount < maxyx.y && buffPos != std::end(bgData); )
     {
-      chunk += *buffPos++;	// It's weird that it works like this LOL.
+      char newCh {};
+      newCh = *buffPos++;
+      chunk += newCh;
+      lnCount += (newCh == '\n' ? 1: 0);
     }
-  if(chunk.size() != (maxyx.y * maxyx.x))
+  if(lnCount != maxyx.y)
     {
       exit(eMsg, ERROR_BACKGROUND);
     }
+        endwin();
+	// std::cout<<*buffPos<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<'\n'<<'\n'<<'\n';
+	std::cout<<chunk<<'\n';
+      exit(-1);
 }
 
 
@@ -85,10 +99,6 @@ void backgroundData::initialiseBackgroundData
 				    chunkCoord))
 	      {
 		// Get chunk from background data read from file.
-		getChunk(bgData, buffPos,
-			 concat("Error: reading in chunk no. ", chunksReadIn,
-				" from background.lev file \"", bgFileName,
-				"\""), chunk);
 		// Collapse chunk and return in rawChunk.
 		// collapse(chunk, rawChunk);
 
@@ -114,6 +124,67 @@ void backgroundData::initialiseBackgroundData
 	}
       else
 	{
+	  // const yx chunkSize {getChunkSize(bgData)};
+	  yx chunkCoord {};
+	  std::string chunk {};
+	  backgroundChunk rawChunk {};
+	  std::string::const_iterator buffPos {std::begin(bgData)};
+	  
+	  while(true)
+	    {
+	      ssize_t chunksReadIn {};
+	      /* Each chunk should have a header that contains it's coordinates
+		 in the level. The unit of the coordinates should be chunks. So
+		 for a chunk that starts at (0, 170) in character coordinates
+		 (assuming the size of chunks for this file are 170 in the x
+		 dimension), the coordinate in the header would be (0, 1) and
+		 for (0, 340) it would be (0, 2), etc... */
+	      if(getChunkCoordinate(bgData, buffPos,
+				    concat("trying to read coord no. ",
+					   chunksReadIn, " from background.lev "
+					   "file \"", bgFileName, "\""),
+				    chunkCoord))
+		{
+		  /*
+		    Error: expected "(" to denote the start of single
+		    coordinate section (with natural numbers (without
+		    skipping space up until the coordinate)) when trying to
+		    read coord no. 0 from background.lev file
+		    "assets/level1/level1.backgound.lev". Encountered "
+		   */
+		  skipSpaceUpToNextLine
+		    (bgData, buffPos,
+		     concat("Error: trying to read chunk no. ", chunksReadIn,
+			    ". Expected '\\n' after reading chunk coordinate "
+			    "from background.lev file \"", bgFileName, "\". "
+			    "Encountered other character or EOF."));
+		  // Get chunk from background data read from file.
+		  getChunk(bgData, buffPos,
+			   concat("Error: reading in chunk no. ", chunksReadIn,
+				  " from background.lev file \"", bgFileName,
+				  "\""), chunk);
+		  // Collapse chunk and return in rawChunk.
+		  // collapse(chunk, rawChunk);
+
+		  /* Store rawChunk in this.background with a key that should be
+		     calculated according to the following:
+		     Concatenate (y / maxyx.y) and (x / maxyx.y) and use as
+		     index into map. Then
+		     (y % (maxyx.y * 3)) * maxyx.x + (x % (maxyx.x * 3)) can
+		     be used to index into the backgroundChunk returned from
+		     the map (as the stage 1 draw buffer will be 3 by 3
+		     chunks.)
+		  */
+
+		  chunksReadIn++;
+		  // GetChunk() clears it's argument (chunk).
+		  rawChunk.clear();
+		}
+	      else
+		{
+		  break;
+		}
+	    }
 	}
     }
   else

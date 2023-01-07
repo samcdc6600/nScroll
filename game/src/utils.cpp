@@ -66,12 +66,24 @@ bool loadFileIntoString(const char name [], std::string & buff)
 }
 
 
+
+// SkipSpace has a default value.
 std::string skipSpaceUpTo(const std::string & buff,
 			  std::string::const_iterator & buffPos,
-			  std::vector<std::string> & targets)
+			  std::vector<std::string> & targets,
+			  const bool skipSpace)
 {
   std::string targetFound {};
   std::string::const_iterator outerPeekPos {buffPos};
+
+  // if(!skipSpace)
+  //   {
+  //           endwin();
+  //     std::cout<<"Hello\n";
+  //     std::cout<<"lksdajalskdj\n";
+  //     std::cout<<*(++buffPos)<<*(++buffPos)<<*(++buffPos)<<*(++buffPos)<<std::endl;
+  //     exit(-1);
+  //   }
   
   if(outerPeekPos != buff.end())
     {
@@ -98,10 +110,11 @@ std::string skipSpaceUpTo(const std::string & buff,
       else
 	{
 	  // skip spaces.
-	  while(outerPeekPos != buff.end() && (*outerPeekPos == ' ' ||
-					       *outerPeekPos == '\n' ||
-					       *outerPeekPos == '\r' ||
-					       *outerPeekPos == '\t'))
+	  while(outerPeekPos != buff.end() && skipSpace &&
+		(*outerPeekPos == ' ' ||
+		 *outerPeekPos == '\n' ||
+		 *outerPeekPos == '\r' ||
+		 *outerPeekPos == '\t'))
 	    {
 	      outerPeekPos++;
 	    }
@@ -120,7 +133,42 @@ std::string skipSpaceUpTo(const std::string & buff,
 
   buffPos = outerPeekPos;
   return targetFound;
- }
+}
+
+
+void skipSpaceUpToNextLine(const std::string & buff,
+			   std::string::const_iterator & buffPos,
+			   const std::string & eMsg)
+{
+  while(buffPos != std::end(buff))
+    {
+      if(*buffPos == '\n')
+	{
+	  break;
+	}
+      else if(*buffPos == ' ' || *buffPos == '\r' || *buffPos == '\t')
+	{
+	  buffPos++;
+	}
+      else
+	{
+	  goto ERROR_EXIT;
+	}
+    }
+
+  if(buffPos == std::end(buff))
+    {
+      goto ERROR_EXIT;
+    }
+  // Can be equal to std::end(buff) after incrementing.
+  buffPos++;
+
+  if(false)
+    {
+    ERROR_EXIT:
+      exit(eMsg.c_str(), ERROR_GENERIC_RANGE_ERROR);
+    }
+}
 
 
 static std::string findTargetInBuff
