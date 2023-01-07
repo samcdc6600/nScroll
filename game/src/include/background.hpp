@@ -43,6 +43,10 @@ private:
   void getChunk(const std::string & bgData,
 		std::string::const_iterator & buffPos, const std::string & eMsg,
 		std::string & chunk);
+  /* Prints eMsg and terminates program if rawChunk is the wrong size. */
+  void verifyCollapsedChunkSize(const backgroundChunk & rawChunk,
+				const ssize_t chunksReadIn,
+				const bool attemptedCompression);
 
   // ========================== MEMBER FUNCTIONS START =========================
   // ===========================================================================

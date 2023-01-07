@@ -2,7 +2,7 @@
 #include "include/colorS.hpp"
 #include "include/loadAssets.hpp"
 #include <iterator>
-//#include "include/collapse.hpp"
+#include "include/collapse.hpp"
 
 #include <iostream>
 #include <curses.h>
@@ -52,10 +52,24 @@ void backgroundData::getChunk(const std::string & bgData,
     {
       exit(eMsg, ERROR_BACKGROUND);
     }
-        endwin();
-	// std::cout<<*buffPos<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<*buffPos++<<'\n'<<'\n'<<'\n';
-	std::cout<<chunk<<'\n';
-      exit(-1);
+}
+
+
+void backgroundData::verifyCollapsedChunkSize(const backgroundChunk & rawChunk,
+					      const ssize_t chunksReadIn,
+					      const bool attemptedCompression)
+{
+  if(rawChunk.size() != (maxyx.y * maxyx.x))
+    {
+
+      
+      exit(concat
+	   ("Error: chunk no. ", chunksReadIn, " is the wrong size (",
+	    rawChunk.size(), ")",
+	    (attemptedCompression ? " after being compressed.": "."),
+	    "Expected size of ",
+	    maxyx.y * maxyx.x, "."), ERROR_BACKGROUND);
+    }
 }
 
 
@@ -164,7 +178,8 @@ void backgroundData::initialiseBackgroundData
 				  " from background.lev file \"", bgFileName,
 				  "\""), chunk);
 		  // Collapse chunk and return in rawChunk.
-		  // collapse(chunk, rawChunk);
+		  collapse(chunk, rawChunk);
+		  verifyCollapsedChunkSize(rawChunk, chunksReadIn, true);
 
 		  /* Store rawChunk in this.background with a key that should be
 		     calculated according to the following:

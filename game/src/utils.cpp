@@ -158,16 +158,11 @@ void skipSpaceUpToNextLine(const std::string & buff,
 
   if(buffPos == std::end(buff))
     {
-      goto ERROR_EXIT;
-    }
-  // Can be equal to std::end(buff) after incrementing.
-  buffPos++;
-
-  if(false)
-    {
     ERROR_EXIT:
       exit(eMsg.c_str(), ERROR_GENERIC_RANGE_ERROR);
     }
+  // Can be equal to std::end(buff) after incrementing.
+  buffPos++;
 }
 
 
