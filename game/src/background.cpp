@@ -158,13 +158,6 @@ void backgroundData::initialiseBackgroundData
 					   "file \"", bgFileName, "\""),
 				    chunkCoord))
 		{
-		  /*
-		    Error: expected "(" to denote the start of single
-		    coordinate section (with natural numbers (without
-		    skipping space up until the coordinate)) when trying to
-		    read coord no. 0 from background.lev file
-		    "assets/level1/level1.backgound.lev". Encountered "
-		   */
 		  skipSpaceUpToNextLine
 		    (bgData, buffPos,
 		     concat("Error: trying to read chunk no. ", chunksReadIn,
@@ -178,17 +171,7 @@ void backgroundData::initialiseBackgroundData
 				  "\""), chunk);
 		  // Collapse chunk and return in rawChunk.
 		  collapse(chunk, rawChunk);
-
-		  // endwin();
-		  // for(auto c: rawChunk)
-		  //   {
-		  //     std::cout<<(char)c;
-		  //   }
-		  // std::cout<<std::endl;
-		  // exit(-1);
-		  
 		  verifyCollapsedChunkSize(rawChunk, chunksReadIn, true);
-
 		  /* Store rawChunk in this.background with a key that should be
 		     calculated according to the following:
 		     Concatenate (y / maxyx.y) and (x / maxyx.y) and use as
@@ -198,6 +181,20 @@ void backgroundData::initialiseBackgroundData
 		     the map (as the stage 1 draw buffer will be 3 by 3
 		     chunks.)
 		  */
+		  /* ',' must be included to delineate between the y and x
+		     coordinates. */
+		  const std::string chunkCoordKey
+		    {concat("", chunkCoord.y, ",", chunkCoord.x)};
+		  if(background.insert
+		     (std::pair<std::string, backgroundChunk>
+		      (chunkCoordKey, rawChunk)).second == false)
+		    {
+		      exit(concat
+			   ("Error: duplicate chunk coordinate (",
+			    chunkCoordKey, ") found when loading chunk no. ",
+			    chunksReadIn, " from file \"", bgFileName, "\"."),
+			   ERROR_BACKGROUND);
+		    }
 
 		  chunksReadIn++;
 		  // GetChunk() clears it's argument (chunk).

@@ -25,7 +25,7 @@ private:
   // (View port size) used to retrieve a chunk given a coordinate.
   const yx maxyx;
   bool backgroundModifiable {true};
-  const backgroundType background;
+  backgroundType background;
   /* Code for value of transparent space is 1 higher then 159 * 64 which is
      above the space of all ACS and ASCII characters whether coloured or not. */
   static constexpr int TRANS_SP {10176};
