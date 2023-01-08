@@ -60,15 +60,14 @@ void backgroundData::verifyCollapsedChunkSize(const backgroundChunk & rawChunk,
 					      const bool attemptedCompression)
 {
   if(rawChunk.size() != (maxyx.y * maxyx.x))
-    {
-
-      
+    {      
       exit(concat
 	   ("Error: chunk no. ", chunksReadIn, " is the wrong size (",
 	    rawChunk.size(), ")",
 	    (attemptedCompression ? " after being compressed.": "."),
 	    "Expected size of ",
-	    maxyx.y * maxyx.x, "."), ERROR_BACKGROUND);
+	    maxyx.y * maxyx.x, " (", maxyx.y, " * ", maxyx.x, ")."),
+	   ERROR_BACKGROUND);
     }
 }
 
@@ -143,10 +142,10 @@ void backgroundData::initialiseBackgroundData
 	  std::string chunk {};
 	  backgroundChunk rawChunk {};
 	  std::string::const_iterator buffPos {std::begin(bgData)};
-	  
+	  ssize_t chunksReadIn {};
+
 	  while(true)
 	    {
-	      ssize_t chunksReadIn {};
 	      /* Each chunk should have a header that contains it's coordinates
 		 in the level. The unit of the coordinates should be chunks. So
 		 for a chunk that starts at (0, 170) in character coordinates
@@ -179,6 +178,15 @@ void backgroundData::initialiseBackgroundData
 				  "\""), chunk);
 		  // Collapse chunk and return in rawChunk.
 		  collapse(chunk, rawChunk);
+
+		  // endwin();
+		  // for(auto c: rawChunk)
+		  //   {
+		  //     std::cout<<(char)c;
+		  //   }
+		  // std::cout<<std::endl;
+		  // exit(-1);
+		  
 		  verifyCollapsedChunkSize(rawChunk, chunksReadIn, true);
 
 		  /* Store rawChunk in this.background with a key that should be

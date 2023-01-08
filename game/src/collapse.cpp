@@ -70,7 +70,7 @@ void secondPassOfCollapse(std::string & buff, std::vector<int> & preRet)
   std::string escSeq {};
   /* Declared as static so that the constructor will only be called once. This
      is an optimization since the constructor does a lot of work that is
-     redundent if done more then once. */
+     redundent if done more than once. */
   static chMap escCharNums;
   constexpr size_t ncEscLen {3}; // Length of the escape sequence.
   
