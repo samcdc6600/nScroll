@@ -54,20 +54,28 @@ int main()
 void menu(const yx maxyx, int * unprocessedDrawBuffer)
 {
   // std::vector<int> background {};	// Hold's the background
-  backgroundData background {maxyx};
+  backgroundData background {maxyx, "assets/level1/level1.backgound.lev"};
   /* Hold's the "rules" for the current level. (see physics.h and
      rules.lev.txt.) */
-  rules levelRules {};
+   rules levelRules {};
   /* Note this should be done in the menu or loop or some sub function
      called from within it since multiple level's can be played. It is
      placed here right now only for testing and development purposes. */
   
-  loadAssets(maxyx, "assets/level1/level1.backgound.lev", background,
-	     "assets/level1/level1.rules.lev", levelRules);
+  /*  loadAssets(maxyx, "assets/level1/level1.backgound.lev", background,
+      "assets/level1/level1.rules.lev", levelRules);*/
+  
   
   bool run = true;
   while(run)
     {
+      /* REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	switch(gameLoop
+	(unprocessedDrawBuffer, background, levelRules, )) */
       switch(gameLoop
 	     (unprocessedDrawBuffer, background, levelRules, maxyx))
 	{

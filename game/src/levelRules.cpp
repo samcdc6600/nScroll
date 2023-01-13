@@ -3,6 +3,154 @@
 #include <string>
 
 
+void rules::loadAndParseFile(const yx maxyx, const char bgFileName [],
+				const char rulesFileName[],
+                                rules &levelRules, const size_t bgSize)
+{
+  std::string rawRules {};
+  if(!loadFileIntoString(rulesFileName, rawRules))
+    {
+      std::stringstream e {};
+      e<<"Error: unable to open \""<<rulesFileName<<"\".";
+      exit(e.str(), ERROR_OPENING_FILE);
+    }
+
+  std::string::const_iterator buffPos {rawRules.begin()};
+  parseRulesHeader(maxyx, rulesFileName, levelRules, bgSize, rawRules, buffPos);
+  parseRulesMain(maxyx, bgFileName, rulesFileName, levelRules, bgSize, rawRules, buffPos);
+}
+
+
+void parseRulesHeader(const yx maxyx, const char rulesFileName[],
+			  rules & levelRules, const size_t bgSize,
+		      const std::string & rawRules,
+		      std::string::const_iterator & buffPos)
+{
+  using namespace levelFileKeywords;
+
+  readStartOfHeader
+    (rawRules, buffPos,
+     concat("reading start of rules.lev header file \"", rulesFileName, "\""));
+
+  /* Setup keyword actions associations for header section. If there is a
+     section that is needed but we don't want to be specifiable in rules.lev
+     files then it's entry here should have a default value and the action
+     function should be set nullptr. */
+  std::vector<keywordAction::headerKeywordAction> headerKeywordActions
+    {keywordAction::headerKeywordAction
+     {PLAYER_HEADER_SECTION_SPECIFIER, nullptr, initPlayer, false},
+     keywordAction::headerKeywordAction
+     {BG_SPRITE_HEADER_SECTION_SPECIFIER, nullptr, initBgSprites, true}};
+
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+  for(auto keywordAction: headerKeywordActions)
+    {
+      targets.push_back(keywordAction.keyword);
+    }
+
+  // Parse player sub sections.
+  while(true)
+    {
+      targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+      
+      if(targetFound == "")
+	{
+	  break;
+	}
+      
+      /* Target found, now check which object it's associated with and perform
+	 targets associated action. */
+      for(int foundIter {}; foundIter < (int)headerKeywordActions.size();
+	  foundIter++)
+	{
+	   if(targetFound == headerKeywordActions[foundIter].keyword)
+	     {
+	       /* Note here that sections that should only appear once will be
+		  marked as found if encountered, however sections that can
+		  appear  multiple times will not be marked as found if
+		  encountered. */
+	       if(headerKeywordActions[foundIter].found)
+		 {
+		   std::stringstream e {};
+		   e<<"Error: reading rules.lev header file \""<<rulesFileName
+		    <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
+		     "reading header section, however this keyword is only "
+		     "expected once in this section.\n";
+		   exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		 }
+	       switch(headerSectionKeywordToId.at(targetFound).order)
+		 {
+		 case 0:
+		   headerKeywordActions[foundIter].found = true;
+		   headerKeywordActions[foundIter].headerAction
+		     (maxyx, rulesFileName, levelRules, bgSize, rawRules,
+		      buffPos);
+		   break;
+		 case 1:
+		   /* We don't set found here because this keyword should have
+		      headerKeywordAction.foundMultipleOptional set to true. */
+		   headerKeywordActions[foundIter].headerAction
+		     (maxyx, rulesFileName, levelRules, bgSize, rawRules,
+		      buffPos);
+		   break;
+		 }
+
+	       /*
+		 NOTE THAT WE LEAVE THIS CODE HERE IN CASE IT IS EVER DESIRED TO
+		 HAVE A KEYWORD THAT IS FORBIDDEN BUT ASSOCIATED WITH A DEFAULT
+		 VALUE IN THIS SECTION. 
+		 if(false)
+		 {
+		 ENCOUNTERED_FORBIDDEN_KEYWORD:
+		   std::stringstream e {};
+		   e<<"Error: reading rules.lev header file \""<<rulesFileName
+		    <<"\". Encountered keyword \""<<targetFound<<"\" when "
+		     "reading header section, however this keyword is "
+		     "forbidden.\n";
+		   exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		   }*/
+	     }
+	}
+    }
+
+  // Check that we've encountered all keywords that were searched for.
+  for(auto keywordAction: headerKeywordActions)
+    {
+      if(!(keywordAction.found || keywordAction.foundMultipleOptional))
+	{
+	  // See if there is a default value for not found.
+          /*
+	    NOTE THAT HERE SIMILAR TO THE ABOVE WE LEAVE THIS CODE IN CASE IT IS
+	    EVER DESIRED TO HAVE A  KEYWORD THAT HAS A DEFAULT VALUE FOR THIS
+	    SECTION.  
+	    checkForDefaultHeaderValues
+	    (headerKeywordActions, keywordAction, playerInitData,
+	    buffPos, rulesFileName);*/
+	  std::stringstream e {};
+	  e<<"Error: expected section\\s \"";
+	  for(auto keywordAction: headerKeywordActions)
+	    {
+	      
+	      if(!(keywordAction.found || keywordAction.foundMultipleOptional) &&
+		 keywordAction.headerAction != nullptr)
+		{
+		  e<<keywordAction.keyword<<", ";
+		}
+	    }
+	  e<<"\" in header section. Encountered character \""<<*(--buffPos)
+	   <<*(++buffPos)<<*(++buffPos)<<"\", when reading \""<<rulesFileName
+	   <<"\" file\n";
+	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+	}
+    }
+  
+  readEndOfHeader
+    (rawRules, buffPos,
+     concat("reading end of rules.lev header \"", rulesFileName, "\""));
+}
+
+
 void rules::resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime)
 {
   std::__1::chrono::steady_clock::time_point currentTime
@@ -14,6 +162,7 @@ void rules::resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime)
     }
 }
 
+
 //test level agains sprite's
 char rules::intersection(const std::string & boundsInteraction,
 			 const std::vector<int> spChoords)
@@ -22,6 +171,7 @@ char rules::intersection(const std::string & boundsInteraction,
      boundsInteration return that charater */
   return 'n';
 }
+
 
 //test player sprite against sprite's
 char rules::intersection(const std::vector<int> playerSpChoords,
@@ -32,6 +182,7 @@ char rules::intersection(const std::vector<int> playerSpChoords,
   return 'n';
 }
 
+
 //test level agains sprite's
 char rules::nearPass(const std::string & boundsInteraction,
 		     const std::vector<int> spChoords)
@@ -40,6 +191,7 @@ char rules::nearPass(const std::string & boundsInteraction,
      boundsInteration return that charater */
   return 'n';
 }
+
 
 //test player sprite against sprite's
 char rules::nearPass(const std::vector<int> playerSpChoords,
@@ -53,12 +205,6 @@ char rules::nearPass(const std::vector<int> playerSpChoords,
   return 'n';
 }
 
-// =================== TMP TMP TMP ==========================
-#include <curses.h>
-#include <iostream>
-#include <fstream>
-bool encountered {false};
-// =================== TMP TMP TMP ==========================
 
 void rules::movePlayer(sprite::directions input,
 		       int & position, const yx maxyx,

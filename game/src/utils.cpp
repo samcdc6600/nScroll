@@ -75,15 +75,6 @@ std::string skipSpaceUpTo(const std::string & buff,
 {
   std::string targetFound {};
   std::string::const_iterator outerPeekPos {buffPos};
-
-  // if(!skipSpace)
-  //   {
-  //           endwin();
-  //     std::cout<<"Hello\n";
-  //     std::cout<<"lksdajalskdj\n";
-  //     std::cout<<*(++buffPos)<<*(++buffPos)<<*(++buffPos)<<*(++buffPos)<<std::endl;
-  //     exit(-1);
-  //   }
   
   if(outerPeekPos != buff.end())
     {

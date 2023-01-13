@@ -36,6 +36,9 @@ private:
   const size_t engineSleepTime {32};
   // const double sleepTimeAsAPercentageOfASecond {double(engineSleepTime / millisecondsInSec)};
 
+  void loadAndParseFile(const yx maxyx, const char bgFileName [],
+			const char rulesFileName[],
+			rules &levelRules, const size_t bgSize);
   /* Set's oldTime to the current time if
      (oldTime - (the current time) >= second). */
   void resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime);
@@ -111,6 +114,8 @@ private:
 #endif
 
 public:
+  rules() :
+  {}
   void physics(const player::directionChars input, int & position, const yx maxyx,
 	       const size_t backgroundLength,
 	       std::__1::chrono::steady_clock::time_point & secStartTime);

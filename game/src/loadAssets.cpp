@@ -14,15 +14,15 @@ void loadAssets
  const char rulesFileName [], rules & levelRules)
 {
   // Initialise background array.
-  loadAndParseBackgroundFile(maxyx, bgFileName, background);
+  //  loadAndParseBackgroundFile(maxyx, bgFileName, background);
   /* Initialise player and non-player sprites (rules file) and initialise
      levelRules array. */
-  // loadAndParseLevelRulesFile(maxyx, bgFileName, rulesFileName, levelRules,
-  // 			     background.size());
+  /*  loadAndParseLevelRulesFile(maxyx, bgFileName, rulesFileName, levelRules,
+      background.size());*/
 }
 
 
-void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
+/*void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
 				backgroundData & background)
 				// std::vector<int> & background)
 {
@@ -49,10 +49,10 @@ void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
   // 	 <<maxyx.x<<" and window height = "<<maxyx.y<<".";
   //     exit(err.str(), ERROR_BACKGROUND);
   //   }
-}
+  }*/
 
 
-void loadAndParseLevelRulesFile(const yx maxyx, const char bgFileName [],
+/*void loadAndParseLevelRulesFile(const yx maxyx, const char bgFileName [],
 				const char rulesFileName[],
                                 rules &levelRules, const size_t bgSize)
 {
@@ -67,7 +67,7 @@ void loadAndParseLevelRulesFile(const yx maxyx, const char bgFileName [],
   std::string::const_iterator buffPos {rawRules.begin()};
   parseRulesHeader(maxyx, rulesFileName, levelRules, bgSize, rawRules, buffPos);
   parseRulesMain(maxyx, bgFileName, rulesFileName, levelRules, bgSize, rawRules, buffPos);
-}
+  }*/
 
 
 void parseRulesHeader(const yx maxyx, const char rulesFileName[],

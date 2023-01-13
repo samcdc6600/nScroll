@@ -230,7 +230,7 @@ void sprite::getMaxYXOffset()
 	  max = s.slice.size() > max ? s.slice.size() : s.slice.size();
 	}
     }
-  endwin();
+
   // The upper left of the sprite is (0,0) so we need size -1 :).
   maxBottomRightOffset.y = max -1;
   max = 0;

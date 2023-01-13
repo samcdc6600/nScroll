@@ -32,8 +32,8 @@ void loadAssets
 (const yx maxyx, const char bgFileName [], // std::vector<int> & background,
  backgroundData & background,
  const char rulesFileName [], rules & levelRules);
-void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
-				backgroundData & background);
+/*void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
+  backgroundData & background);*/
 				// std::vector<int> & background);
 /* Load rules file, parse header, extract sprite coordinates and sprite name/s
    and process sprites. extract sprite rule after processing each sprite. Header
