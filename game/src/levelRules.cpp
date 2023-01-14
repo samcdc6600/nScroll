@@ -3,151 +3,411 @@
 #include <string>
 
 
-void rules::loadAndParseFile(const yx maxyx, const char bgFileName [],
-				const char rulesFileName[],
-                                rules &levelRules, const size_t bgSize)
+/* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player
+   cannot be started at a position with a number with more places then this. */
+constexpr int MAX_COORD_LEN{10};
+namespace levelFileKeywords
 {
-  std::string rawRules {};
-  if(!loadFileIntoString(rulesFileName, rawRules))
+  namespace keywordAction
+  {
+    struct headerKeywordAction
     {
-      std::stringstream e {};
-      e<<"Error: unable to open \""<<rulesFileName<<"\".";
-      exit(e.str(), ERROR_OPENING_FILE);
-    }
+      headerKeywordAction
+      (const std::string & kword, void (* a)
+       (const std::string & buff, std::string::const_iterator & buffPos,
+	const std::string & eMsg, void * retObj),
+       void (*hA)(const yx maxyx, const char rulesFileName[],
+		  rules &levelRules, const size_t bgSize,
+		  const std::string &rawRules,
+		  std::string::const_iterator &buffPos) = nullptr,
+       const bool fMO = false)
+	: keyword(kword), foundMultipleOptional(fMO), action(a), headerAction(hA)
+      { }
 
-  std::string::const_iterator buffPos {rawRules.begin()};
-  parseRulesHeader(maxyx, rulesFileName, levelRules, bgSize, rawRules, buffPos);
-  parseRulesMain(maxyx, bgFileName, rulesFileName, levelRules, bgSize, rawRules, buffPos);
+      const std::string keyword;
+      // Found this keyword already (for keywords that can only appear once.).
+      bool found{false};
+      /* Set to true in the constructor if keyword is optional and can appear
+	 multiple times. */
+      const bool foundMultipleOptional;
+      /* If action needs to return anything the address of a variable of the
+	 appropriate type should be passed to the function via retObj. If the
+	 function doesn't encounter any error (in which case it should print a
+	 message and exit) *retObj should be populated with what is essential the
+	 return value of the function. */
+      void (*action)(const std::string &buff,
+		     std::string::const_iterator &buffPos,
+		     const std::string &eMsg, void *retObj);
+      /* This function should be used as the action instead of the above if we
+	 are at the top level of the header (in terms of sections). */
+      void (*headerAction)(const yx maxyx, const char rulesFileName[],
+			   rules &levelRules, const size_t bgSize,
+			   const std::string &rawRules,
+			   std::string::const_iterator &buffPos);
+    };
+  };
+  // Each new section should start with a header char followed by this char.
+  constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
+  constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
+  constexpr char RULES_HEADER_END_DENOTATION [] {"\n#"};
+  // Header section header.
+  const std::string PLAYER_HEADER_SECTION_SPECIFIER {"player"};
+  const std::string BG_SPRITE_HEADER_SECTION_SPECIFIER {"backgroundSprite"};
+  // Header sub section headers.
+  // Sub section headers for general player and sprites.
+  const std::string SPRITE_FILE_SECTION_HEADER		{"sprites"};
+  const std::string SPRITE_INIT_COORD_SECTION_HEADER	{"initialCoordinate"};
+  // Sub section headers for player sprite.
+  const std::string SPRITE_INIT_DIR_SECTION_HEADER	{"initialDirection"};
+  const std::string SPRITE_HEALTH_SECTION_HEADER	{"initialHealth"};
+  const std::string SPRITE_GRAV_CONST_SECTION_HEADER	{"gravConst"};
+  const std::string SPRITE_MAX_VERT_V_SECTION_HEADER	{"maxVelocity"};
+  const std::string SPRITE_MAX_FALL_JMP_SECTION_HEADER	{"maxJumpsAfterFall"};
+  const std::string SPRITE_MAX_JMP_NUM_SECTION_HEADER	{"maxJumps"};
+  // Sub section headers for background sprite.
+  const std::string SPRITE_DISPLAY_IN_FORGROUND         {"displayInForground"};
+  // Used to store the order of a keyword and whether it has a default value.
+  struct orderAndDefaultVal
+  {
+    int order;
+    bool defaultVal;
+  };
+  /* Used to map keywords to unique int values so appropriate action can be
+     taken for those keywords when parsing specific section section. KEY ORDER
+     (first value of orderAndDefaultVal) OF THESE OBJECTS SHOULD MATCH switches
+     that use these objects.! */
+  const std::map<std::string, orderAndDefaultVal> headerSectionKeywordToId {
+    {PLAYER_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {0, false}},
+    {BG_SPRITE_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {1, false}}
+  };
+  const std::map<std::string, orderAndDefaultVal> playerSectionKeywordToId {
+    {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
+    {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
+    {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
+    {SPRITE_HEALTH_SECTION_HEADER,	orderAndDefaultVal {3, true}},
+    {SPRITE_GRAV_CONST_SECTION_HEADER,	orderAndDefaultVal {4, true}},
+    {SPRITE_MAX_VERT_V_SECTION_HEADER,	orderAndDefaultVal {5, true}},
+    {SPRITE_MAX_FALL_JMP_SECTION_HEADER, orderAndDefaultVal {6, true}},
+    {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {7, true}}
+  };
+  const std::map<std::string, orderAndDefaultVal> bgSpriteSectionKeywordToId {
+    {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
+    {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
+    {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
+    {SPRITE_DISPLAY_IN_FORGROUND,       orderAndDefaultVal {3, true}}
+  };
+  namespace defaultValues
+  {
+    /* These default values can only be used if defaultVal is set to true in
+       orderAndDefaultVal for the values corresponding section in it's
+       associated XXXSectionKeywordToId map (see above). */
+    namespace player
+    {
+      const std::vector<std::string> spritePaths {{""}};
+      const yx coordinate {0, 1};
+      const sprite::directions direction {sprite::DIR_NONE};
+      const int health {16};
+      const double gravitationalConstant {-0.38};
+      const double maxVerticalVelocity {1.9};
+      const unsigned maxFallingJumpNumber {1};
+      const unsigned maxJumpNumber {3};
+    }
+    namespace bgSprites
+    {
+      const std::vector<std::string> spritePaths {{""}};
+      const yx coordinate {20, 62};
+      const sprite::directions direction {sprite::DIR_NONE};
+      const bool displayInForground {false};
+    }
+  }
+  /* This struct should be populated with the values that the player will
+     eventually be initialised with. */
+  struct playerInitialData
+  {
+    std::vector<std::string> spritePaths {};
+    yx coordinate {};
+    sprite::directions direction {};
+    int health {};
+    double gravitationalConstant {};
+    double maxVerticalVelocity {};
+    unsigned maxFallingJumpNumber {};
+    unsigned maxJumpNumber {};
+  };
+  /* This struct should be populated with the values read in for use with the
+     constructor of the next background sprite to be created. */
+  struct bgSpriteInitialData
+  {
+    std::vector<std::string> spritePaths {};
+    yx coordinate {};
+    sprite::directions direction {};
+    bool displayInForground {};
+  };
+  // Misc.
+  constexpr char STRING_DENOTATION		{'\"'};
+  constexpr char STRING_SEPARATION		{','};
+  constexpr char STRING_ESC			{'\\'};
+  constexpr char COORD_SEPARATION		{','};
+  constexpr char DIR_START_ABS			{'/'};
+  constexpr char DIR_START_REL			{'.'};
+  /* The character used for escape sequences (within a string) in .rules.lev
+     files. */
+  constexpr char ESCAPE_CHAR {'\\'};
+  constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
+  constexpr char NULL_BYTE {'\0'};
+  /* If this character is encountered in the main section of a rules.lev file
+     the character 2 places after it should be an ASCII number. After this
+     number there can be a string of contiguous ASCII numbers (up to some
+     maximum) that together represent some larger number. This number is the
+     number of times the ASCII character before the number should be repeated. */
+  constexpr char RULES_MAIN_RUNLENGTH_BEGIN_CHAR {'R'};
 }
 
 
-void parseRulesHeader(const yx maxyx, const char rulesFileName[],
-			  rules & levelRules, const size_t bgSize,
-		      const std::string & rawRules,
-		      std::string::const_iterator & buffPos)
+rules::coordRulesType rules::loadAndInitialiseCoordRules
+(const yx maxyx, const backgroundData & background, const char bgFileName [],
+ const char coordRulesFileName [])
 {
-  using namespace levelFileKeywords;
-
-  readStartOfHeader
-    (rawRules, buffPos,
-     concat("reading start of rules.lev header file \"", rulesFileName, "\""));
-
-  /* Setup keyword actions associations for header section. If there is a
-     section that is needed but we don't want to be specifiable in rules.lev
-     files then it's entry here should have a default value and the action
-     function should be set nullptr. */
-  std::vector<keywordAction::headerKeywordAction> headerKeywordActions
-    {keywordAction::headerKeywordAction
-     {PLAYER_HEADER_SECTION_SPECIFIER, nullptr, initPlayer, false},
-     keywordAction::headerKeywordAction
-     {BG_SPRITE_HEADER_SECTION_SPECIFIER, nullptr, initBgSprites, true}};
-
-  std::vector<std::string> targets {};
-  std::string targetFound {};
-  for(auto keywordAction: headerKeywordActions)
+  std::string rawCoordRules {};
+  coordRulesType coordRules;
+  
+  if(!loadFileIntoString(coordRulesFileName, rawCoordRules))
     {
-      targets.push_back(keywordAction.keyword);
+      std::stringstream e {};
+      e<<"Error: unable to open \""<<coordRulesFileName<<"\".";
+      exit(e.str(), ERROR_OPENING_FILE);
     }
 
-  // Parse player sub sections.
+  // parseRulesHeader(maxyx, coordRulesFileName, levelRules, bgSize, rawCoordRules, buffPos);
+  initialiseCoordRules
+    (maxyx, background, bgFileName, coordRulesFileName, coordRules,
+     rawCoordRules);
+  return coordRules;
+}
+
+
+void rules::initialiseCoordRules
+(const yx maxyx, const backgroundData & background, const char bgFileName [],
+ const char coordRulesFileName [], rules::coordRulesType & coordRuless,
+ const std::string & coordRulesData)
+{
+  // Main body of rules file should start on a new line (account for if.)
+  // std::string::const_iterator buffPos {coordRulesData.begin()};
+  // const size_t expectedLineLength {bgSize / maxyx.y};
+  // int lineNumber {};
+  // int lineLength {};
+  yx chunkCoord {};
+  std::string chunk {};
+  coordRulesType rawChunk {};
+  std::string::const_iterator buffPos {std::begin(coordRulesData)};
+  ssize_t chunksReadIn {};
+
+  // Extract chunks from coordRulesData ========================================
   while(true)
     {
-      targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
-      
-      if(targetFound == "")
+      /* Each chunk should have a header that contains it's coordinates
+	 in the level. The unit of the coordinates should be chunks. So
+	 for a chunk that starts at (0, 170) in character coordinates
+	 (assuming the size of chunks for this file are 170 in the x
+	 dimension), the coordinate in the header would be (0, 1) and
+	 for (0, 340) it would be (0, 2), etc... */
+      if(getChunkCoordinate(coordRulesData, buffPos,
+			    concat("trying  to read coord no. ", chunksReadIn,
+				   " from coordRules.lev file \"",
+				   coordRulesFileName, "\""), chunkCoord))
+	{
+	  skipSpaceUpToNextLine
+	    (coordRulesData, buffPos,
+	     concat("Error: trying to read chunk no. ", chunksReadIn,
+		    ". Expected '\\n' after reading chunk coordinate ",
+		    "from coordRules.lev file \"", coordRulesFileName, "\". "
+		    "Encountered other character or EOF."));
+	  // Get chunk from coord rules read from file.
+	  getChunk(coordRulesData, buffPos,
+		   concat("Error: reading in chunk no. ", chunksReadIn,
+			  ". from coordRules.lev file \"", coordRulesFileName,
+			  "\"."), chunk, maxyx);
+	  // Decompress chunk and return in rawChunk.
+	  decompressChunk
+	    (chunk, rawChunk, chunksReadIn, coordRulesFileName);
+	  // Verify decompressed size...
+	  // Insert chunk into...
+
+	  chunksReadIn++;
+	  // GetChunk() clears it's argument (chunk).
+	  rawChunk.clear();
+	}
+      else
 	{
 	  break;
 	}
-      
-      /* Target found, now check which object it's associated with and perform
-	 targets associated action. */
-      for(int foundIter {}; foundIter < (int)headerKeywordActions.size();
-	  foundIter++)
-	{
-	   if(targetFound == headerKeywordActions[foundIter].keyword)
-	     {
-	       /* Note here that sections that should only appear once will be
-		  marked as found if encountered, however sections that can
-		  appear  multiple times will not be marked as found if
-		  encountered. */
-	       if(headerKeywordActions[foundIter].found)
-		 {
-		   std::stringstream e {};
-		   e<<"Error: reading rules.lev header file \""<<rulesFileName
-		    <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
-		     "reading header section, however this keyword is only "
-		     "expected once in this section.\n";
-		   exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-		 }
-	       switch(headerSectionKeywordToId.at(targetFound).order)
-		 {
-		 case 0:
-		   headerKeywordActions[foundIter].found = true;
-		   headerKeywordActions[foundIter].headerAction
-		     (maxyx, rulesFileName, levelRules, bgSize, rawRules,
-		      buffPos);
-		   break;
-		 case 1:
-		   /* We don't set found here because this keyword should have
-		      headerKeywordAction.foundMultipleOptional set to true. */
-		   headerKeywordActions[foundIter].headerAction
-		     (maxyx, rulesFileName, levelRules, bgSize, rawRules,
-		      buffPos);
-		   break;
-		 }
-
-	       /*
-		 NOTE THAT WE LEAVE THIS CODE HERE IN CASE IT IS EVER DESIRED TO
-		 HAVE A KEYWORD THAT IS FORBIDDEN BUT ASSOCIATED WITH A DEFAULT
-		 VALUE IN THIS SECTION. 
-		 if(false)
-		 {
-		 ENCOUNTERED_FORBIDDEN_KEYWORD:
-		   std::stringstream e {};
-		   e<<"Error: reading rules.lev header file \""<<rulesFileName
-		    <<"\". Encountered keyword \""<<targetFound<<"\" when "
-		     "reading header section, however this keyword is "
-		     "forbidden.\n";
-		   exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-		   }*/
-	     }
-	}
     }
 
-  // Check that we've encountered all keywords that were searched for.
-  for(auto keywordAction: headerKeywordActions)
-    {
-      if(!(keywordAction.found || keywordAction.foundMultipleOptional))
-	{
-	  // See if there is a default value for not found.
-          /*
-	    NOTE THAT HERE SIMILAR TO THE ABOVE WE LEAVE THIS CODE IN CASE IT IS
-	    EVER DESIRED TO HAVE A  KEYWORD THAT HAS A DEFAULT VALUE FOR THIS
-	    SECTION.  
-	    checkForDefaultHeaderValues
-	    (headerKeywordActions, keywordAction, playerInitData,
-	    buffPos, rulesFileName);*/
-	  std::stringstream e {};
-	  e<<"Error: expected section\\s \"";
-	  for(auto keywordAction: headerKeywordActions)
-	    {
-	      
-	      if(!(keywordAction.found || keywordAction.foundMultipleOptional) &&
-		 keywordAction.headerAction != nullptr)
-		{
-		  e<<keywordAction.keyword<<", ";
-		}
-	    }
-	  e<<"\" in header section. Encountered character \""<<*(--buffPos)
-	   <<*(++buffPos)<<*(++buffPos)<<"\", when reading \""<<rulesFileName
-	   <<"\" file\n";
-	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-	}
-    }
+  // Decompress chunks =========================================================
   
-  readEndOfHeader
-    (rawRules, buffPos,
-     concat("reading end of rules.lev header \"", rulesFileName, "\""));
+  /*  while(buffPos < rawCoordRules.end())
+    {
+      if(*buffPos == levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR)
+	{
+	  // We've encountered a run-length encoding character.
+	  const char ruleChar {*(++buffPos)};
+	  ++buffPos;
+
+	  checkRuleChar
+	    (ruleChar,
+	     concat("parsing main section of \"", coordRulesFileName,
+		    "\" (on line ", lineNumber, " of main section)"));
+
+	  const int runLength
+	    {readSingleNum
+	     (rawCoordRules, buffPos,
+	      concat("reading run-length encoding length as a result of "
+		     "encountering run-length encoding character \"",
+		     levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR,
+		     "\" while parsing main section of \"", coordRulesFileName,
+		     "\""), false)};
+	  --buffPos;
+
+	  for(int lengthIter {}; lengthIter < runLength; ++lengthIter)
+	    {
+	      coordRuless.coordRules.push_back(ruleChar);
+	    }
+	  lineLength += runLength;
+	}
+      else
+	{
+	  checkRuleChar(*buffPos,
+			concat("parsing main section of \"",
+			       coordRulesFileName,  "\" (on line ", lineNumber,
+			       " of main section)"));
+	  coordRuless.coordRules.push_back(*buffPos);
+	  lineLength++;
+	}
+      
+      buffPos++;
+      if(*buffPos == '\n')
+	{
+	  if(size_t(lineLength) != expectedLineLength)
+	    {
+	      std::stringstream e {};
+	      e<<"Error: reading rules.lev header file \""<<coordRulesFileName
+	       <<"\". Encountered line of length ("<<lineLength<<") (on line "
+	       <<lineNumber<<" of main section) when reading main section of "
+		"file. Expected a line of length ("<<expectedLineLength<<").";
+
+	      exit(e.str().c_str(), ERROR_BACKGROUND);
+	    }
+	  lineLength = 0;
+	  lineNumber++;
+	  buffPos++;
+	}
+    }
+
+  if(size_t(lineLength) != expectedLineLength)
+    {
+      std::stringstream e {};
+      e<<"Error: reading rules.lev header file \""<<coordRulesFileName
+       <<"\". Encountered line of length ("<<lineLength<<") (on line "
+       <<lineNumber<<") when reading main section of file. Expected a line "
+	"of length ("<<expectedLineLength<<").";
+      exit(e.str().c_str(), ERROR_BACKGROUND);
+    }
+
+  if(coordRuless.coordRules.size() != bgSize)
+    {
+      std::stringstream e {};
+      e << "Error: reading rules.lev header file \"" << coordRulesFileName
+	<< "\". Size ("<<coordRuless.coordRules.size()<<") of main section of "
+	"file not equal to size ("<<bgSize<<") of background file \""
+	<<bgFileName<<"\".";
+      exit(e.str().c_str(), ERROR_BACKGROUND);
+      }*/
+}
+
+
+void rules::decompressChunk
+(const std::string & chunkIn, coordRulesType & rawChunk,
+ const ssize_t chunksReadIn, const char coordRulesFileName[])
+{
+  const char runLenBeginChar
+    {LevelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR};
+  std::string::const_iterator buffPos {std::begin(chunkIn)};
+    
+  while(buffPos < chunkIn.end())
+    {
+      if(*buffPos == runLenBeginChar)
+	{
+	  // We've encountered a run-length encoding character.
+	  const char ruleChar {*(++buffPos)};
+	  ++buffPos;
+
+	  checkRuleChar
+	    (ruleChar,
+	     concat("parsing main section of \"", coordRulesFileName,
+		    "\" (on line ", lineNumber, " of main section)"));
+
+	  const int runLength
+	    {readSingleNum
+	     (chunkIn, buffPos,
+	      concat("reading run-length encoding length as a result of "
+		     "encountering run-length encoding character \"",
+		     runLenBeginChar, "\" while parsing main section of \"",
+		     coordRulesFileName, "\""), false)};
+	  --buffPos;
+
+	  for(int lengthIter {}; lengthIter < runLength; ++lengthIter)
+	    {
+	      coordRuless.coordRules.push_back(ruleChar);
+	    }
+	  lineLength += runLength;
+	}
+      else
+	{
+	  checkRuleChar(*buffPos,
+			concat("parsing main section of \"",
+			       coordRulesFileName,  "\" (on line ", lineNumber,
+			       " of main section)"));
+	  coordRuless.coordRules.push_back(*buffPos);
+	  lineLength++;
+	}
+      
+      buffPos++;
+      if(*buffPos == '\n')
+	{
+	  if(size_t(lineLength) != expectedLineLength)
+	    {
+	      std::stringstream e {};
+	      e<<"Error: reading rules.lev header file \""<<coordRulesFileName
+	       <<"\". Encountered line of length ("<<lineLength<<") (on line "
+	       <<lineNumber<<" of main section) when reading main section of "
+		"file. Expected a line of length ("<<expectedLineLength<<").";
+
+	      exit(e.str().c_str(), ERROR_BACKGROUND);
+	    }
+	  lineLength = 0;
+	  lineNumber++;
+	  buffPos++;
+	}
+    }
+
+  if(size_t(lineLength) != expectedLineLength)
+    {
+      std::stringstream e {};
+      e<<"Error: reading rules.lev header file \""<<coordRulesFileName
+       <<"\". Encountered line of length ("<<lineLength<<") (on line "
+       <<lineNumber<<") when reading main section of file. Expected a line "
+	"of length ("<<expectedLineLength<<").";
+      exit(e.str().c_str(), ERROR_BACKGROUND);
+    }
+
+  if(coordRuless.coordRules.size() != bgSize)
+    {
+      std::stringstream e {};
+      e << "Error: reading rules.lev header file \"" << coordRulesFileName
+	<< "\". Size ("<<coordRuless.coordRules.size()<<") of main section of "
+	"file not equal to size ("<<bgSize<<") of background file \""
+	<<bgFileName<<"\".";
+      exit(e.str().c_str(), ERROR_BACKGROUND);
+      }
 }
 
 
@@ -460,18 +720,18 @@ sprite::directions rules::handleGroundCollision(const int position,
 						const int backgroundHeight)
 {
   sprite::directions retDir {sprite::DIR_DOWN};
-  for(yx coord:
-	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
-    {
-      char rule {};
-      if(getCoordRule(coord, coordRules, backgroundHeight, rule) &&
-	 (rule == boarderRuleChars::BOARDER_CHAR ||
-	  rule == boarderRuleChars::PLATFORM_CHAR))
-	{
-	  retDir = sprite::DIR_NONE;
-	  break;
-	}
-    }
+  // for(yx coord:
+  // 	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
+  //   {
+  //     char rule {};
+  //     if(getCoordRule(coord, coordRules, backgroundHeight, rule) &&
+  // 	 (rule == boarderRuleChars::BOARDER_CHAR ||
+  // 	  rule == boarderRuleChars::PLATFORM_CHAR))
+  // 	{
+  // 	  retDir = sprite::DIR_NONE;
+  // 	  break;
+  // 	}
+  //   }
   return retDir;
 }
 
@@ -485,43 +745,43 @@ sprite::directions rules::handleRightCollision(const int position,
 {
   using namespace boarderRuleChars;
   sprite::directions retDir {sprite::DIR_RIGHT};
-  const std::vector<yx> playerCoords
-    {gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position)};
-  const yx bottomRightPlayerCoord
-    {playerCoords[playerCoords.size() -1]};
-  bool stoppingContact {false};
+  // const std::vector<yx> playerCoords
+  //   {gamePlayer->getRightYAbsRangeAsStrsForOneOffContact(position)};
+  // const yx bottomRightPlayerCoord
+  //   {playerCoords[playerCoords.size() -1]};
+  // bool stoppingContact {false};
 
-  char rule {};
-  for(yx playerCoord: playerCoords)
-    {
-      // If there is near contact and it's not with the bottom right coord.
-      if(playerCoord != bottomRightPlayerCoord &&
-	 getCoordRule(playerCoord, coordRules, backgroundHeight, rule) &&
-	 rule == BOARDER_CHAR)
-	{
-	  stoppingContact = true;
-	  retDir = sprite::DIR_NONE;
-	  break;
-	}
-    }
+  // char rule {};
+  // for(yx playerCoord: playerCoords)
+  //   {
+  //     // If there is near contact and it's not with the bottom right coord.
+  //     if(playerCoord != bottomRightPlayerCoord &&
+  // 	 getCoordRule(playerCoord, coordRules, backgroundHeight, rule) &&
+  // 	 rule == BOARDER_CHAR)
+  // 	{
+  // 	  stoppingContact = true;
+  // 	  retDir = sprite::DIR_NONE;
+  // 	  break;
+  // 	}
+  //   }
   
-  if(!stoppingContact &&
-     getCoordRule(bottomRightPlayerCoord, coordRules, backgroundHeight, rule) &&
-     (rule == BOARDER_CHAR || rule == PLATFORM_CHAR))
-    {
-      if(gamePlayer->getPos().y > 0)
-	{
-	  /* If we've hit a "step" (as in the things that constitute staircases)
-	     and we are not at the minimum (top of window) y position, then
-	     "step up" :). */
-	  gamePlayer->updatePosRel(sprite::DIR_UP);
-	}
-      else
-	{
-	  // We've hit the top of the window.
-	  retDir = sprite::DIR_NONE;
-	}
-    }
+  // if(!stoppingContact &&
+  //    getCoordRule(bottomRightPlayerCoord, coordRules, backgroundHeight, rule) &&
+  //    (rule == BOARDER_CHAR || rule == PLATFORM_CHAR))
+  //   {
+  //     if(gamePlayer->getPos().y > 0)
+  // 	{
+  // 	  /* If we've hit a "step" (as in the things that constitute staircases)
+  // 	     and we are not at the minimum (top of window) y position, then
+  // 	     "step up" :). */
+  // 	  gamePlayer->updatePosRel(sprite::DIR_UP);
+  // 	}
+  //     else
+  // 	{
+  // 	  // We've hit the top of the window.
+  // 	  retDir = sprite::DIR_NONE;
+  // 	}
+  //   }
   
   return retDir;
 }
@@ -532,43 +792,43 @@ sprite::directions rules::handleLeftCollision(const int position,
 {
   using namespace boarderRuleChars;
   sprite::directions retDir {sprite::DIR_LEFT};
-  const std::vector<yx> playerCoords
-    {gamePlayer->getLeftYAbsRangeAsStrsForOneOffContact(position)};
-  const yx bottomLeftPlayerCoord
-    {playerCoords[playerCoords.size() -1]};
-  bool stoppingContact {false};
+  // const std::vector<yx> playerCoords
+  //   {gamePlayer->getLeftYAbsRangeAsStrsForOneOffContact(position)};
+  // const yx bottomLeftPlayerCoord
+  //   {playerCoords[playerCoords.size() -1]};
+  // bool stoppingContact {false};
 
-  char rule {};
-  for(yx playerCoord: playerCoords)
-    {
-      // If there is near contact and it's not with the bottom right coord.
-      if(playerCoord != bottomLeftPlayerCoord &&
-	 getCoordRule(playerCoord, coordRules, backgroundHeight, rule) &&
-	 rule == BOARDER_CHAR)
-	{
-	  stoppingContact = true;
-	  retDir = sprite::DIR_NONE;
-	  break;
-	}
-    }
+  // char rule {};
+  // for(yx playerCoord: playerCoords)
+  //   {
+  //     // If there is near contact and it's not with the bottom right coord.
+  //     if(playerCoord != bottomLeftPlayerCoord &&
+  // 	 getCoordRule(playerCoord, coordRules, backgroundHeight, rule) &&
+  // 	 rule == BOARDER_CHAR)
+  // 	{
+  // 	  stoppingContact = true;
+  // 	  retDir = sprite::DIR_NONE;
+  // 	  break;
+  // 	}
+  //   }
 
-  if(!stoppingContact &&
-     getCoordRule(bottomLeftPlayerCoord, coordRules, backgroundHeight, rule) &&
-     (rule == BOARDER_CHAR ||
-      rule == PLATFORM_CHAR))
-    {
-      if(gamePlayer->getPos().y > 0)
-	{
-	  /* If we've hit a "step" and we are not at the minimum (top of window)
-	     y position, then "step up" :) */
-	  gamePlayer->updatePosRel(sprite::DIR_UP);
-	}
-      else
-	{
-	  // We've hit the top of the window.
-	  retDir = sprite::DIR_NONE;
-	}
-    }
+  // if(!stoppingContact &&
+  //    getCoordRule(bottomLeftPlayerCoord, coordRules, backgroundHeight, rule) &&
+  //    (rule == BOARDER_CHAR ||
+  //     rule == PLATFORM_CHAR))
+  //   {
+  //     if(gamePlayer->getPos().y > 0)
+  // 	{
+  // 	  /* If we've hit a "step" and we are not at the minimum (top of window)
+  // 	     y position, then "step up" :) */
+  // 	  gamePlayer->updatePosRel(sprite::DIR_UP);
+  // 	}
+  //     else
+  // 	{
+  // 	  // We've hit the top of the window.
+  // 	  retDir = sprite::DIR_NONE;
+  // 	}
+  //   }
 
   return retDir;
 }

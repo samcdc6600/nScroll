@@ -13,7 +13,7 @@ class backgroundData
 public:
   // ========================== MEMBER VARIABLES START =========================
   // ===========================================================================
-  typedef std::vector<int> backgroundChunk;
+  typedef std::vector<unsigned short> backgroundChunk;
   // (View port size) used to retrieve a chunk given a coordinate.
   const yx maxyx;
   
@@ -35,20 +35,20 @@ private:
   void initialiseBackground
   (const bool rawData, const char bgFileName [], const std::string & bgData,
    backgroundType & background) const;
-  /* First checks if buffPos is in range. Returns false if it is not. Otherwise
-     attempts to read the coordinates into chunkCoord. If this succeeds returns
-     true (with chunkCoord being set to the coordinates read.) If there is a
-     failure in reading the coordinates then the program will be aborted with eMsg
-     being displayed. */
-  bool getChunkCoordinate(const std::string & bgData,
-			  std::string::const_iterator & buffPos,
-			  const std::string & eMsg, yx & chunkCoord) const;
+  // /* First checks if buffPos is in range. Returns false if it is not. Otherwise
+  //    attempts to read the coordinates into chunkCoord. If this succeeds returns
+  //    true (with chunkCoord being set to the coordinates read.) If there is a
+  //    failure in reading the coordinates then the program will be aborted with eMsg
+  //    being displayed. */
+  // bool getChunkCoordinate(const std::string & bgData,
+  // 			  std::string::const_iterator & buffPos,
+  // 			  const std::string & eMsg, yx & chunkCoord) const;
   /* Get's chunk from bgData and stores in chunk. Prints eMsg and exits if chunk
      cannot successfully be read in. This function is used during object
      initialisation. */
-  void getChunk(const std::string & bgData,
-		std::string::const_iterator & buffPos, const std::string & eMsg,
-		std::string & chunk) const;
+  // void getChunk(const std::string & bgData,
+  // 		std::string::const_iterator & buffPos, const std::string & eMsg,
+  // 		std::string & chunk) const;
   /* Prints eMsg and terminates program if rawChunk is the wrong size. */
   void verifyCollapsedChunkSize(const backgroundChunk & rawChunk,
 				const ssize_t chunksReadIn,

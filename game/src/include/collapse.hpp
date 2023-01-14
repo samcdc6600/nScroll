@@ -32,6 +32,6 @@ constexpr int TRANS_SP {10176};
    is stored into one value of ret instead of all the characters that make up
    the escape sequence. nonColor escape sequences start with /nc. */
 void collapse(const std::string & rawBuff,
-	      std::vector<int> & ret);
+	      std::vector<unsigned short> & ret);
 
 #endif

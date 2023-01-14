@@ -8,18 +8,18 @@
 //#include "include/backgroundSprite.hpp"
 
 
-void loadAssets
-(const yx maxyx, const char bgFileName [],
- backgroundData & background,
- const char rulesFileName [], rules & levelRules)
-{
-  // Initialise background array.
-  //  loadAndParseBackgroundFile(maxyx, bgFileName, background);
-  /* Initialise player and non-player sprites (rules file) and initialise
-     levelRules array. */
-  /*  loadAndParseLevelRulesFile(maxyx, bgFileName, rulesFileName, levelRules,
-      background.size());*/
-}
+// void loadAssets
+// (const yx maxyx, const char bgFileName [],
+//  backgroundData & background,
+//  const char rulesFileName [], rules & levelRules)
+// {
+//   // Initialise background array.
+//   //  loadAndParseBackgroundFile(maxyx, bgFileName, background);
+//   /* Initialise player and non-player sprites (rules file) and initialise
+//      levelRules array. */
+//   /*  loadAndParseLevelRulesFile(maxyx, bgFileName, rulesFileName, levelRules,
+//       background.size());*/
+// }
 
 
 /*void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
@@ -52,432 +52,302 @@ void loadAssets
   }*/
 
 
-/*void loadAndParseLevelRulesFile(const yx maxyx, const char bgFileName [],
-				const char rulesFileName[],
-                                rules &levelRules, const size_t bgSize)
-{
-  std::string rawRules {};
-  if(!loadFileIntoString(rulesFileName, rawRules))
-    {
-      std::stringstream e {};
-      e<<"Error: unable to open \""<<rulesFileName<<"\".";
-      exit(e.str(), ERROR_OPENING_FILE);
-    }
+// void loadAndParseLevelRulesFile(const yx maxyx, const char bgFileName [],
+// 				const char rulesFileName[],
+//                                 rules &levelRules, const size_t bgSize)
+// {
+//   std::string rawRules {};
+//   if(!loadFileIntoString(rulesFileName, rawRules))
+//     {
+//       std::stringstream e {};
+//       e<<"Error: unable to open \""<<rulesFileName<<"\".";
+//       exit(e.str(), ERROR_OPENING_FILE);
+//     }
 
-  std::string::const_iterator buffPos {rawRules.begin()};
-  parseRulesHeader(maxyx, rulesFileName, levelRules, bgSize, rawRules, buffPos);
-  parseRulesMain(maxyx, bgFileName, rulesFileName, levelRules, bgSize, rawRules, buffPos);
-  }*/
+//   std::string::const_iterator buffPos {rawRules.begin()};
+//   parseRulesHeader(maxyx, rulesFileName, levelRules, bgSize, rawRules, buffPos);
+//   parseRulesMain(maxyx, bgFileName, rulesFileName, levelRules, bgSize, rawRules, buffPos);
+// }
 
 
-void parseRulesHeader(const yx maxyx, const char rulesFileName[],
-			  rules & levelRules, const size_t bgSize,
-		      const std::string & rawRules,
-		      std::string::const_iterator & buffPos)
-{
-  using namespace levelFileKeywords;
+// void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
+// 		const size_t bgSize, const std::string & rawRules,
+// 		std::string::const_iterator & buffPos)
+// {
+//   using namespace levelFileKeywords;
 
-  readStartOfHeader
-    (rawRules, buffPos,
-     concat("reading start of rules.lev header file \"", rulesFileName, "\""));
+//   /* Setup keyword actions associations for player section. This should contain
+//      an entry for each thing that the player constructor takes. If there is a
+//      variable that the player constructor needs but we don't want to be
+//      specifiable in rules.lev files then it's entry here should have a default
+//      value and the action function should be set nullptr. */
+//   std::vector<keywordAction::headerKeywordAction> playerHeaderKeywordActions
+//     {keywordAction::headerKeywordAction
+//      {SPRITE_FILE_SECTION_HEADER, readStringsSection},
+//      keywordAction::headerKeywordAction
+//      {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInNNumbers},
+//      keywordAction::headerKeywordAction
+//      {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
+//      keywordAction::headerKeywordAction
+//      {SPRITE_HEALTH_SECTION_HEADER, nullptr},
+//      keywordAction::headerKeywordAction
+//      {SPRITE_GRAV_CONST_SECTION_HEADER, nullptr},
+//      keywordAction::headerKeywordAction
+//      {SPRITE_MAX_VERT_V_SECTION_HEADER, nullptr},
+//      keywordAction::headerKeywordAction
+//      {SPRITE_MAX_FALL_JMP_SECTION_HEADER, nullptr},
+//      keywordAction::headerKeywordAction
+//      {SPRITE_MAX_JMP_NUM_SECTION_HEADER, nullptr}};
 
-  /* Setup keyword actions associations for header section. If there is a
-     section that is needed but we don't want to be specifiable in rules.lev
-     files then it's entry here should have a default value and the action
-     function should be set nullptr. */
-  std::vector<keywordAction::headerKeywordAction> headerKeywordActions
-    {keywordAction::headerKeywordAction
-     {PLAYER_HEADER_SECTION_SPECIFIER, nullptr, initPlayer, false},
-     keywordAction::headerKeywordAction
-     {BG_SPRITE_HEADER_SECTION_SPECIFIER, nullptr, initBgSprites, true}};
+//   std::vector<std::string> targets {};
+//   std::string targetFound {};
 
-  std::vector<std::string> targets {};
-  std::string targetFound {};
-  for(auto keywordAction: headerKeywordActions)
-    {
-      targets.push_back(keywordAction.keyword);
-    }
-
-  // Parse player sub sections.
-  while(true)
-    {
-      targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
-      
-      if(targetFound == "")
-	{
-	  break;
-	}
-      
-      /* Target found, now check which object it's associated with and perform
-	 targets associated action. */
-      for(int foundIter {}; foundIter < (int)headerKeywordActions.size();
-	  foundIter++)
-	{
-	   if(targetFound == headerKeywordActions[foundIter].keyword)
-	     {
-	       /* Note here that sections that should only appear once will be
-		  marked as found if encountered, however sections that can
-		  appear  multiple times will not be marked as found if
-		  encountered. */
-	       if(headerKeywordActions[foundIter].found)
-		 {
-		   std::stringstream e {};
-		   e<<"Error: reading rules.lev header file \""<<rulesFileName
-		    <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
-		     "reading header section, however this keyword is only "
-		     "expected once in this section.\n";
-		   exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-		 }
-	       switch(headerSectionKeywordToId.at(targetFound).order)
-		 {
-		 case 0:
-		   headerKeywordActions[foundIter].found = true;
-		   headerKeywordActions[foundIter].headerAction
-		     (maxyx, rulesFileName, levelRules, bgSize, rawRules,
-		      buffPos);
-		   break;
-		 case 1:
-		   /* We don't set found here because this keyword should have
-		      headerKeywordAction.foundMultipleOptional set to true. */
-		   headerKeywordActions[foundIter].headerAction
-		     (maxyx, rulesFileName, levelRules, bgSize, rawRules,
-		      buffPos);
-		   break;
-		 }
-
-	       /*
-		 NOTE THAT WE LEAVE THIS CODE HERE IN CASE IT IS EVER DESIRED TO
-		 HAVE A KEYWORD THAT IS FORBIDDEN BUT ASSOCIATED WITH A DEFAULT
-		 VALUE IN THIS SECTION. 
-		 if(false)
-		 {
-		 ENCOUNTERED_FORBIDDEN_KEYWORD:
-		   std::stringstream e {};
-		   e<<"Error: reading rules.lev header file \""<<rulesFileName
-		    <<"\". Encountered keyword \""<<targetFound<<"\" when "
-		     "reading header section, however this keyword is "
-		     "forbidden.\n";
-		   exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-		   }*/
-	     }
-	}
-    }
-
-  // Check that we've encountered all keywords that were searched for.
-  for(auto keywordAction: headerKeywordActions)
-    {
-      if(!(keywordAction.found || keywordAction.foundMultipleOptional))
-	{
-	  // See if there is a default value for not found.
-          /*
-	    NOTE THAT HERE SIMILAR TO THE ABOVE WE LEAVE THIS CODE IN CASE IT IS
-	    EVER DESIRED TO HAVE A  KEYWORD THAT HAS A DEFAULT VALUE FOR THIS
-	    SECTION.  
-	    checkForDefaultHeaderValues
-	    (headerKeywordActions, keywordAction, playerInitData,
-	    buffPos, rulesFileName);*/
-	  std::stringstream e {};
-	  e<<"Error: expected section\\s \"";
-	  for(auto keywordAction: headerKeywordActions)
-	    {
-	      
-	      if(!(keywordAction.found || keywordAction.foundMultipleOptional) &&
-		 keywordAction.headerAction != nullptr)
-		{
-		  e<<keywordAction.keyword<<", ";
-		}
-	    }
-	  e<<"\" in header section. Encountered character \""<<*(--buffPos)
-	   <<*(++buffPos)<<*(++buffPos)<<"\", when reading \""<<rulesFileName
-	   <<"\" file\n";
-	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-	}
-    }
+//   readSectionOpeningBracket
+//     (rawRules, buffPos,
+//      concat("reading header sub section ", PLAYER_HEADER_SECTION_SPECIFIER,
+// 	    " from \"", rulesFileName, "\""),
+//      concat("a ", PLAYER_HEADER_SECTION_SPECIFIER, " section"));
   
-  readEndOfHeader
-    (rawRules, buffPos,
-     concat("reading end of rules.lev header \"", rulesFileName, "\""));
-}
+//   for(auto keywordAction: playerHeaderKeywordActions)
+//     {
+//       targets.push_back(keywordAction.keyword);
+//     }
 
+//   playerInitialData playerInitData {};
 
-void initPlayer(const yx maxyx, const char rulesFileName[], rules & levelRules,
-		const size_t bgSize, const std::string & rawRules,
-		std::string::const_iterator & buffPos)
-{
-  using namespace levelFileKeywords;
-
-  /* Setup keyword actions associations for player section. This should contain
-     an entry for each thing that the player constructor takes. If there is a
-     variable that the player constructor needs but we don't want to be
-     specifiable in rules.lev files then it's entry here should have a default
-     value and the action function should be set nullptr. */
-  std::vector<keywordAction::headerKeywordAction> playerHeaderKeywordActions
-    {keywordAction::headerKeywordAction
-     {SPRITE_FILE_SECTION_HEADER, readStringsSection},
-     keywordAction::headerKeywordAction
-     {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInNNumbers},
-     keywordAction::headerKeywordAction
-     {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
-     keywordAction::headerKeywordAction
-     {SPRITE_HEALTH_SECTION_HEADER, nullptr},
-     keywordAction::headerKeywordAction
-     {SPRITE_GRAV_CONST_SECTION_HEADER, nullptr},
-     keywordAction::headerKeywordAction
-     {SPRITE_MAX_VERT_V_SECTION_HEADER, nullptr},
-     keywordAction::headerKeywordAction
-     {SPRITE_MAX_FALL_JMP_SECTION_HEADER, nullptr},
-     keywordAction::headerKeywordAction
-     {SPRITE_MAX_JMP_NUM_SECTION_HEADER, nullptr}};
-
-  std::vector<std::string> targets {};
-  std::string targetFound {};
-
-  readSectionOpeningBracket
-    (rawRules, buffPos,
-     concat("reading header sub section ", PLAYER_HEADER_SECTION_SPECIFIER,
-	    " from \"", rulesFileName, "\""),
-     concat("a ", PLAYER_HEADER_SECTION_SPECIFIER, " section"));
-  
-  for(auto keywordAction: playerHeaderKeywordActions)
-    {
-      targets.push_back(keywordAction.keyword);
-    }
-
-  playerInitialData playerInitData {};
-
-  // Parse player sub sections.
-  for(int targetIter {}; targetIter < (int)playerHeaderKeywordActions.size();
-      targetIter++)
-    {
-      targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+//   // Parse player sub sections.
+//   for(int targetIter {}; targetIter < (int)playerHeaderKeywordActions.size();
+//       targetIter++)
+//     {
+//       targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
       
-      if(targetFound == "")
-	{
-	  break;
-	}      
-      /* Target found, now check which object it's associated with and perform
-	 targets associated action. */
-      for(int foundIter {}; foundIter < (int)playerHeaderKeywordActions.size();
-	  foundIter++)
-	{
-	  if(targetFound == playerHeaderKeywordActions[foundIter].keyword)
-	    {
-	      if(playerHeaderKeywordActions[foundIter].found)
-		{
-		  std::stringstream e {};
-		  e<<"Error: reading rules.lev header file \""<<rulesFileName
-		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
-		    "reading header sub section player section, however this "
-		    "keyword is only expected once in this section.\n";
-		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-		}
-	      switch(playerSectionKeywordToId.at(targetFound).order)
-		{
-		case 0:
-		  playerHeaderKeywordActions[foundIter].found = true;
-		  playerHeaderKeywordActions[foundIter].action
-		    (rawRules, buffPos,
-		     concat("reading sprite dir strings from rules.lev header "
-			    "file \"", rulesFileName, "\""),
-		     &playerInitData.spritePaths);
+//       if(targetFound == "")
+// 	{
+// 	  break;
+// 	}      
+//       /* Target found, now check which object it's associated with and perform
+// 	 targets associated action. */
+//       for(int foundIter {}; foundIter < (int)playerHeaderKeywordActions.size();
+// 	  foundIter++)
+// 	{
+// 	  if(targetFound == playerHeaderKeywordActions[foundIter].keyword)
+// 	    {
+// 	      if(playerHeaderKeywordActions[foundIter].found)
+// 		{
+// 		  std::stringstream e {};
+// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+// 		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
+// 		    "reading header sub section player section, however this "
+// 		    "keyword is only expected once in this section.\n";
+// 		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+// 		}
+// 	      switch(playerSectionKeywordToId.at(targetFound).order)
+// 		{
+// 		case 0:
+// 		  playerHeaderKeywordActions[foundIter].found = true;
+// 		  playerHeaderKeywordActions[foundIter].action
+// 		    (rawRules, buffPos,
+// 		     concat("reading sprite dir strings from rules.lev header "
+// 			    "file \"", rulesFileName, "\""),
+// 		     &playerInitData.spritePaths);
 		 
-		  break;
-		case 1:
-		  playerHeaderKeywordActions[foundIter].found = true;
-		  playerHeaderKeywordActions[foundIter].action
-		    (rawRules, buffPos,
-		     concat("reading single coord section from rules.lev header"
-			    " file  \"", rulesFileName, "\""),
-		     &playerInitData.coordinate);
-		  break;
-		case 2:
-		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
-		case 3:
-		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
-		case 4:
-		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
-		case 5:
-		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
-                case 6:
-		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
-		case 7:
-		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
-		}
+// 		  break;
+// 		case 1:
+// 		  playerHeaderKeywordActions[foundIter].found = true;
+// 		  playerHeaderKeywordActions[foundIter].action
+// 		    (rawRules, buffPos,
+// 		     concat("reading single coord section from rules.lev header"
+// 			    " file  \"", rulesFileName, "\""),
+// 		     &playerInitData.coordinate);
+// 		  break;
+// 		case 2:
+// 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+// 		case 3:
+// 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+// 		case 4:
+// 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+// 		case 5:
+// 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+//                 case 6:
+// 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+// 		case 7:
+// 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+// 		}
 
-	      if(false)
-		{
-		ENCOUNTERED_FORBIDDEN_KEYWORD:
-		  std::stringstream e {};
-		  e<<"Error: reading rules.lev header file \""<<rulesFileName
-		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
-		    "reading header sub section player section, however this "
-		    "keyword is forbidden.\n";
-		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-		}
-	    }
-	}
-    }
+// 	      if(false)
+// 		{
+// 		ENCOUNTERED_FORBIDDEN_KEYWORD:
+// 		  std::stringstream e {};
+// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+// 		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
+// 		    "reading header sub section player section, however this "
+// 		    "keyword is forbidden.\n";
+// 		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+// 		}
+// 	    }
+// 	}
+//     }
 
-  readSectionEndingBracket
-    (rawRules, buffPos,
-     concat("reading header sub section ", PLAYER_HEADER_SECTION_SPECIFIER,
-	    " from \"", rulesFileName, "\""),
-     concat(PLAYER_HEADER_SECTION_SPECIFIER, " section"));
+//   readSectionEndingBracket
+//     (rawRules, buffPos,
+//      concat("reading header sub section ", PLAYER_HEADER_SECTION_SPECIFIER,
+// 	    " from \"", rulesFileName, "\""),
+//      concat(PLAYER_HEADER_SECTION_SPECIFIER, " section"));
   
-  // Check that we've encountered all keywords that were searched for.
-  for(auto keywordAction: playerHeaderKeywordActions)
-    {
-      if(!keywordAction.found)
-	{
-	  // See if there is a default value for not found.
-	  checkForDefaultPlayerValues
-	    (playerHeaderKeywordActions, keywordAction, playerInitData,
-	     buffPos, rulesFileName);
-	}
-    }
+//   // Check that we've encountered all keywords that were searched for.
+//   for(auto keywordAction: playerHeaderKeywordActions)
+//     {
+//       if(!keywordAction.found)
+// 	{
+// 	  // See if there is a default value for not found.
+// 	  checkForDefaultPlayerValues
+// 	    (playerHeaderKeywordActions, keywordAction, playerInitData,
+// 	     buffPos, rulesFileName);
+// 	}
+//     }
 
-  levelRules.gamePlayer =
-    new player(playerInitData.spritePaths, maxyx, bgSize,
-	       playerInitData.coordinate, playerInitData.direction,
-	       playerInitData.health, playerInitData.gravitationalConstant,
-	       playerInitData.maxVerticalVelocity,
-	       playerInitData.maxFallingJumpNumber,
-	       playerInitData.maxJumpNumber);
-}
+//   levelRules.gamePlayer =
+//     new player(playerInitData.spritePaths, maxyx, bgSize,
+// 	       playerInitData.coordinate, playerInitData.direction,
+// 	       playerInitData.health, playerInitData.gravitationalConstant,
+// 	       playerInitData.maxVerticalVelocity,
+// 	       playerInitData.maxFallingJumpNumber,
+// 	       playerInitData.maxJumpNumber);
+// }
 
 
-void initBgSprites(const yx maxyx, const char rulesFileName[],
-		   rules & levelRules, const size_t bgSize,
-		   const std::string & rawRules,
-		   std::string::const_iterator & buffPos)
-{
-  using namespace levelFileKeywords;
-  /* Setup keyword actions associations for background sprite section. This
-     should contain an entry for each thing that the bgSprite constructor takes.
-     If there is a variable that the bgSprite constructor needs but we don't
-     want to be specifiable in rules.lev files then it's entry here should have
-     a default value and the action function should be set nullptr. */
-  std::vector<keywordAction::headerKeywordAction> bgSpriteHeaderKeywordActions
-    {keywordAction::headerKeywordAction
-     {SPRITE_FILE_SECTION_HEADER, readStringsSection},
-     keywordAction::headerKeywordAction
-     {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInZNumbers},
-     keywordAction::headerKeywordAction
-     {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
-     keywordAction::headerKeywordAction
-     {SPRITE_DISPLAY_IN_FORGROUND, readBoolSection}};
+// void initBgSprites(const yx maxyx, const char rulesFileName[],
+// 		   rules & levelRules, const size_t bgSize,
+// 		   const std::string & rawRules,
+// 		   std::string::const_iterator & buffPos)
+// {
+//   using namespace levelFileKeywords;
+//   /* Setup keyword actions associations for background sprite section. This
+//      should contain an entry for each thing that the bgSprite constructor takes.
+//      If there is a variable that the bgSprite constructor needs but we don't
+//      want to be specifiable in rules.lev files then it's entry here should have
+//      a default value and the action function should be set nullptr. */
+//   std::vector<keywordAction::headerKeywordAction> bgSpriteHeaderKeywordActions
+//     {keywordAction::headerKeywordAction
+//      {SPRITE_FILE_SECTION_HEADER, readStringsSection},
+//      keywordAction::headerKeywordAction
+//      {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInZNumbers},
+//      keywordAction::headerKeywordAction
+//      {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
+//      keywordAction::headerKeywordAction
+//      {SPRITE_DISPLAY_IN_FORGROUND, readBoolSection}};
 
-  std::vector<std::string> targets {};
-  std::string targetFound {};
+//   std::vector<std::string> targets {};
+//   std::string targetFound {};
 
-    readSectionOpeningBracket
-    (rawRules, buffPos,
-     concat("reading header sub section ", BG_SPRITE_HEADER_SECTION_SPECIFIER,
-	    " from \"", rulesFileName, "\""),
-     concat("a ", BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
+//     readSectionOpeningBracket
+//     (rawRules, buffPos,
+//      concat("reading header sub section ", BG_SPRITE_HEADER_SECTION_SPECIFIER,
+// 	    " from \"", rulesFileName, "\""),
+//      concat("a ", BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
   
-  for(auto keywordAction: bgSpriteHeaderKeywordActions)
-    {
-      targets.push_back(keywordAction.keyword);
-    }
+//   for(auto keywordAction: bgSpriteHeaderKeywordActions)
+//     {
+//       targets.push_back(keywordAction.keyword);
+//     }
 
-  bgSpriteInitialData bgSpriteInitData {};
+//   bgSpriteInitialData bgSpriteInitData {};
 
-  // Parse background sprite sub sections.
-  for(int targetIter {}; targetIter < (int)bgSpriteHeaderKeywordActions.size();
-      targetIter++)
-    {
-      targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+//   // Parse background sprite sub sections.
+//   for(int targetIter {}; targetIter < (int)bgSpriteHeaderKeywordActions.size();
+//       targetIter++)
+//     {
+//       targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
 
-      if(targetFound == "")
-	{
-	  break;
-	}
+//       if(targetFound == "")
+// 	{
+// 	  break;
+// 	}
 
-      /* Target found, now check which object it's associated with and perform
-	 targets associated action. */
-      for(int foundIter {}; foundIter < (int)bgSpriteHeaderKeywordActions.size();
-	  foundIter++)
-	{
-	  if(targetFound == bgSpriteHeaderKeywordActions[foundIter].keyword)
-	    {
-	      if(bgSpriteHeaderKeywordActions[foundIter].found)
-		{
-		  std::stringstream e {};
-		  e<<"Error: reading rules.lev header file \""<<rulesFileName
-		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
-		    "reading header sub section background sprite section, "
-		    "however this keyword is only expected once in this "
-		    "section.\n";
-		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-		}
-	      switch(bgSpriteSectionKeywordToId.at(targetFound).order)
-		{
-		case 0:
-		  bgSpriteHeaderKeywordActions[foundIter].found = true;
-		  bgSpriteHeaderKeywordActions[foundIter].action
-		    (rawRules, buffPos,
-		     concat("reading background sprite dir strings from "
-			    "rules.lev header file \"", rulesFileName, "\""),
-		     &bgSpriteInitData.spritePaths);
-		  break;
-		case 1:
-		  bgSpriteHeaderKeywordActions[foundIter].found = true;
-		  bgSpriteHeaderKeywordActions[foundIter].action
-		    (rawRules, buffPos,
-		     concat("reading single coord section from rules.lev header"
-			    "file  \"", rulesFileName, "\""),
-		     &bgSpriteInitData.coordinate);
-		  break;
-		case 2:
-		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
-		case 3:
-		  bgSpriteHeaderKeywordActions[foundIter].found = true;
-		  bgSpriteHeaderKeywordActions[foundIter].action
-		    (rawRules, buffPos,
-		     concat("reading boolean section from rules.lev header file"
-			    " \"", rulesFileName, "\""),
-		     &bgSpriteInitData.displayInForground);
-		  break;
-		}
+//       /* Target found, now check which object it's associated with and perform
+// 	 targets associated action. */
+//       for(int foundIter {}; foundIter < (int)bgSpriteHeaderKeywordActions.size();
+// 	  foundIter++)
+// 	{
+// 	  if(targetFound == bgSpriteHeaderKeywordActions[foundIter].keyword)
+// 	    {
+// 	      if(bgSpriteHeaderKeywordActions[foundIter].found)
+// 		{
+// 		  std::stringstream e {};
+// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+// 		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
+// 		    "reading header sub section background sprite section, "
+// 		    "however this keyword is only expected once in this "
+// 		    "section.\n";
+// 		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+// 		}
+// 	      switch(bgSpriteSectionKeywordToId.at(targetFound).order)
+// 		{
+// 		case 0:
+// 		  bgSpriteHeaderKeywordActions[foundIter].found = true;
+// 		  bgSpriteHeaderKeywordActions[foundIter].action
+// 		    (rawRules, buffPos,
+// 		     concat("reading background sprite dir strings from "
+// 			    "rules.lev header file \"", rulesFileName, "\""),
+// 		     &bgSpriteInitData.spritePaths);
+// 		  break;
+// 		case 1:
+// 		  bgSpriteHeaderKeywordActions[foundIter].found = true;
+// 		  bgSpriteHeaderKeywordActions[foundIter].action
+// 		    (rawRules, buffPos,
+// 		     concat("reading single coord section from rules.lev header"
+// 			    "file  \"", rulesFileName, "\""),
+// 		     &bgSpriteInitData.coordinate);
+// 		  break;
+// 		case 2:
+// 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+// 		case 3:
+// 		  bgSpriteHeaderKeywordActions[foundIter].found = true;
+// 		  bgSpriteHeaderKeywordActions[foundIter].action
+// 		    (rawRules, buffPos,
+// 		     concat("reading boolean section from rules.lev header file"
+// 			    " \"", rulesFileName, "\""),
+// 		     &bgSpriteInitData.displayInForground);
+// 		  break;
+// 		}
 
-	      if(false)
-		{
-		ENCOUNTERED_FORBIDDEN_KEYWORD:
-		  std::stringstream e {};
-		  e<<"Error: reading rules.lev header file \""<<rulesFileName
-		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
-		    "reading header sub section background sprite section, "
-		    "however this keyword is forbidden.\n";
-		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-		}
-	    }
-	}
-    }
+// 	      if(false)
+// 		{
+// 		ENCOUNTERED_FORBIDDEN_KEYWORD:
+// 		  std::stringstream e {};
+// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+// 		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
+// 		    "reading header sub section background sprite section, "
+// 		    "however this keyword is forbidden.\n";
+// 		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+// 		}
+// 	    }
+// 	}
+//     }
 
-    readSectionEndingBracket
-    (rawRules, buffPos,
-     concat("reading header sub section ", BG_SPRITE_HEADER_SECTION_SPECIFIER,
-	    " from \"", rulesFileName, "\""),
-     concat("a ", BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
+//     readSectionEndingBracket
+//     (rawRules, buffPos,
+//      concat("reading header sub section ", BG_SPRITE_HEADER_SECTION_SPECIFIER,
+// 	    " from \"", rulesFileName, "\""),
+//      concat("a ", BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
 
-    // Check that we've encountered all keywords that were searched for.
-  for(auto keywordAction: bgSpriteHeaderKeywordActions)
-    {
-      if(!keywordAction.found)
-	{
-	  // See if there is a default value for not found.
-	  checkForDefaultBgSpriteValues
-	    (bgSpriteHeaderKeywordActions, keywordAction, bgSpriteInitData,
-	     buffPos, rulesFileName);
-	}
-    }
+//     // Check that we've encountered all keywords that were searched for.
+//   for(auto keywordAction: bgSpriteHeaderKeywordActions)
+//     {
+//       if(!keywordAction.found)
+// 	{
+// 	  // See if there is a default value for not found.
+// 	  checkForDefaultBgSpriteValues
+// 	    (bgSpriteHeaderKeywordActions, keywordAction, bgSpriteInitData,
+// 	     buffPos, rulesFileName);
+// 	}
+//     }
 
-  levelRules.bgSprites.push_back
-    (new bgSprite(bgSpriteInitData.spritePaths, maxyx, bgSize,
-		  bgSpriteInitData.coordinate, bgSpriteInitData.direction,
-		  bgSpriteInitData.displayInForground));
-}
+//   levelRules.bgSprites.push_back
+//     (new bgSprite(bgSpriteInitData.spritePaths, maxyx, bgSize,
+// 		  bgSpriteInitData.coordinate, bgSpriteInitData.direction,
+// 		  bgSpriteInitData.displayInForground));
+// }
 
 
 void readStartOfHeader(const std::string & buff,
@@ -854,95 +724,95 @@ void readEndOfHeader(const std::string & buff,
 }
 
 
-void parseRulesMain(const yx maxyx, const char bgFileName [],
-		    const char rulesFileName[], rules & levelRules,
-		    const size_t bgSize,
-		    const std::string & rawRules,
-		    std::string::const_iterator & buffPos)
-{
-  // Main body of rules file should start on a new line (account for if.)
-  buffPos++;			
-  const size_t expectedLineLength {bgSize / maxyx.y};
-  int lineNumber {};
-  int lineLength {};
+// void parseRulesMain(const yx maxyx, const char bgFileName [],
+// 		    const char rulesFileName[], rules & levelRules,
+// 		    const size_t bgSize,
+// 		    const std::string & rawRules,
+// 		    std::string::const_iterator & buffPos)
+// {
+//   // Main body of rules file should start on a new line (account for if.)
+//   buffPos++;			
+//   const size_t expectedLineLength {bgSize / maxyx.y};
+//   int lineNumber {};
+//   int lineLength {};
   
-  while(buffPos < rawRules.end())
-    {
-      if(*buffPos == levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR)
-	{
-	  // We've encountered a run-length encoding character.
-	  const char ruleChar {*(++buffPos)};
-	  ++buffPos;
+//   while(buffPos < rawRules.end())
+//     {
+//       if(*buffPos == levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR)
+// 	{
+// 	  // We've encountered a run-length encoding character.
+// 	  const char ruleChar {*(++buffPos)};
+// 	  ++buffPos;
 
-	  checkRuleChar
-	    (ruleChar,
-	     concat("parsing main section of \"", rulesFileName, "\" (on line ",
-		    lineNumber, " of main section)"));
+// 	  checkRuleChar
+// 	    (ruleChar,
+// 	     concat("parsing main section of \"", rulesFileName, "\" (on line ",
+// 		    lineNumber, " of main section)"));
 
-	  const int runLength {readSingleNum
-	    (rawRules, buffPos,
-	     concat("reading run-length encoding length as a result of "
-		    "encountering run-length encoding character \"",
-		    levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR,
-		    "\" while parsing main section of \"", rulesFileName,
-		    "\""), false)};
-	  --buffPos;
+// 	  const int runLength {readSingleNum
+// 	    (rawRules, buffPos,
+// 	     concat("reading run-length encoding length as a result of "
+// 		    "encountering run-length encoding character \"",
+// 		    levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR,
+// 		    "\" while parsing main section of \"", rulesFileName,
+// 		    "\""), false)};
+// 	  --buffPos;
 
-	  for(int lengthIter {}; lengthIter < runLength; ++lengthIter)
-	    {
-	      levelRules.coordRules.push_back(ruleChar);
-	    }
-	  lineLength += runLength;
-	}
-      else
-	{
-	  checkRuleChar(*buffPos,
-			concat("parsing main section of \"",
-			       rulesFileName,  "\" (on line ", lineNumber,
-			       " of main section)"));
-	  levelRules.coordRules.push_back(*buffPos);
-	  lineLength++;
-	}
+// 	  for(int lengthIter {}; lengthIter < runLength; ++lengthIter)
+// 	    {
+// 	      levelRules.coordRules.push_back(ruleChar);
+// 	    }
+// 	  lineLength += runLength;
+// 	}
+//       else
+// 	{
+// 	  checkRuleChar(*buffPos,
+// 			concat("parsing main section of \"",
+// 			       rulesFileName,  "\" (on line ", lineNumber,
+// 			       " of main section)"));
+// 	  levelRules.coordRules.push_back(*buffPos);
+// 	  lineLength++;
+// 	}
       
-      buffPos++;
-      if(*buffPos == '\n')
-	{
-	  if(size_t(lineLength) != expectedLineLength)
-	    {
-	      std::stringstream e {};
-	      e<<"Error: reading rules.lev header file \""<<rulesFileName
-	       <<"\". Encountered line of length ("<<lineLength<<") (on line "
-	       <<lineNumber<<" of main section) when reading main section of "
-		"file. Expected a line of length ("<<expectedLineLength<<").";
+//       buffPos++;
+//       if(*buffPos == '\n')
+// 	{
+// 	  if(size_t(lineLength) != expectedLineLength)
+// 	    {
+// 	      std::stringstream e {};
+// 	      e<<"Error: reading rules.lev header file \""<<rulesFileName
+// 	       <<"\". Encountered line of length ("<<lineLength<<") (on line "
+// 	       <<lineNumber<<" of main section) when reading main section of "
+// 		"file. Expected a line of length ("<<expectedLineLength<<").";
 
-	      exit(e.str().c_str(), ERROR_BACKGROUND);
-	    }
-	  lineLength = 0;
-	  lineNumber++;
-	  buffPos++;
-	}
-    }
+// 	      exit(e.str().c_str(), ERROR_BACKGROUND);
+// 	    }
+// 	  lineLength = 0;
+// 	  lineNumber++;
+// 	  buffPos++;
+// 	}
+//     }
 
-  if(size_t(lineLength) != expectedLineLength)
-    {
-      std::stringstream e {};
-      e<<"Error: reading rules.lev header file \""<<rulesFileName
-       <<"\". Encountered line of length ("<<lineLength<<") (on line "
-       <<lineNumber<<") when reading main section of file. Expected a line "
-	"of length ("<<expectedLineLength<<").";
-      exit(e.str().c_str(), ERROR_BACKGROUND);
-    }
+//   if(size_t(lineLength) != expectedLineLength)
+//     {
+//       std::stringstream e {};
+//       e<<"Error: reading rules.lev header file \""<<rulesFileName
+//        <<"\". Encountered line of length ("<<lineLength<<") (on line "
+//        <<lineNumber<<") when reading main section of file. Expected a line "
+// 	"of length ("<<expectedLineLength<<").";
+//       exit(e.str().c_str(), ERROR_BACKGROUND);
+//     }
 
-  if(levelRules.coordRules.size() != bgSize)
-    {
-      std::stringstream e {};
-      e << "Error: reading rules.lev header file \"" << rulesFileName
-	<< "\". Size ("<<levelRules.coordRules.size()<<") of main section of "
-	"file not equal to size ("<<bgSize<<") of background file \""
-	<<bgFileName<<"\".";
-      exit(e.str().c_str(), ERROR_BACKGROUND);
-    }
-}
+//   if(levelRules.coordRules.size() != bgSize)
+//     {
+//       std::stringstream e {};
+//       e << "Error: reading rules.lev header file \"" << rulesFileName
+// 	<< "\". Size ("<<levelRules.coordRules.size()<<") of main section of "
+// 	"file not equal to size ("<<bgSize<<") of background file \""
+// 	<<bgFileName<<"\".";
+//       exit(e.str().c_str(), ERROR_BACKGROUND);
+//     }
+// }
 
 
 void checkRuleChar(const char potentialRule, const std::string eMsg)
@@ -967,111 +837,150 @@ void checkRuleChar(const char potentialRule, const std::string eMsg)
 }
 
 
-void checkForDefaultPlayerValues
-(std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
- playerHeaderKeywordActions,
- levelFileKeywords::keywordAction::headerKeywordAction & keywordAction,
- levelFileKeywords::playerInitialData & playerInitData, 
- std::string::const_iterator & buffPos,
- const char rulesFileName [])
-{
-  using namespace levelFileKeywords;
+// void checkForDefaultPlayerValues
+// (std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+//  playerHeaderKeywordActions,
+//  levelFileKeywords::keywordAction::headerKeywordAction & keywordAction,
+//  levelFileKeywords::playerInitialData & playerInitData, 
+//  std::string::const_iterator & buffPos,
+//  const char rulesFileName [])
+// {
+//   using namespace levelFileKeywords;
 
-  if(!playerSectionKeywordToId.at(keywordAction.keyword).defaultVal)
-    {
-      goto DEFAULT;
-    }
+//   if(!playerSectionKeywordToId.at(keywordAction.keyword).defaultVal)
+//     {
+//       goto DEFAULT;
+//     }
   
-  switch(playerSectionKeywordToId.at(keywordAction.keyword).order)
+//   switch(playerSectionKeywordToId.at(keywordAction.keyword).order)
+//     {
+//     case 0:
+//       playerInitData.spritePaths = defaultValues::player::spritePaths;
+//       break;
+//     case 1:
+//       playerInitData.coordinate = defaultValues::player::coordinate;
+//       break;
+//     case 2:
+//       playerInitData.direction = defaultValues::player::direction;
+//       break;
+//     case 3:
+//       playerInitData.health = defaultValues::player::health;
+//       break;
+//     case 4:
+//       playerInitData.gravitationalConstant =
+// 	defaultValues::player::gravitationalConstant;
+//       break;
+//     case 5:
+//       playerInitData.maxVerticalVelocity =
+// 	defaultValues::player::maxVerticalVelocity;
+//       break;
+//     case 6:
+//       playerInitData.maxFallingJumpNumber =
+// 	defaultValues::player::maxFallingJumpNumber;
+//       break;
+//     case 7:
+//       playerInitData.maxJumpNumber = defaultValues::player::maxJumpNumber;
+//       break;
+//     default:
+//     DEFAULT:
+//       std::stringstream e {};
+//       e<<"Error: expected section\\s \"";
+//       for(auto keywordAction: playerHeaderKeywordActions)
+// 	{
+// 	  if(!keywordAction.found && keywordAction.action != nullptr)
+// 	    {
+// 	      e<<keywordAction.keyword<<", ";
+// 	    }
+// 	}
+//       e<<"\" in header sub section player. Encountered character \""
+//        <<*buffPos<<"\", when reading \""<<rulesFileName<<"\" file\n";
+//       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+//     }
+// }
+
+
+// void checkForDefaultBgSpriteValues
+// (std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+//  bgSpriteHeaderKeywordActions,
+//  levelFileKeywords::keywordAction::headerKeywordAction &keywordAction,
+//  levelFileKeywords::bgSpriteInitialData &bgSpriteInitData,
+//  std::string::const_iterator &buffPos, const char rulesFileName[])
+// {
+//   using namespace levelFileKeywords;
+
+
+//   if(!bgSpriteSectionKeywordToId.at(keywordAction.keyword).defaultVal)
+//     {
+//       goto DEFAULT;
+//     }
+
+//   switch(bgSpriteSectionKeywordToId.at(keywordAction.keyword).order)
+//     {
+//     case 0:
+//       bgSpriteInitData.spritePaths = defaultValues::bgSprites::spritePaths;
+//       break;
+//     case 1:
+//       bgSpriteInitData.coordinate = defaultValues::bgSprites::coordinate;
+//       break;
+//     case 2:
+//       bgSpriteInitData.direction = defaultValues::bgSprites::direction;
+//       break;
+//     case 3:
+//       bgSpriteInitData.displayInForground =
+// 	defaultValues::bgSprites::displayInForground;
+//       break;
+//     default:
+//     DEFAULT:
+//       std::stringstream e {};
+//       e<<"Error: expected section\\s \"";
+//       for(auto keywordAction: bgSpriteHeaderKeywordActions)
+// 	{
+// 	  if(!keywordAction.found && keywordAction.action != nullptr)
+// 	    {
+// 	      e<<keywordAction.keyword<<", ";
+// 	    }
+// 	}
+//       e<<"\" in header sub section backgroundSprite. Encountered character \""<<*buffPos
+//        <<"\", when reading \""<<rulesFileName<<"\" file\n";
+//       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+//     }
+// }
+
+
+bool getChunkCoordinate
+  (const std::string & data, std::string::const_iterator & buffPos,
+   const std::string & eMsg, yx & chunkCoord)
+{
+  if(buffPos != std::end(data))
     {
-    case 0:
-      playerInitData.spritePaths = defaultValues::player::spritePaths;
-      break;
-    case 1:
-      playerInitData.coordinate = defaultValues::player::coordinate;
-      break;
-    case 2:
-      playerInitData.direction = defaultValues::player::direction;
-      break;
-    case 3:
-      playerInitData.health = defaultValues::player::health;
-      break;
-    case 4:
-      playerInitData.gravitationalConstant =
-	defaultValues::player::gravitationalConstant;
-      break;
-    case 5:
-      playerInitData.maxVerticalVelocity =
-	defaultValues::player::maxVerticalVelocity;
-      break;
-    case 6:
-      playerInitData.maxFallingJumpNumber =
-	defaultValues::player::maxFallingJumpNumber;
-      break;
-    case 7:
-      playerInitData.maxJumpNumber = defaultValues::player::maxJumpNumber;
-      break;
-    default:
-    DEFAULT:
-      std::stringstream e {};
-      e<<"Error: expected section\\s \"";
-      for(auto keywordAction: playerHeaderKeywordActions)
-	{
-	  if(!keywordAction.found && keywordAction.action != nullptr)
-	    {
-	      e<<keywordAction.keyword<<", ";
-	    }
-	}
-      e<<"\" in header sub section player. Encountered character \""
-       <<*buffPos<<"\", when reading \""<<rulesFileName<<"\" file\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+      readSingleCoordSectionInNNumbersNoSkpSp
+	(data, buffPos, eMsg, &chunkCoord);
+
+      return true;
+    }
+  else
+    {
+      return false;
     }
 }
 
 
-void checkForDefaultBgSpriteValues
-(std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
- bgSpriteHeaderKeywordActions,
- levelFileKeywords::keywordAction::headerKeywordAction &keywordAction,
- levelFileKeywords::bgSpriteInitialData &bgSpriteInitData,
- std::string::const_iterator &buffPos, const char rulesFileName[])
+void getChunk(const std::string & data,
+	      std::string::const_iterator & buffPos, const std::string & eMsg,
+	      std::string & chunk, const yx maxyx)
 {
-  using namespace levelFileKeywords;
+  chunk.clear();
 
-
-  if(!bgSpriteSectionKeywordToId.at(keywordAction.keyword).defaultVal)
+  int lnCount {};
+  for( ; lnCount < maxyx.y && buffPos != std::end(data); )
     {
-      goto DEFAULT;
+      char newCh {};
+      newCh = *buffPos++;
+      chunk += newCh;
+      lnCount += (newCh == '\n' ? 1: 0);
     }
-
-  switch(bgSpriteSectionKeywordToId.at(keywordAction.keyword).order)
+  if(lnCount != maxyx.y)
     {
-    case 0:
-      bgSpriteInitData.spritePaths = defaultValues::bgSprites::spritePaths;
-      break;
-    case 1:
-      bgSpriteInitData.coordinate = defaultValues::bgSprites::coordinate;
-      break;
-    case 2:
-      bgSpriteInitData.direction = defaultValues::bgSprites::direction;
-      break;
-    case 3:
-      bgSpriteInitData.displayInForground =
-	defaultValues::bgSprites::displayInForground;
-      break;
-    default:
-    DEFAULT:
-      std::stringstream e {};
-      e<<"Error: expected section\\s \"";
-      for(auto keywordAction: bgSpriteHeaderKeywordActions)
-	{
-	  if(!keywordAction.found && keywordAction.action != nullptr)
-	    {
-	      e<<keywordAction.keyword<<", ";
-	    }
-	}
-      e<<"\" in header sub section backgroundSprite. Encountered character \""<<*buffPos
-       <<"\", when reading \""<<rulesFileName<<"\" file\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+      exit(eMsg, ERROR_BACKGROUND);
     }
 }

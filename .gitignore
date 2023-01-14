@@ -10,6 +10,7 @@ game/~*
 game/*~
 game/~#
 game/#~
+game/tmp
 game/nscrl
 game/clangd.core
 game/.clangd

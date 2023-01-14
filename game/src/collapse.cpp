@@ -14,8 +14,10 @@ void firstPassOfCollapse(const std::string & rawBuff,
 		       std::string & buff);
 /* Copies buff to preRet with all "\nc/" (non colour) escape sequences
 processed. */
-void secondPassOfCollapse(std::string & buff, std::vector<int> & preRet);
-void thirdPassOfCollapse(std::vector<int> & preRet, std::vector<int> & ret);
+void secondPassOfCollapse(std::string & buff,
+			  std::vector<unsigned short> & preRet);
+void thirdPassOfCollapse(std::vector<unsigned short> & preRet,
+			 std::vector<unsigned short> & ret);
 
 
 chMap::chMap()
@@ -41,13 +43,13 @@ int chMap::find(const std::string str)
 
 
 void collapse(const std::string & rawBuff,
-	      std::vector<int> & ret)
+	      std::vector<unsigned short> & ret)
 {
   ret.clear();			// Make sure that ret is empty.
   std::string buff {};
 
   firstPassOfCollapse(rawBuff, buff);  
-  std::vector<int> preRet {};
+  std::vector<unsigned short> preRet {};
   secondPassOfCollapse(buff, preRet);
   thirdPassOfCollapse(preRet, ret);
 }
@@ -64,7 +66,8 @@ void firstPassOfCollapse(const std::string & rawBuff,
 }
 
 
-void secondPassOfCollapse(std::string & buff, std::vector<int> & preRet)
+void secondPassOfCollapse(std::string & buff,
+			  std::vector<unsigned short> & preRet)
 { // Collaps "\nc/" ecsape sequences (special characters.)
   // escSeq holds the string used to get the color code from escCharNums.
   std::string escSeq {};

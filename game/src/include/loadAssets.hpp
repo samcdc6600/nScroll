@@ -28,10 +28,10 @@
    of the level. The bgFileName and rulesFileName are the names of the files
    that should be read in and parsed to initialise the background and levelRules
    arguments. */
-void loadAssets
-(const yx maxyx, const char bgFileName [], // std::vector<int> & background,
- backgroundData & background,
- const char rulesFileName [], rules & levelRules);
+// void loadAssets
+// (const yx maxyx, const char bgFileName [], // std::vector<int> & background,
+//  backgroundData & background,
+//  const char rulesFileName [], rules & levelRules);
 /*void loadAndParseBackgroundFile(const yx maxyx, const char bgFileName [],
   backgroundData & background);*/
 				// std::vector<int> & background);
@@ -42,22 +42,22 @@ void loadAssets
    other information. When a sprite coordinate, sprite and rule triple has been
    extracted add sprite and rule using sprite coordinate as key to a vector in
    the spriteCoords map in the form of a spriteInfo struct */
-void loadAndParseLevelRulesFile(const yx maxyx, const char bgFileName [],
+/*void loadAndParseLevelRulesFile(const yx maxyx, const char bgFileName [],
 				const char rulesFileName[],
-                                rules &levelRules, const size_t bgSize);
+                                rules &levelRules, const size_t bgSize);*/
 // Where rawRules holds the contents of a rules.lev file.
-void parseRulesHeader(const yx maxyx, const char rulesFileName[],
-			  rules & levelRules, const size_t bgSize,
-		      const std::string & rawRules,
-		      std::string::const_iterator & buffPos);
-void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
-		const size_t bgSize, const std::string &rawRules,
-                std::string::const_iterator &buffPos);
+// void parseRulesHeader(const yx maxyx, const char rulesFileName[],
+// 			  rules & levelRules, const size_t bgSize,
+// 		      const std::string & rawRules,
+// 		      std::string::const_iterator & buffPos);
+// void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
+// 		const size_t bgSize, const std::string &rawRules,
+//                 std::string::const_iterator &buffPos);
 /* This function should be called for each background sprite section that's
    encountered. */
-void initBgSprites(const yx maxyx, const char rulesFileName[], rules & levelRules,
-		   const size_t bgSize, const std::string & rawRules,
-		   std::string::const_iterator & buffPos);
+// void initBgSprites(const yx maxyx, const char rulesFileName[], rules & levelRules,
+// 		   const size_t bgSize, const std::string & rawRules,
+// 		   std::string::const_iterator & buffPos);
 /* Attempts to read the start of the header in a rules.lev file. */
 void readStartOfHeader(const std::string &buff,
                        std::string::const_iterator &buffPos,
@@ -128,192 +128,206 @@ int readSingleNum(const std::string &buff, std::string::const_iterator &buffPos,
 void readEndOfHeader(const std::string &buff,
                      std::string::const_iterator &buffPos,
                      const std::string &eMsg);
-void parseRulesMain(const yx maxyx, const char bgFileName[],
-                    const char rulesFileName[], rules &levelRules,
-                    const size_t bgSize, const std::string &rawRules,
-                    std::string::const_iterator &buffPos);
+// void parseRulesMain(const yx maxyx, const char bgFileName[],
+//                     const char rulesFileName[], rules &levelRules,
+//                     const size_t bgSize, const std::string &rawRules,
+//                     std::string::const_iterator &buffPos);
 /* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
    Or if the argument is a space character. If either of these is true then
    returns. Otherwise calls exit() */
 void checkRuleChar(const char potentialRule, const std::string eMsg);
 
 
-/* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player
-   cannot be started at a position with a number with more places then this. */
-constexpr int MAX_COORD_LEN{10};
-namespace levelFileKeywords
-{
-  namespace keywordAction
-  {
-    struct headerKeywordAction
-    {
-      headerKeywordAction
-      (const std::string & kword, void (* a)
-       (const std::string & buff, std::string::const_iterator & buffPos,
-	const std::string & eMsg, void * retObj),
-       void (*hA)(const yx maxyx, const char rulesFileName[],
-		  rules &levelRules, const size_t bgSize,
-		  const std::string &rawRules,
-		  std::string::const_iterator &buffPos) = nullptr,
-       const bool fMO = false)
-	: keyword(kword), foundMultipleOptional(fMO), action(a), headerAction(hA)
-      { }
+// /* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player
+//    cannot be started at a position with a number with more places then this. */
+// constexpr int MAX_COORD_LEN{10};
+// namespace levelFileKeywords
+// {
+//   namespace keywordAction
+//   {
+//     struct headerKeywordAction
+//     {
+//       headerKeywordAction
+//       (const std::string & kword, void (* a)
+//        (const std::string & buff, std::string::const_iterator & buffPos,
+// 	const std::string & eMsg, void * retObj),
+//        void (*hA)(const yx maxyx, const char rulesFileName[],
+// 		  rules &levelRules, const size_t bgSize,
+// 		  const std::string &rawRules,
+// 		  std::string::const_iterator &buffPos) = nullptr,
+//        const bool fMO = false)
+// 	: keyword(kword), foundMultipleOptional(fMO), action(a), headerAction(hA)
+//       { }
 
-      const std::string keyword;
-      // Found this keyword already (for keywords that can only appear once.).
-      bool found{false};
-      /* Set to true in the constructor if keyword is optional and can appear
-	 multiple times. */
-      const bool foundMultipleOptional;
-      /* If action needs to return anything the address of a variable of the
-	 appropriate type should be passed to the function via retObj. If the
-	 function doesn't encounter any error (in which case it should print a
-	 message and exit) *retObj should be populated with what is essential the
-	 return value of the function. */
-      void (*action)(const std::string &buff,
-		     std::string::const_iterator &buffPos,
-		     const std::string &eMsg, void *retObj);
-      /* This function should be used as the action instead of the above if we
-	 are at the top level of the header (in terms of sections). */
-      void (*headerAction)(const yx maxyx, const char rulesFileName[],
-			   rules &levelRules, const size_t bgSize,
-			   const std::string &rawRules,
-			   std::string::const_iterator &buffPos);
-    };
-  };
-  // Each new section should start with a header char followed by this char.
-  constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
-  constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
-  constexpr char RULES_HEADER_END_DENOTATION [] {"\n#"};
-  // Header section header.
-  const std::string PLAYER_HEADER_SECTION_SPECIFIER {"player"};
-  const std::string BG_SPRITE_HEADER_SECTION_SPECIFIER {"backgroundSprite"};
-  // Header sub section headers.
-  // Sub section headers for general player and sprites.
-  const std::string SPRITE_FILE_SECTION_HEADER		{"sprites"};
-  const std::string SPRITE_INIT_COORD_SECTION_HEADER	{"initialCoordinate"};
-  // Sub section headers for player sprite.
-  const std::string SPRITE_INIT_DIR_SECTION_HEADER	{"initialDirection"};
-  const std::string SPRITE_HEALTH_SECTION_HEADER	{"initialHealth"};
-  const std::string SPRITE_GRAV_CONST_SECTION_HEADER	{"gravConst"};
-  const std::string SPRITE_MAX_VERT_V_SECTION_HEADER	{"maxVelocity"};
-  const std::string SPRITE_MAX_FALL_JMP_SECTION_HEADER	{"maxJumpsAfterFall"};
-  const std::string SPRITE_MAX_JMP_NUM_SECTION_HEADER	{"maxJumps"};
-  // Sub section headers for background sprite.
-  const std::string SPRITE_DISPLAY_IN_FORGROUND         {"displayInForground"};
-  // Used to store the order of a keyword and whether it has a default value.
-  struct orderAndDefaultVal
-  {
-    int order;
-    bool defaultVal;
-  };
-  /* Used to map keywords to unique int values so appropriate action can be
-     taken for those keywords when parsing specific section section. KEY ORDER
-     (first value of orderAndDefaultVal) OF THESE OBJECTS SHOULD MATCH switches
-     that use these objects.! */
-  const std::map<std::string, orderAndDefaultVal> headerSectionKeywordToId {
-    {PLAYER_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {0, false}},
-    {BG_SPRITE_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {1, false}}
-  };
-  const std::map<std::string, orderAndDefaultVal> playerSectionKeywordToId {
-    {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
-    {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
-    {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
-    {SPRITE_HEALTH_SECTION_HEADER,	orderAndDefaultVal {3, true}},
-    {SPRITE_GRAV_CONST_SECTION_HEADER,	orderAndDefaultVal {4, true}},
-    {SPRITE_MAX_VERT_V_SECTION_HEADER,	orderAndDefaultVal {5, true}},
-    {SPRITE_MAX_FALL_JMP_SECTION_HEADER, orderAndDefaultVal {6, true}},
-    {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {7, true}}
-  };
-  const std::map<std::string, orderAndDefaultVal> bgSpriteSectionKeywordToId {
-    {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
-    {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
-    {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
-    {SPRITE_DISPLAY_IN_FORGROUND,       orderAndDefaultVal {3, true}}
-  };
-  namespace defaultValues
-  {
-    /* These default values can only be used if defaultVal is set to true in
-       orderAndDefaultVal for the values corresponding section in it's
-       associated XXXSectionKeywordToId map (see above). */
-    namespace player
-    {
-      const std::vector<std::string> spritePaths {{""}};
-      const yx coordinate {0, 1};
-      const sprite::directions direction {sprite::DIR_NONE};
-      const int health {16};
-      const double gravitationalConstant {-0.38};
-      const double maxVerticalVelocity {1.9};
-      const unsigned maxFallingJumpNumber {1};
-      const unsigned maxJumpNumber {3};
-    }
-    namespace bgSprites
-    {
-      const std::vector<std::string> spritePaths {{""}};
-      const yx coordinate {20, 62};
-      const sprite::directions direction {sprite::DIR_NONE};
-      const bool displayInForground {false};
-    }
-  }
-  /* This struct should be populated with the values that the player will
-     eventually be initialised with. */
-  struct playerInitialData
-  {
-    std::vector<std::string> spritePaths {};
-    yx coordinate {};
-    sprite::directions direction {};
-    int health {};
-    double gravitationalConstant {};
-    double maxVerticalVelocity {};
-    unsigned maxFallingJumpNumber {};
-    unsigned maxJumpNumber {};
-  };
-  /* This struct should be populated with the values read in for use with the
-     constructor of the next background sprite to be created. */
-  struct bgSpriteInitialData
-  {
-    std::vector<std::string> spritePaths {};
-    yx coordinate {};
-    sprite::directions direction {};
-    bool displayInForground {};
-  };
-  // Misc.
-  constexpr char STRING_DENOTATION		{'\"'};
-  constexpr char STRING_SEPARATION		{','};
-  constexpr char STRING_ESC			{'\\'};
-  constexpr char COORD_SEPARATION		{','};
-  constexpr char DIR_START_ABS			{'/'};
-  constexpr char DIR_START_REL			{'.'};
-  /* The character used for escape sequences (within a string) in .rules.lev
-     files. */
-  constexpr char ESCAPE_CHAR {'\\'};
-  constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
-  constexpr char NULL_BYTE {'\0'};
-  /* If this character is encountered in the main section of a rules.lev file
-     the character 2 places after it should be an ASCII number. After this
-     number there can be a string of contiguous ASCII numbers (up to some
-     maximum) that together represent some larger number. This number is the
-     number of times the ASCII character before the number should be repeated. */
-  constexpr char RULES_MAIN_RUNLENGTH_BEGIN_CHAR {'R'};
-}
+//       const std::string keyword;
+//       // Found this keyword already (for keywords that can only appear once.).
+//       bool found{false};
+//       /* Set to true in the constructor if keyword is optional and can appear
+// 	 multiple times. */
+//       const bool foundMultipleOptional;
+//       /* If action needs to return anything the address of a variable of the
+// 	 appropriate type should be passed to the function via retObj. If the
+// 	 function doesn't encounter any error (in which case it should print a
+// 	 message and exit) *retObj should be populated with what is essential the
+// 	 return value of the function. */
+//       void (*action)(const std::string &buff,
+// 		     std::string::const_iterator &buffPos,
+// 		     const std::string &eMsg, void *retObj);
+//       /* This function should be used as the action instead of the above if we
+// 	 are at the top level of the header (in terms of sections). */
+//       void (*headerAction)(const yx maxyx, const char rulesFileName[],
+// 			   rules &levelRules, const size_t bgSize,
+// 			   const std::string &rawRules,
+// 			   std::string::const_iterator &buffPos);
+//     };
+//   };
+//   // Each new section should start with a header char followed by this char.
+//   constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
+//   constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
+//   constexpr char RULES_HEADER_END_DENOTATION [] {"\n#"};
+//   // Header section header.
+//   const std::string PLAYER_HEADER_SECTION_SPECIFIER {"player"};
+//   const std::string BG_SPRITE_HEADER_SECTION_SPECIFIER {"backgroundSprite"};
+//   // Header sub section headers.
+//   // Sub section headers for general player and sprites.
+//   const std::string SPRITE_FILE_SECTION_HEADER		{"sprites"};
+//   const std::string SPRITE_INIT_COORD_SECTION_HEADER	{"initialCoordinate"};
+//   // Sub section headers for player sprite.
+//   const std::string SPRITE_INIT_DIR_SECTION_HEADER	{"initialDirection"};
+//   const std::string SPRITE_HEALTH_SECTION_HEADER	{"initialHealth"};
+//   const std::string SPRITE_GRAV_CONST_SECTION_HEADER	{"gravConst"};
+//   const std::string SPRITE_MAX_VERT_V_SECTION_HEADER	{"maxVelocity"};
+//   const std::string SPRITE_MAX_FALL_JMP_SECTION_HEADER	{"maxJumpsAfterFall"};
+//   const std::string SPRITE_MAX_JMP_NUM_SECTION_HEADER	{"maxJumps"};
+//   // Sub section headers for background sprite.
+//   const std::string SPRITE_DISPLAY_IN_FORGROUND         {"displayInForground"};
+//   // Used to store the order of a keyword and whether it has a default value.
+//   struct orderAndDefaultVal
+//   {
+//     int order;
+//     bool defaultVal;
+//   };
+//   /* Used to map keywords to unique int values so appropriate action can be
+//      taken for those keywords when parsing specific section section. KEY ORDER
+//      (first value of orderAndDefaultVal) OF THESE OBJECTS SHOULD MATCH switches
+//      that use these objects.! */
+//   const std::map<std::string, orderAndDefaultVal> headerSectionKeywordToId {
+//     {PLAYER_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {0, false}},
+//     {BG_SPRITE_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {1, false}}
+//   };
+//   const std::map<std::string, orderAndDefaultVal> playerSectionKeywordToId {
+//     {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
+//     {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
+//     {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
+//     {SPRITE_HEALTH_SECTION_HEADER,	orderAndDefaultVal {3, true}},
+//     {SPRITE_GRAV_CONST_SECTION_HEADER,	orderAndDefaultVal {4, true}},
+//     {SPRITE_MAX_VERT_V_SECTION_HEADER,	orderAndDefaultVal {5, true}},
+//     {SPRITE_MAX_FALL_JMP_SECTION_HEADER, orderAndDefaultVal {6, true}},
+//     {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {7, true}}
+//   };
+//   const std::map<std::string, orderAndDefaultVal> bgSpriteSectionKeywordToId {
+//     {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
+//     {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
+//     {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
+//     {SPRITE_DISPLAY_IN_FORGROUND,       orderAndDefaultVal {3, true}}
+//   };
+//   namespace defaultValues
+//   {
+//     /* These default values can only be used if defaultVal is set to true in
+//        orderAndDefaultVal for the values corresponding section in it's
+//        associated XXXSectionKeywordToId map (see above). */
+//     namespace player
+//     {
+//       const std::vector<std::string> spritePaths {{""}};
+//       const yx coordinate {0, 1};
+//       const sprite::directions direction {sprite::DIR_NONE};
+//       const int health {16};
+//       const double gravitationalConstant {-0.38};
+//       const double maxVerticalVelocity {1.9};
+//       const unsigned maxFallingJumpNumber {1};
+//       const unsigned maxJumpNumber {3};
+//     }
+//     namespace bgSprites
+//     {
+//       const std::vector<std::string> spritePaths {{""}};
+//       const yx coordinate {20, 62};
+//       const sprite::directions direction {sprite::DIR_NONE};
+//       const bool displayInForground {false};
+//     }
+//   }
+//   /* This struct should be populated with the values that the player will
+//      eventually be initialised with. */
+//   struct playerInitialData
+//   {
+//     std::vector<std::string> spritePaths {};
+//     yx coordinate {};
+//     sprite::directions direction {};
+//     int health {};
+//     double gravitationalConstant {};
+//     double maxVerticalVelocity {};
+//     unsigned maxFallingJumpNumber {};
+//     unsigned maxJumpNumber {};
+//   };
+//   /* This struct should be populated with the values read in for use with the
+//      constructor of the next background sprite to be created. */
+//   struct bgSpriteInitialData
+//   {
+//     std::vector<std::string> spritePaths {};
+//     yx coordinate {};
+//     sprite::directions direction {};
+//     bool displayInForground {};
+//   };
+//   // Misc.
+//   constexpr char STRING_DENOTATION		{'\"'};
+//   constexpr char STRING_SEPARATION		{','};
+//   constexpr char STRING_ESC			{'\\'};
+//   constexpr char COORD_SEPARATION		{','};
+//   constexpr char DIR_START_ABS			{'/'};
+//   constexpr char DIR_START_REL			{'.'};
+//   /* The character used for escape sequences (within a string) in .rules.lev
+//      files. */
+//   constexpr char ESCAPE_CHAR {'\\'};
+//   constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
+//   constexpr char NULL_BYTE {'\0'};
+//   /* If this character is encountered in the main section of a rules.lev file
+//      the character 2 places after it should be an ASCII number. After this
+//      number there can be a string of contiguous ASCII numbers (up to some
+//      maximum) that together represent some larger number. This number is the
+//      number of times the ASCII character before the number should be repeated. */
+//   constexpr char RULES_MAIN_RUNLENGTH_BEGIN_CHAR {'R'};
+// }
 
 
 /* Should be called after checking for all header sections related to the
    player. Checks if all sections were found. If a section is encountered that
    wasn't found, then we check if it has a default value. If so we apply the
    default value. If it doesn't have a default value then call exit()*/
-void checkForDefaultPlayerValues(
-				 std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
-				 playerHeaderKeywordActions,
-				 levelFileKeywords::keywordAction::headerKeywordAction &keywordAction,
-				 levelFileKeywords::playerInitialData &playerInitData,
-				 std::string::const_iterator &buffPos, const char rulesFileName[]);
-void checkForDefaultBgSpriteValues
-(std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
- bgSpriteHeaderKeywordActions,
- levelFileKeywords::keywordAction::headerKeywordAction & keywordAction,
- levelFileKeywords::bgSpriteInitialData & bgSpriteInitData, 
- std::string::const_iterator & buffPos,
- const char rulesFileName []);
+// void checkForDefaultPlayerValues(
+// 				 std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+// 				 playerHeaderKeywordActions,
+// 				 levelFileKeywords::keywordAction::headerKeywordAction &keywordAction,
+// 				 levelFileKeywords::playerInitialData &playerInitData,
+// 				 std::string::const_iterator &buffPos, const char rulesFileName[]);
+// void checkForDefaultBgSpriteValues
+// (std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+//  bgSpriteHeaderKeywordActions,
+//  levelFileKeywords::keywordAction::headerKeywordAction & keywordAction,
+//  levelFileKeywords::bgSpriteInitialData & bgSpriteInitData, 
+//  std::string::const_iterator & buffPos,
+//  const char rulesFileName []);
+
+/* First checks if buffPos is in range. Returns false if it is not. Otherwise
+   attempts to read the coordinates into chunkCoord. If this succeeds returns
+   true (with chunkCoord being set to the coordinates read.) If there is a
+   failure in reading the coordinates then the program will be aborted with eMsg
+   being displayed. */
+bool getChunkCoordinate
+  (const std::string & data, std::string::const_iterator & buffPos,
+   const std::string & eMsg, yx & chunkCoord);
+
+void getChunk
+    (const std::string & data, std::string::const_iterator & buffPos,
+     const std::string & eMsg, std::string & chunk, const yx maxyx);
+
 
 #endif

@@ -6,16 +6,23 @@
 #include "sprite.hpp"
 #include "player.hpp"
 #include "backgroundSprite.hpp"
+#include "background.hpp"
+#include "loadAssets.hpp"
 
 
 class rules
 {
 public:
+  /* This type is used for storing the the rules that correspond to a background
+     chunk from the background class. */
+  typedef std::vector<char> coordRulesChunk;
+  
   // The player cannot pass widthin this many character's of the window boarder's (y, x).
   const yx PLAYER_MOVEMENT_INNER_MARGIN {0, 52};
   static constexpr size_t second {1};
   // Contains position based rules.
-  std::vector<char> coordRules {};
+  
+  //  	std::vector<char> coordRules {}; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //For sprites (holds sprite data (slices) and the rule for the sprite.)
   struct spriteInfo
   { // Sprite data to go here (when I do it.)
@@ -31,14 +38,32 @@ public:
   const yx playerMovementInnerLRBoarder {0, 44};
   
 private:
+  typedef std::map<std::string, coordRulesChunk> coordRulesType;
+  const coordRulesType coordRules;
   // const size_t millisecondsInSec {1000*second};
   // The duration of time we call sleep() for (in milliseconds.)
   const size_t engineSleepTime {32};
   // const double sleepTimeAsAPercentageOfASecond {double(engineSleepTime / millisecondsInSec)};
 
-  void loadAndParseFile(const yx maxyx, const char bgFileName [],
-			const char rulesFileName[],
-			rules &levelRules, const size_t bgSize);
+  coordRulesType loadAndInitialiseCoordRules
+  (const yx maxyx, const backgroundData & background, const char bgFileName [],
+   const char coordRulesFileName []);
+  void initialiseCoordRules
+  (const yx maxyx, const backgroundData & background, const char bgFileName [],
+   const char coordRulesFileName [], coordRulesType & coordRuless,
+   const std::string & rawCoordRules);
+  /* Attempts to decompress chunk in chunkIn. If successful returns
+     decompressed chunk via rawChunk. ChunkIn is assumed to be compressed using
+     the run length encoding technique.
+     LevelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR signifies the start of
+     a "run". The character after that is repeated a number of times in
+     rawChunk equal to the number after that character. The number should be in
+     base 10 in ASCII. The end of the number is non-ambiguous because numbers
+     are not valid rules characters in a coordRules.lev file. If there is an
+     error an error message is printed and the program is terminated. */
+  void decompressChunk(const std::string & chunkIn, coordRulesType & rawChunk,
+		       const ssize_t chunksReadIn,
+		       const char coordRulesFileName[]);
   /* Set's oldTime to the current time if
      (oldTime - (the current time) >= second). */
   void resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime);
@@ -114,8 +139,15 @@ private:
 #endif
 
 public:
-  rules() :
-  {}
+  /* background is required because for every chunk in background there should
+     be a corresponding chunk in rules::coordRules. */
+  rules
+  (const yx maxyx, const backgroundData & background, const char bgFileName [],
+   const char coordRulesFileName [], const char rulesFileName []) :
+    coordRules(loadAndInitialiseCoordRules
+	       (maxyx, background, bgFileName, coordRulesFileName))
+  {
+  }
   void physics(const player::directionChars input, int & position, const yx maxyx,
 	       const size_t backgroundLength,
 	       std::__1::chrono::steady_clock::time_point & secStartTime);

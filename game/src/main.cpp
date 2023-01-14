@@ -3,7 +3,7 @@
 #include "include/initCurses.hpp"
 #include "include/utils.hpp"
 #include "include/background.hpp"
-#include "include/loadAssets.hpp"
+//#include "include/loadAssets.hpp"
 #include "include/checkBoundsOfBounds.hpp"
 #include "include/levelRules.hpp"
 #include "include/draw.hpp"
@@ -57,7 +57,9 @@ void menu(const yx maxyx, int * unprocessedDrawBuffer)
   backgroundData background {maxyx, "assets/level1/level1.backgound.lev"};
   /* Hold's the "rules" for the current level. (see physics.h and
      rules.lev.txt.) */
-   rules levelRules {};
+  rules levelRules
+    {maxyx, background, "assets/level1/level1.backgound.lev",
+     "assets/level1/level1.coordRules.lev", "assets/level1/level1.rules.lev"};
   /* Note this should be done in the menu or loop or some sub function
      called from within it since multiple level's can be played. It is
      placed here right now only for testing and development purposes. */

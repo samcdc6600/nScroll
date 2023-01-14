@@ -127,7 +127,7 @@ void backgroundData::initialiseBackground
 	      getChunk(bgData, buffPos,
 		       concat("Error: reading in chunk no. ", chunksReadIn,
 			      " from background.lev file \"", bgFileName,
-			      "\""), chunk);
+			      "\"."), chunk, maxyx);
 	      // Collapse chunk and return in rawChunk.
 	      collapse(chunk, rawChunk);
 	      verifyCollapsedChunkSize(rawChunk, chunksReadIn, true);
@@ -147,43 +147,43 @@ void backgroundData::initialiseBackground
 }
 
 
-bool backgroundData::getChunkCoordinate(const std::string & bgData,
-			std::string::const_iterator & buffPos,
-			const std::string & eMsg, yx & chunkCoord) const
-{
-  if(buffPos != std::end(bgData))
-    {
-      readSingleCoordSectionInNNumbersNoSkpSp
-	(bgData, buffPos, eMsg, &chunkCoord);
+// bool backgroundData::getChunkCoordinate(const std::string & bgData,
+// 			std::string::const_iterator & buffPos,
+// 			const std::string & eMsg, yx & chunkCoord) const
+// {
+//   if(buffPos != std::end(bgData))
+//     {
+//       readSingleCoordSectionInNNumbersNoSkpSp
+// 	(bgData, buffPos, eMsg, &chunkCoord);
 
-      return true;
-    }
-  else
-    {
-      return false;
-    }
-}
+//       return true;
+//     }
+//   else
+//     {
+//       return false;
+//     }
+// }
 
 
-void backgroundData::getChunk(const std::string & bgData,
-	      std::string::const_iterator & buffPos, const std::string & eMsg,
-	      std::string & chunk) const
-{
-  chunk.clear();
+// void backgroundData::getChunk(const std::string & bgData,
+// 	      std::string::const_iterator & buffPos, const std::string & eMsg,
+// 	      std::string & chunk) const
+// {
+//   chunk.clear();
 
-  int lnCount {};
-  for( ; lnCount < maxyx.y && buffPos != std::end(bgData); )
-    {
-      char newCh {};
-      newCh = *buffPos++;
-      chunk += newCh;
-      lnCount += (newCh == '\n' ? 1: 0);
-    }
-  if(lnCount != maxyx.y)
-    {
-      exit(eMsg, ERROR_BACKGROUND);
-    }
-}
+//   int lnCount {};
+//   for( ; lnCount < maxyx.y && buffPos != std::end(bgData); )
+//     {
+//       char newCh {};
+//       newCh = *buffPos++;
+//       chunk += newCh;
+//       lnCount += (newCh == '\n' ? 1: 0);
+//     }
+//   if(lnCount != maxyx.y)
+//     {
+//       exit(eMsg, ERROR_BACKGROUND);
+//     }
+// }
 
 
 void backgroundData::verifyCollapsedChunkSize
