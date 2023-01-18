@@ -164,8 +164,8 @@ namespace levelFileKeywords
 
 
 rules::coordRulesType rules::loadAndInitialiseCoordRules
-(const yx maxyx, const backgroundData & background, const char bgFileName [],
- const char coordRulesFileName [])
+(const yx expectedChunkSize, const backgroundData & background,
+ const char bgFileName [], const char coordRulesFileName [])
 {
   std::string rawCoordRules {};
   coordRulesType coordRules;
@@ -177,27 +177,27 @@ rules::coordRulesType rules::loadAndInitialiseCoordRules
       exit(e.str(), ERROR_OPENING_FILE);
     }
 
-  // parseRulesHeader(maxyx, coordRulesFileName, levelRules, bgSize, rawCoordRules, buffPos);
+  // parseRulesHeader(expectedChunkSize, coordRulesFileName, levelRules, bgSize, rawCoordRules, buffPos);
   initialiseCoordRules
-    (maxyx, background, bgFileName, coordRulesFileName, coordRules,
+    (expectedChunkSize, background, bgFileName, coordRulesFileName, coordRules,
      rawCoordRules);
   return coordRules;
 }
 
 
 void rules::initialiseCoordRules
-(const yx maxyx, const backgroundData & background, const char bgFileName [],
+(const yx expectedChunkSize, const backgroundData & background, const char bgFileName [],
  const char coordRulesFileName [], rules::coordRulesType & coordRuless,
  const std::string & coordRulesData)
 {
   // Main body of rules file should start on a new line (account for if.)
   // std::string::const_iterator buffPos {coordRulesData.begin()};
-  // const size_t expectedLineLength {bgSize / maxyx.y};
+  // const size_t expectedLineLength {bgSize / expectedChunkSize.y};
   // int lineNumber {};
   // int lineLength {};
   yx chunkCoord {};
   std::string chunk {};
-  coordRulesType rawChunk {};
+  coordRulesChunk rawChunk {};
   std::string::const_iterator buffPos {std::begin(coordRulesData)};
   ssize_t chunksReadIn {};
 
@@ -225,10 +225,11 @@ void rules::initialiseCoordRules
 	  getChunk(coordRulesData, buffPos,
 		   concat("Error: reading in chunk no. ", chunksReadIn,
 			  ". from coordRules.lev file \"", coordRulesFileName,
-			  "\"."), chunk, maxyx);
+			  "\"."), chunk, expectedChunkSize);
 	  // Decompress chunk and return in rawChunk.
 	  decompressChunk
-	    (chunk, rawChunk, chunksReadIn, coordRulesFileName);
+	    (chunk, rawChunk, expectedChunkSize, chunksReadIn,
+	     coordRulesFileName);
 	  // Verify decompressed size...
 	  // Insert chunk into...
 
@@ -325,12 +326,15 @@ void rules::initialiseCoordRules
 
 
 void rules::decompressChunk
-(const std::string & chunkIn, coordRulesType & rawChunk,
- const ssize_t chunksReadIn, const char coordRulesFileName[])
+(const std::string & chunkIn, coordRulesChunk & rawChunk,
+ const yx expectedChunkSize, const ssize_t chunksReadIn,
+ const char coordRulesFileName[])
 {
   const char runLenBeginChar
-    {LevelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR};
+    {levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR};
   std::string::const_iterator buffPos {std::begin(chunkIn)};
+  int lineNumber {};
+  int lineLength {};
     
   while(buffPos < chunkIn.end())
     {
@@ -342,45 +346,49 @@ void rules::decompressChunk
 
 	  checkRuleChar
 	    (ruleChar,
-	     concat("parsing main section of \"", coordRulesFileName,
-		    "\" (on line ", lineNumber, " of main section)"));
+	     concat("decompressing chunk no. ", chunksReadIn, " from file \"",
+		    coordRulesFileName, "\" (on line ", lineNumber,
+		    " of chunk.) "));
 
 	  const int runLength
 	    {readSingleNum
 	     (chunkIn, buffPos,
 	      concat("reading run-length encoding length as a result of "
 		     "encountering run-length encoding character \"",
-		     runLenBeginChar, "\" while parsing main section of \"",
-		     coordRulesFileName, "\""), false)};
+		     runLenBeginChar, "\" while  decompressing chunk no. ",
+		     chunksReadIn, " from file \"",
+		     coordRulesFileName, "\" (on line ", lineNumber,
+		     " of chunk.) "), false)};
 	  --buffPos;
 
 	  for(int lengthIter {}; lengthIter < runLength; ++lengthIter)
 	    {
-	      coordRuless.coordRules.push_back(ruleChar);
+	      rawChunk.push_back(ruleChar);
 	    }
 	  lineLength += runLength;
 	}
       else
 	{
-	  checkRuleChar(*buffPos,
-			concat("parsing main section of \"",
-			       coordRulesFileName,  "\" (on line ", lineNumber,
-			       " of main section)"));
-	  coordRuless.coordRules.push_back(*buffPos);
+	  checkRuleChar
+	    (*buffPos,
+	     concat("decompressing chunk no. ", chunksReadIn, " from file \"",
+		    coordRulesFileName, "\" (on line ", lineNumber,
+		    " of chunk.) "));
+	  rawChunk.push_back(*buffPos);
 	  lineLength++;
 	}
       
       buffPos++;
       if(*buffPos == '\n')
 	{
-	  if(size_t(lineLength) != expectedLineLength)
+	  if(size_t(lineLength) != expectedChunkSize.x)
 	    {
 	      std::stringstream e {};
 	      e<<"Error: reading rules.lev header file \""<<coordRulesFileName
-	       <<"\". Encountered line of length ("<<lineLength<<") (on line "
-	       <<lineNumber<<" of main section) when reading main section of "
-		"file. Expected a line of length ("<<expectedLineLength<<").";
-
+	       <<"\". Encountered line of length ("<<lineLength<<") when "
+		"decompressing chunk no. "<<chunksReadIn<<" (on line "
+	       <<lineNumber<<" of chunk.) Expected a line of length ("
+	       <<expectedChunkSize.x<<").";
 	      exit(e.str().c_str(), ERROR_BACKGROUND);
 	    }
 	  lineLength = 0;
@@ -389,25 +397,49 @@ void rules::decompressChunk
 	}
     }
 
-  if(size_t(lineLength) != expectedLineLength)
+  if(size_t(lineLength) != expectedChunkSize.x)
     {
       std::stringstream e {};
       e<<"Error: reading rules.lev header file \""<<coordRulesFileName
-       <<"\". Encountered line of length ("<<lineLength<<") (on line "
-       <<lineNumber<<") when reading main section of file. Expected a line "
-	"of length ("<<expectedLineLength<<").";
+       <<"\". Encountered line of length ("<<lineLength<<") when "
+	"decompressing chunk no. "<<chunksReadIn<<" (on line "
+       <<lineNumber<<" of chunk.) Expected a line of length ("
+       <<expectedChunkSize.x<<").";
       exit(e.str().c_str(), ERROR_BACKGROUND);
     }
 
-  if(coordRuless.coordRules.size() != bgSize)
+  const ssize_t expectedChunkSizeLinear
+    {expectedChunkSize.y * expectedChunkSize.x};
+  if(rawChunk.size() != expectedChunkSizeLinear)
     {
       std::stringstream e {};
-      e << "Error: reading rules.lev header file \"" << coordRulesFileName
-	<< "\". Size ("<<coordRuless.coordRules.size()<<") of main section of "
-	"file not equal to size ("<<bgSize<<") of background file \""
-	<<bgFileName<<"\".";
+      e<<"Error: reading rules.lev header file \""<<coordRulesFileName
+       <<"\".  Size ("<<rawChunk.size()<<") of chunk no. "<<chunksReadIn<<" not"
+	" equal to expected size ("<<expectedChunkSizeLinear<<") of chunk.";
       exit(e.str().c_str(), ERROR_BACKGROUND);
-      }
+    }
+}
+
+
+void checkRuleChar(const char potentialRule, const std::string eMsg)
+{
+  for(char rule: boarderRuleChars::CHARS)
+    {
+      if(potentialRule == rule || potentialRule == ' ')
+	{
+	  return;
+	}
+    }
+  std::stringstream e {};
+  e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
+    "line, \""<<levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR<<"\" or in "
+    "the set of rule characters (";
+  for(char rule: boarderRuleChars::CHARS)
+    {
+      e<<rule<<", ";
+    }
+  e<<") when "<<eMsg<<'.';
+  exit(e.str().c_str(), ERROR_CHARACTER_RANGE);
 }
 
 

@@ -46,12 +46,12 @@ private:
   // const double sleepTimeAsAPercentageOfASecond {double(engineSleepTime / millisecondsInSec)};
 
   coordRulesType loadAndInitialiseCoordRules
-  (const yx maxyx, const backgroundData & background, const char bgFileName [],
+  (const yx loadAndInitialiseCoordRules, const backgroundData & background, const char bgFileName [],
    const char coordRulesFileName []);
   void initialiseCoordRules
-  (const yx maxyx, const backgroundData & background, const char bgFileName [],
-   const char coordRulesFileName [], coordRulesType & coordRuless,
-   const std::string & rawCoordRules);
+  (const yx expectedChunkSize, const backgroundData & background,
+   const char bgFileName [], const char coordRulesFileName [],
+   coordRulesType & coordRuless, const std::string & rawCoordRules);
   /* Attempts to decompress chunk in chunkIn. If successful returns
      decompressed chunk via rawChunk. ChunkIn is assumed to be compressed using
      the run length encoding technique.
@@ -59,11 +59,16 @@ private:
      a "run". The character after that is repeated a number of times in
      rawChunk equal to the number after that character. The number should be in
      base 10 in ASCII. The end of the number is non-ambiguous because numbers
-     are not valid rules characters in a coordRules.lev file. If there is an
+     are not valid rule characters in a coordRules.lev file. If there is an
      error an error message is printed and the program is terminated. */
-  void decompressChunk(const std::string & chunkIn, coordRulesType & rawChunk,
-		       const ssize_t chunksReadIn,
-		       const char coordRulesFileName[]);
+  void decompressChunk
+  (const std::string & chunkIn, coordRulesChunk & rawChunk,
+   const yx expectedChunkSize, const ssize_t chunksReadIn,
+   const char coordRulesFileName[]);
+  /* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
+     Or if the argument is a space character. If either of these is true then
+     returns. Otherwise calls exit() */
+  void checkRuleChar(const char potentialRule, const std::string eMsg);
   /* Set's oldTime to the current time if
      (oldTime - (the current time) >= second). */
   void resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime);

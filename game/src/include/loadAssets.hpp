@@ -132,10 +132,10 @@ void readEndOfHeader(const std::string &buff,
 //                     const char rulesFileName[], rules &levelRules,
 //                     const size_t bgSize, const std::string &rawRules,
 //                     std::string::const_iterator &buffPos);
-/* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
-   Or if the argument is a space character. If either of these is true then
-   returns. Otherwise calls exit() */
-void checkRuleChar(const char potentialRule, const std::string eMsg);
+// /* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
+//    Or if the argument is a space character. If either of these is true then
+//    returns. Otherwise calls exit() */
+// void checkRuleChar(const char potentialRule, const std::string eMsg);
 
 
 // /* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player
@@ -327,7 +327,7 @@ bool getChunkCoordinate
 
 void getChunk
     (const std::string & data, std::string::const_iterator & buffPos,
-     const std::string & eMsg, std::string & chunk, const yx maxyx);
-
+     const std::string & eMsg, std::string & chunk, const yx expectedChunkSize);
+// formerly lksajd 
 
 #endif

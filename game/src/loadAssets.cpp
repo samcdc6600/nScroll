@@ -815,26 +815,26 @@ void readEndOfHeader(const std::string & buff,
 // }
 
 
-void checkRuleChar(const char potentialRule, const std::string eMsg)
-{
-  for(char rule: boarderRuleChars::CHARS)
-    {
-      if(potentialRule == rule || potentialRule == ' ')
-	{
-	  return;
-	}
-    }
-  std::stringstream e {};
-  e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
-    "line, \""<<levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR<<"\" or in "
-    "the set of rule characters (";
-  for(char rule: boarderRuleChars::CHARS)
-    {
-      e<<rule<<", ";
-    }
-  e<<") when "<<eMsg<<'.';
-  exit(e.str().c_str(), ERROR_CHARACTER_RANGE);
-}
+// void checkRuleChar(const char potentialRule, const std::string eMsg)
+// {
+//   for(char rule: boarderRuleChars::CHARS)
+//     {
+//       if(potentialRule == rule || potentialRule == ' ')
+// 	{
+// 	  return;
+// 	}
+//     }
+//   std::stringstream e {};
+//   e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
+//     "line, \""<<levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR<<"\" or in "
+//     "the set of rule characters (";
+//   for(char rule: boarderRuleChars::CHARS)
+//     {
+//       e<<rule<<", ";
+//     }
+//   e<<") when "<<eMsg<<'.';
+//   exit(e.str().c_str(), ERROR_CHARACTER_RANGE);
+// }
 
 
 // void checkForDefaultPlayerValues
@@ -967,19 +967,19 @@ bool getChunkCoordinate
 
 void getChunk(const std::string & data,
 	      std::string::const_iterator & buffPos, const std::string & eMsg,
-	      std::string & chunk, const yx maxyx)
+	      std::string & chunk, const yx expectedChunkSize)
 {
   chunk.clear();
 
   int lnCount {};
-  for( ; lnCount < maxyx.y && buffPos != std::end(data); )
+  for( ; lnCount < expectedChunkSize.y && buffPos != std::end(data); )
     {
       char newCh {};
       newCh = *buffPos++;
       chunk += newCh;
       lnCount += (newCh == '\n' ? 1: 0);
     }
-  if(lnCount != maxyx.y)
+  if(lnCount != expectedChunkSize.y)
     {
       exit(eMsg, ERROR_BACKGROUND);
     }
