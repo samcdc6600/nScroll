@@ -40,6 +40,14 @@ public:
 private:
   typedef std::map<std::string, coordRulesChunk> coordRulesType;
   const coordRulesType coordRules;
+  const ssize_t coordRulesCurrentContextBufferSize;
+  /* This is equivalent to the first stage draw buffer in
+     backgroundData. Coord rule chunks are copied into this buffer based on the
+     players position (according to exactly the same rules as those followed in
+     backgroundData.) This array can then be indexed into (after a simple
+     calculation) to get the character rule (if any) for a given position on the
+     screen. */ 
+  char * coordRulesCurrentContextBuffer;
   // const size_t millisecondsInSec {1000*second};
   // The duration of time we call sleep() for (in milliseconds.)
   const size_t engineSleepTime {32};
@@ -150,7 +158,9 @@ public:
   (const yx maxyx, const backgroundData & background, const char bgFileName [],
    const char coordRulesFileName [], const char rulesFileName []) :
     coordRules(loadAndInitialiseCoordRules
-	       (maxyx, background, bgFileName, coordRulesFileName))
+	       (maxyx, background, bgFileName, coordRulesFileName)),
+    coordRulesCurrentContextBufferSize(maxyx.y * maxyx.x * 9),
+    coordRulesCurrentContextBuffer(new char [maxyx.y * maxyx.x * 9])
   {
   }
   void physics(const player::directionChars input, int & position, const yx maxyx,
@@ -158,7 +168,8 @@ public:
 	       std::__1::chrono::steady_clock::time_point & secStartTime);
   ~rules()
   {
-    delete(gamePlayer);
+    delete gamePlayer;
+    delete [] coordRulesCurrentContextBuffer;
   }
 };
 
