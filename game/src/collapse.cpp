@@ -10,14 +10,14 @@ constexpr char NAME_OF_THIS_FILE [] = "collapse.cpp";
 
 
 // Copies rawBuff to buff with all '\n' characters removed.
-void firstPassOfCollapse(const std::string & rawBuff,
-		       std::string & buff);
+void firstPassOfCollapse
+(const std::string & rawBuff, std::string & buff);
 /* Copies buff to preRet with all "\nc/" (non colour) escape sequences
-processed. */
-void secondPassOfCollapse(std::string & buff,
-			  std::vector<unsigned short> & preRet);
-void thirdPassOfCollapse(std::vector<unsigned short> & preRet,
-			 std::vector<unsigned short> & ret);
+   processed. */
+void secondPassOfCollapse
+(std::string & buff, std::vector<unsigned short> & preRet);
+void thirdPassOfCollapse
+(std::vector<unsigned short> & preRet, std::vector<unsigned short> & ret);
 
 
 chMap::chMap()
@@ -129,7 +129,8 @@ void secondPassOfCollapse(std::string & buff,
 }
 
 
-void thirdPassOfCollapse(std::vector<int> & preRet, std::vector<int> & ret)
+void thirdPassOfCollapse
+(std::vector<unsigned short> & preRet, std::vector<unsigned short> & ret)
 {
   /* Declared as static so that the constructor will only be called once. This
      is an optimization since the constructor does a lot of work that is

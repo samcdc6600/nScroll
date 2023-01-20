@@ -53,6 +53,8 @@ private:
   const size_t engineSleepTime {32};
   // const double sleepTimeAsAPercentageOfASecond {double(engineSleepTime / millisecondsInSec)};
 
+  // ========== Headers Related To Loading coordRules.lev Files START ==========
+  // ===========================================================================
   coordRulesType loadAndInitialiseCoordRules
   (const yx loadAndInitialiseCoordRules, const backgroundData & background, const char bgFileName [],
    const char coordRulesFileName []);
@@ -77,6 +79,121 @@ private:
      Or if the argument is a space character. If either of these is true then
      returns. Otherwise calls exit() */
   void checkRuleChar(const char potentialRule, const std::string eMsg);
+  // =========== Headers Related To Loading coordRules.lev Files END ===========
+  // ===========================================================================
+  
+  // ============= Headers Related To Loading rules.lev Files START ============
+  // ===========================================================================
+  // Where rawRules holds the contents of a rules.lev file.
+  // void parseRulesHeader(const yx maxyx, const char rulesFileName[],
+  // 			  rules & levelRules, const size_t bgSize,
+  // 		      const std::string & rawRules,
+  // 		      std::string::const_iterator & buffPos);
+  // void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
+  // 		const size_t bgSize, const std::string &rawRules,
+  //                 std::string::const_iterator &buffPos);
+  /* This function should be called for each background sprite section that's
+     encountered. */
+  // void initBgSprites(const yx maxyx, const char rulesFileName[], rules & levelRules,
+  // 		   const size_t bgSize, const std::string & rawRules,
+  // 		   std::string::const_iterator & buffPos);
+  /* Attempts to read the start of the header in a rules.lev file. */
+  // void readStartOfHeader(const std::string &buff,
+  //                        std::string::const_iterator &buffPos,
+  //                        const std::string &eMsg);
+  // /* Attempts to read the bracket at the start of a section. Calls exit with eMsg 
+  //    and section if there is an error. */
+  void readSectionOpeningBracket
+  (const std::string & buff, std::string::const_iterator & buffPos,
+   const std::string & eMsg, const std::string & section,
+   const bool skipSpace = true);
+  /* Attempts to read the bracket at the end of a section. Calls exit with eMsg 
+     and section if there is an error. */
+  void readSectionEndingBracket
+  (const std::string & buff, std::string::const_iterator & buffPos,
+   const std::string & eMsg, const std::string & section);
+  /* Attempts to read the strings from a string section in a rules.lev file.
+     Should be called when a series of strings is expected. Buff is the buffer
+     where the strings should be located and buffPos is the position to start
+     reading from. EMsg will be embedded in any error message/s the function spits
+     out and should say something about the context in which readStringsSection()
+     was called. Returns the strings that were read. */
+  void readStringsSection
+  (const std::string & buff, std::string::const_iterator & buffPos,
+   const std::string & eMsg, void * retObj);
+  /* Attempts to read one coordinate from a section in buff starting at buffPos.
+     Emsg will be embedded in any error message/s the function spits out and
+     should say something about the context in which the function was
+     called. Returns the coordinate read. Only reads natural numbers (inclusive
+     of 0.)*/
+  void readSingleCoordSectionInNNumbers
+  (const std::string & buff, std::string::const_iterator & buffPos,
+   const std::string & eMsg, void * coord);
+  /* This function is the same as readSingleCoordSectionInNNumbers() with the one
+     exception that it does not skip any spaces i.e. the first character of the
+     coordinate (the "(" terminal) should be at *buffPos. Otherwise the program will
+     be halted with an error message. */
+  void readSingleCoordSectionInNNumbersNoSkpSp
+  (const std::string & buff, std::string::const_iterator & buffPos,
+   const std::string & eMsg, void * coord);
+  /* Same as readSingleCoordSectionInNNumbers() with the exception that it can
+     read integers. */
+  void readSingleCoordSectionInZNumbers
+  (const std::string & buff, std::string::const_iterator & buffPos,
+   const std::string & eMsg, void * coord);
+  /* This function should be called through readSingleCoordSectionInNNumbers() or
+     readSingleCoordSectionInZNumbers(). SkipSpace suppresses the skipping of
+     spaces before the opening terminal "(". */
+  void readSingleCoordSection
+  (const std::string & buff, std::string::const_iterator & buffPos,
+   const std::string & eMsg, const bool useIntegers,
+   void * coord, const std::string typeOfNumber, const bool skipSpace = true);
+  /* Attempts to read a boolean for a section in buff starting at buffPos. Emsg
+     will be embedded in any error message/s the function spits out and should
+     START say something about the context in which the function was called. Returns
+     the bool read. Can read a boolean in a string or integer format i.e. "true" /
+     "false" or 1 / 0. */
+  void readBoolSection
+  (const std::string & buff, std::string::const_iterator & buffPos,
+   const std::string & eMsg, void * boolean);
+  // /* Attempts to read a number starting at buffPos (will skip any space before the
+  //    number.) */
+  // int readSingleNum
+  // (const std::string & buff, std::string::const_iterator & buffPos,
+  //  const std::string & eMsg, const bool useIntegers);
+  // Verifies that the header of a .rules.lev file is present.
+  void readEndOfHeader
+  (const std::string & buff, std::string::const_iterator & buffPos,
+   const std::string & eMsg);
+  // void parseRulesMain(const yx maxyx, const char bgFileName[],
+  //                     const char rulesFileName[], rules &levelRules,
+  //                     const size_t bgSize, const std::string &rawRules,
+  //                     std::string::const_iterator &buffPos);
+  // /* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
+  //    Or if the argument is a space character. If either of these is true then
+  //    returns. Otherwise calls exit() */
+  // void checkRuleChar(const char potentialRule, const std::string eMsg);
+
+  /* Should be called after checking for all header sections related to the
+     player. Checks if all sections were found. If a section is encountered that
+     wasn't found, then we check if it has a default value. If so we apply the
+     default value. If it doesn't have a default value then call exit()*/
+  // void checkForDefaultPlayerValues(
+  // 				 std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+  // 				 playerHeaderKeywordActions,
+  // 				 levelFileKeywords::keywordAction::headerKeywordAction &keywordAction,
+  // 				 levelFileKeywords::playerInitialData &playerInitData,
+  // 				 std::string::const_iterator &buffPos, const char rulesFileName[]);
+  // void checkForDefaultBgSpriteValues
+  // (std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+  //  bgSpriteHeaderKeywordActions,
+  //  levelFileKeywords::keywordAction::headerKeywordAction & keywordAction,
+  //  levelFileKeywords::bgSpriteInitialData & bgSpriteInitData, 
+      //  std::string::const_iterator & buffPos,
+      //  const char rulesFileName []);
+  // ============== Headers Related To Loading rules.lev Files END =============
+  // ===========================================================================
+  
   /* Set's oldTime to the current time if
      (oldTime - (the current time) >= second). */
   void resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime);

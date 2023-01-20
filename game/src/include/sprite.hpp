@@ -22,11 +22,11 @@ public:
     };
   
 private:
-  enum sliceLineIndex
-    {				// Used as index into sliceLine vector.
-      SLICE_LINE_ONE,
-      SLICE_LINE_TWO
-    };
+  // enum sliceLineIndex
+  //   {				// Used as index into sliceLine vector.
+  //     SLICE_LINE_ONE,
+  //     SLICE_LINE_TWO
+  //   };
   
 protected:
     const yx maxyx;		// Window size.
@@ -56,7 +56,7 @@ protected:
 private:
   struct sliceLine
   {
-    std::vector<int> sliceLine;	// Holds line of slice.
+    std::vector<unsigned short> sliceLine;	// Holds line of slice.
     int offset;	// Horizontal offset of sliceLine from current curser position.
   };
   struct sliceData

@@ -93,7 +93,23 @@ bool checkRange(const int a, const int min, const int max);
    Return's false otherwise. */
 bool inSingleDigitRange(const int a, const int offset);
 // Returns false if unable to open file at path name.
-bool loadFileIntoString(const char name[], std::string & buff);
+bool loadFileIntoString(const char name[], std::string &buff);
+/* First checks if buffPos is in range. Returns false if it is not. Otherwise
+   attempts to read the coordinates into chunkCoord. If this succeeds returns
+   true (with chunkCoord being set to the coordinates read.) If there is a
+   failure in reading the coordinates then the program will be aborted with eMsg
+   being displayed. */
+bool getChunkCoordinate
+(const std::string & data, std::string::const_iterator & buffPos,
+ const std::string & eMsg, yx & chunkCoord);
+/* Attempts to read a number starting at buffPos (will skip any space before the
+   number.) */
+int readSingleNum
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, const bool useIntegers);
+void getChunk
+(const std::string & data, std::string::const_iterator & buffPos,
+ const std::string & eMsg, std::string & chunk, const yx expectedChunkSize);
 /* Advances buffPos (past white space) until it reads one past a sequence of
    characters that matches a string in targets, where buffPos points to
    somewhere in buff and the strings in targets will be checked in order of the

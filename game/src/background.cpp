@@ -125,7 +125,7 @@ void backgroundData::initialiseBackground
 			"Encountered other character or EOF."));
 	      // Get chunk from background data read from file.
 	      getChunk(bgData, buffPos,
-		       concat("Error: reading in chunk no. ", chunksReadIn,
+		       concat("trying to read in chunk no. ", chunksReadIn,
 			      " from background.lev file \"", bgFileName,
 			      "\"."), chunk, maxyx);
 	      // Collapse chunk and return in rawChunk.

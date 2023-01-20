@@ -7,6 +7,30 @@
 #include "include/utils.hpp"
 
 
+/* NOTE THAT WE DECLARE THIS HEADING HERE BECAUSE A FUNCTION WITH THE SAME
+   SIGNATURE IS DECLARED IN levelRules.hpp AND WE ONLY NEED THIS FUNCTION IN
+   THIS FILE. SkipSpace suppresses the skipping of spaces before the opening
+   terminal "(". */
+void readSingleCoordSection
+(const std::string & buff,
+ std::string::const_iterator & buffPos,
+ const std::string & eMsg, const bool useIntegers,
+ void *coord, const std::string typeOfNumber,
+ const bool skipSpace = true);
+/* NOTE AGAIN THAT AS WITH THE ABOVE A FUNCTION WITH THE SAME SIGNATURE IS
+   DEFINED ELSE WHERE. Attempts to read the bracket at the start of a section. Calls exit
+   with eMsg and section if there is an error. */
+void readSectionOpeningBracket
+(const std::string &buff, std::string::const_iterator &buffPos,
+ const std::string &eMsg, const std::string &section, const bool skipSpace);
+/* NOTE AGAIN THAT AS WITH THE ABOVE A FUNCTION WITH THE SAME SIGNATURE IS
+   DEFINED ELSE WHERE. Attempts to read the bracket at the end of a
+   section. Calls exit with eMsg and section if there is an error. */
+void readSectionEndingBracket
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, const std::string & section);
+
+
 namespace boarderRuleChars
 {
   /* NOTE: when adding boarder rule characters you must also add them to the
@@ -18,6 +42,9 @@ namespace boarderRuleChars
   constexpr char PLATFORM_CHAR = 'p';
   const std::vector<char> CHARS {BOARDER_CHAR, PLATFORM_CHAR};
 };
+/* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player
+   cannot be started at a position with a number with more places than this. */
+constexpr int MAX_COORD_LEN{10};  
 
 
 void sleep(const unsigned long long t)
@@ -65,6 +92,188 @@ bool loadFileIntoString(const char name [], std::string & buff)
   return true;
 }
 
+
+bool getChunkCoordinate
+  (const std::string & data, std::string::const_iterator & buffPos,
+   const std::string & eMsg, yx & chunkCoord)
+{
+  if(buffPos != std::end(data))
+    {
+      readSingleCoordSection
+	(data, buffPos, eMsg, false, & chunkCoord, "natural numbers (without "
+	 "skipping space up until the coordinate)", false);
+
+      return true;
+    }
+  else
+    {
+      return false;
+    }
+}
+
+
+// SkipSpace has a default value.
+void readSingleCoordSection
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, const bool useIntegers,
+ void * coord, const std::string typeOfNumber, const bool skipSpace)
+{
+  constexpr char COORD_SEPARATION {','};
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+  readSectionOpeningBracket
+    (buff, buffPos, eMsg,
+     concat("single coordinate section (with " , typeOfNumber, ")"),
+     skipSpace);
+  
+  ((yx*)coord)->y = readSingleNum(buff, buffPos, eMsg, useIntegers);
+      
+  targets = {std::string {COORD_SEPARATION}};
+  targetFound = skipSpaceUpTo
+    (buff, buffPos, targets);
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<COORD_SEPARATION<<"\" before second coordinate "
+	"component in single coordinate section (with "<<typeOfNumber
+       <<") when "<<eMsg<<". Encountered "<<"\""<<*buffPos<<"\"\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+
+  ((yx*)coord)->x = readSingleNum(buff, buffPos, eMsg, useIntegers);
+
+  readSectionEndingBracket
+    (buff, buffPos, eMsg,
+     concat("single coordinate section (with ", typeOfNumber, ")"));
+}
+
+
+// SkipSpace has a default value.
+void readSectionOpeningBracket
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, const std::string & section, const bool skipSpace)
+{
+  constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+      
+  targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
+  targetFound = skipSpaceUpTo(buff, buffPos, targets, skipSpace);
+  if(targetFound != std::string {RULES_HEADER_SECTION_START_DENOTATION})
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<"\" to "
+	"denote the start of "<<section<<" when "<<eMsg
+       <<". Encountered \""<<*buffPos<<"\"\n";
+      
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+}
+
+
+void readSectionEndingBracket
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg,  const std::string & section)
+{
+  constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+
+  targets = {std::string {RULES_HEADER_SECTION_END_DENOTATION}};
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected \""<<RULES_HEADER_SECTION_END_DENOTATION<<"\" to "
+	"denote the end of "<<section<<" when "<<eMsg<<". Encountered "<<"\""
+       <<*buffPos<<"\"\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+}
+
+
+int readSingleNum
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, const bool useIntegers)
+{
+  // using namespace levelFileKeywords;
+
+  std::vector<std::string> targets
+    {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+  if(useIntegers)
+    {
+      targets.push_back("-");
+    }
+  std::string targetFound {};
+  std::stringstream number {};
+
+  // Skip space up until the start of the number.
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  if(targetFound == "")
+    {
+      std::stringstream e {};
+      e<<"Error: expected non-negative number when "<<eMsg
+       <<". Encountered \""<<*buffPos<<"\".\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+
+  --buffPos;
+  if(targetFound == "-")
+    {
+      number<<*buffPos;
+      ++buffPos;
+    }
+
+  int decPlacesIter {};
+  // Read in number.
+  while(isNum(*buffPos))
+    {
+      number<<*buffPos;
+      decPlacesIter++;
+      buffPos++;
+    }
+  
+  // Check if number was too long.
+  if(decPlacesIter > MAX_COORD_LEN)
+    {
+      std::stringstream e {};
+      e<<"Error: number \""<<number.str()<<"\" too long (longer than \""
+       <<MAX_COORD_LEN<<"\") when "<<eMsg
+       <<". Encountered \""<<*buffPos<<"\".\n";
+      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+    }
+
+  int numberRet;
+  number>>numberRet;
+  return numberRet;
+}
+
+
+void getChunk(const std::string & data,
+	      std::string::const_iterator & buffPos, const std::string & eMsg,
+	      std::string & chunk, const yx expectedChunkSize)
+{
+  chunk.clear();
+
+  int lnCount {};
+  for( ; lnCount < expectedChunkSize.y -1 && buffPos != std::end(data); )
+    {
+      char newCh {};
+      newCh = *buffPos++;
+      chunk += newCh;
+      lnCount += (newCh == '\n' ? 1: 0);
+    }
+  if(lnCount + 1 != expectedChunkSize.y)
+    {
+      exit(concat
+	   ("Error: Wrong number of lines. Expected ", expectedChunkSize.y,
+	    ", but found ", lnCount, " when ", eMsg), ERROR_BACKGROUND);
+    }
+
+  endwin();
+  std::cout<<chunk<<'\n';
+  exit(-1);
+}
 
 
 // SkipSpace has a default value.
@@ -200,3 +409,4 @@ void exit(const std::string & e, const int status)
   std::cerr<<e<<'\n';
   exit(status);
 }
+
