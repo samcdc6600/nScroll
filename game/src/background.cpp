@@ -17,8 +17,9 @@ backgroundData::backgroundType backgroundData::loadAndInitialiseBackground
   std::string rawLevelBackground {};
   backgroundType background;
     
-  loadFileIntoString(bgFileName, rawLevelBackground,
-		     "trying to read .background.lev file");
+  loadFileIntoString
+    (bgFileName, rawLevelBackground,
+     concat("trying to read ", BACKGROUND_FILE_EXTENSION, " file"));
   initialiseBackground(false, bgFileName, rawLevelBackground, background);
   /* This will result in a deep copy when this function is called from the
      constructor. However this only happens once per level load. */
@@ -59,11 +60,11 @@ void backgroundData::initialiseBackground
 	     (assuming the size of chunks for this file are 170 in the x
 	     dimension), the coordinate in the header would be (0, 1) and
 	     for (0, 340) it would be (0, 2), etc... */
-	  if(getChunkCoordinate(bgData, buffPos,
-				concat("trying to read coord no. ",
-				       chunksReadIn, " from background.lev "
-				       "file \"", bgFileName, "\""),
-				chunkCoord))
+	  if(getChunkCoordinate
+	     (bgData, buffPos,
+	      concat("trying to read coord no. ", chunksReadIn, " from ",
+		     BACKGROUND_FILE_EXTENSION, " file \"", bgFileName, "\""),
+	      chunkCoord))
 	    {
 	      // Get chunk from background data read from file.
 	      // Collapse chunk and return in rawChunk.
@@ -116,13 +117,13 @@ void backgroundData::initialiseBackground
 		(bgData, buffPos,
 		 concat("Error: trying to read chunk no. ", chunksReadIn,
 			". Expected '\\n' after reading chunk coordinate "
-			"from background.lev file \"", bgFileName, "\". "
-			"Encountered other character or EOF."));
+			"from ", BACKGROUND_FILE_EXTENSION, " file \"",
+			bgFileName, "\". Encountered other character or EOF."));
 	      // Get chunk from background data read from file.
 	      getChunk(bgData, buffPos,
 		       concat("trying to read in chunk no. ", chunksReadIn,
-			      " from background.lev file \"", bgFileName,
-			      "\"."), chunk, maxyx);
+			      " from ", BACKGROUND_FILE_EXTENSION, " file \"",
+			      bgFileName, "\"."), chunk, maxyx);
 	      // Collapse chunk and return in rawChunk.
 	      collapse(chunk, rawChunk);
 	      verifyCollapsedChunkSize(rawChunk, chunksReadIn, true);
@@ -193,42 +194,6 @@ void backgroundData::verifyCollapsedChunkSize
 	    (attemptedCompression ? " after being compressed.": "."),
 	    "Expected size of ",
 	    maxyx.y * maxyx.x, " (", maxyx.y, " * ", maxyx.x, ")."),
-	   ERROR_BACKGROUND);
-    }
-}
-
-
-std::string inline backgroundData::createChunkCoordKey(const yx coord) const
-{
-    /* ',' must be included to delineate between the y and x
-     coordinates. */
-    return concat("", coord.y, ",", coord.x);
-}
-
-
-void backgroundData::insertChunk
-(const yx coord, const backgroundChunk & rawChunk, const ssize_t chunksReadIn,
- const char bgFileName [], backgroundType & background) const
-{
-  /* Store rawChunk in this.background with a key that should be
-     calculated according to the following:
-     Concatenate (y / maxyx.y) and (x / maxyx.y) and use as
-     index into map. Then
-     (y % (maxyx.y * 3)) * maxyx.x + (x % (maxyx.x * 3)) can
-     be used to index into the backgroundChunk returned from
-     the map (as the stage 1 draw buffer will be 3 by 3
-     chunks.)
-  */
-  const std::string key
-    {createChunkCoordKey(coord)};
-  if(background.insert
-     (std::pair<std::string, backgroundChunk>
-      (key, rawChunk)).second == false)
-    {
-      exit(concat
-	   ("Error: duplicate chunk coordinate (",
-	    key, ") found when loading chunk no. ",
-	    chunksReadIn, " from file \"", bgFileName, "\"."),
 	   ERROR_BACKGROUND);
     }
 }

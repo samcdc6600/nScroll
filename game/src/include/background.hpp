@@ -53,12 +53,6 @@ private:
   void verifyCollapsedChunkSize(const backgroundChunk & rawChunk,
 				const ssize_t chunksReadIn,
 				const bool attemptedCompression) const;
-  std::string inline createChunkCoordKey(const yx coord) const;
-  /* Creates a key using coord and inserts rawChunk into background with that
-     key. If a duplicate key is found prints error message and exit's. */
-  void insertChunk
-  (const yx coord, const backgroundChunk & rawChunk, const ssize_t chunksReadIn,
-   const char bgFileName [], backgroundType & background) const;
   
 public:
   backgroundData(const yx maxyxIn, const char bgFileName []):
@@ -77,6 +71,11 @@ public:
 	
       }
     exit(-1); */
+  }
+
+  ssize_t numberOfChunks() const
+  {
+    return background.size();
   }
   
   /* Uses coord to create a key and searches background for that key. If it is

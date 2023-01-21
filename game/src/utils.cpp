@@ -296,6 +296,14 @@ void getChunk(const std::string & data,
 }
 
 
+std::string createChunkCoordKey(const yx coord)
+{
+    /* ',' must be included to delineate between the y and x
+     coordinates. */
+    return concat("", coord.y, ",", coord.x);
+}
+
+
 // SkipSpace has a default value.
 std::string skipSpaceUpTo(const std::string & buff,
 			  std::string::const_iterator & buffPos,

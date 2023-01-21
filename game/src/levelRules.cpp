@@ -157,31 +157,37 @@ namespace levelFileKeywords
      maximum) that together represent some larger number. This number is the
      number of times the ASCII character before the number should be repeated. */
   constexpr char RULES_MAIN_RUNLENGTH_BEGIN_CHAR {'R'};
-}
+  } // namespace levelFileKeywords
+
+#include <iostream>
+#include <curses.h>
 
 
 rules::coordRulesType rules::loadAndInitialiseCoordRules
-(const yx expectedChunkSize, const backgroundData & background,
- const char bgFileName [], const char coordRulesFileName [])
+(const yx expectedChunkSize, const char coordRulesFileName [],
+ const char bgFileName [], const backgroundData & background) const
 {
   std::string rawCoordRules {};
   coordRulesType coordRules;
   
   loadFileIntoString(coordRulesFileName, rawCoordRules,
-		     "trying to read .coordRules.lev file");
+		     concat("trying to read ", COORD_RULES_FILE_EXTENSION,
+			    " file"));
 
   // parseRulesHeader(expectedChunkSize, coordRulesFileName, levelRules, bgSize, rawCoordRules, buffPos);
   initialiseCoordRules
-    (expectedChunkSize, background, bgFileName, coordRulesFileName, coordRules,
-     rawCoordRules);
+    (expectedChunkSize, coordRulesFileName, bgFileName, coordRules,
+     rawCoordRules, background);
+  /* This will result in a deep copy when this function is called from the
+     constructor. However this only happens once per level load. */
   return coordRules;
 }
 
 
 void rules::initialiseCoordRules
-(const yx expectedChunkSize, const backgroundData & background,
- const char bgFileName [], const char coordRulesFileName [],
- rules::coordRulesType & coordRuless, const std::string & coordRulesData)
+(const yx expectedChunkSize, const char coordRulesFileName [],
+ const char bgFileName [], rules::coordRulesType & coordRules,
+ const std::string & coordRulesData, const backgroundData & background) const
 {
   // std::string::const_iterator buffPos {coordRulesData.begin()};
   // const size_t expectedLineLength {bgSize / expectedChunkSize.y};
@@ -202,31 +208,32 @@ void rules::initialiseCoordRules
 	 (assuming the size of chunks for this file are 170 in the x
 	 dimension), the coordinate in the header would be (0, 1) and
 	 for (0, 340) it would be (0, 2), etc... */
-      if(getChunkCoordinate(coordRulesData, buffPos,
-			    concat("trying  to read coord no. ", chunksReadIn,
-				   " from coordRules.lev file \"",
-				   coordRulesFileName, "\""), chunkCoord))
+      if(getChunkCoordinate
+	 (coordRulesData, buffPos,
+	  concat("trying  to read coord no. ", chunksReadIn, " from ",
+		 COORD_RULES_FILE_EXTENSION, " file \"", coordRulesFileName,
+		 "\""), chunkCoord))
 	{
 	  skipSpaceUpToNextLine
 	    (coordRulesData, buffPos,
 	     concat("Error: trying to read chunk no. ", chunksReadIn,
 		    ". Expected '\\n' after reading chunk coordinate (",
-		    chunkCoord.y, ", ", chunkCoord.x, ") from coordRules.lev "
-		    "file \"", coordRulesFileName, "\". Encountered other "
-		    "character or EOF."));
+		    chunkCoord.y, ", ", chunkCoord.x, ") from ",
+		    COORD_RULES_FILE_EXTENSION, " file \"", coordRulesFileName,
+		    "\". Encountered other character or EOF."));
 	  // Get chunk from coord rules read from file.
-	  getChunk(coordRulesData, buffPos,
-		   concat("trying to read in chunk no. ", chunksReadIn,
-			  ". from coordRules.lev file \"", coordRulesFileName,
-			  "\"."), chunk, expectedChunkSize);
-
-	  // Decompress chunk and return in rawChunk.
+	  getChunk
+	    (coordRulesData, buffPos,
+	     concat("trying to read in chunk no. ", chunksReadIn, ". from ",
+		    COORD_RULES_FILE_EXTENSION, " file \"", coordRulesFileName,
+		    "\"."), chunk, expectedChunkSize);
+	  // Decompress chunk, verify size and return in rawChunk.
 	  decompressChunk
 	    (chunk, rawChunk, expectedChunkSize, chunksReadIn,
 	     coordRulesFileName);
-	  // Verify decompressed size...
-	  // Insert chunk into...
-
+	  insertChunk(chunkCoord, rawChunk, chunksReadIn, coordRulesFileName,
+		      coordRules);
+	  
 	  chunksReadIn++;
 	  // GetChunk() clears it's argument (chunk).
 	  rawChunk.clear();
@@ -236,13 +243,22 @@ void rules::initialiseCoordRules
 	  break;
 	}
     }
+
+  /* Each chunk in background must have a matching chunk in coordRules. This
+     will simplify logic in other areas somewhat. It does means that
+     COORD_RULES_FILE_EXTENSION files will be larger than they would technically
+     need to be, however this shouldn't be much of a problem since the files
+     wouldn't be too large anyway (especially with compressed chunks.) Although
+     some extra memory will be used the game logic will be slightly simpler. */
+  verifyTotalOneToOneOntoMappingOfCoordToBgKeys
+    (coordRulesFileName, bgFileName, coordRules, background);
 }
 
 
 void rules::decompressChunk
 (const std::string & chunkIn, coordRulesChunk & rawChunk,
  const yx expectedChunkSize, const ssize_t chunksReadIn,
- const char coordRulesFileName[])
+ const char coordRulesFileName[]) const
 {
   const char runLenBeginChar
     {levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR};
@@ -335,7 +351,8 @@ void rules::decompressChunk
 }
 
 
-void rules::checkRuleChar(const char potentialRule, const std::string eMsg)
+void rules::checkRuleChar
+    (const char potentialRule, const std::string eMsg) const
 {
   for(char rule: boarderRuleChars::CHARS)
     {
@@ -345,8 +362,6 @@ void rules::checkRuleChar(const char potentialRule, const std::string eMsg)
 	}
     }
   std::stringstream e {};
-  endwin();
-  std::cout<<'\n'<<potentialRule<<std::endl;
   e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
     "line, \""<<levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR<<"\" or in "
     "the set of rule characters (";
@@ -356,6 +371,28 @@ void rules::checkRuleChar(const char potentialRule, const std::string eMsg)
     }
   e<<") when "<<eMsg<<'.';
   exit(e.str().c_str(), ERROR_CHARACTER_RANGE);
+}
+
+
+void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
+(const char coordRulesFileName [], const char bgFileName [],
+ const coordRulesType & coordRules, const backgroundData & background) const
+{
+  endwin();
+  // std::cout<<"coordRules.size() = "<<<<'\n'
+  // 	   <<"background.size() = "<<<<'\n';
+
+  if(coordRules.size() != background.numberOfChunks())
+    {
+      exit(concat("Error: number (", background.numberOfChunks(), ") of chunks read ",
+		  "in from .backgroudn"), ERROR_GENERIC_RANGE_ERROR);
+    }
+
+  
+  for ( const auto &twoTuple : coordRules ) {
+    std::cout<<twoTuple.first<<"\n";
+  }
+  exit(-1);
 }
 
 

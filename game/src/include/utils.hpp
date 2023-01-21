@@ -42,8 +42,12 @@ constexpr int MONO_CH_MAX {158};
 constexpr int COLOR_CH_MAX {63};
 constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR {27};
-//constexpr int BACKGROUND_HEIGHT {33};
+// constexpr int BACKGROUND_HEIGHT {33};
 
+constexpr char BACKGROUND_FILE_EXTENSION [] {".background.lev"};
+constexpr char COORD_RULES_FILE_EXTENSION [] {".coordRules.lev"};
+constexpr char RULES_CONFIG_FILE_EXTENSION [] {".rules.lev"};
+constexpr char SPRITE_FILE_EXTENSION [] {".sprite"};
 
 enum errorsCodes {                     /* Error codes. */
                    ERROR_WIN_PARAM,    // Window not initialised - there was a
@@ -58,7 +62,8 @@ enum errorsCodes {                     /* Error codes. */
                    ERROR_COLOR_CODE_RANGE,  // Color code out of range.
                    ERROR_GENERIC_RANGE_ERROR,
                    ERROR_BACKGROUND,          // Malformed BG file.
-                   ERROR_RULES_LEV_HEADER,    // Header of .level.rules file is
+		   ERROR_RULES_CHAR_FILE,
+		   ERROR_RULES_LEV_HEADER,    // Header of .level.rules file is
                                               // malformed.
                    ERROR_RULES_STRING_FIELDS, // There was an error in a field
                                               // containing string's.
@@ -110,6 +115,7 @@ int readSingleNum
 void getChunk
 (const std::string & data, std::string::const_iterator & buffPos,
  const std::string & eMsg, std::string & chunk, const yx expectedChunkSize);
+std::string createChunkCoordKey(const yx coord);
 /* Advances buffPos (past white space) until it reads one past a sequence of
    characters that matches a string in targets, where buffPos points to
    somewhere in buff and the strings in targets will be checked in order of the
@@ -210,6 +216,32 @@ bool getCoordRule(const yx & pos, const std::vector<T> & rules, int bgHeight,
 		  T & coordRulesRet)
 {
   return getCoordRule(pos.y, pos.x, rules, bgHeight, coordRulesRet);
+}
+
+
+template<typename T1, typename T2>
+void insertChunk
+(const yx coord, const T1 & chunk, const ssize_t chunksReadIn,
+ const char fileName [], T2 & chunkMap)
+{
+  /* Store chunk in chunkMap with a key that should be calculated according to
+     the following:
+     Concatenate (y / maxyx.y) and (x / maxyx.y) and use as index into map. Then
+     (y % (maxyx.y * 3)) * maxyx.x + (x % (maxyx.x * 3))
+     can be used to index into the object returned. The stage 1 draw buffer will
+     be 3 by 3 chunks. */
+  const std::string key
+    {createChunkCoordKey(coord)};
+  if(chunkMap.insert
+     (std::pair<std::string, T1>
+      (key, chunk)).second == false)
+    {
+      exit(concat
+	   ("Error: duplicate chunk coordinate (",
+	    key, ") found when loading chunk no. ",
+	    chunksReadIn, " from file \"", fileName, "\"."),
+	   ERROR_RULES_CHAR_FILE);
+    }
 }
 
 

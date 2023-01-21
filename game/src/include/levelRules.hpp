@@ -56,12 +56,12 @@ private:
   // ========== Headers Related To Loading coordRules.lev Files START ==========
   // ===========================================================================
   coordRulesType loadAndInitialiseCoordRules
-  (const yx loadAndInitialiseCoordRules, const backgroundData & background, const char bgFileName [],
-   const char coordRulesFileName []);
+  (const yx expectedChunkSize, const char coordRulesFileName [],
+   const char bgFileName [], const backgroundData & background) const;
   void initialiseCoordRules
-  (const yx expectedChunkSize, const backgroundData & background,
-   const char bgFileName [], const char coordRulesFileName [],
-   coordRulesType & coordRuless, const std::string & rawCoordRules);
+  (const yx expectedChunkSize, const char coordRulesFileName [],
+   const char bgFileName [], rules::coordRulesType & coordRules,
+   const std::string & coordRulesData, const backgroundData & background) const;
   /* Attempts to decompress chunk in chunkIn. If successful returns
      decompressed chunk via rawChunk. ChunkIn is assumed to be compressed using
      the run length encoding technique.
@@ -74,11 +74,16 @@ private:
   void decompressChunk
   (const std::string & chunkIn, coordRulesChunk & rawChunk,
    const yx expectedChunkSize, const ssize_t chunksReadIn,
-   const char coordRulesFileName[]);
+   const char coordRulesFileName[]) const;
   /* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
      Or if the argument is a space character. If either of these is true then
      returns. Otherwise calls exit() */
-  void checkRuleChar(const char potentialRule, const std::string eMsg);
+  void checkRuleChar(const char potentialRule, const std::string eMsg) const;
+  /* Make sure that for each key in coordRules there is a corresponding key in
+     background and that coordRules and background have the same cardinality. */
+  void verifyTotalOneToOneOntoMappingOfCoordToBgKeys
+  (const char coordRulesFileName [], const char bgFileName [],
+   const coordRulesType & coordRules, const backgroundData & background) const;
   // =========== Headers Related To Loading coordRules.lev Files END ===========
   // ===========================================================================
   
@@ -275,7 +280,7 @@ public:
   (const yx maxyx, const backgroundData & background, const char bgFileName [],
    const char coordRulesFileName [], const char rulesFileName []) :
     coordRules(loadAndInitialiseCoordRules
-	       (maxyx, background, bgFileName, coordRulesFileName)),
+	       (maxyx, coordRulesFileName, bgFileName, background)),
     coordRulesCurrentContextBufferSize(maxyx.y * maxyx.x * 9),
     coordRulesCurrentContextBuffer(new char [maxyx.y * maxyx.x * 9])
   {
