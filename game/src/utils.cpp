@@ -75,21 +75,29 @@ bool inSingleDigitRange(const int a, const int offset)
 }
 
 
-bool loadFileIntoString(const char name [], std::string & buff)
+void loadFileIntoString(const char name [], std::string & buff,
+			const std::string & eMsg)
 {
   std::ifstream file {};
   file.open(name);
   if(!file.is_open())
     {				// Couldn't open file.
       file.close();
-      return false;
+      exit(concat("Error: opening file \"", name, "\" when ", eMsg, "."),
+	   ERROR_OPENING_FILE);
     }
   char c;
   while(file.get(c))		// Copy file content's to buff.
-    buff.push_back(c);
+    {
+      buff.push_back(c);
+    }
   file.close();
-  
-  return true;
+
+  if(buff.size() == 0)
+    {
+      exit(concat("Error: found file \"", name, "\" to be empty when ", eMsg,
+		  "."), ERROR_OPENING_FILE);
+    }
 }
 
 
@@ -102,7 +110,6 @@ bool getChunkCoordinate
       readSingleCoordSection
 	(data, buffPos, eMsg, false, & chunkCoord, "natural numbers (without "
 	 "skipping space up until the coordinate)", false);
-
       return true;
     }
   else
@@ -256,23 +263,36 @@ void getChunk(const std::string & data,
   chunk.clear();
 
   int lnCount {};
-  for( ; lnCount < expectedChunkSize.y -1 && buffPos != std::end(data); )
+  if(buffPos != std::end(data))
     {
-      char newCh {};
-      newCh = *buffPos++;
-      chunk += newCh;
-      lnCount += (newCh == '\n' ? 1: 0);
+      while(true)
+	{
+	  char newCh {};
+	  newCh = *buffPos++;
+	  lnCount += (newCh == '\n' ? 1: 0);
+	  
+	  if(lnCount >= expectedChunkSize.y)
+	    {
+	      break;
+	    }
+	  else 
+	    {
+	      chunk += newCh;
+	      if(buffPos == std::end(data))
+		{
+		  break;
+		}
+	    }
+      
+	}
     }
-  if(lnCount + 1 != expectedChunkSize.y)
+
+  if(lnCount != expectedChunkSize.y)
     {
       exit(concat
 	   ("Error: Wrong number of lines. Expected ", expectedChunkSize.y,
 	    ", but found ", lnCount, " when ", eMsg), ERROR_BACKGROUND);
     }
-
-  endwin();
-  std::cout<<chunk<<'\n';
-  exit(-1);
 }
 
 
@@ -339,7 +359,7 @@ std::string skipSpaceUpTo(const std::string & buff,
 void skipSpaceUpToNextLine(const std::string & buff,
 			   std::string::const_iterator & buffPos,
 			   const std::string & eMsg)
-{
+{ 
   while(buffPos != std::end(buff))
     {
       if(*buffPos == '\n')
@@ -361,6 +381,7 @@ void skipSpaceUpToNextLine(const std::string & buff,
     ERROR_EXIT:
       exit(eMsg.c_str(), ERROR_GENERIC_RANGE_ERROR);
     }
+  
   // Can be equal to std::end(buff) after incrementing.
   buffPos++;
 }

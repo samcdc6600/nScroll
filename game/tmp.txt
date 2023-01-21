@@ -1,0 +1,207 @@
+./src/background.cpp-22-      std::stringstream err {};
+./src/background.cpp:23:      err<<"Error: unable to open \""<<bgFileName<<"\".";
+./src/background.cpp-24-      exit(err.str(), ERROR_OPENING_FILE);
+--
+./src/background.cpp-121-		(bgData, buffPos,
+./src/background.cpp:122:		 concat("Error: trying to read chunk no. ", chunksReadIn,
+./src/background.cpp-123-			". Expected '\\n' after reading chunk coordinate "
+--
+./src/background.cpp-195-      exit(concat
+./src/background.cpp:196:	   ("Error: chunk no. ", chunksReadIn, " is the wrong size (",
+./src/background.cpp-197-	    rawChunk.size(), ")",
+--
+./src/background.cpp-233-      exit(concat
+./src/background.cpp:234:	   ("Error: duplicate chunk coordinate (",
+./src/background.cpp-235-	    key, ") found when loading chunk no. ",
+--
+./src/draw.cpp-174-	{
+./src/draw.cpp:175:	  exit(concat("Error: encountered default colour character (",
+./src/draw.cpp-176-		      (int)ch, ") that is greater than ", MONO_CH_MAX,".!"),
+--
+./src/draw.cpp-286-    default:
+./src/draw.cpp:287:      exit(concat("Error: encountered ", inColor ? "colour": "",
+./src/draw.cpp-288-		  " ACS character code (", (int)acsCode,
+--
+./src/levelRules.cpp-171-    {
+./src/levelRules.cpp:172:      exit(concat("Error: unable to open \"", coordRulesFileName, "\"."),
+./src/levelRules.cpp-173-	   ERROR_OPENING_FILE);
+--
+./src/levelRules.cpp-220-	    (coordRulesData, buffPos,
+./src/levelRules.cpp:221:	     concat("Error: trying to read chunk no. ", chunksReadIn,
+./src/levelRules.cpp-222-		    ". Expected '\\n' after reading chunk coordinate ",
+--
+./src/levelRules.cpp-297-	      std::stringstream e {};
+./src/levelRules.cpp:298:	      e<<"Error: reading rules.lev header file \""<<coordRulesFileName
+./src/levelRules.cpp-299-	       <<"\". Encountered line of length ("<<lineLength<<") (on line "
+--
+./src/levelRules.cpp-313-      std::stringstream e {};
+./src/levelRules.cpp:314:      e<<"Error: reading rules.lev header file \""<<coordRulesFileName
+./src/levelRules.cpp-315-       <<"\". Encountered line of length ("<<lineLength<<") (on line "
+--
+./src/levelRules.cpp-323-      std::stringstream e {};
+./src/levelRules.cpp:324:      e << "Error: reading rules.lev header file \"" << coordRulesFileName
+./src/levelRules.cpp-325-	<< "\". Size ("<<coordRuless.coordRules.size()<<") of main section of "
+--
+./src/levelRules.cpp-391-	      exit(concat
+./src/levelRules.cpp:392:		   ("Error: reading rules.lev header file \"",
+./src/levelRules.cpp-393-		    coordRulesFileName, "\". Encountered line of length (",
+--
+./src/levelRules.cpp-408-      exit(concat
+./src/levelRules.cpp:409:	   ("Error: reading rules.lev header file \"", coordRulesFileName,
+./src/levelRules.cpp-410-	    "\". Encountered line of length (", lineLength, ") when ",
+--
+./src/levelRules.cpp-420-      exit(concat
+./src/levelRules.cpp:421:	   ("Error: reading rules.lev header file \"", coordRulesFileName,
+./src/levelRules.cpp-422-	    "\".  Size (", rawChunk.size(), ") of chunk no. ", chunksReadIn,
+--
+./src/levelRules.cpp-438-  std::stringstream e {};
+./src/levelRules.cpp:439:  e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
+./src/levelRules.cpp-440-    "line, \""<<levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR<<"\" or in "
+--
+./src/levelRules.cpp-465-      exit(concat
+./src/levelRules.cpp:466:	   ("Error: expected \"", RULES_HEADER_SECTION_START_DENOTATION,
+./src/levelRules.cpp-467-	    "\" to denote the start of ", section, " when ", eMsg,
+--
+./src/levelRules.cpp-486-      exit(concat
+./src/levelRules.cpp:487:	   ("Error: expected \"", RULES_HEADER_SECTION_END_DENOTATION, "\" to "
+./src/levelRules.cpp-488-	    "denote the end of ", section, " when ", eMsg, ". Encountered \"",
+--
+./src/levelRules.cpp-517-          exit(concat
+./src/levelRules.cpp:518:	       ("Error: expected \"", STRING_DENOTATION, "\" to denote the ",
+./src/levelRules.cpp-519-		"start of a string when ", eMsg, ". Encountered \"", *buffPos,
+--
+./src/levelRules.cpp-533-		  exit(concat
+./src/levelRules.cpp:534:		       ("Error: file ended unexpectedly when ", eMsg, ".\n"),
+./src/levelRules.cpp-535-		       ERROR_RULES_LEV_HEADER);
+--
+./src/levelRules.cpp-542-		      exit(concat
+./src/levelRules.cpp:543:			   ("Error: encountered character (\"", *peekBuffPos,
+./src/levelRules.cpp-544-			    "\") other then \"", STRING_ESC, "\" or \"",
+--
+./src/levelRules.cpp-556-			  exit(concat
+./src/levelRules.cpp:557:			       ("Error: file ended unexpectedly when ", eMsg,
+./src/levelRules.cpp-558-				".\n"),
+--
+./src/levelRules.cpp-592-	  exit(concat
+./src/levelRules.cpp:593:	       ("Error: expected \"", STRING_SEPARATION, "\" or \"",
+./src/levelRules.cpp-594-		RULES_HEADER_SECTION_END_DENOTATION, "\" to separate strings ",
+--
+./src/levelRules.cpp-656-      exit(concat
+./src/levelRules.cpp:657:	   ("Error: expected \"", COORD_SEPARATION, "\" before second ",
+./src/levelRules.cpp-658-	    "coordinate component in single coordinate section (with ",
+--
+./src/levelRules.cpp-695-      std::stringstream e {};
+./src/levelRules.cpp:696:      e<<"Error: expected one of (";
+./src/levelRules.cpp-697-	for(auto target: targets)
+--
+./src/levelRules.cpp-729-//       std::stringstream e {};
+./src/levelRules.cpp:730://       e<<"Error: expected non-negative number when "<<eMsg
+./src/levelRules.cpp-731-//        <<". Encountered \""<<*buffPos<<"\".\n";
+--
+./src/levelRules.cpp-754-//       std::stringstream e {};
+./src/levelRules.cpp:755://       e<<"Error: number \""<<number.str()<<"\" too long (longer than \""
+./src/levelRules.cpp-756-//        <<MAX_COORD_LEN<<"\") when "<<eMsg
+--
+./src/levelRules.cpp-784-	  std::stringstream e {};
+./src/levelRules.cpp:785:	  e<<"Error: expected \"";
+./src/levelRules.cpp-786-	  for(int iter {}; iter < nestingLevel; ++iter)
+--
+./src/levelRules.cpp-801-      exit(concat
+./src/levelRules.cpp:802:	   ("Error: expected \"", RULES_HEADER_END_DENOTATION, "\" when ", eMsg,
+./src/levelRules.cpp-803-	    ". Encountered \"", *buffPos, *(++buffPos), *(++buffPos), "\".\n"),
+--
+./src/levelRules.cpp-865-// 	      std::stringstream e {};
+./src/levelRules.cpp:866:// 	      e<<"Error: reading rules.lev header file \""<<rulesFileName
+./src/levelRules.cpp-867-// 	       <<"\". Encountered line of length ("<<lineLength<<") (on line "
+--
+./src/levelRules.cpp-881-//       std::stringstream e {};
+./src/levelRules.cpp:882://       e<<"Error: reading rules.lev header file \""<<rulesFileName
+./src/levelRules.cpp-883-//        <<"\". Encountered line of length ("<<lineLength<<") (on line "
+--
+./src/levelRules.cpp-891-//       std::stringstream e {};
+./src/levelRules.cpp:892://       e << "Error: reading rules.lev header file \"" << rulesFileName
+./src/levelRules.cpp-893-// 	<< "\". Size ("<<levelRules.coordRules.size()<<") of main section of "
+--
+./src/levelRules.cpp-910-//   std::stringstream e {};
+./src/levelRules.cpp:911://   e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
+./src/levelRules.cpp-912-//     "line, \""<<levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR<<"\" or in "
+--
+./src/levelRules.cpp-969-//       std::stringstream e {};
+./src/levelRules.cpp:970://       e<<"Error: expected section\\s \"";
+./src/levelRules.cpp-971-//       for(auto keywordAction: playerHeaderKeywordActions)
+--
+./src/levelRules.cpp-1017-//       std::stringstream e {};
+./src/levelRules.cpp:1018://       e<<"Error: expected section\\s \"";
+./src/levelRules.cpp-1019-//       for(auto keywordAction: bgSpriteHeaderKeywordActions)
+--
+./src/loadAssets.cpp-32-      std::stringstream err {};
+./src/loadAssets.cpp:33:      err<<"Error: unable to open \""<<bgFileName<<"\".";
+./src/loadAssets.cpp-34-      exit(err.str(), ERROR_OPENING_FILE);
+--
+./src/loadAssets.cpp-43-  //     std::stringstream err {};
+./src/loadAssets.cpp:44:  //     err<<"Error: wrong number of characters in background after collapsing "
+./src/loadAssets.cpp-45-  // 	"escaped characters. "
+--
+./src/loadAssets.cpp-62-//       std::stringstream e {};
+./src/loadAssets.cpp:63://       e<<"Error: unable to open \""<<rulesFileName<<"\".";
+./src/loadAssets.cpp-64-//       exit(e.str(), ERROR_OPENING_FILE);
+--
+./src/loadAssets.cpp-137-// 		  std::stringstream e {};
+./src/loadAssets.cpp:138:// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+./src/loadAssets.cpp-139-// 		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
+--
+./src/loadAssets.cpp-180-// 		  std::stringstream e {};
+./src/loadAssets.cpp:181:// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+./src/loadAssets.cpp-182-// 		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
+--
+./src/loadAssets.cpp-276-// 		  std::stringstream e {};
+./src/loadAssets.cpp:277:// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+./src/loadAssets.cpp-278-// 		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
+--
+./src/loadAssets.cpp-317-// 		  std::stringstream e {};
+./src/loadAssets.cpp:318:// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+./src/loadAssets.cpp-319-// 		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
+--
+./src/player.cpp-20-      std::stringstream e {};
+./src/player.cpp:21:      e<<"Error: initial position for player sprite with file/s (";
+./src/player.cpp-22-      for(std::string name: spritePaths)
+--
+./src/player.cpp-50-      std::stringstream err {};
+./src/player.cpp:51:      err<<"Error: the gravitational g constant can't be positive, where g was "
+./src/player.cpp-52-	"found to be set to "<<gravitationalConstant<<".";
+--
+./src/player.cpp-57-      std::stringstream err {};
+./src/player.cpp:58:      err<<"Error: the maximum vertical velocity for the player must be at "
+./src/player.cpp-59-	"least than 1 (the unit is in characters (position) per second.) "<<v
+--
+./src/player.cpp-65-      std::stringstream err {};
+./src/player.cpp:66:      err<<"Error: maxFallingJmpNum ("<<maxFallingJmpNum<<") can't be more then"
+./src/player.cpp-67-	" maxJmpNum. ("<<maxJmpNum<<").";
+--
+./src/sprite.cpp-260-      std::stringstream e {};
+./src/sprite.cpp:261:      e<<"Error: initial position for non player sprite with file/s (";
+./src/sprite.cpp-262-      for(std::string name: spritePaths)
+--
+./src/utils.cpp-136-      std::stringstream e {};
+./src/utils.cpp:137:      e<<"Error: expected \""<<COORD_SEPARATION<<"\" before second coordinate "
+./src/utils.cpp-138-	"component in single coordinate section (with "<<typeOfNumber
+--
+./src/utils.cpp-164-      std::stringstream e {};
+./src/utils.cpp:165:      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<"\" to "
+./src/utils.cpp-166-	"denote the start of "<<section<<" when "<<eMsg
+--
+./src/utils.cpp-186-      std::stringstream e {};
+./src/utils.cpp:187:      e<<"Error: expected \""<<RULES_HEADER_SECTION_END_DENOTATION<<"\" to "
+./src/utils.cpp-188-	"denote the end of "<<section<<" when "<<eMsg<<". Encountered "<<"\""
+--
+./src/utils.cpp-214-      std::stringstream e {};
+./src/utils.cpp:215:      e<<"Error: expected non-negative number when "<<eMsg
+./src/utils.cpp-216-       <<". Encountered \""<<*buffPos<<"\".\n";
+--
+./src/utils.cpp-239-      std::stringstream e {};
+./src/utils.cpp:240:      e<<"Error: number \""<<number.str()<<"\" too long (longer than \""
+./src/utils.cpp-241-       <<MAX_COORD_LEN<<"\") when "<<eMsg
+--
+./src/utils.cpp-281-      exit(concat
+./src/utils.cpp:282:	   ("Error: Wrong number of lines. Expected ", expectedChunkSize.y,
+./src/utils.cpp-283-	    ", but found ", lnCount, " when ", eMsg), ERROR_BACKGROUND);

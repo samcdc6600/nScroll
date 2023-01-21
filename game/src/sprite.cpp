@@ -276,12 +276,7 @@ void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
 {
   // Load sprite asset. --------------------------------------------------------
   std::string rawSprite {};// Holds raw contents of sprite file.
-  if(!loadFileIntoString(spriteFileName, rawSprite))
-    {
-      std::stringstream e {};
-      e<<"Error opening sprite file \""<<spriteFileName<<"\" :'( .";
-      exit(e.str().c_str(), ERROR_OPENING_FILE);
-    }
+  loadFileIntoString(spriteFileName, rawSprite, "trying to read .sprite file");
   // Call parserPhaseOne. ------------------------------------------------------
   std::vector<std::vector<partiallyProcessedSliceLine>> pPSpriteSliceS
     {parserPhaseOne(rawSprite, sD)};

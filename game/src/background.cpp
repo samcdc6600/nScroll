@@ -17,13 +17,8 @@ backgroundData::backgroundType backgroundData::loadAndInitialiseBackground
   std::string rawLevelBackground {};
   backgroundType background;
     
-  if(!loadFileIntoString(bgFileName, rawLevelBackground))
-    {
-      std::stringstream err {};
-      err<<"Error: unable to open \""<<bgFileName<<"\".";
-      exit(err.str(), ERROR_OPENING_FILE);
-    }
-  
+  loadFileIntoString(bgFileName, rawLevelBackground,
+		     "trying to read .background.lev file");
   initialiseBackground(false, bgFileName, rawLevelBackground, background);
   /* This will result in a deep copy when this function is called from the
      constructor. However this only happens once per level load. */

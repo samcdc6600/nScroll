@@ -167,11 +167,8 @@ rules::coordRulesType rules::loadAndInitialiseCoordRules
   std::string rawCoordRules {};
   coordRulesType coordRules;
   
-  if(!loadFileIntoString(coordRulesFileName, rawCoordRules))
-    {
-      exit(concat("Error: unable to open \"", coordRulesFileName, "\"."),
-	   ERROR_OPENING_FILE);
-    }
+  loadFileIntoString(coordRulesFileName, rawCoordRules,
+		     "trying to read .coordRules.lev file");
 
   // parseRulesHeader(expectedChunkSize, coordRulesFileName, levelRules, bgSize, rawCoordRules, buffPos);
   initialiseCoordRules
@@ -186,7 +183,6 @@ void rules::initialiseCoordRules
  const char bgFileName [], const char coordRulesFileName [],
  rules::coordRulesType & coordRuless, const std::string & coordRulesData)
 {
-  // Main body of rules file should start on a new line (account for if.)
   // std::string::const_iterator buffPos {coordRulesData.begin()};
   // const size_t expectedLineLength {bgSize / expectedChunkSize.y};
   // int lineNumber {};
@@ -214,14 +210,16 @@ void rules::initialiseCoordRules
 	  skipSpaceUpToNextLine
 	    (coordRulesData, buffPos,
 	     concat("Error: trying to read chunk no. ", chunksReadIn,
-		    ". Expected '\\n' after reading chunk coordinate ",
-		    "from coordRules.lev file \"", coordRulesFileName, "\". "
-		    "Encountered other character or EOF."));
+		    ". Expected '\\n' after reading chunk coordinate (",
+		    chunkCoord.y, ", ", chunkCoord.x, ") from coordRules.lev "
+		    "file \"", coordRulesFileName, "\". Encountered other "
+		    "character or EOF."));
 	  // Get chunk from coord rules read from file.
 	  getChunk(coordRulesData, buffPos,
 		   concat("trying to read in chunk no. ", chunksReadIn,
 			  ". from coordRules.lev file \"", coordRulesFileName,
 			  "\"."), chunk, expectedChunkSize);
+
 	  // Decompress chunk and return in rawChunk.
 	  decompressChunk
 	    (chunk, rawChunk, expectedChunkSize, chunksReadIn,
@@ -238,86 +236,6 @@ void rules::initialiseCoordRules
 	  break;
 	}
     }
-
-  // Decompress chunks =========================================================
-  
-  /*  while(buffPos < rawCoordRules.end())
-    {
-      if(*buffPos == levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR)
-	{
-	  // We've encountered a run-length encoding character.
-	  const char ruleChar {*(++buffPos)};
-	  ++buffPos;
-
-	  checkRuleChar
-	    (ruleChar,
-	     concat("parsing main section of \"", coordRulesFileName,
-		    "\" (on line ", lineNumber, " of main section)"));
-
-	  const int runLength
-	    {readSingleNum
-	     (rawCoordRules, buffPos,
-	      concat("reading run-length encoding length as a result of "
-		     "encountering run-length encoding character \"",
-		     levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR,
-		     "\" while parsing main section of \"", coordRulesFileName,
-		     "\""), false)};
-	  --buffPos;
-
-	  for(int lengthIter {}; lengthIter < runLength; ++lengthIter)
-	    {
-	      coordRuless.coordRules.push_back(ruleChar);
-	    }
-	  lineLength += runLength;
-	}
-      else
-	{
-	  checkRuleChar(*buffPos,
-			concat("parsing main section of \"",
-			       coordRulesFileName,  "\" (on line ", lineNumber,
-			       " of main section)"));
-	  coordRuless.coordRules.push_back(*buffPos);
-	  lineLength++;
-	}
-      
-      buffPos++;
-      if(*buffPos == '\n')
-	{
-	  if(size_t(lineLength) != expectedLineLength)
-	    {
-	      std::stringstream e {};
-	      e<<"Error: reading rules.lev header file \""<<coordRulesFileName
-	       <<"\". Encountered line of length ("<<lineLength<<") (on line "
-	       <<lineNumber<<" of main section) when reading main section of "
-		"file. Expected a line of length ("<<expectedLineLength<<").";
-
-	      exit(e.str().c_str(), ERROR_BACKGROUND);
-	    }
-	  lineLength = 0;
-	  lineNumber++;
-	  buffPos++;
-	}
-    }
-
-  if(size_t(lineLength) != expectedLineLength)
-    {
-      std::stringstream e {};
-      e<<"Error: reading rules.lev header file \""<<coordRulesFileName
-       <<"\". Encountered line of length ("<<lineLength<<") (on line "
-       <<lineNumber<<") when reading main section of file. Expected a line "
-	"of length ("<<expectedLineLength<<").";
-      exit(e.str().c_str(), ERROR_BACKGROUND);
-    }
-
-  if(coordRuless.coordRules.size() != bgSize)
-    {
-      std::stringstream e {};
-      e << "Error: reading rules.lev header file \"" << coordRulesFileName
-	<< "\". Size ("<<coordRuless.coordRules.size()<<") of main section of "
-	"file not equal to size ("<<bgSize<<") of background file \""
-	<<bgFileName<<"\".";
-      exit(e.str().c_str(), ERROR_BACKGROUND);
-      }*/
 }
 
 
@@ -427,6 +345,8 @@ void rules::checkRuleChar(const char potentialRule, const std::string eMsg)
 	}
     }
   std::stringstream e {};
+  endwin();
+  std::cout<<'\n'<<potentialRule<<std::endl;
   e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
     "line, \""<<levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR<<"\" or in "
     "the set of rule characters (";
@@ -698,63 +618,6 @@ void rules::readBoolSection
 }
 
 
-// int rules::readSingleNum
-// (const std::string & buff, std::string::const_iterator & buffPos,
-//  const std::string & eMsg, const bool useIntegers)
-// {
-//   using namespace levelFileKeywords;
-
-//   std::vector<std::string> targets
-//     {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-//   if(useIntegers)
-//     {
-//       targets.push_back("-");
-//     }
-//   std::string targetFound {};
-//   std::stringstream number {};
-
-//   // Skip space up until the start of the number.
-//   targetFound = skipSpaceUpTo(buff, buffPos, targets);
-//   if(targetFound == "")
-//     {
-//       std::stringstream e {};
-//       e<<"Error: expected non-negative number when "<<eMsg
-//        <<". Encountered \""<<*buffPos<<"\".\n";
-//       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-//     }
-
-//   --buffPos;
-//   if(targetFound == "-")
-//     {
-//       number<<*buffPos;
-//       ++buffPos;
-//     }
-
-//   int decPlacesIter {};
-//   // Read in number.
-//   while(isNum(*buffPos))
-//     {
-//       number<<*buffPos;
-//       decPlacesIter++;
-//       buffPos++;
-//     }
-  
-//   // Check if number was too long.
-//   if(decPlacesIter > MAX_COORD_LEN)
-//     {
-//       std::stringstream e {};
-//       e<<"Error: number \""<<number.str()<<"\" too long (longer than \""
-//        <<MAX_COORD_LEN<<"\") when "<<eMsg
-//        <<". Encountered \""<<*buffPos<<"\".\n";
-//       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-//     }
-
-//   int numberRet;
-//   number>>numberRet;
-//   return numberRet;
-// }
-
-
 void rules::readEndOfHeader
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg)
@@ -886,28 +749,6 @@ void rules::readEndOfHeader
 // 	<<bgFileName<<"\".";
 //       exit(e.str().c_str(), ERROR_BACKGROUND);
 //     }
-// }
-
-
-// void checkRuleChar(const char potentialRule, const std::string eMsg)
-// {
-//   for(char rule: boarderRuleChars::CHARS)
-//     {
-//       if(potentialRule == rule || potentialRule == ' ')
-// 	{
-// 	  return;
-// 	}
-//     }
-//   std::stringstream e {};
-//   e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
-//     "line, \""<<levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR<<"\" or in "
-//     "the set of rule characters (";
-//   for(char rule: boarderRuleChars::CHARS)
-//     {
-//       e<<rule<<", ";
-//     }
-//   e<<") when "<<eMsg<<'.';
-//   exit(e.str().c_str(), ERROR_CHARACTER_RANGE);
 // }
 
 

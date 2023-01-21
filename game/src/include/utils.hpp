@@ -92,8 +92,8 @@ bool checkRange(const int a, const int min, const int max);
 /* Return's true if a - offset is within the range [SINGLE_DIGIT_MIN, SINGLE_DIGIT_MAX].
    Return's false otherwise. */
 bool inSingleDigitRange(const int a, const int offset);
-// Returns false if unable to open file at path name.
-bool loadFileIntoString(const char name[], std::string &buff);
+void loadFileIntoString(const char name[], std::string &buff,
+			const std::string & eMsg);
 /* First checks if buffPos is in range. Returns false if it is not. Otherwise
    attempts to read the coordinates into chunkCoord. If this succeeds returns
    true (with chunkCoord being set to the coordinates read.) If there is a
