@@ -53,7 +53,7 @@ private:
   const size_t engineSleepTime {32};
   // const double sleepTimeAsAPercentageOfASecond {double(engineSleepTime / millisecondsInSec)};
 
-  // ========== Headers Related To Loading coordRules.lev Files START ==========
+  // ==== Headers Related To Loading COORD_RULES_FILE_EXTENSION Files START ====
   // ===========================================================================
   coordRulesType loadAndInitialiseCoordRules
   (const yx expectedChunkSize, const char coordRulesFileName [],
@@ -69,8 +69,9 @@ private:
      a "run". The character after that is repeated a number of times in
      rawChunk equal to the number after that character. The number should be in
      base 10 in ASCII. The end of the number is non-ambiguous because numbers
-     are not valid rule characters in a coordRules.lev file. If there is an
-     error an error message is printed and the program is terminated. */
+     are not valid rule characters in a RULES_CONFIG_FILE_EXTENSION file. If
+     there is an  error an error message is printed and the program is
+     terminated. */
   void decompressChunk
   (const std::string & chunkIn, coordRulesChunk & rawChunk,
    const yx expectedChunkSize, const ssize_t chunksReadIn,
@@ -84,12 +85,12 @@ private:
   void verifyTotalOneToOneOntoMappingOfCoordToBgKeys
   (const char coordRulesFileName [], const char bgFileName [],
    const coordRulesType & coordRules, const backgroundData & background) const;
-  // =========== Headers Related To Loading coordRules.lev Files END ===========
+  // ===== Headers Related To Loading COORD_RULES_FILE_EXTENSION Files END =====
   // ===========================================================================
   
-  // ============= Headers Related To Loading rules.lev Files START ============
+  // ==== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files START ===
   // ===========================================================================
-  // Where rawRules holds the contents of a rules.lev file.
+  // Where rawRules holds the contents of a RULES_CONFIG_FILE_EXTENSION file.
   // void parseRulesHeader(const yx maxyx, const char rulesFileName[],
   // 			  rules & levelRules, const size_t bgSize,
   // 		      const std::string & rawRules,
@@ -102,7 +103,8 @@ private:
   // void initBgSprites(const yx maxyx, const char rulesFileName[], rules & levelRules,
   // 		   const size_t bgSize, const std::string & rawRules,
   // 		   std::string::const_iterator & buffPos);
-  /* Attempts to read the start of the header in a rules.lev file. */
+  /* Attempts to read the start of the header in a RULES_CONFIG_FILE_EXTENSION
+     file. */
   // void readStartOfHeader(const std::string &buff,
   //                        std::string::const_iterator &buffPos,
   //                        const std::string &eMsg);
@@ -117,12 +119,13 @@ private:
   void readSectionEndingBracket
   (const std::string & buff, std::string::const_iterator & buffPos,
    const std::string & eMsg, const std::string & section);
-  /* Attempts to read the strings from a string section in a rules.lev file.
-     Should be called when a series of strings is expected. Buff is the buffer
-     where the strings should be located and buffPos is the position to start
-     reading from. EMsg will be embedded in any error message/s the function spits
-     out and should say something about the context in which readStringsSection()
-     was called. Returns the strings that were read. */
+  /* Attempts to read the strings from a string section in a
+     RULES_CONFIG_FILE_EXTENSION file. Should be called when a series of strings
+     is expected. Buff is the buffer where the strings should be located and
+     buffPos is the position to start reading from. EMsg will be embedded in any
+     error message/s the function spits out and should say something about the
+     context in which readStringsSection() was called. Returns the strings that
+     were read. */
   void readStringsSection
   (const std::string & buff, std::string::const_iterator & buffPos,
    const std::string & eMsg, void * retObj);
@@ -166,10 +169,10 @@ private:
   // int readSingleNum
   // (const std::string & buff, std::string::const_iterator & buffPos,
   //  const std::string & eMsg, const bool useIntegers);
-  // Verifies that the header of a .rules.lev file is present.
-  void readEndOfHeader
-  (const std::string & buff, std::string::const_iterator & buffPos,
-   const std::string & eMsg);
+  // Verifies that the header of a RULES_CONFIG_FILE_EXTENSION file is present.
+  // void readEndOfHeader
+  // (const std::string & buff, std::string::const_iterator & buffPos,
+  //  const std::string & eMsg);
   // void parseRulesMain(const yx maxyx, const char bgFileName[],
   //                     const char rulesFileName[], rules &levelRules,
   //                     const size_t bgSize, const std::string &rawRules,
@@ -196,7 +199,7 @@ private:
   //  levelFileKeywords::bgSpriteInitialData & bgSpriteInitData, 
       //  std::string::const_iterator & buffPos,
       //  const char rulesFileName []);
-  // ============== Headers Related To Loading rules.lev Files END =============
+  // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files END ====
   // ===========================================================================
   
   /* Set's oldTime to the current time if

@@ -54,7 +54,7 @@ int main()
 void menu(const yx maxyx, int * unprocessedDrawBuffer)
 {
   // std::vector<int> background {};	// Hold's the background
-  backgroundData background {maxyx, "assets/level1/level1.backgound.lev"};
+  backgroundData background {maxyx, "assets/level1/level1.background.lev"};
   /* Hold's the "rules" for the current level. (see physics.h and
      rules.lev.txt.) */
   rules levelRules

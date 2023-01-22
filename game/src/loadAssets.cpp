@@ -79,7 +79,7 @@
 //   /* Setup keyword actions associations for player section. This should contain
 //      an entry for each thing that the player constructor takes. If there is a
 //      variable that the player constructor needs but we don't want to be
-//      specifiable in rules.lev files then it's entry here should have a default
+//      specifiable in RULES_CONFIG_FILE_EXTENSION files then it's entry here should have a default
 //      value and the action function should be set nullptr. */
 //   std::vector<keywordAction::headerKeywordAction> playerHeaderKeywordActions
 //     {keywordAction::headerKeywordAction
@@ -135,7 +135,7 @@
 // 	      if(playerHeaderKeywordActions[foundIter].found)
 // 		{
 // 		  std::stringstream e {};
-// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+// 		  e<<"Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \""<<rulesFileName
 // 		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
 // 		    "reading header sub section player section, however this "
 // 		    "keyword is only expected once in this section.\n";
@@ -147,7 +147,8 @@
 // 		  playerHeaderKeywordActions[foundIter].found = true;
 // 		  playerHeaderKeywordActions[foundIter].action
 // 		    (rawRules, buffPos,
-// 		     concat("reading sprite dir strings from rules.lev header "
+// 		     concat("reading sprite dir strings from ",
+// 	 RULES_CONFIG_FILE_EXTENSION, " header "
 // 			    "file \"", rulesFileName, "\""),
 // 		     &playerInitData.spritePaths);
 		 
@@ -156,7 +157,8 @@
 // 		  playerHeaderKeywordActions[foundIter].found = true;
 // 		  playerHeaderKeywordActions[foundIter].action
 // 		    (rawRules, buffPos,
-// 		     concat("reading single coord section from rules.lev header"
+// 		     concat("reading single coord section from ",
+// 		RULES_CONFIG_FILE_EXTENSION, " header"
 // 			    " file  \"", rulesFileName, "\""),
 // 		     &playerInitData.coordinate);
 // 		  break;
@@ -178,7 +180,7 @@
 // 		{
 // 		ENCOUNTERED_FORBIDDEN_KEYWORD:
 // 		  std::stringstream e {};
-// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+// 		  e<<"Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \""<<rulesFileName
 // 		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
 // 		    "reading header sub section player section, however this "
 // 		    "keyword is forbidden.\n";
@@ -225,7 +227,7 @@
 //   /* Setup keyword actions associations for background sprite section. This
 //      should contain an entry for each thing that the bgSprite constructor takes.
 //      If there is a variable that the bgSprite constructor needs but we don't
-//      want to be specifiable in rules.lev files then it's entry here should have
+//      want to be specifiable in RULES_CONFIG_FILE_EXTENSION files then it's entry here should have
 //      a default value and the action function should be set nullptr. */
 //   std::vector<keywordAction::headerKeywordAction> bgSpriteHeaderKeywordActions
 //     {keywordAction::headerKeywordAction
@@ -274,7 +276,7 @@
 // 	      if(bgSpriteHeaderKeywordActions[foundIter].found)
 // 		{
 // 		  std::stringstream e {};
-// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+// 		  e<<"Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \""<<rulesFileName
 // 		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
 // 		    "reading header sub section background sprite section, "
 // 		    "however this keyword is only expected once in this "
@@ -287,15 +289,16 @@
 // 		  bgSpriteHeaderKeywordActions[foundIter].found = true;
 // 		  bgSpriteHeaderKeywordActions[foundIter].action
 // 		    (rawRules, buffPos,
-// 		     concat("reading background sprite dir strings from "
-// 			    "rules.lev header file \"", rulesFileName, "\""),
+// 		     concat("reading background sprite dir strings from ",
+// 			    RULES_CONFIG_FILE_EXTENSION, " header file \"", rulesFileName, "\""),
 // 		     &bgSpriteInitData.spritePaths);
 // 		  break;
 // 		case 1:
 // 		  bgSpriteHeaderKeywordActions[foundIter].found = true;
 // 		  bgSpriteHeaderKeywordActions[foundIter].action
 // 		    (rawRules, buffPos,
-// 		     concat("reading single coord section from rules.lev header"
+// 		     concat("reading single coord section from ",
+// 	 RULES_CONFIG_FILE_EXTENSION, " header"
 // 			    "file  \"", rulesFileName, "\""),
 // 		     &bgSpriteInitData.coordinate);
 // 		  break;
@@ -305,7 +308,7 @@
 // 		  bgSpriteHeaderKeywordActions[foundIter].found = true;
 // 		  bgSpriteHeaderKeywordActions[foundIter].action
 // 		    (rawRules, buffPos,
-// 		     concat("reading boolean section from rules.lev header file"
+// 		     concat("reading boolean section from ", RULES_CONFIG_FILE_EXTENSION, " header file"
 // 			    " \"", rulesFileName, "\""),
 // 		     &bgSpriteInitData.displayInForground);
 // 		  break;
@@ -315,7 +318,7 @@
 // 		{
 // 		ENCOUNTERED_FORBIDDEN_KEYWORD:
 // 		  std::stringstream e {};
-// 		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+// 		  e<<"Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \""<<rulesFileName
 // 		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
 // 		    "reading header sub section background sprite section, "
 // 		    "however this keyword is forbidden.\n";

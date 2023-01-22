@@ -146,16 +146,17 @@ namespace levelFileKeywords
   constexpr char COORD_SEPARATION		{','};
   constexpr char DIR_START_ABS			{'/'};
   constexpr char DIR_START_REL			{'.'};
-  /* The character used for escape sequences (within a string) in .rules.lev
-     files. */
+  /* The character used for escape sequences (within a string) in
+     RULES_CONFIG_FILE_EXTENSION files. */
   constexpr char ESCAPE_CHAR {'\\'};
   constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
   constexpr char NULL_BYTE {'\0'};
-  /* If this character is encountered in the main section of a rules.lev file
-     the character 2 places after it should be an ASCII number. After this
-     number there can be a string of contiguous ASCII numbers (up to some
-     maximum) that together represent some larger number. This number is the
-     number of times the ASCII character before the number should be repeated. */
+  /* If this character is encountered in the main section of a
+     RULES_CONFIG_FILE_EXTENSION file the character 2 places after it should be
+     an ASCII number. After this number there can be a string of contiguous
+     ASCII numbers (up to some maximum) that together represent some larger
+     number. This number is the number of times the ASCII character before the
+     number should be repeated. */
   constexpr char RULES_MAIN_RUNLENGTH_BEGIN_CHAR {'R'};
   } // namespace levelFileKeywords
 
@@ -314,12 +315,12 @@ void rules::decompressChunk
 	  if(lineLength != expectedChunkSize.x)
 	    {
 	      exit(concat
-		   ("Error: reading rules.lev header file \"",
-		    coordRulesFileName, "\". Encountered line of length (",
-		    lineLength, ") when ", "decompressing chunk no. ",
-		    chunksReadIn, " (on line ", lineNumber + 1, " of chunk.) ",
-		    "Expected a line of length (", expectedChunkSize.x, ")."),
-		   ERROR_BACKGROUND);
+		   ("Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header ",
+		    "file \"", coordRulesFileName, "\". Encountered line of ",
+		    "length (", lineLength, ") when ", "decompressing chunk ",
+		    "no. ", chunksReadIn, " (on line ", lineNumber + 1, " of ",
+		    "chunk.) Expected a line of length (", expectedChunkSize.x,
+		    ")."), ERROR_BACKGROUND);
 	    }
 	  lineLength = 0;
 	  lineNumber++;
@@ -331,9 +332,9 @@ void rules::decompressChunk
     {
       exit(concat("\n", *buffPos, *(++buffPos), *(++buffPos), "\n"), 1);
       exit(concat
-	   ("Error: reading rules.lev header file \"", coordRulesFileName,
-	    "\". Encountered line of length (", lineLength, ") when ",
-	    "decompressing chunk no. ", chunksReadIn, " (on line ",
+	   ("Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \"",
+	    coordRulesFileName, "\". Encountered line of length (", lineLength,
+	    ") when decompressing chunk no. ", chunksReadIn, " (on line ",
 	    lineNumber + 1, " of chunk.) Expected a line of length (",
 	    expectedChunkSize.x, ")."), ERROR_BACKGROUND);
     }
@@ -343,10 +344,10 @@ void rules::decompressChunk
   if(rawChunk.size() != expectedChunkSizeLinear)
     {
       exit(concat
-	   ("Error: reading rules.lev header file \"", coordRulesFileName,
-	    "\".  Size (", rawChunk.size(), ") of chunk no. ", chunksReadIn,
-	    " not equal to expected size (", expectedChunkSizeLinear, ") of ",
-	    "chunk."), ERROR_BACKGROUND);
+	   ("Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \"",
+	    coordRulesFileName, "\".  Size (", rawChunk.size(), ") of chunk ",
+	    "no. ", chunksReadIn, " not equal to expected size (",
+	    expectedChunkSizeLinear, ") of ", "chunk."), ERROR_BACKGROUND);
     }
 }
 
@@ -655,47 +656,47 @@ void rules::readBoolSection
 }
 
 
-void rules::readEndOfHeader
-(const std::string & buff, std::string::const_iterator & buffPos,
- const std::string & eMsg)
-{
-  using namespace levelFileKeywords;
+// void rules::readEndOfHeader
+// (const std::string & buff, std::string::const_iterator & buffPos,
+//  const std::string & eMsg)
+// {
+//   using namespace levelFileKeywords;
 
-  std::vector<std::string> targets {};
-  std::string targetFound {};
+//   std::vector<std::string> targets {};
+//   std::string targetFound {};
 
-  constexpr int nestingLevel {1};
+//   constexpr int nestingLevel {1};
 
-  for(int iter {}; iter < nestingLevel; ++iter)
-    {
-      targets.push_back(std::string {RULES_HEADER_SECTION_END_DENOTATION});
-      targetFound = skipSpaceUpTo(buff, buffPos, targets);
-      if(targetFound == "")
-	{
-	  std::stringstream e {};
-	  e<<"Error: expected \"";
-	  for(int iter {}; iter < nestingLevel; ++iter)
-	    {
-	      e<<RULES_HEADER_SECTION_END_DENOTATION;
-	    }
-	  e<<"\" when "
-	   <<eMsg<<". Encountered \""<<*(--buffPos)<<*(++buffPos)
-	   <<*(++buffPos)<<"\".\n";
-	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-	}
-    }
+//   for(int iter {}; iter < nestingLevel; ++iter)
+//     {
+//       targets.push_back(std::string {RULES_HEADER_SECTION_END_DENOTATION});
+//       targetFound = skipSpaceUpTo(buff, buffPos, targets);
+//       if(targetFound == "")
+// 	{
+// 	  std::stringstream e {};
+// 	  e<<"Error: expected \"";
+// 	  for(int iter {}; iter < nestingLevel; ++iter)
+// 	    {
+// 	      e<<RULES_HEADER_SECTION_END_DENOTATION;
+// 	    }
+// 	  e<<"\" when "
+// 	   <<eMsg<<". Encountered \""<<*(--buffPos)<<*(++buffPos)
+// 	   <<*(++buffPos)<<"\".\n";
+// 	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+// 	}
+//     }
 
-  targets = {std::string {RULES_HEADER_END_DENOTATION[1]}};
-  targetFound = skipSpaceUpTo(buff, buffPos, targets);
-  if(*(buffPos -= 2) != RULES_HEADER_END_DENOTATION[0] || targetFound == "")
-    {
-      exit(concat
-	   ("Error: expected \"", RULES_HEADER_END_DENOTATION, "\" when ", eMsg,
-	    ". Encountered \"", *buffPos, *(++buffPos), *(++buffPos), "\".\n"),
-	   ERROR_RULES_LEV_HEADER);
-    }
-  buffPos += 2;
-}
+//   targets = {std::string {RULES_HEADER_END_DENOTATION[1]}};
+//   targetFound = skipSpaceUpTo(buff, buffPos, targets);
+//   if(*(buffPos -= 2) != RULES_HEADER_END_DENOTATION[0] || targetFound == "")
+//     {
+//       exit(concat
+// 	   ("Error: expected \"", RULES_HEADER_END_DENOTATION, "\" when ", eMsg,
+// 	    ". Encountered \"", *buffPos, *(++buffPos), *(++buffPos), "\".\n"),
+// 	   ERROR_RULES_LEV_HEADER);
+//     }
+//   buffPos += 2;
+// }
 
 
 // void parseRulesMain(const yx maxyx, const char bgFileName [],
@@ -754,7 +755,7 @@ void rules::readEndOfHeader
 // 	  if(size_t(lineLength) != expectedLineLength)
 // 	    {
 // 	      std::stringstream e {};
-// 	      e<<"Error: reading rules.lev header file \""<<rulesFileName
+// 	      e<<"Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \""<<rulesFileName
 // 	       <<"\". Encountered line of length ("<<lineLength<<") (on line "
 // 	       <<lineNumber<<" of main section) when reading main section of "
 // 		"file. Expected a line of length ("<<expectedLineLength<<").";
@@ -770,7 +771,7 @@ void rules::readEndOfHeader
 //   if(size_t(lineLength) != expectedLineLength)
 //     {
 //       std::stringstream e {};
-//       e<<"Error: reading rules.lev header file \""<<rulesFileName
+//       e<<"Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \""<<rulesFileName
 //        <<"\". Encountered line of length ("<<lineLength<<") (on line "
 //        <<lineNumber<<") when reading main section of file. Expected a line "
 // 	"of length ("<<expectedLineLength<<").";
@@ -780,7 +781,7 @@ void rules::readEndOfHeader
 //   if(levelRules.coordRules.size() != bgSize)
 //     {
 //       std::stringstream e {};
-//       e << "Error: reading rules.lev header file \"" << rulesFileName
+//       e << "Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \"" << rulesFileName
 // 	<< "\". Size ("<<levelRules.coordRules.size()<<") of main section of "
 // 	"file not equal to size ("<<bgSize<<") of background file \""
 // 	<<bgFileName<<"\".";

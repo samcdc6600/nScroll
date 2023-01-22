@@ -107,11 +107,11 @@ void backgroundData::initialiseBackground
 	     (assuming the size of chunks for this file are 170 in the x
 	     dimension), the coordinate in the header would be (0, 1) and
 	     for (0, 340) it would be (0, 2), etc... */
-	  if(getChunkCoordinate(bgData, buffPos,
-				concat("trying to read coord no. ",
-				       chunksReadIn, " from background.lev "
-				       "file \"", bgFileName, "\""),
-				chunkCoord))
+	  if(getChunkCoordinate
+	     (bgData, buffPos,
+	      concat("trying to read coord no. ", chunksReadIn, " from ",
+		     BACKGROUND_FILE_EXTENSION, " file \"", bgFileName, "\""),
+	      chunkCoord))
 	    {
 	      skipSpaceUpToNextLine
 		(bgData, buffPos,
