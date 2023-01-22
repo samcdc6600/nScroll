@@ -90,14 +90,17 @@ private:
   
   // ==== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files START ===
   // ===========================================================================
-  // Where rawRules holds the contents of a RULES_CONFIG_FILE_EXTENSION file.
+  // Where rulesBuffer holds the contents of a RULES_CONFIG_FILE_EXTENSION file.
+  void parseRulesConfigFileAndInitialiseVariables
+  (const yx maxyx, const char rulesFileName [],
+   const std::string & rulesBuffer);
   // void parseRulesHeader(const yx maxyx, const char rulesFileName[],
   // 			  rules & levelRules, const size_t bgSize,
   // 		      const std::string & rawRules,
   // 		      std::string::const_iterator & buffPos);
-  // void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
-  // 		const size_t bgSize, const std::string &rawRules,
-  //                 std::string::const_iterator &buffPos);
+  void initPlayer(const yx maxyx, const char rulesFileName[], rules &levelRules,
+		const size_t bgSize, const std::string &rawRules,
+                  std::string::const_iterator &buffPos);
   /* This function should be called for each background sprite section that's
      encountered. */
   // void initBgSprites(const yx maxyx, const char rulesFileName[], rules & levelRules,
@@ -287,6 +290,12 @@ public:
     coordRulesCurrentContextBufferSize(maxyx.y * maxyx.x * 9),
     coordRulesCurrentContextBuffer(new char [maxyx.y * maxyx.x * 9])
   {
+    std::string rulesBuffer {};
+    loadFileIntoString
+      (rulesFileName, rulesBuffer,
+       concat("trying to read ", RULES_CONFIG_FILE_EXTENSION, " file"));
+    parseRulesConfigFileAndInitialiseVariables
+      (maxyx, rulesFileName, rulesBuffer);
   }
   void physics(const player::directionChars input, int & position, const yx maxyx,
 	       const size_t backgroundLength,
