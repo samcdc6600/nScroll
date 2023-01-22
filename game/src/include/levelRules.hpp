@@ -57,11 +57,11 @@ private:
   // ===========================================================================
   coordRulesType loadAndInitialiseCoordRules
   (const yx expectedChunkSize, const char coordRulesFileName [],
-   const char bgFileName [], const backgroundData & background) const;
+   const backgroundData & background) const;
   void initialiseCoordRules
   (const yx expectedChunkSize, const char coordRulesFileName [],
-   const char bgFileName [], rules::coordRulesType & coordRules,
-   const std::string & coordRulesData, const backgroundData & background) const;
+   rules::coordRulesType & coordRules, const std::string & coordRulesData,
+   const backgroundData & background) const;
   /* Attempts to decompress chunk in chunkIn. If successful returns
      decompressed chunk via rawChunk. ChunkIn is assumed to be compressed using
      the run length encoding technique.
@@ -83,8 +83,8 @@ private:
   /* Make sure that for each key in coordRules there is a corresponding key in
      background and that coordRules and background have the same cardinality. */
   void verifyTotalOneToOneOntoMappingOfCoordToBgKeys
-  (const char coordRulesFileName [], const char bgFileName [],
-   const coordRulesType & coordRules, const backgroundData & background) const;
+  (const char coordRulesFileName [], const coordRulesType & coordRules,
+   const backgroundData & background) const;
   // ===== Headers Related To Loading COORD_RULES_FILE_EXTENSION Files END =====
   // ===========================================================================
   
@@ -280,10 +280,10 @@ public:
   /* background is required because for every chunk in background there should
      be a corresponding chunk in rules::coordRules. */
   rules
-  (const yx maxyx, const backgroundData & background, const char bgFileName [],
+  (const yx maxyx, const backgroundData & background,
    const char coordRulesFileName [], const char rulesFileName []) :
-    coordRules(loadAndInitialiseCoordRules
-	       (maxyx, coordRulesFileName, bgFileName, background)),
+    coordRules
+    (loadAndInitialiseCoordRules(maxyx, coordRulesFileName, background)),
     coordRulesCurrentContextBufferSize(maxyx.y * maxyx.x * 9),
     coordRulesCurrentContextBuffer(new char [maxyx.y * maxyx.x * 9])
   {

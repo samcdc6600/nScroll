@@ -55,9 +55,11 @@ private:
 				const bool attemptedCompression) const;
   
 public:
+  const char * fileName;
+  
   backgroundData(const yx maxyxIn, const char bgFileName []):
     maxyx (maxyxIn.y, maxyxIn.x), background
-    (loadAndInitialiseBackground(bgFileName))
+    (loadAndInitialiseBackground(bgFileName)), fileName(bgFileName)
   {
     /*    endwin();
     for(auto chunk: background)
@@ -76,6 +78,12 @@ public:
   ssize_t numberOfChunks() const
   {
     return background.size();
+  }
+
+
+  bool keyExists(const std::string & key) const
+  {
+    return !(background.find(key) == background.end());
   }
   
   /* Uses coord to create a key and searches background for that key. If it is

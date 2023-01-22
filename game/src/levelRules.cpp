@@ -160,13 +160,13 @@ namespace levelFileKeywords
   constexpr char RULES_MAIN_RUNLENGTH_BEGIN_CHAR {'R'};
   } // namespace levelFileKeywords
 
-#include <iostream>
-#include <curses.h>
+// #include <iostream>
+// #include <curses.h>
 
 
 rules::coordRulesType rules::loadAndInitialiseCoordRules
 (const yx expectedChunkSize, const char coordRulesFileName [],
- const char bgFileName [], const backgroundData & background) const
+ const backgroundData & background) const
 {
   std::string rawCoordRules {};
   coordRulesType coordRules;
@@ -177,8 +177,8 @@ rules::coordRulesType rules::loadAndInitialiseCoordRules
 
   // parseRulesHeader(expectedChunkSize, coordRulesFileName, levelRules, bgSize, rawCoordRules, buffPos);
   initialiseCoordRules
-    (expectedChunkSize, coordRulesFileName, bgFileName, coordRules,
-     rawCoordRules, background);
+    (expectedChunkSize, coordRulesFileName, coordRules, rawCoordRules,
+     background);
   /* This will result in a deep copy when this function is called from the
      constructor. However this only happens once per level load. */
   return coordRules;
@@ -187,8 +187,8 @@ rules::coordRulesType rules::loadAndInitialiseCoordRules
 
 void rules::initialiseCoordRules
 (const yx expectedChunkSize, const char coordRulesFileName [],
- const char bgFileName [], rules::coordRulesType & coordRules,
- const std::string & coordRulesData, const backgroundData & background) const
+ rules::coordRulesType & coordRules, const std::string & coordRulesData,
+ const backgroundData & background) const
 {
   // std::string::const_iterator buffPos {coordRulesData.begin()};
   // const size_t expectedLineLength {bgSize / expectedChunkSize.y};
@@ -252,7 +252,7 @@ void rules::initialiseCoordRules
      wouldn't be too large anyway (especially with compressed chunks.) Although
      some extra memory will be used the game logic will be slightly simpler. */
   verifyTotalOneToOneOntoMappingOfCoordToBgKeys
-    (coordRulesFileName, bgFileName, coordRules, background);
+    (coordRulesFileName, coordRules, background);
 }
 
 
@@ -376,24 +376,42 @@ void rules::checkRuleChar
 
 
 void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
-(const char coordRulesFileName [], const char bgFileName [],
- const coordRulesType & coordRules, const backgroundData & background) const
+(const char coordRulesFileName [], const coordRulesType & coordRules,
+ const backgroundData & background) const
 {
-  endwin();
+  // endwin();
   // std::cout<<"coordRules.size() = "<<<<'\n'
   // 	   <<"background.size() = "<<<<'\n';
 
   if(coordRules.size() != background.numberOfChunks())
     {
-      exit(concat("Error: number (", background.numberOfChunks(), ") of chunks read ",
-		  "in from .backgroudn"), ERROR_GENERIC_RANGE_ERROR);
+      exit
+	(concat("Error: number (", background.numberOfChunks(), ") of chunks "
+		"read in from ", BACKGROUND_FILE_EXTENSION, " file (",
+		background.fileName, ") not equal to number (",
+		coordRules.size(), ") of chunks read in from ",
+		COORD_RULES_FILE_EXTENSION, " file (",
+		coordRulesFileName, ")."), ERROR_GENERIC_RANGE_ERROR);
     }
 
+  for(const auto & coordRulesChunkTwoTuple : coordRules)
+    {
+      if(!background.keyExists(coordRulesChunkTwoTuple.first))
+	{
+	  exit
+	    (concat("Error: found chunk (", coordRulesChunkTwoTuple.first,
+		    ") in ", COORD_RULES_FILE_EXTENSION, " file (",
+		    coordRulesFileName, ") with no counterpart in ",
+		    BACKGROUND_FILE_EXTENSION, " file (",
+		    background.fileName, ")."),
+	     ERROR_RULES_CHAR_FILE);
+	}
+    }
   
-  for ( const auto &twoTuple : coordRules ) {
-    std::cout<<twoTuple.first<<"\n";
-  }
-  exit(-1);
+  // for ( const auto &twoTuple : coordRules ) {
+  //   std::cout<<twoTuple.first<<"\n";
+  // }
+  // exit(-1);
 }
 
 

@@ -240,7 +240,7 @@ void insertChunk
 	   ("Error: duplicate chunk coordinate (",
 	    key, ") found when loading chunk no. ",
 	    chunksReadIn, " from file \"", fileName, "\"."),
-	   ERROR_RULES_CHAR_FILE);
+	   ERROR_DUPLICATE_COORDINATE);
     }
 }
 
