@@ -73,26 +73,29 @@ namespace levelFileKeywords
      taken for those keywords when parsing specific section section. KEY ORDER
      (first value of orderAndDefaultVal) OF THESE OBJECTS SHOULD MATCH switches
      that use these objects.! */
-  const std::map<std::string, orderAndDefaultVal> headerSectionKeywordToId {
-    {PLAYER_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {0, false}},
-    {BG_SPRITE_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {1, false}}
-  };
-  const std::map<std::string, orderAndDefaultVal> playerSectionKeywordToId {
-    {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
-    {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
-    {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
-    {SPRITE_HEALTH_SECTION_HEADER,	orderAndDefaultVal {3, true}},
-    {SPRITE_GRAV_CONST_SECTION_HEADER,	orderAndDefaultVal {4, true}},
-    {SPRITE_MAX_VERT_V_SECTION_HEADER,	orderAndDefaultVal {5, true}},
-    {SPRITE_MAX_FALL_JMP_SECTION_HEADER, orderAndDefaultVal {6, true}},
-    {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {7, true}}
-  };
-  const std::map<std::string, orderAndDefaultVal> bgSpriteSectionKeywordToId {
-    {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
-    {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
-    {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
-    {SPRITE_DISPLAY_IN_FORGROUND,       orderAndDefaultVal {3, true}}
-  };
+  const std::map<std::string, orderAndDefaultVal> headerSectionKeywordToId
+    {
+      {PLAYER_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {0, false}},
+      {BG_SPRITE_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {1, false}}
+    };
+  const std::map<std::string, orderAndDefaultVal> playerSectionKeywordToId
+    {
+      {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
+      {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
+      {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
+      {SPRITE_HEALTH_SECTION_HEADER,	orderAndDefaultVal {3, true}},
+      {SPRITE_GRAV_CONST_SECTION_HEADER,	orderAndDefaultVal {4, true}},
+      {SPRITE_MAX_VERT_V_SECTION_HEADER,	orderAndDefaultVal {5, true}},
+      {SPRITE_MAX_FALL_JMP_SECTION_HEADER, orderAndDefaultVal {6, true}},
+      {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {7, true}}
+    };
+  const std::map<std::string, orderAndDefaultVal> bgSpriteSectionKeywordToId
+    {
+      {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
+      {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
+      {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
+      {SPRITE_DISPLAY_IN_FORGROUND,       orderAndDefaultVal {3, true}}
+    };
   namespace defaultValues
   {
     /* These default values can only be used if defaultVal is set to true in
@@ -158,10 +161,123 @@ namespace levelFileKeywords
      number. This number is the number of times the ASCII character before the
      number should be repeated. */
   constexpr char RULES_MAIN_RUNLENGTH_BEGIN_CHAR {'R'};
-  } // namespace levelFileKeywords
+} // namespace levelFileKeywords
 
-// #include <iostream>
-// #include <curses.h>
+
+// ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files START ====
+// =============================================================================
+// void parseRulesHeader(const yx maxyx, const char rulesFileName[],
+// 			  rules & levelRules, const size_t bgSize,
+// 		      const std::string & rawRules,
+// 		      std::string::const_iterator & buffPos);
+void initPlayer
+(const yx maxyx, const char rulesFileName [], rules & levelRules,
+ const size_t bgSize, const std::string & rawRules,
+ std::string::const_iterator & buffPos);
+/* This function should be called for each background sprite section that's
+   encountered. */
+void initBgSprites
+(const yx maxyx, const char rulesFileName[], rules & levelRules,
+ const size_t bgSize, const std::string & rawRules,
+ std::string::const_iterator & buffPos);
+/* Attempts to read the start of the header in a RULES_CONFIG_FILE_EXTENSION
+   file. */
+// void readStartOfHeader(const std::string &buff,
+//                        std::string::const_iterator &buffPos,
+//                        const std::string &eMsg);
+// /* Attempts to read the bracket at the start of a section. Calls exit with eMsg 
+    //    and section if there is an error. */
+void readSectionOpeningBracket
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, const std::string & section,
+ const bool skipSpace = true);
+/* Attempts to read the bracket at the end of a section. Calls exit with eMsg 
+   and section if there is an error. */
+void readSectionEndingBracket
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, const std::string & section);
+/* Attempts to read the strings from a string section in a
+   RULES_CONFIG_FILE_EXTENSION file. Should be called when a series of strings
+   is expected. Buff is the buffer where the strings should be located and
+   buffPos is the position to start reading from. EMsg will be embedded in any
+   error message/s the function spits out and should say something about the
+   context in which readStringsSection() was called. Returns the strings that
+   were read. */
+void readStringsSection
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, void * retObj);
+/* Attempts to read one coordinate from a section in buff starting at buffPos.
+   Emsg will be embedded in any error message/s the function spits out and
+   should say something about the context in which the function was
+   called. Returns the coordinate read. Only reads natural numbers (inclusive
+   of 0.)*/
+void readSingleCoordSectionInNNumbers
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, void * coord);
+/* This function is the same as readSingleCoordSectionInNNumbers() with the one
+   exception that it does not skip any spaces i.e. the first character of the
+   coordinate (the "(" terminal) should be at *buffPos. Otherwise the program will
+   be halted with an error message. */
+void readSingleCoordSectionInNNumbersNoSkpSp
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, void * coord);
+/* Same as readSingleCoordSectionInNNumbers() with the exception that it can
+   read integers. */
+void readSingleCoordSectionInZNumbers
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, void * coord);
+/* This function should be called through readSingleCoordSectionInNNumbers() or
+   readSingleCoordSectionInZNumbers(). SkipSpace suppresses the skipping of
+   spaces before the opening terminal "(". */
+void readSingleCoordSection
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, const bool useIntegers,
+ void * coord, const std::string typeOfNumber, const bool skipSpace = true);
+/* Attempts to read a boolean for a section in buff starting at buffPos. Emsg
+   will be embedded in any error message/s the function spits out and should
+   START say something about the context in which the function was called. Returns
+   the bool read. Can read a boolean in a string or integer format i.e. "true" /
+   "false" or 1 / 0. */
+void readBoolSection
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, void * boolean);
+// /* Attempts to read a number starting at buffPos (will skip any space before the
+//    number.) */
+// int readSingleNum
+// (const std::string & buff, std::string::const_iterator & buffPos,
+//  const std::string & eMsg, const bool useIntegers);
+// Verifies that the header of a RULES_CONFIG_FILE_EXTENSION file is present.
+// void readEndOfHeader
+// (const std::string & buff, std::string::const_iterator & buffPos,
+//  const std::string & eMsg);
+// void parseRulesMain(const yx maxyx, const char bgFileName[],
+//                     const char rulesFileName[], rules &levelRules,
+//                     const size_t bgSize, const std::string &rawRules,
+//                     std::string::const_iterator &buffPos);
+// /* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
+//    Or if the argument is a space character. If either of these is true then
+//    returns. Otherwise calls exit() */
+// void checkRuleChar(const char potentialRule, const std::string eMsg);
+
+/* Should be called after checking for all header sections related to the
+   player. Checks if all sections were found. If a section is encountered that
+   wasn't found, then we check if it has a default value. If so we apply the
+   default value. If it doesn't have a default value then call exit()*/
+// void checkForDefaultPlayerValues(
+// 				 std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+// 				 playerHeaderKeywordActions,
+// 				 levelFileKeywords::keywordAction::headerKeywordAction &keywordAction,
+// 				 levelFileKeywords::playerInitialData &playerInitData,
+// 				 std::string::const_iterator &buffPos, const char rulesFileName[]);
+// void checkForDefaultBgSpriteValues
+// (std::vector<levelFileKeywords::keywordAction::headerKeywordAction>
+//  bgSpriteHeaderKeywordActions,
+//  levelFileKeywords::keywordAction::headerKeywordAction & keywordAction,
+//  levelFileKeywords::bgSpriteInitialData & bgSpriteInitData, 
+    //  std::string::const_iterator & buffPos,
+    //  const char rulesFileName []);
+// ====== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files END =====
+// =============================================================================
 
 
 rules::coordRulesType rules::loadAndInitialiseCoordRules
@@ -478,14 +594,14 @@ void rules::parseRulesConfigFileAndInitialiseVariables
 		 case 0:
 		   headerKeywordActions[foundIter].found = true;
 		   headerKeywordActions[foundIter].headerAction
-		     (maxyx, rulesFileName, levelRules, bgSize, rulesBuffer,
+		     (maxyx, rulesFileName, this, bgSize, rulesBuffer,
 		      buffPos);
 		   break;
 		 case 1:
 		   /* We don't set found here because this keyword should have
 		      headerKeywordAction.foundMultipleOptional set to true. */
 		   headerKeywordActions[foundIter].headerAction
-		     (maxyx, rulesFileName, levelRules, bgSize, rulesBuffer,
+		     (maxyx, rulesFileName, this, bgSize, rulesBuffer,
 		      buffPos);
 		   break;
 		 }
@@ -545,10 +661,10 @@ void rules::parseRulesConfigFileAndInitialiseVariables
 }
 
 
-void rules::initPlayer(const yx maxyx, const char rulesFileName[],
-		       rules & levelRules, const size_t bgSize,
-		       const std::string & rawRules,
-		       std::string::const_iterator & buffPos)
+void initPlayer
+(const yx maxyx, const char rulesFileName[], rules & levelRules,
+ const size_t bgSize, const std::string & rawRules,
+ std::string::const_iterator & buffPos)
 {
   using namespace levelFileKeywords;
 
@@ -559,7 +675,7 @@ void rules::initPlayer(const yx maxyx, const char rulesFileName[],
      value and the action function should be set nullptr. */
   std::vector<keywordAction::headerKeywordAction> playerHeaderKeywordActions
     {keywordAction::headerKeywordAction
-     {SPRITE_FILE_SECTION_HEADER, readStringsSection},
+     {SPRITE_FILE_SECTION_HEADER, rules::readStringsSection},
      keywordAction::headerKeywordAction
      {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInNNumbers},
      keywordAction::headerKeywordAction
@@ -690,6 +806,141 @@ void rules::initPlayer(const yx maxyx, const char rulesFileName[],
 	       playerInitData.maxFallingJumpNumber,
 	       playerInitData.maxJumpNumber);
 }
+
+
+void initBgSprites(const yx maxyx, const char rulesFileName[],
+		   rules & levelRules, const size_t bgSize,
+		   const std::string & rawRules,
+		   std::string::const_iterator & buffPos)
+{
+  using namespace levelFileKeywords;
+  /* Setup keyword actions associations for background sprite section. This
+     should contain an entry for each thing that the bgSprite constructor takes.
+     If there is a variable that the bgSprite constructor needs but we don't
+     want to be specifiable in rules.lev files then it's entry here should have
+     a default value and the action function should be set nullptr. */
+  std::vector<keywordAction::headerKeywordAction> bgSpriteHeaderKeywordActions
+    {keywordAction::headerKeywordAction
+     {SPRITE_FILE_SECTION_HEADER, readStringsSection},
+     keywordAction::headerKeywordAction
+     {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInZNumbers},
+     keywordAction::headerKeywordAction
+     {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
+     keywordAction::headerKeywordAction
+     {SPRITE_DISPLAY_IN_FORGROUND, readBoolSection}};
+
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+
+    readSectionOpeningBracket
+    (rawRules, buffPos,
+     concat("reading header sub section ", BG_SPRITE_HEADER_SECTION_SPECIFIER,
+	    " from \"", rulesFileName, "\""),
+     concat("a ", BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
+  
+  for(auto keywordAction: bgSpriteHeaderKeywordActions)
+    {
+      targets.push_back(keywordAction.keyword);
+    }
+
+  bgSpriteInitialData bgSpriteInitData {};
+
+  // Parse background sprite sub sections.
+  for(int targetIter {}; targetIter < (int)bgSpriteHeaderKeywordActions.size();
+      targetIter++)
+    {
+      targetFound = skipSpaceUpTo(rawRules, buffPos, targets);
+
+      if(targetFound == "")
+	{
+	  break;
+	}
+
+      /* Target found, now check which object it's associated with and perform
+	 targets associated action. */
+      for(int foundIter {}; foundIter < (int)bgSpriteHeaderKeywordActions.size();
+	  foundIter++)
+	{
+	  if(targetFound == bgSpriteHeaderKeywordActions[foundIter].keyword)
+	    {
+	      if(bgSpriteHeaderKeywordActions[foundIter].found)
+		{
+		  std::stringstream e {};
+		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
+		    "reading header sub section background sprite section, "
+		    "however this keyword is only expected once in this "
+		    "section.\n";
+		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		}
+	      switch(bgSpriteSectionKeywordToId.at(targetFound).order)
+		{
+		case 0:
+		  bgSpriteHeaderKeywordActions[foundIter].found = true;
+		  bgSpriteHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat("reading background sprite dir strings from "
+			    "rules.lev header file \"", rulesFileName, "\""),
+		     &bgSpriteInitData.spritePaths);
+		  break;
+		case 1:
+		  bgSpriteHeaderKeywordActions[foundIter].found = true;
+		  bgSpriteHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat("reading single coord section from rules.lev header"
+			    "file  \"", rulesFileName, "\""),
+		     &bgSpriteInitData.coordinate);
+		  break;
+		case 2:
+		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+		case 3:
+		  bgSpriteHeaderKeywordActions[foundIter].found = true;
+		  bgSpriteHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat("reading boolean section from rules.lev header file"
+			    " \"", rulesFileName, "\""),
+		     &bgSpriteInitData.displayInForground);
+		  break;
+		}
+
+	      if(false)
+		{
+		ENCOUNTERED_FORBIDDEN_KEYWORD:
+		  std::stringstream e {};
+		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
+		    "reading header sub section background sprite section, "
+		    "however this keyword is forbidden.\n";
+		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		}
+	    }
+	}
+    }
+
+    readSectionEndingBracket
+    (rawRules, buffPos,
+     concat("reading header sub section ", BG_SPRITE_HEADER_SECTION_SPECIFIER,
+	    " from \"", rulesFileName, "\""),
+     concat("a ", BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
+
+    // Check that we've encountered all keywords that were searched for.
+  for(auto keywordAction: bgSpriteHeaderKeywordActions)
+    {
+      if(!keywordAction.found)
+	{
+	  // See if there is a default value for not found.
+	  checkForDefaultBgSpriteValues
+	    (bgSpriteHeaderKeywordActions, keywordAction, bgSpriteInitData,
+	     buffPos, rulesFileName);
+	}
+    }
+
+  levelRules.bgSprites.push_back
+    (new bgSprite(bgSpriteInitData.spritePaths, maxyx, bgSize,
+		  bgSpriteInitData.coordinate, bgSpriteInitData.direction,
+		  bgSpriteInitData.displayInForground));
+}
+
 
 
 // SkipSpace has a default value.
