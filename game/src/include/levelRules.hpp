@@ -92,8 +92,8 @@ private:
   // ===========================================================================
   // Where rulesBuffer holds the contents of a RULES_CONFIG_FILE_EXTENSION file.
   void parseRulesConfigFileAndInitialiseVariables
-  (const yx maxyx, const char rulesFileName [],
-   const std::string & rulesBuffer);
+  (const yx maxyx, const char rulesFileName [], const std::string & rulesBuffer,
+   const backgroundData & background);
   // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files END ====
   // ===========================================================================
   
@@ -175,8 +175,8 @@ public:
   /* background is required because for every chunk in background there should
      be a corresponding chunk in rules::coordRules. */
   rules
-  (const yx maxyx, const backgroundData & background,
-   const char coordRulesFileName [], const char rulesFileName []) :
+  (const yx maxyx, const char coordRulesFileName [],
+   const char rulesFileName [], const backgroundData & background) :
     coordRules
     (loadAndInitialiseCoordRules(maxyx, coordRulesFileName, background)),
     coordRulesCurrentContextBufferSize(maxyx.y * maxyx.x * 9),
@@ -187,7 +187,7 @@ public:
       (rulesFileName, rulesBuffer,
        concat("trying to read ", RULES_CONFIG_FILE_EXTENSION, " file"));
     parseRulesConfigFileAndInitialiseVariables
-      (maxyx, rulesFileName, rulesBuffer);
+      (maxyx, rulesFileName, rulesBuffer, background);
   }
   void physics(const player::directionChars input, int & position,
 	       const yx maxyx, const size_t backgroundLength,

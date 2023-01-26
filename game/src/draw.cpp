@@ -19,11 +19,12 @@ const std::string FILE_NAME {"draw.cpp"};
 setColorMode colorMode{56};
 
 
-void draw(int * unprocessedDrawBuffer, const std::vector<int> & buff,
-	  player * playerSprite, std::vector<bgSprite *> & bgSprites,
-	  const yx maxyx, const unsigned long offset)
+void draw
+(unsigned short * secondStageDrawBuffer, backgroundData & background,
+ player * playerSprite, std::vector<bgSprite *> & bgSprites, const yx maxyx)
 {
-  drawBackground(unprocessedDrawBuffer, buff, maxyx, offset);
+  background.updateFirstStageDrawBuffer();
+  drawBackground(secondStageDrawBuffer, background, maxyx);
 
   /* NOTE THAT A FLAG THAT IS SETTABLE FROM A RULES.LEV FILE SHOULD BE ADDED TO
      THE SPRITE CLASS THAT SPECIFIES IF A SPRITE SHOULD BE DISPLAYED IN FRONT
@@ -54,47 +55,48 @@ void draw(int * unprocessedDrawBuffer, const std::vector<int> & buff,
      OFF BY DEFAULT. WE COULD JUST HAVE THE CYCLE TIME IGNORED, THIS WAY WE
      WOULDN'T HAVE TO ADD ANY EXTRA COMPLEXITY TO SPRITE FILES (THE CODE FOR
      WHICH DEFINITELY NEEDS SOME ATTENTION HAHA.) */
-  std::vector<bgSprite *> drawInForground;
+  // std::vector<bgSprite *> drawInForground;
 
-  for(auto bgS: bgSprites)
-    {
-      if(!bgS->displayInForground)
-	{
-	  bgS->draw(unprocessedDrawBuffer, true, offset);
-	}
-      else
-	{
-	  /* We think this will probably be faster than searching the whole list
-	     again if the list is of a large size (and taking into consideration
-	     that most sprites will probably be behind the player). */
-	  drawInForground.push_back(bgS);
-	}
-    }  
-  playerSprite->draw(unprocessedDrawBuffer, true);
-  for(auto bgSF: drawInForground)
-    {
-      bgSF->draw(unprocessedDrawBuffer, true, offset);
-    }
+  // for(auto bgS: bgSprites)
+  //   {
+  //     if(!bgS->displayInForground)
+  // 	{
+  // 	  bgS->draw(secondStageDrawBuffer, true, offset);
+  // 	}
+  //     else
+  // 	{
+  // 	  /* We think this will probably be faster than searching the whole list
+  // 	     again if the list is of a large size (and taking into consideration
+  // 	     that most sprites will probably be behind the player). */
+  // 	  drawInForground.push_back(bgS);
+  // 	}
+  //   }  
+  // playerSprite->draw(secondStageDrawBuffer, true);
+  // for(auto bgSF: drawInForground)
+  //   {
+  //     bgSF->draw(secondStageDrawBuffer, true, offset);
+  //   }
       
-  drawDrawBuffer(unprocessedDrawBuffer, maxyx);
+  drawDrawBuffer(secondStageDrawBuffer, maxyx);
   refresh();
 }
 
 
-void drawBackground(int * unprocessedDrawBuffer, const std::vector<int> & buff,
-		    const yx maxyx, const unsigned long offset)
+void drawBackground
+(unsigned short * secondStageDrawBuffer, backgroundData & background,
+ const yx maxyx)
 {
-  std::vector<int> slice {getSlice(buff, offset, maxyx.y, maxyx.x)};
+  // std::vector<int> slice {getSlice(background, offset, maxyx.y, maxyx.x)};
 
-  for(auto iter: slice)
-    {
-      *unprocessedDrawBuffer=iter;
-      ++unprocessedDrawBuffer;
-    }
+  // for(auto iter: slice)
+  //   {
+  //     *secondStageDrawBuffer=iter;
+  //     ++secondStageDrawBuffer;
+  //   }
 }
 
 
-void drawDrawBuffer(int * unprocessedDrawBuffer, const yx maxyx)
+void drawDrawBuffer(unsigned short * secondStageDrawBuffer, const yx maxyx)
 {
   mvprintw(0, 0, "");
 
@@ -102,12 +104,12 @@ void drawDrawBuffer(int * unprocessedDrawBuffer, const yx maxyx)
       ++iter)
     {
       std::string contiguousColorChars;
-      int acsCode;
+      unsigned short acsCode;
       bool foundAcsCode;
 
-      setColor(unprocessedDrawBuffer[iter]);
+      setColor(secondStageDrawBuffer[iter]);
       foundAcsCode = getContiguouslyColordString
-	(unprocessedDrawBuffer, iter, maxyx, contiguousColorChars, acsCode);
+	(secondStageDrawBuffer, iter, maxyx, contiguousColorChars, acsCode);
 
       if(contiguousColorChars.size() != 0)
 	{
@@ -140,18 +142,20 @@ void setColor(const int charCodeWithColor)
 
 
 inline bool getContiguouslyColordString
-(const int * const unprocessedDrawBuffer, int & buffIndex, const yx maxyx,
- std::string & contiguousColorChars, int & acsCode)
+(const unsigned short * const secondStageDrawBuffer, int & buffIndex, const yx maxyx,
+ std::string & contiguousColorChars, unsigned short & acsCode)
 {
-  const int startColorCode = getColor(unprocessedDrawBuffer[buffIndex]);
+  const unsigned short startColorCode =
+    getColor(secondStageDrawBuffer[buffIndex]);
   // const int startIndex {buffIndex};
 
 
   for( ; buffIndex < (maxyx.y * maxyx.x) &&
-	 getColor(unprocessedDrawBuffer[buffIndex]) == startColorCode; buffIndex++)
+	 getColor(secondStageDrawBuffer[buffIndex]) == startColorCode;
+       buffIndex++)
     {
-      int ch;
-      ch = unprocessedDrawBuffer[buffIndex];
+      unsigned short ch;
+      ch = secondStageDrawBuffer[buffIndex];
 
       // Remove colour information (if any) from ch.
       if(inColorRange(ch))

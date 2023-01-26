@@ -8,10 +8,13 @@
 
 
 /* NOTE THAT WE DECLARE THIS HEADING HERE BECAUSE A FUNCTION WITH THE SAME
-   SIGNATURE IS DECLARED IN levelRules.hpp AND WE ONLY NEED THIS FUNCTION IN
-   THIS FILE. SkipSpace suppresses the skipping of spaces before the opening
+   SIGNATURE (OR AT LEAST THIS WOULD BE THE CASE, BUT APPARENTLY THE LINKER
+   DOESN'T LIKE IT WHEN TWO FUNCTIONS HAVE THE SAME SIGNATURE EVEN IF THEIR
+   SCOPE DOESN'T OVERLAP.) IS DECLARED IN levelRules.hpp AND WE ONLY NEED THIS
+   FUNCTION IN THIS FILE. SkipSpace suppresses the skipping of spaces before the
+   opening
    terminal "(". */
-void readSingleCoordSection
+void readSingleCoordSectionUtils
 (const std::string & buff,
  std::string::const_iterator & buffPos,
  const std::string & eMsg, const bool useIntegers,
@@ -20,13 +23,13 @@ void readSingleCoordSection
 /* NOTE AGAIN THAT AS WITH THE ABOVE A FUNCTION WITH THE SAME SIGNATURE IS
    DEFINED ELSE WHERE. Attempts to read the bracket at the start of a section. Calls exit
    with eMsg and section if there is an error. */
-void readSectionOpeningBracket
+void readSectionOpeningBracketUtils
 (const std::string &buff, std::string::const_iterator &buffPos,
  const std::string &eMsg, const std::string &section, const bool skipSpace);
 /* NOTE AGAIN THAT AS WITH THE ABOVE A FUNCTION WITH THE SAME SIGNATURE IS
    DEFINED ELSE WHERE. Attempts to read the bracket at the end of a
    section. Calls exit with eMsg and section if there is an error. */
-void readSectionEndingBracket
+void readSectionEndingBracketUtils
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const std::string & section);
 
@@ -107,7 +110,7 @@ bool getChunkCoordinate
 {
   if(buffPos != std::end(data))
     {
-      readSingleCoordSection
+      readSingleCoordSectionUtils
 	(data, buffPos, eMsg, false, & chunkCoord, "natural numbers (without "
 	 "skipping space up until the coordinate)", false);
       return true;
@@ -120,7 +123,7 @@ bool getChunkCoordinate
 
 
 // SkipSpace has a default value.
-void readSingleCoordSection
+void readSingleCoordSectionUtils
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const bool useIntegers,
  void * coord, const std::string typeOfNumber, const bool skipSpace)
@@ -128,7 +131,7 @@ void readSingleCoordSection
   constexpr char COORD_SEPARATION {','};
   std::vector<std::string> targets {};
   std::string targetFound {};
-  readSectionOpeningBracket
+  readSectionOpeningBracketUtils
     (buff, buffPos, eMsg,
      concat("single coordinate section (with " , typeOfNumber, ")"),
      skipSpace);
@@ -149,14 +152,14 @@ void readSingleCoordSection
 
   ((yx*)coord)->x = readSingleNum(buff, buffPos, eMsg, useIntegers);
 
-  readSectionEndingBracket
+  readSectionEndingBracketUtils
     (buff, buffPos, eMsg,
      concat("single coordinate section (with ", typeOfNumber, ")"));
 }
 
 
 // SkipSpace has a default value.
-void readSectionOpeningBracket
+void readSectionOpeningBracketUtils
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const std::string & section, const bool skipSpace)
 {
@@ -178,7 +181,7 @@ void readSectionOpeningBracket
 }
 
 
-void readSectionEndingBracket
+void readSectionEndingBracketUtils
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg,  const std::string & section)
 {

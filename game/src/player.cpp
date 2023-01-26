@@ -8,43 +8,15 @@
 #include "include/draw.hpp"
 
 
-
-void player::checkInitialPosIsInRangeOfLevel
-(std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
- const size_t bgSize, const yx pos)
-{
-  const long bgLen {maxyx.x};
-  if(pos.x < 0 || (pos.x + maxBottomRightOffset.x) > bgLen -1 ||
-     pos.y < 0 || (pos.y + maxBottomRightOffset.y) > maxyx.y -1)
-    {
-      std::stringstream e {};
-      e<<"Error: initial position for player sprite with file/s (";
-      for(std::string name: spritePaths)
-	{
-	  e<<"\""<<name<<"\", ";
-	}
-      e<<") is out of range. ("<<pos.y<<','<<pos.x<<") given for position, but"
-	" sprite has maximum size ("<<maxBottomRightOffset.y + 1<<','
-       <<maxBottomRightOffset.x + 1<<") and window has size ("<<maxyx.y<<','
-       <<bgLen<<"). Remember coords start at 0, are in the form (y,x) and the "
-	"player sprite must be completely in the window.\n";
-      exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
-    }
-}
-
-
 player::player
-(std::vector<std::string> spritePaths, const yx max, const size_t bgSize,
- const yx pos, const sprite::directions dir, const int h, const double g,
- const double v, const unsigned maxFallingJmpNum, const unsigned maxJmpNum)
-  : sprite(spritePaths, max, bgSize, pos, dir), health(h),
+(std::vector<std::string> spritePaths, const yx max,
+ const backgroundData & background, const yx pos, const sprite::directions dir,
+ const int h, const double g, const double v, const unsigned maxFallingJmpNum,
+ const unsigned maxJmpNum)
+ : sprite(spritePaths, max, background, pos, dir, true), health(h),
     gravitationalConstant(g), maxVertVelocity(v),
     maxFallingJumpNum(maxFallingJmpNum), maxJumpNum(maxJmpNum)
 {
-  /* We pass maxyx.x * maxyx.y as the third argument because it will be divided
-     by maxyx.y to calculate the background length. */
-  checkInitialPosIsInRangeOfLevel(spritePaths, maxBottomRightOffset, bgSize,
-				  pos);
   if(gravitationalConstant > 0)
     {
       std::stringstream err {};
@@ -290,7 +262,7 @@ void player::handleFallingSimple
 }
 
 
-void player::draw(int * unprocessedDrawBuffer, const bool updateSlice)
+void player::draw(unsigned short * secondStageDrawBuffer, const bool updateSlice)
 {
   for(size_t sliceLine{}; sliceLine <
 	spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
@@ -308,7 +280,7 @@ void player::draw(int * unprocessedDrawBuffer, const bool updateSlice)
 	  if(ch != DRAW_NO_OP)
 	    {
 	      // Add character (if not DRAW_NO_OP.)
-	      unprocessedDrawBuffer
+	      secondStageDrawBuffer
 		[((position.y + sliceLine) * maxyx.x) +
 		 position.x + spriteS[direction].
 		 spriteSlices[currentSliceNumber].slice[sliceLine].offset +

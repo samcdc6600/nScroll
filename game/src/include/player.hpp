@@ -6,6 +6,7 @@
 #include <map>
 #include "sprite.hpp"
 #include "utils.hpp"
+#include "background.hpp"
 
 
 class player: public sprite
@@ -52,9 +53,6 @@ class player: public sprite
 
   // This function is not intended for use in player (and thus is private.)
   virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
-  void checkInitialPosIsInRangeOfLevel
-  (std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
-   const size_t bgSize, const yx pos);
   
 public:
   enum directionChars
@@ -71,9 +69,10 @@ public:
     };
 
   player
-  (std::vector<std::string> spritePaths, const yx max, const size_t bgSize,
-   const yx pos, const sprite::directions dir, const int h, const double g,
-   const double v, const unsigned maxFallingJmpNum, const unsigned maxJmpNum);
+  (std::vector<std::string> spritePaths, const yx max,
+   const backgroundData & background, const yx pos, const sprite::directions dir,
+   const int h, const double g, const double v, const unsigned maxFallingJmpNum,
+   const unsigned maxJmpNum);
   
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.
@@ -192,7 +191,7 @@ public:
   
   /* Since the player sprite can never go off screen we declare a simpler draw
      function for it here */
-  void draw(int * unprocessedDrawBuffer, const bool updateSlice);
+  void draw(unsigned short * secondStageDrawBuffer, const bool updateSlice);
 };
 
 #endif

@@ -7,11 +7,11 @@ class nonPlayerSprite: public sprite
 {
 public:
   nonPlayerSprite
-  (std::vector<std::string> & spritePaths, const yx max, const size_t bgSize,
-   const yx pos, const directions dir) :
-    sprite(spritePaths, max, bgSize, pos, dir)
+  (std::vector<std::string> & spritePaths, const yx max,
+   const backgroundData & background, const yx pos, const directions dir) :
+    sprite(spritePaths, max, background, pos, dir)
   { }
-  void draw(int * unprocessedDrawBuffer, const bool updateSlice,
+  void draw(unsigned short * secondStageDrawBuffer, const bool updateSlice,
 	    const int bgPos);
 };
 

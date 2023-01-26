@@ -1,6 +1,6 @@
 (
   player(
-    initialCoordinate(0,10)
+    initialCoordinate(1200,1869)
     sprites("./assets/sprites/sprite(0).sprite",
     "./assets/sprites/sprite(1).sprite",
     "./assets/sprites/sprite(2).sprite",
@@ -9,7 +9,7 @@
   )
   backgroundSprite
   (
-    initialCoordinate(28,67)
+    initialCoordinate(-5,67)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )

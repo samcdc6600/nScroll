@@ -1,12 +1,13 @@
 #include <stdexcept>
 #include <curses.h>
-#include <iostream>
 #include "include/sprite.hpp"
 #include "include/collapse.hpp"
 
 
+// FullyIn has a default argument of false.
 sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
-	       const size_t bgSize, const yx pos, const directions dir)
+	       const backgroundData & background, const yx pos,
+	       const directions dir, const bool fullyIn)
   : maxyx(max), position(pos), direction(checkDirection(dir)),
     currentSliceNumber(0),
     startTime(std::chrono::high_resolution_clock::now()),
@@ -20,8 +21,8 @@ sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
     }
   initialiseDirectionsVector();
   getMaxYXOffset();
-  checkInitialPosIsInRangeOfLevel
-    (spritePaths, maxBottomRightOffset, bgSize, pos);
+  checkInitialPosIsInLevelChunk
+    (spritePaths, maxBottomRightOffset, background, fullyIn);
 }
 
 
@@ -249,26 +250,50 @@ void sprite::getMaxYXOffset()
 }
 
 
-void sprite::checkInitialPosIsInRangeOfLevel
+void sprite::checkInitialPosIsInLevelChunk
 (std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
- const size_t bgXSize, const yx pos)
+ const backgroundData & background, const bool fullyIn)
 {
-  const size_t bgLen {bgXSize / maxyx.y};
-  if((pos.x + maxBottomRightOffset.x) < 0 || pos.x > (long)bgLen -1 ||
-     (pos.y + maxBottomRightOffset.y) < 0 || pos.y > maxyx.y -1)
-    {
-      std::stringstream e {};
-      e<<"Error: initial position for non player sprite with file/s (";
-      for(std::string name: spritePaths)
-	{
-	  e<<"\""<<name<<"\", ";
-	}
-      e<<") is out of range. ("<<pos.y<<','<<pos.x<<") given for position, but"
-	" sprite has maximum size ("<<maxBottomRightOffset.y + 1<<','
-       <<maxBottomRightOffset.x + 1<<") and background has size ("<<maxyx.y<<','
-       <<bgLen<<"). Remember coords start at 0 and are in the form (y,x).\n";
-      exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
-    }
+
+  // Non sprites can have negative origins.
+
+  // background.keyExists(createChunkCoordKey(yx(position.y / maxyx.y,
+  // 					      position.x / maxyx.x)));
+
+
+  // endwin();
+  // std::cout<<"in sprite::checkInitialPosIsInRangeOfLevel"<<std::endl;
+  // std::cout<<"maxyx.y = "<<maxyx.y<<", maxyx.x = "
+  // 	   <<maxyx.x<<std::endl;
+  //   std::cout<<"position.y = "<<position.y<<", position.x = "<<position.x<<std::endl;
+  // std::cout<<"Key = "<<createChunkCoordKey(yx(position.y / maxyx.y,
+  // 					      position.x / maxyx.x))
+  // 	   <<'\n';
+  // std::cout<<"  background.keyExists(createChunkCoordKey(yx(pos.y / "
+  //   "maxyx.y, pos.x / maxyx.x))) = "
+  // 	   <<  background.keyExists(createChunkCoordKey(yx(position.y / maxyx.y,
+  // 							   position.x / maxyx.x)))
+  // 	   <<std::endl;
+  // exit(-1);
+
+  
+  
+  // const size_t bgLen {bgXSize / maxyx.y};
+  // if((pos.x + maxBottomRightOffset.x) < 0 || pos.x > (long)bgLen -1 ||
+  //    (pos.y + maxBottomRightOffset.y) < 0 || pos.y > maxyx.y -1)
+  //   {
+  //     std::stringstream e {};
+  //     e<<"Error: initial position for non player sprite with file/s (";
+  //     for(std::string name: spritePaths)
+  // 	{
+  // 	  e<<"\""<<name<<"\", ";
+  // 	}
+  //     e<<") is out of range. ("<<pos.y<<','<<pos.x<<") given for position, but"
+  // 	" sprite has maximum size ("<<maxBottomRightOffset.y + 1<<','
+  //      <<maxBottomRightOffset.x + 1<<") and background has size ("<<maxyx.y<<','
+  //      <<bgLen<<"). Remember coords start at 0 and are in the form (y,x).\n";
+  //     exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
+  //   }
 }
 
 

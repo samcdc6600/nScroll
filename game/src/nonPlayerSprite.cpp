@@ -1,10 +1,9 @@
 #include "include/nonPlayerSprite.hpp"
 #include "include/draw.hpp"
-
 #include <curses.h>
 
 
-void nonPlayerSprite::draw(int * unprocessedDrawBuffer, const bool updateSlice,
+void nonPlayerSprite::draw(unsigned short * secondStageDrawBuffer, const bool updateSlice,
 	    const int bgPos)
 {
   // Only display sprite if part of it is in the visible region.
@@ -63,7 +62,7 @@ void nonPlayerSprite::draw(int * unprocessedDrawBuffer, const bool updateSlice,
 			  if(ch != DRAW_NO_OP)
 			    {
 			      
-			      unprocessedDrawBuffer[((position.y + sliceLine) *
+			      secondStageDrawBuffer[((position.y + sliceLine) *
 						     maxyx.x) + xPosAbs] = ch;
 			    }
 			}

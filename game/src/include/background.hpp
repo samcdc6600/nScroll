@@ -24,6 +24,42 @@ private:
      buffer will be 3 by 3 chunks.) */
   typedef std::map<std::string, backgroundChunk> backgroundType;
   const backgroundType  background;
+
+  class firstStageDrawBufferType
+  {
+  public:
+    // Dimensions of firstStageDrawBuffer in chunks.
+    static const int fSDBYChunks {3}, fSDBXChunks {3};
+
+    /* Holds the position of the view port (in characters) relative to the level
+       origin (0,0). Note that there does not need to be a chunk at
+       (0,0). However all calculations take (0,0) as the origin. Position should
+       be updated indirectly by rules.physics() or a function it calls and it
+       along with lastUpdatedPosition is used to calculate which chunks should
+       be drawn into buffer and when. Position should also be used to draw from
+       the first stage draw buffer into the second stage draw buffer if the
+       first stage draw buffer has changed (which of course can be checked by
+       checking if position has changed relative to last position since the last
+       draw was done.) */
+    yx position {};
+    yx lastUpdatedPosition {};
+    /* Holds a 3Y by 3X buffer of the currently visible or "close to visible"
+       chunks. Where Y is the height of the view port and X it's width. */
+    unsigned short * buffer;
+
+    firstStageDrawBufferType(const ssize_t bufferSize) :
+      buffer(new unsigned short [bufferSize])
+    {
+    }
+
+    ~firstStageDrawBufferType()
+    {
+      delete [] buffer;
+    }
+  };
+  
+  firstStageDrawBufferType firstStageDrawBuffer;
+  
   /* Code for value of transparent space is 1 higher then 159 * 64 which is
      above the space of all ACS and ASCII characters whether coloured or not. */
   static constexpr int TRANS_SP {10176};
@@ -58,21 +94,12 @@ public:
   const char * fileName;
   
   backgroundData(const yx maxyxIn, const char bgFileName []):
-    maxyx (maxyxIn.y, maxyxIn.x), background
-    (loadAndInitialiseBackground(bgFileName)), fileName(bgFileName)
+    maxyx (maxyxIn.y, maxyxIn.x),
+    background(loadAndInitialiseBackground(bgFileName)),
+    fileName(bgFileName), firstStageDrawBuffer
+    (firstStageDrawBufferType::fSDBYChunks *
+     firstStageDrawBufferType::fSDBXChunks * maxyxIn.y * maxyxIn.x)
   {
-    /*    endwin();
-    for(auto chunk: background)
-      {
-	std::cout<<"Chunk:\n";
-	for(auto c: chunk.second)
-	  {
-	    std::cout<<(char)c;
-	  }
-	std::cout<<'\n';
-	
-      }
-    exit(-1); */
   }
 
   ssize_t numberOfChunks() const
@@ -109,6 +136,13 @@ public:
   //     {
   //     }
   // }
+  //
+
+  /* Updates the first stage draw buffer if firstStageDrawBuffer.position and
+     firstStageDrawBuffer.lastUpdatedPosition have diverged by a sufficient
+     delta. If an update is performed lastUpdatedPosition is set to the same
+     values as position. */
+  void updateFirstStageDrawBuffer();
 };
 
 

@@ -1,14 +1,8 @@
+//#include <iterator>
 #include "include/background.hpp"
 #include "include/colorS.hpp"
 #include "include/loadAssets.hpp"
-#include <iterator>
 #include "include/collapse.hpp"
-
-#include <iostream>
-#include <curses.h>
-
-
-//constexpr char NAME_OF_THIS_FILE[] = "background.cpp";
 
 
 backgroundData::backgroundType backgroundData::loadAndInitialiseBackground
@@ -220,3 +214,12 @@ void backgroundData::verifyCollapsedChunkSize
   //   }
   return ret;
   }*/
+
+
+/* Updates the first stage draw buffer if firstStageDrawBuffer.position and
+   firstStageDrawBuffer.lastUpdatedPosition have diverged by a sufficient
+   delta. If an update is performed lastUpdatedPosition is set to the same
+   values as position. */
+void backgroundData::updateFirstStageDrawBuffer()
+{
+}

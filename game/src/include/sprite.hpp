@@ -4,6 +4,7 @@
 #include <string>
 #include <chrono>
 #include <sstream>
+#include "background.hpp"
 #include "utils.hpp"
 
 
@@ -89,10 +90,12 @@ protected:
 
   //=========================== Member Functions ===============================
 public:
-  /* The constructor reads the sprite file located at spriteFileName and
-     converts it's contents to the internal data structure needed by sprite. */
+  /* This constructor reads the sprite file/s located at spritePaths[x] and
+     converts it's/their contents to the internal data structure needed by the
+     sprite. */
   sprite(std::vector<std::string> & spritePaths, const yx max,
-	 const size_t bgSize, const yx pos, const directions dir);
+	 const backgroundData & background, const yx pos, const directions dir,
+	 const bool fullyIn = false);
   ~sprite();
 private:
   // Split up file into cycleSpeed and unprocessesd representation of sprite.
@@ -121,14 +124,14 @@ private:
   void getMaxYXOffset();
   
 protected:
-  /* Checks that the sprite at pos is in the level (at least one character must
-     be in the range of the level
-     [(0,0), (backgroundHeight, backgroundLength)].) Exit with error message
-     otherwise. GetMaxYXOffset() should be called before this function to set 
-     maxBottomRightOffset. */ 
-  void checkInitialPosIsInRangeOfLevel
+  /* Checks that the sprite is in a level chunk. If fullyIn is set to false only
+     one character of the sprite needs to be in a chunk. If it is set to true
+     the sprite must be fully visible within the chunk. Exits with an error
+     message if the sprite isn't in a chunk. GetMaxYXOffset() should be called
+     before this function to set maxBottomRightOffset. */ 
+  void checkInitialPosIsInLevelChunk
   (std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
-   const size_t bgSize, const yx pos);
+   const backgroundData & background, const bool fullyIn);
   /* Initialises sD_base */
   void loadSprite(const char spriteFileName [], spriteData & sD);
   void resetCurrentSliceNum()

@@ -27,13 +27,11 @@ enum gameFuncRetCodes
   };
 
 
-void menu(const yx maxyx, int * unprocessedDrawBuffer);
+void menu(const yx maxyx, unsigned short * secondStageDrawBuffer);
 /* Where the horror happens
    (returns a game menu switch option.) :) */
-int gameLoop(int * unprocessedDrawBuffer,
-	     // const std::vector<int> & background,
-	     const backgroundData &,
-	     rules & levelRules, const yx maxyx);
+int gameLoop(unsigned short * secondStageDrawBuffer,
+	     backgroundData & background, rules & levelRules, const yx maxyx);
 
 
 int main()
@@ -42,24 +40,26 @@ int main()
   yx maxyx;
   initialiseCurses(maxyx);	// Start and setup ncurses
   // Allocate memory for drawBuffer.
-  int * unprocessedDrawBuffer = new int [maxyx.y * maxyx.x];
-  menu(maxyx, unprocessedDrawBuffer);
+  unsigned short * secondStageDrawBuffer
+    = new unsigned short [maxyx.y * maxyx.x];
+  menu(maxyx, secondStageDrawBuffer);
   
   endwin(); //end curses mode!
-  delete [] unprocessedDrawBuffer;
+  delete [] secondStageDrawBuffer;
   return 0;
 }
 
 
-void menu(const yx maxyx, int * unprocessedDrawBuffer)
+void menu(const yx maxyx, unsigned short * secondStageDrawBuffer)
 {
   // std::vector<int> background {};	// Hold's the background
   backgroundData background {maxyx, "assets/level1/level1.background.lev"};
   /* Hold's the "rules" for the current level. (see physics.h and
      rules.lev.txt.) */
   rules levelRules
-    {maxyx, background, "assets/level1/level1.coordRules.lev",
-     "assets/level1/level1.rules.lev"};
+    {maxyx, "assets/level1/level1.coordRules.lev",
+     "assets/level1/level1.rules.lev", background};
+
   /* Note this should be done in the menu or loop or some sub function
      called from within it since multiple level's can be played. It is
      placed here right now only for testing and development purposes. */
@@ -77,9 +77,9 @@ void menu(const yx maxyx, int * unprocessedDrawBuffer)
 	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	switch(gameLoop
-	(unprocessedDrawBuffer, background, levelRules, )) */
+	(secondStageDrawBuffer, background, levelRules, )) */
       switch(gameLoop
-	     (unprocessedDrawBuffer, background, levelRules, maxyx))
+	     (secondStageDrawBuffer, background, levelRules, maxyx))
 	{
 	case M_QUIT_GAME:
 	  run = false;
@@ -94,15 +94,9 @@ void menu(const yx maxyx, int * unprocessedDrawBuffer)
 }
 
 
-int gameLoop(int * unprocessedDrawBuffer, // const std::vector<int> &
-					  // background,
-	     const backgroundData &,
-	     rules & levelRules, const yx maxyx)
+int gameLoop(unsigned short * secondStageDrawBuffer,
+	     backgroundData & background, rules & levelRules, const yx maxyx)
 {
-  /* Position seems to be re-initialized on each iteration of the following
-     while loop. We feel like this is not what should be happening but we also
-     know that we are probably wrong. */
-  int position {};
   std::__1::chrono::steady_clock::time_point secStartTime
     {std::chrono::high_resolution_clock::now()};
   
@@ -126,7 +120,7 @@ int gameLoop(int * unprocessedDrawBuffer, // const std::vector<int> &
 
       // levelRules.physics(player::directionChars(input), position, maxyx,
       // 			 backgroundLen, secStartTime);
-      // draw(unprocessedDrawBuffer, background, levelRules.gamePlayer,
-      // 	   levelRules.bgSprites, maxyx, position);
+      draw(secondStageDrawBuffer, background, levelRules.gamePlayer,
+	   levelRules.bgSprites, maxyx);
     }
 }
