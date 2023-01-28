@@ -1,5 +1,5 @@
-#ifndef COMMON_H_
-#define COMMON_H_
+#ifndef COMMON_HPP_
+#define COMMON_HPP_
 
 
 #include <string>
@@ -226,8 +226,8 @@ void insertChunk
 {
   /* Store chunk in chunkMap with a key that should be calculated according to
      the following:
-     Concatenate (y / maxyx.y) and (x / maxyx.y) and use as index into map. Then
-     (y % (maxyx.y * 3)) * maxyx.x + (x % (maxyx.x * 3))
+     Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
+     map. Then  (y % (chunkSize.y * 3)) * chunkSize.x + (x % (chunkSize.x * 3))
      can be used to index into the object returned. The stage 1 draw buffer will
      be 3 by 3 chunks. */
   const std::string key

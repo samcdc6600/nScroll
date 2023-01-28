@@ -21,10 +21,11 @@ setColorMode colorMode{56};
 
 void draw
 (unsigned short * secondStageDrawBuffer, backgroundData & background,
- player * playerSprite, std::vector<bgSprite *> & bgSprites, const yx maxyx)
+ player * playerSprite, std::vector<bgSprite *> & bgSprites,
+ const yx viewPortSize, const yx viewPortPosition)
 {
-  background.updateFirstStageDrawBuffer();
-  drawBackground(secondStageDrawBuffer, background, maxyx);
+  drawBackground
+    (secondStageDrawBuffer, background, viewPortSize, viewPortPosition);
 
   /* NOTE THAT A FLAG THAT IS SETTABLE FROM A RULES.LEV FILE SHOULD BE ADDED TO
      THE SPRITE CLASS THAT SPECIFIES IF A SPRITE SHOULD BE DISPLAYED IN FRONT
@@ -61,7 +62,7 @@ void draw
   //   {
   //     if(!bgS->displayInForground)
   // 	{
-  // 	  bgS->draw(secondStageDrawBuffer, true, offset);
+  // 	  bgS->draw(secondStageDrawBuffer, true, viewPortPosition);
   // 	}
   //     else
   // 	{
@@ -74,19 +75,19 @@ void draw
   // playerSprite->draw(secondStageDrawBuffer, true);
   // for(auto bgSF: drawInForground)
   //   {
-  //     bgSF->draw(secondStageDrawBuffer, true, offset);
+  //     bgSF->draw(secondStageDrawBuffer, true, viewPortPosition);
   //   }
       
-  drawDrawBuffer(secondStageDrawBuffer, maxyx);
+  drawDrawBuffer(secondStageDrawBuffer, viewPortSize);
   refresh();
 }
 
 
 void drawBackground
 (unsigned short * secondStageDrawBuffer, backgroundData & background,
- const yx maxyx)
+ const yx viewPortSize, const yx viewPortPosition)
 {
-  // std::vector<int> slice {getSlice(background, offset, maxyx.y, maxyx.x)};
+  // std::vector<int> slice {getSlice(background, viewPortPosition, viewPortSize.y, viewPortSize.x)};
 
   // for(auto iter: slice)
   //   {
@@ -96,11 +97,12 @@ void drawBackground
 }
 
 
-void drawDrawBuffer(unsigned short * secondStageDrawBuffer, const yx maxyx)
+void drawDrawBuffer
+(unsigned short * secondStageDrawBuffer, const yx viewPortSize)
 {
   mvprintw(0, 0, "");
 
-  for(int iter {}; iter < (maxyx.y * maxyx.x);
+  for(int iter {}; iter < (viewPortSize.y * viewPortSize.x);
       ++iter)
     {
       std::string contiguousColorChars;
@@ -109,7 +111,8 @@ void drawDrawBuffer(unsigned short * secondStageDrawBuffer, const yx maxyx)
 
       setColor(secondStageDrawBuffer[iter]);
       foundAcsCode = getContiguouslyColordString
-	(secondStageDrawBuffer, iter, maxyx, contiguousColorChars, acsCode);
+	(secondStageDrawBuffer, iter, viewPortSize,
+	 contiguousColorChars, acsCode);
 
       if(contiguousColorChars.size() != 0)
 	{
@@ -142,15 +145,16 @@ void setColor(const int charCodeWithColor)
 
 
 inline bool getContiguouslyColordString
-(const unsigned short * const secondStageDrawBuffer, int & buffIndex, const yx maxyx,
- std::string & contiguousColorChars, unsigned short & acsCode)
+(const unsigned short * const secondStageDrawBuffer, int & buffIndex,
+ const yx viewPortSize, std::string & contiguousColorChars,
+ unsigned short & acsCode)
 {
   const unsigned short startColorCode =
     getColor(secondStageDrawBuffer[buffIndex]);
   // const int startIndex {buffIndex};
 
 
-  for( ; buffIndex < (maxyx.y * maxyx.x) &&
+  for( ; buffIndex < (viewPortSize.y * viewPortSize.x) &&
 	 getColor(secondStageDrawBuffer[buffIndex]) == startColorCode;
        buffIndex++)
     {

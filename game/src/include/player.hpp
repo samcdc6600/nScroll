@@ -1,5 +1,5 @@
-#ifndef PLAYER_H_
-#define PLAYER_H_
+#ifndef PLAYER_HPP_
+#define PLAYER_HPP_
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -69,10 +69,10 @@ public:
     };
 
   player
-  (std::vector<std::string> spritePaths, const yx max,
-   const backgroundData & background, const yx pos, const sprite::directions dir,
-   const int h, const double g, const double v, const unsigned maxFallingJmpNum,
-   const unsigned maxJmpNum);
+  (std::vector<std::string> spritePaths, const yx viewPortSize,
+   const backgroundData & background, const yx pos,
+   const sprite::directions dir, const int h, const double g, const double v,
+   const unsigned maxFallingJmpNum, const unsigned maxJmpNum);
   
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.
@@ -87,26 +87,26 @@ public:
      maxJumpNum hasn't been reached.) If the player didn't start a new jump then
      keepJumping should be called (but only if the player can move down). */
   bool startJumping
-  (const int bgPosition, yx maxyx, const std::vector<char> & coordRules);
+  (const int bgPosition, yx viewPortSize, const std::vector<char> & coordRules);
   /* Keeps jumping if the player is jumping. That is as long as the player will
      not collide with any boarder characters or the bottom or top of the level.
      If the player is falling keep falling unless the player is above a boarder
      character or the bottom of the level. If the player isn't above any baorder
      character and isn't at the bottom of the level then start falling. */
   void handleJumpingAndFalling
-  (const int bgPosition, const yx & maxyx,
+  (const int bgPosition, const yx & viewPortSize,
    const std::vector<char> & coordRules);
   bool isJumping() {return jumping != notJumping;};
   
 private:
   void handleFalling
-  (const int bgPosition, const yx & maxyx,
+  (const int bgPosition, const yx & viewPortSize,
    const std::vector<char> & coordRules);
   void handleFallingSimple
-  (const int bgPosition, const yx & maxyx,
+  (const int bgPosition, const yx & viewPortSize,
    const std::vector<char> & coordRules);
   void handleJumping
-  (const int bgPosition, const yx & maxyx,
+  (const int bgPosition, const yx & viewPortSize,
    const std::vector<char> & coordRules);
   /* Calculates all the points between the absolute position of the left +
      leftCollisionOffset and the absolute position of the right +
@@ -119,14 +119,17 @@ private:
 					      const int bottomSide,
 					      const bool directContact)
   {
-    const int absLeftPos {this->position.x + leftCollisionDirectOffset + position};
+    const int absLeftPos
+      {this->position.x + leftCollisionDirectOffset + position};
     const int absRightPos {this->position.x + maxBottomRightOffset.x +
       rightCollisionDirectOffset + position};
 
     const int collisionOffset {bottomSide ?
       (directContact ? bottomCollisionDirectOffset: bottomCollisionOneOffOffset) :
       (directContact ? topCollisionDirectOffset: topCollisionOneOffOffset)};
-    const int y {(bottomSide ? this->maxBottomRightOffset.y: 0) + collisionOffset + this->position.y};
+    const int y
+      {(bottomSide ?
+	this->maxBottomRightOffset.y: 0) + collisionOffset + this->position.y};
 
     std::vector<yx> retCoords {};
     for(int pos {absLeftPos}; pos <= absRightPos; pos++)

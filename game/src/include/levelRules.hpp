@@ -1,5 +1,5 @@
-#ifndef PHYSICS_H_
-#define PHYSICS_H_
+#ifndef LEVELRULES_HPP_
+#define LEVELRULES_HPP_
 #include <map>
 #include <string>
 #include <vector>
@@ -7,7 +7,6 @@
 #include "player.hpp"
 #include "backgroundSprite.hpp"
 #include "background.hpp"
-#include "loadAssets.hpp"
 
 
 class rules
@@ -92,7 +91,7 @@ private:
   // ===========================================================================
   // Where rulesBuffer holds the contents of a RULES_CONFIG_FILE_EXTENSION file.
   void parseRulesConfigFileAndInitialiseVariables
-  (const yx maxyx, const char rulesFileName [], const std::string & rulesBuffer,
+  (const yx viewPortPosition, const char rulesFileName [], const std::string & rulesBuffer,
    const backgroundData & background);
   // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files END ====
   // ===========================================================================
@@ -113,36 +112,37 @@ private:
   char nearPass(const std::vector<int> playerSpChoords,
 		const std::vector<int> spChoords);
   // Moves the player 
-  void movePlayer(sprite::directions input,
-		  int & position, const yx maxyx, const size_t backgroundLength);
+  void movePlayer
+  (sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
+   const size_t backgroundLength);
   /* No functions that change the position of the player should be called after
      this one for a given frame. */
   /* Calls handleFinalPlayerMovementAndWindowAndMarginInteractions after
      checking that the player won't go outside of the level after it's position
      is updated to peekPos. */
   void handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
-  (const sprite::directions newDir, int & position, const yx maxyx,
-   const size_t backgroundLength);
+  (const sprite::directions newDir, yx & viewPortPosition,
+   const yx viewPortSize, const size_t backgroundLength);
   void handleFinalPlayerMovementAndWindowAndMarginInteractions
-  (const sprite::directions newDir, int & position, const yx maxyx,
+  (const sprite::directions newDir, yx & viewPortPosition, const yx viewPortSize,
    const size_t backgroundLength, const yx peekPos);
   /* Moves the player when interacting with the inner margin (NOTE THAT THIS
      FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
      THE INNER MARGIN AND NOT OUTSIDE THE BOUNDS OF THE LEVEL AS DEFINED BY THE
      BACKGROUND.) */
   void movePlayerWhenInteractingWithInnerMargin
-  (const sprite::directions input, int & position, const yx maxyx,
+  (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
    const size_t backgroundLength, const yx peekPos);
   /* NOTE THAT THIS FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
    THE INNER MARGIN */
   void movePlayerRightWhenInteractingWithInnerMargin
-  (const sprite::directions input, int & position, const yx maxyx,
+  (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
    const size_t backgroundLength, const yx peekPos,
    const int REACHED_INNER_MARGIN_X);
   /* NOTE THAT THIS FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
    THE INNER MARGIN */
   void movePlayerLeftWhenInteractingWithInnerMargin
-  (const sprite::directions input, int & position, const yx maxyx,
+  (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
    const size_t backgroundLength, const yx peekPos,
    const int REACHED_INNER_MARGIN_X);
   // /* Returns number of characters untill the player bits a boarder character
@@ -152,7 +152,7 @@ private:
      Input should be the player input direction and the current absolute
      position of the player sprite in the x dimension. Returns updated
      direction. */
-  sprite::directions handleGroundCollision(const int position,
+  sprite::directions handleGroundCollision(const yx viewPortPosition,
 					   const int backgroundHeight);
   /* Handles collision with boarder characters when the player sprite is moving
      right. If there is only one character to the bottom right then the player
@@ -160,10 +160,10 @@ private:
      character unless the player has a y position of 0, in which case the
      player will be stopped. The player sprite will also be stopped if there is
      more then one character directly to the right of it. */
-  sprite::directions handleRightCollision(const int position,
+  sprite::directions handleRightCollision(const yx viewPortPosition,
 					  const int backgroundHeight);
   // // Analogous to handleRightCollision but of course for leftward movement.
-  sprite::directions handleLeftCollision(const int position,
+  sprite::directions handleLeftCollision(const yx viewPortPosition,
 					 const int backgroundHeight);
 
 #ifdef DEBUG
@@ -175,22 +175,22 @@ public:
   /* background is required because for every chunk in background there should
      be a corresponding chunk in rules::coordRules. */
   rules
-  (const yx maxyx, const char coordRulesFileName [],
+  (const yx viewPortSize, const char coordRulesFileName [],
    const char rulesFileName [], const backgroundData & background) :
     coordRules
-    (loadAndInitialiseCoordRules(maxyx, coordRulesFileName, background)),
-    coordRulesCurrentContextBufferSize(maxyx.y * maxyx.x * 9),
-    coordRulesCurrentContextBuffer(new char [maxyx.y * maxyx.x * 9])
+    (loadAndInitialiseCoordRules(viewPortSize, coordRulesFileName, background)),
+    coordRulesCurrentContextBufferSize(viewPortSize.y * viewPortSize.x * 9),
+    coordRulesCurrentContextBuffer(new char [viewPortSize.y * viewPortSize.x * 9])
   {
     std::string rulesBuffer {};
     loadFileIntoString
       (rulesFileName, rulesBuffer,
        concat("trying to read ", RULES_CONFIG_FILE_EXTENSION, " file"));
     parseRulesConfigFileAndInitialiseVariables
-      (maxyx, rulesFileName, rulesBuffer, background);
+      (viewPortSize, rulesFileName, rulesBuffer, background);
   }
-  void physics(const player::directionChars input, int & position,
-	       const yx maxyx, const size_t backgroundLength,
+  void physics(const player::directionChars input, yx & viewPortPosition,
+	       const yx viewPortSize, const size_t backgroundLength,
 	       std::__1::chrono::steady_clock::time_point & secStartTime);
   ~rules()
   {

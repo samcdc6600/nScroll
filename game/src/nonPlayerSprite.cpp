@@ -3,13 +3,14 @@
 #include <curses.h>
 
 
-void nonPlayerSprite::draw(unsigned short * secondStageDrawBuffer, const bool updateSlice,
-	    const int bgPos)
+void nonPlayerSprite::draw
+(unsigned short * secondStageDrawBuffer, const bool updateSlice,
+ const int bgPos)
 {
   // Only display sprite if part of it is in the visible region.
   if((position.x + maxBottomRightOffset.x) >= bgPos && position.x <=
-     (bgPos + maxyx.x -1) && (position.y + maxBottomRightOffset.y) >= 0
-     && (position.y < maxyx.y))
+     (bgPos + viewPortSize.x -1) && (position.y + maxBottomRightOffset.y) >= 0
+     && (position.y < viewPortSize.y))
     {
       if(updateSlice)
 	{
@@ -41,7 +42,7 @@ void nonPlayerSprite::draw(unsigned short * secondStageDrawBuffer, const bool up
 	    { // Move curser to the right position.
 	      if(position.y + sliceLine >= 0)
 		{
-		  if(position.y + sliceLine < maxyx.y)
+		  if(position.y + sliceLine < viewPortSize.y)
 		    {
 		      int xPosRel;
 		      xPosRel = {position.x + spriteS[direction].
@@ -52,7 +53,7 @@ void nonPlayerSprite::draw(unsigned short * secondStageDrawBuffer, const bool up
 
 		      /* Sprite can be partially in the visible region, so only
 			 print if char is in window. */
-		      if(xPosRel >= bgPos && xPosRel <= (bgPos + maxyx.x -1))
+		      if(xPosRel >= bgPos && xPosRel <= (bgPos + viewPortSize.x -1))
 			{
 			  int ch;
 			  ch = spriteS[direction].
@@ -63,7 +64,7 @@ void nonPlayerSprite::draw(unsigned short * secondStageDrawBuffer, const bool up
 			    {
 			      
 			      secondStageDrawBuffer[((position.y + sliceLine) *
-						     maxyx.x) + xPosAbs] = ch;
+						     viewPortSize.x) + xPosAbs] = ch;
 			    }
 			}
 		    }

@@ -166,27 +166,16 @@ namespace levelFileKeywords
 
 // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files START ====
 // =============================================================================
-// void parseRulesHeader(const yx maxyx, const char rulesFileName[],
-// 			  rules & levelRules, const size_t bgSize,
-// 		      const std::string & rawRules,
-// 		      std::string::const_iterator & buffPos);
 void initPlayer
-(const yx maxyx, const char rulesFileName [], rules & levelRules,
+(const yx viewPortSize, const char rulesFileName [], rules & levelRules,
  const backgroundData & background, const std::string & rawRules,
  std::string::const_iterator & buffPos);
 /* This function should be called for each background sprite section that's
    encountered. */
 void initBgSprites
-(const yx maxyx, const char rulesFileName[], rules & levelRules,
+(const yx viewPortSize, const char rulesFileName[], rules & levelRules,
  const backgroundData & background, const std::string & rawRules,
  std::string::const_iterator & buffPos);
-/* Attempts to read the start of the header in a RULES_CONFIG_FILE_EXTENSION
-   file. */
-// void readStartOfHeader(const std::string &buff,
-//                        std::string::const_iterator &buffPos,
-//                        const std::string &eMsg);
-// /* Attempts to read the bracket at the start of a section. Calls exit with eMsg 
-    //    and section if there is an error. */
 void readSectionOpeningBracket
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const std::string & section,
@@ -531,7 +520,7 @@ void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
 
 
 void rules::parseRulesConfigFileAndInitialiseVariables
-(const yx maxyx, const char rulesFileName [], const std::string & rulesBuffer,
+(const yx viewPortSize, const char rulesFileName [], const std::string & rulesBuffer,
  const backgroundData & background)
 {
   using namespace levelFileKeywords;
@@ -595,15 +584,15 @@ void rules::parseRulesConfigFileAndInitialiseVariables
 		 case 0:
 		   headerKeywordActions[foundIter].found = true;
 		   headerKeywordActions[foundIter].headerAction
-		     (maxyx, rulesFileName, *this, background, rulesBuffer,
-		      buffPos);
+		     (viewPortSize, rulesFileName, *this, background,
+		      rulesBuffer, buffPos);
 		   break;
 		 case 1:
 		   /* We don't set found here because this keyword should have
 		      headerKeywordAction.foundMultipleOptional set to true. */
 		   headerKeywordActions[foundIter].headerAction
-		     (maxyx, rulesFileName, *this, background, rulesBuffer,
-		      buffPos);
+		     (viewPortSize, rulesFileName, *this, background,
+		      rulesBuffer, buffPos);
 		   break;
 		 }
 
@@ -663,7 +652,7 @@ void rules::parseRulesConfigFileAndInitialiseVariables
 
 
 void initPlayer
-(const yx maxyx, const char rulesFileName[], rules & levelRules,
+(const yx viewPortSize, const char rulesFileName[], rules & levelRules,
  const backgroundData & background, const std::string & rawRules,
  std::string::const_iterator & buffPos)
 {
@@ -800,7 +789,7 @@ void initPlayer
     }
 
   levelRules.gamePlayer =
-    new player(playerInitData.spritePaths, maxyx, background,
+    new player(playerInitData.spritePaths, viewPortSize, background,
 	       playerInitData.coordinate, playerInitData.direction,
 	       playerInitData.health, playerInitData.gravitationalConstant,
 	       playerInitData.maxVerticalVelocity,
@@ -809,7 +798,7 @@ void initPlayer
 }
 
 
-void initBgSprites(const yx maxyx, const char rulesFileName[],
+void initBgSprites(const yx viewPortSize, const char rulesFileName[],
 		   rules & levelRules, const backgroundData & background,
 		   const std::string & rawRules,
 		   std::string::const_iterator & buffPos)
@@ -937,7 +926,7 @@ void initBgSprites(const yx maxyx, const char rulesFileName[],
     }
 
   levelRules.bgSprites.push_back
-    (new bgSprite(bgSpriteInitData.spritePaths, maxyx, background,
+    (new bgSprite(bgSpriteInitData.spritePaths, viewPortSize, background,
 		  bgSpriteInitData.coordinate, bgSpriteInitData.direction,
 		  bgSpriteInitData.displayInForground));
 }
@@ -1368,9 +1357,9 @@ char rules::nearPass(const std::vector<int> playerSpChoords,
 }
 
 
-void rules::movePlayer(sprite::directions input,
-		       int & position, const yx maxyx,
-		       const size_t backgroundLength)
+void rules::movePlayer
+(sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
+ const size_t backgroundLength)
 { /* Move the player as long as they will stay within
      PLAYER_MOVMENT_INNER_MARGIN of the left and right borders. If the
      player is PLAYER_MOVMENT_INNER_MARGIN away from either the left or
@@ -1385,7 +1374,7 @@ void rules::movePlayer(sprite::directions input,
      )
     {
       // Start jump.
-      //      gamePlayer->startJumping(position, maxyx, coordRulesCurrentContextBuffer);
+      //      gamePlayer->startJumping(viewPortPosition, viewPortSize, coordRulesCurrentContextBuffer);
       // We wan't to keep moving in the direction we were moving in before.
       input = (sprite::directions)currDir;
     }
@@ -1393,42 +1382,42 @@ void rules::movePlayer(sprite::directions input,
     {
       /* We are not jumping or we are past the start of a jump.
 	 If we can move down. */
-      //      gamePlayer->handleJumpingAndFalling(position, maxyx, coordRulesCurrentContextBuffer);
+      //      gamePlayer->handleJumpingAndFalling(viewPortPosition, viewPortSize, coordRulesCurrentContextBuffer);
     }
 
   // Handle contact with boarder characters.
   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
      input == sprite::DIR_DOWN)
     {
-      input = handleGroundCollision(position, maxyx.y);
+      input = handleGroundCollision(viewPortPosition, viewPortSize.y);
     }
   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
     {
-      input = handleRightCollision(position, maxyx.y);
+      input = handleRightCollision(viewPortPosition, viewPortSize.y);
     }
   else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_LEFT)
     {
-      input = handleLeftCollision(position, maxyx.y);
+      input = handleLeftCollision(viewPortPosition, viewPortSize.y);
     }
 
   handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
-    (input, position, maxyx, backgroundLength);
+    (input, viewPortPosition, viewPortSize, backgroundLength);
 }
 
 
 void rules::handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
-(const sprite::directions newDir, int & position, const yx maxyx,
+(const sprite::directions newDir, yx & viewPortPosition, const yx viewPortSize,
  const size_t backgroundLength)
 {
   const yx peekPos {gamePlayer->peekAtPos(newDir)};
-  if(gamePlayer->inLevelY(peekPos.y, maxyx.y) &&
-     gamePlayer->inLevelX(peekPos.x + position, backgroundLength))
+  if(gamePlayer->inLevelY(peekPos.y, viewPortSize.y) &&
+     gamePlayer->inLevelX(peekPos.x + viewPortPosition.x, backgroundLength))
     {
       // We won't be outside of the level if we move.
       handleFinalPlayerMovementAndWindowAndMarginInteractions
-	(newDir, position, maxyx, backgroundLength, peekPos);
+	(newDir, viewPortPosition, viewPortSize, backgroundLength, peekPos);
     }
   else
     {
@@ -1438,7 +1427,7 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
 
 
 void rules::handleFinalPlayerMovementAndWindowAndMarginInteractions
-(const sprite::directions newDir, int & position, const yx maxyx,
+(const sprite::directions newDir, yx & viewPortPosition, const yx viewPortSize,
  const size_t backgroundLength, const yx peekPos)
 {
     /* Make any final movement, check for window margin contact and take
@@ -1460,14 +1449,14 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractions
     }
   else
     {
-      movePlayerWhenInteractingWithInnerMargin(newDir, position, maxyx,
+      movePlayerWhenInteractingWithInnerMargin(newDir, viewPortPosition, viewPortSize,
 					       backgroundLength, peekPos);
     }
 }
 
 
 void rules::movePlayerWhenInteractingWithInnerMargin
-(const sprite::directions input, int & position, const yx maxyx,
+(const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
  const size_t backgroundLength, const yx peekPos)
 {
   /* We use this variable in the call's to inWindowInnerMargin() when peekPos
@@ -1482,7 +1471,7 @@ void rules::movePlayerWhenInteractingWithInnerMargin
       break;
     case sprite::DIR_RIGHT:
       movePlayerRightWhenInteractingWithInnerMargin
-	(input, position, maxyx, backgroundLength, peekPos,
+	(input, viewPortPosition, viewPortSize, backgroundLength, peekPos,
 	 REACHED_INNER_MARGIN_X);
       break;
     case sprite::DIR_DOWN:
@@ -1490,7 +1479,7 @@ void rules::movePlayerWhenInteractingWithInnerMargin
       break;
     case sprite::DIR_LEFT:
       movePlayerLeftWhenInteractingWithInnerMargin
-	(input, position, maxyx, backgroundLength, peekPos,
+	(input, viewPortPosition, viewPortSize, backgroundLength, peekPos,
 	 REACHED_INNER_MARGIN_X);
       break;
     }
@@ -1498,21 +1487,21 @@ void rules::movePlayerWhenInteractingWithInnerMargin
 
 
 void rules::movePlayerRightWhenInteractingWithInnerMargin
-(const sprite::directions input, int & position, const yx maxyx,
+(const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
  const size_t backgroundLength, const yx peekPos,
  const int REACHED_INNER_MARGIN_X)
 {
   if(gamePlayer->leftOfWindowInnerRightMargin
-     (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x, maxyx))
+     (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x, viewPortSize))
     { // We are to the left of the inner right margin.
       gamePlayer->updatePosRel(input);
     }
-  else if(size_t(position + maxyx.x) < backgroundLength)
+  else if(size_t(viewPortPosition.x + viewPortSize.x) < backgroundLength)
     { // There is still background left to spare.
       gamePlayer->updateDirection(input);
-      position++;	// Move background.
+      viewPortPosition.x++;	// Move background.
     }
-  else if(size_t(position + maxyx.x) == backgroundLength)
+  else if(size_t(viewPortPosition.x + viewPortSize.x) == backgroundLength)
     { /* No background left, so move the player to the right
 	 edge of the background. */
       gamePlayer->updatePosRel(input);
@@ -1521,7 +1510,7 @@ void rules::movePlayerRightWhenInteractingWithInnerMargin
 
 
 void rules::movePlayerLeftWhenInteractingWithInnerMargin
-(const sprite::directions input, int & position, const yx maxyx,
+(const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
  const size_t backgroundLength, const yx peekPos,
  const int REACHED_INNER_MARGIN_X)
 {
@@ -1530,12 +1519,12 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
     { // We are to the righ of the inner left margin.
       gamePlayer->updatePosRel(input);
     }
-  else if(position > 0)
+  else if(viewPortPosition.x > 0)
     { // There is still background left to spare.
       gamePlayer->updateDirection(input);
-      position--;	// Move background.
+      viewPortPosition.x--;	// Move background.
     }
-  else if(position == 0)
+  else if(viewPortPosition.x == 0)
     { /* No background left, so move the player to the left
 	 edge of the background. */
       gamePlayer->updatePosRel(input);
@@ -1618,7 +1607,7 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
 
 /* Checks for contact with boarder characters when moving down. Returns the
    direction that the player should be moving in. */
-sprite::directions rules::handleGroundCollision(const int position,
+sprite::directions rules::handleGroundCollision(const yx viewPortPosition,
 						const int backgroundHeight)
 {
   sprite::directions retDir {sprite::DIR_DOWN};
@@ -1642,7 +1631,7 @@ sprite::directions rules::handleGroundCollision(const int position,
    player up one character if a "step" is encountered (as long as the player
    will not go out of bounds.) Returns the direction the player should move in.
 */
-sprite::directions rules::handleRightCollision(const int position,
+sprite::directions rules::handleRightCollision(const yx viewPortPosition,
 					       const int backgroundHeight)
 {
   using namespace boarderRuleChars;
@@ -1689,7 +1678,7 @@ sprite::directions rules::handleRightCollision(const int position,
 }
 
 
-sprite::directions rules::handleLeftCollision(const int position,
+sprite::directions rules::handleLeftCollision(const yx viewPortPosition,
 					      const int backgroundHeight)
 {
   using namespace boarderRuleChars;
@@ -1759,16 +1748,17 @@ void rules::printRuleChars(const int position, const int maxY, const int maxX)
 
 
 void rules::physics
-(const player::directionChars input, int & position, const yx maxyx,
- const size_t backgroundLength,
+(const player::directionChars input, yx & viewPortPosition,
+ const yx viewPortSize, const size_t backgroundLength,
  std::__1::chrono::steady_clock::time_point & secStartTime)
 {
 #ifdef DEBUG
-  printRuleChars(position, maxyx.y, maxyx.x);
+  printRuleChars(position, viewPortSize.y, viewPortSize.x);
 #endif
   
-  movePlayer(player::convertDirectionCharsToDirections(input), position, maxyx,
-	     backgroundLength);
+  movePlayer
+    (player::convertDirectionCharsToDirections(input), viewPortPosition,
+     viewPortSize, backgroundLength);
   sleep(engineSleepTime);
   resetOldTime(secStartTime);
 }

@@ -7,7 +7,7 @@
 #include "include/draw.hpp"
 
 
-void drawExit(const yx maxyx)
+void drawExit(const yx viewPortSize)
 {
   // const std::string swanSong {"~~*-F-A-R-E-W-E-L-L-*~~"};
   // int padding {1};
@@ -20,24 +20,24 @@ void drawExit(const yx maxyx)
   
   // for(size_t iter {}; iter < frames; ++iter)
   //   {
-  //     for(size_t xIter {}; xIter < maxyx.x; ++xIter)
+  //     for(size_t xIter {}; xIter < viewPortSize.x; ++xIter)
   // 	{
-  // 	  for(size_t yIter {}; yIter < maxyx.y; ++yIter)
+  // 	  for(size_t yIter {}; yIter < viewPortSize.y; ++yIter)
   // 	    {
   // 	      if(swanSong.size() != 0) // Check that message has non zero size.
   // 		{		  
-  // 		  if((xIter > ((maxyx.x /2) - (padding + swanSong.size() /2))) &&
-  // 		     (xIter < ((maxyx.x /2) + (padding + swanSong.size() /2))) &&
-  // 		     (yIter > ((maxyx.y /2) - padding)) &&
-  // 		     (yIter < ((maxyx.y /2) + padding)))
+  // 		  if((xIter > ((viewPortSize.x /2) - (padding + swanSong.size() /2))) &&
+  // 		     (xIter < ((viewPortSize.x /2) + (padding + swanSong.size() /2))) &&
+  // 		     (yIter > ((viewPortSize.y /2) - padding)) &&
+  // 		     (yIter < ((viewPortSize.y /2) + padding)))
   // 		    {
-  // 		      if(xIter == ((maxyx.x /2) - (swanSong.size() /2)) &&
-  // 			 yIter == (maxyx.y /2))
+  // 		      if(xIter == ((viewPortSize.x /2) - (swanSong.size() /2)) &&
+  // 			 yIter == (viewPortSize.y /2))
   // 			 mvprintw(yIter, xIter, swanSong.c_str());
   // 		    }
   // 		  else
   // 		    {
-  // 		      setCursor(yIter, xIter, maxyx);
+  // 		      setCursor(yIter, xIter, viewPortSize);
   // 		      ch = (rand() % MONO_CH_MAX) * (rand() % COLOR_CH_MAX);
   // 		      drawCh(ch);
   // 		    }

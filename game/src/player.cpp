@@ -9,11 +9,11 @@
 
 
 player::player
-(std::vector<std::string> spritePaths, const yx max,
+(std::vector<std::string> spritePaths, const yx viewPortSize,
  const backgroundData & background, const yx pos, const sprite::directions dir,
  const int h, const double g, const double v, const unsigned maxFallingJmpNum,
  const unsigned maxJmpNum)
- : sprite(spritePaths, max, background, pos, dir, true), health(h),
+ : sprite(spritePaths, viewPortSize, background, pos, dir, true), health(h),
     gravitationalConstant(g), maxVertVelocity(v),
     maxFallingJumpNum(maxFallingJmpNum), maxJumpNum(maxJmpNum)
 {
@@ -82,7 +82,7 @@ void player::updatePosRel(const sprite::directions dir)
 
 
 bool player::startJumping
-(const int bgPosition, yx maxyx, const std::vector<char> & coordRules)
+(const int bgPosition, yx viewPortSize, const std::vector<char> & coordRules)
 {
   bool retVar {false};
   if(jumpNum < maxJumpNum)
@@ -97,7 +97,7 @@ bool player::startJumping
 	  for(auto coord: this->getXAbsRangeAsStrs(bgPosition, false, false))
 	    {
 	      char rule {};
-	      if(getCoordRule(coord, coordRules, maxyx.y, rule) &&
+	      if(getCoordRule(coord, coordRules, viewPortSize.y, rule) &&
 		 rule == boarderRuleChars::BOARDER_CHAR)
 		{
 		  // We're going to hit something.
@@ -118,7 +118,7 @@ bool player::startJumping
       /* We must call this here because this function is called (INSTEAD OF HANDLEJUMPINGANDFALLING())  when
          sprite::DIR_UP is pressed and if we can't perform a new jump we must
          continue the current jump / fall. */
-      handleJumpingAndFalling(bgPosition, maxyx, coordRules);
+      handleJumpingAndFalling(bgPosition, viewPortSize, coordRules);
     }
 
  RETURN:
@@ -126,16 +126,17 @@ bool player::startJumping
 }
 
 
-void player::handleJumpingAndFalling(const int bgPosition, const yx & maxyx,
-				     const std::vector<char> & coordRules)
+void player::handleJumpingAndFalling
+(const int bgPosition, const yx & viewPortSize,
+ const std::vector<char> & coordRules)
 {
   if(jumping == notJumping)
     {
-      handleFalling(bgPosition, maxyx, coordRules);
+      handleFalling(bgPosition, viewPortSize, coordRules);
     }
   else
     {
-      handleJumping(bgPosition, maxyx, coordRules);
+      handleJumping(bgPosition, viewPortSize, coordRules);
     }
 
   return;			// Required by RETURN label I guess.
@@ -143,11 +144,12 @@ void player::handleJumpingAndFalling(const int bgPosition, const yx & maxyx,
 
 
 void player::handleFalling
-(const int bgPosition, const yx &maxyx, const std::vector<char> &coordRules)
+(const int bgPosition, const yx &viewPortSize,
+ const std::vector<char> &coordRules)
 {
   using namespace boarderRuleChars;
   
-  if((position.y + maxBottomRightOffset.y) == (maxyx.y -1))
+  if((position.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
     {
       // We're at the bottom of the level.
       return;
@@ -157,7 +159,7 @@ void player::handleFalling
       for(auto coord: this->getXAbsRangeAsStrs(bgPosition, true, false))
 	{
 	  char rule {};
-	  if(getCoordRule(coord, coordRules, maxyx.y, rule) &&
+	  if(getCoordRule(coord, coordRules, viewPortSize.y, rule) &&
 	     (rule == BOARDER_CHAR ||
 	      rule == PLATFORM_CHAR))
 	    {
@@ -172,12 +174,13 @@ void player::handleFalling
   jumping = jumpingDown;
 
   // We're jumping down.
-  handleFallingSimple(bgPosition, maxyx, coordRules);
+  handleFallingSimple(bgPosition, viewPortSize, coordRules);
 }
 
 
 void player::handleJumping
-(const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules)
+(const int bgPosition, const yx & viewPortSize,
+ const std::vector<char> & coordRules)
 {
   if(jumping == jumpingUp)
     {
@@ -207,7 +210,7 @@ void player::handleJumping
 	  for(auto coord: this->getXAbsRangeAsStrs(bgPosition, false, false))
 	    {
 	      char rule {};
-	      if(getCoordRule(coord, coordRules, maxyx.y, rule) &&
+	      if(getCoordRule(coord, coordRules, viewPortSize.y, rule) &&
 		 rule == boarderRuleChars::BOARDER_CHAR)
 		{
 		  // We're going to hit something.
@@ -224,20 +227,21 @@ void player::handleJumping
   else
     {
       // We're jumping down.
-      handleFallingSimple(bgPosition, maxyx, coordRules);
+      handleFallingSimple(bgPosition, viewPortSize, coordRules);
     }
 }
 
 
 void player::handleFallingSimple
-(const int bgPosition, const yx & maxyx, const std::vector<char> & coordRules)
+(const int bgPosition, const yx & viewPortSize,
+ const std::vector<char> & coordRules)
 {
   for(int jumps {(int)-vertVelocity}; jumps > 0; jumps--)
     {
       for(auto coord: this->getXAbsRangeAsStrs(bgPosition, true, false))
 	{
 	  char rule {};
-	  if(getCoordRule(coord, coordRules, maxyx.y, rule))
+	  if(getCoordRule(coord, coordRules, viewPortSize.y, rule))
 	    {
 	      // We're going to hit something (stop jumping!)
 	      vertVelocity = 0;
@@ -248,7 +252,7 @@ void player::handleFallingSimple
 	}
       /* This is a simpler check but probably much less common, so we put it
 	 second. */
-      if((position.y + maxBottomRightOffset.y) == (maxyx.y -1))
+      if((position.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
 	{
 	  // We're going to hit the bottom of the level (stop jumping!)
 	  vertVelocity = 0;
@@ -262,7 +266,8 @@ void player::handleFallingSimple
 }
 
 
-void player::draw(unsigned short * secondStageDrawBuffer, const bool updateSlice)
+void player::draw
+(unsigned short * secondStageDrawBuffer, const bool updateSlice)
 {
   for(size_t sliceLine{}; sliceLine <
 	spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
@@ -281,7 +286,7 @@ void player::draw(unsigned short * secondStageDrawBuffer, const bool updateSlice
 	    {
 	      // Add character (if not DRAW_NO_OP.)
 	      secondStageDrawBuffer
-		[((position.y + sliceLine) * maxyx.x) +
+		[((position.y + sliceLine) * viewPortSize.x) +
 		 position.x + spriteS[direction].
 		 spriteSlices[currentSliceNumber].slice[sliceLine].offset +
 		 sliceLineIter] = ch;

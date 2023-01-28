@@ -1,7 +1,5 @@
-//#include <iterator>
 #include "include/background.hpp"
 #include "include/colorS.hpp"
-#include "include/loadAssets.hpp"
 #include "include/collapse.hpp"
 
 
@@ -66,10 +64,10 @@ void backgroundData::initialiseBackground
 
 	      /* Store rawChunk in this.background with a key that should be
 		 calculated according to the following:
-		 Concatenate (y / maxyx.y) and (x / maxyx.y) and use as
+		 Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as
 		 index into map. Then
-		 (y % (maxyx.y * 3)) * maxyx.x + (x % (maxyx.x * 3)) can
-		 be used to index into the backgroundChunk returned from
+		 (y % (chunkSize.y * 3)) * chunkSize.x + (x % (chunkSize.x * 3))
+		 can be used to index into the backgroundChunk returned from
 		 the map (as the stage 1 draw buffer will be 3 by 3
 		 chunks.)
 	      */
@@ -117,7 +115,7 @@ void backgroundData::initialiseBackground
 	      getChunk(bgData, buffPos,
 		       concat("trying to read in chunk no. ", chunksReadIn,
 			      " from ", BACKGROUND_FILE_EXTENSION, " file \"",
-			      bgFileName, "\"."), chunk, maxyx);
+			      bgFileName, "\"."), chunk, chunkSize);
 	      // Collapse chunk and return in rawChunk.
 	      collapse(chunk, rawChunk);
 	      verifyCollapsedChunkSize(rawChunk, chunksReadIn, true);
@@ -162,14 +160,14 @@ void backgroundData::initialiseBackground
 //   chunk.clear();
 
 //   int lnCount {};
-//   for( ; lnCount < maxyx.y && buffPos != std::end(bgData); )
+//   for( ; lnCount < chunkSize.y && buffPos != std::end(bgData); )
 //     {
 //       char newCh {};
 //       newCh = *buffPos++;
 //       chunk += newCh;
 //       lnCount += (newCh == '\n' ? 1: 0);
 //     }
-//   if(lnCount != maxyx.y)
+//   if(lnCount != chunkSize.y)
 //     {
 //       exit(eMsg, ERROR_BACKGROUND);
 //     }
@@ -180,14 +178,14 @@ void backgroundData::verifyCollapsedChunkSize
 (const backgroundChunk & rawChunk, const ssize_t chunksReadIn,
  const bool attemptedCompression) const
 {
-  if(rawChunk.size() != (size_t)(maxyx.y * maxyx.x))
+  if(rawChunk.size() != (size_t)(chunkSize.y * chunkSize.x))
     {      
       exit(concat
 	   ("Error: chunk no. ", chunksReadIn, " is the wrong size (",
 	    rawChunk.size(), ")",
 	    (attemptedCompression ? " after being compressed.": "."),
-	    "Expected size of ",
-	    maxyx.y * maxyx.x, " (", maxyx.y, " * ", maxyx.x, ")."),
+	    "Expected size of ", chunkSize.y * chunkSize.x, " (",
+	    chunkSize.y, " * ", chunkSize.x, ")."),
 	   ERROR_BACKGROUND);
     }
 }
@@ -216,10 +214,103 @@ void backgroundData::verifyCollapsedChunkSize
   }*/
 
 
-/* Updates the first stage draw buffer if firstStageDrawBuffer.position and
-   firstStageDrawBuffer.lastUpdatedPosition have diverged by a sufficient
-   delta. If an update is performed lastUpdatedPosition is set to the same
-   values as position. */
-void backgroundData::updateFirstStageDrawBuffer()
+void backgroundData::updateFirstStageDrawBuffer(const yx newPosition)
 {
+  /*
+    The first stage draw buffer is a 5 by 5 array of chunks.
+    When the delta between the last updated position and the new position have
+    diverged by the dimension of one chunk (note that this differs depending on
+    the axis) the chunks two chunks ahead of the delta (in y or x) detected are
+    updated. 
+
+    The diagram below shows the position of the last updated position and the
+    current position upon entering this function and the chunks that will be
+    updated because the current position is one chunk ahead of the last updated
+    position.
+    Where c is a chunk that will stay the same L is the last updated position, N
+    is the new position and X is a chunk that needs to be updated because the
+    delta between L and N is one chunks worth in terms of y or x (X in this
+    case.)
+    
+    +---+---+---+---+---+
+    | X | C | C | C | C |
+    +---+---+---+---+---+
+    | X | C | C | C | C |
+    +---+---+---+---+---+
+    | X | C | L | N | C |
+    +---+---+---+---+---+
+    | X | C | C | C | C |
+    +---+---+---+---+---+
+    | X | C | C | C | C |
+    +---+---+---+---+---+
+
+    This means that the view port can move up to y -1 or x -1 in the y or x
+    directions before an update needs to be done.
+    NOTE THAT WE ARE INITIALLY GOING TO IMPLEMENT THIS FUNCTION SO THAT IT WILL
+    BE RUN IN THE SAME THREAD AS THE REST OF THE GAME. HOWEVER WE PLAN TO MOVE
+    TO IT'S OWN THREAD. WHEN AN UPDATE NEEDS TO BE DONE IT CAN BE DONE IN
+    PARALLEL WITH THE REST OF THE GAME LOGIC. THE THREAD DOING TO UPDATING WILL
+    BE ABLE TO UPDATE FOR A FULL CHUNKS WORTH OF MOVEMENT IN THE MAIN THREAD
+    (BECAUSE THERE IS A COLUMN (OR ROW) OF CHUNKS IN BETWEEN THE CURRENT
+    POSITION AND THE COLUMN (OR ROW) BEING UPDATED. IF THERE IS MORE MOVEMENT
+    THAN THAT THEN THE MAIN THREAD WILL NEED TO BE PAUSED TO WAIT FOR THE
+    UPDATING THREAD. HOWEVER WE THINK THAT THIS SHOULD NOT HAPPEN UNDER NORMAL
+    CIRCUMSTANCES AS ONE CHUNKS WORTH OF MOVEMENT IN THE WORSE CASE (IN THE Y
+    AXIS) IS 40 CHUNKS WORTH OF FRAMES AND THE ENGINE SLEEPS FOR SOME TIME
+    BETWEEN EACH FRAME. CONSIDERING THAT 5 CHUNKS ARE UPDATED FOR EACH UPDATE
+    THIS MEANS THAT THE MAIN THREAD WILL BE COPYING 35 CHUNKS WORTH OF DATA MORE
+    THAN THE UPDATING THREAD. HOWEVER THE UPDATING THREAD WILL NEED TO DO 5
+    LOOKUPS TO FIND THE THREADS AND THESE LOOKUPS WILL PROBABLY BE THE SLOWEST
+    OPERATIONS PERFORMED BY THE UPDATING THREAD.
+   */
+
+  static bool firstCall {true};
+
+  if(firstCall)
+    {
+      firstCall = false;
+      firstStageDrawBuffer.lastUpdatedPosition.y = newPosition.y;
+      firstStageDrawBuffer.lastUpdatedPosition.x = newPosition.x;
+
+      // fillFirstStageDrawBuffer();
+    }
+  else
+    {
+    }
+}
+
+#include <curses.h>
+#include <iostream>
+
+void backgroundData::fillFirstStageDrawBuffer(const yx position)
+{
+  /* Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
+     map. Then (y % (chunkSize.y * fSDBYChunks)) * chunkSize.x + (x %
+     (chunkSize.x * fSDBXChunks)) can be used to index into the backgroundChunk
+     returned from the map (as the stage 1 draw buffer will be fSDBYChunks by
+     fSDBXChunks chunks.) */
+
+  for(int iter {}; iter < (firstStageDrawBuffer.fSDBYChunks *
+			   firstStageDrawBuffer.fSDBXChunks); ++iter)
+    {
+      // Calculate key for chunk map.
+      const std::string chunkKey {createChunkCoordKey(position)};
+      // Calculate position in the first stage draw buffer to be updated.
+      const yx fSDBUpdateTargetCoord
+	{(position.y % (chunkSize.y * firstStageDrawBuffer.fSDBYChunks))
+	 / firstStageDrawBuffer.fSDBYChunks,
+	 (position.x % (chunkSize.x * firstStageDrawBuffer.fSDBXChunks))
+	 / firstStageDrawBuffer.fSDBXChunks};
+
+      endwin();
+      std::cout<<"chunkKey = "<<chunkKey<<", fSDBUpdateTargetCoord = ("
+	       <<fSDBUpdateTargetCoord.y<<", "<<fSDBUpdateTargetCoord.x
+	       <<")\n";
+      exit(-1);
+      
+      
+      /* Lookup key in map. If found copy chunk into first stage draw buffer.
+	 Else if not found fill target chunk in first stage draw buffer with
+	 stuff (you know what.) */
+    }
 }

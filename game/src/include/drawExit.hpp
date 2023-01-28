@@ -2,7 +2,7 @@
 #define DRAW_EXIT_H
 
 
-void drawExit(const yx maxyx);
+void drawExit(const yx viewPortSize);
 
 
 #endif

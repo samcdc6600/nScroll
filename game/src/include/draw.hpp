@@ -1,5 +1,5 @@
-#ifndef DRAW_H_
-#define DRAW_H_
+#ifndef DRAW_HPP_
+#define DRAW_HPP_
 #include <vector>
 //#include "utils.hpp"
 #include "sprite.hpp"
@@ -13,12 +13,14 @@ extern const int yHeight;
 
 void draw
 (unsigned short * secondStageDrawBuffer, backgroundData & background,
- player * playerSprite, std::vector<bgSprite *> & bgSprites, const yx maxyx);
+ player * playerSprite, std::vector<bgSprite *> & bgSprites,
+ const yx viewPortSize, const yx viewPortPosition);
 /* Draws background at current position into secondStageDrawBuffer. */
 void drawBackground
 (unsigned short * secondStageDrawBuffer, backgroundData & background,
- const yx maxyx);
-void drawDrawBuffer(unsigned short * secondStageDrawBuffer, const yx maxyx);
+ const yx viewPortSize, const yx viewPortPosition);
+void drawDrawBuffer
+(unsigned short * secondStageDrawBuffer, const yx viewPortSize);
 // Set's or clears the colour code based on the value of charCodeWithColor.
 void setColor(const int charCodeWithColor);
 /* Pushes sucessive characters from secondStageDrawBuffer (starting at
@@ -32,8 +34,9 @@ void setColor(const int charCodeWithColor);
    found and with contiguousColorChars and buffIndex set as they are with the
    situation where an ACS character isn't found. */
 inline bool getContiguouslyColordString
-(const unsigned short * const secondStageDrawBuffer, int & buffIndex, const yx maxyx,
- std::string & contiguousColorChars, unsigned short & acsCode);
+(const unsigned short * const secondStageDrawBuffer, int & buffIndex,
+ const yx viewPortSize, std::string & contiguousColorChars,
+ unsigned short & acsCode);
 void printAcs(const int acsCode, const bool inColor);
 bool inColorRange(const int ch); /* Checks whethere ch is a colour character or not. */
 int getColor(const int ch);	 /* Returns colour code encoded in ch. */

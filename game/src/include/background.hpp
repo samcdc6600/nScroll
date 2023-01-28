@@ -1,5 +1,5 @@
-#ifndef BACKGROUND_H_
-#define BACKGROUND_H_
+#ifndef BACKGROUND_HPP_
+#define BACKGROUND_HPP_
 
 
 #include <vector>
@@ -15,13 +15,14 @@ public:
   // ===========================================================================
   typedef std::vector<unsigned short> backgroundChunk;
   // (View port size) used to retrieve a chunk given a coordinate.
-  const yx maxyx;
+  const yx chunkSize;
   
 private:
-  /* Concatenate (y / maxyx.y) and (x / maxyx.y) and use as index into map.
-     Then (y % (maxyx.y * 3)) * maxyx.x + (x % (maxyx.x * 3)) can be used to
-     index into the backgroundChunk returned from the map (as the stage 1 draw
-     buffer will be 3 by 3 chunks.) */
+  /* Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
+     map. Then (y % (chunkSize.y * fSDBYChunks)) * chunkSize.x + (x %
+     (chunkSize.x * fSDBXChunks)) can be used to index into the backgroundChunk
+     returned from the map (as the stage 1 draw buffer will be fSDBYChunks by
+     fSDBXChunks chunks.) */
   typedef std::map<std::string, backgroundChunk> backgroundType;
   const backgroundType  background;
 
@@ -29,19 +30,7 @@ private:
   {
   public:
     // Dimensions of firstStageDrawBuffer in chunks.
-    static const int fSDBYChunks {3}, fSDBXChunks {3};
-
-    /* Holds the position of the view port (in characters) relative to the level
-       origin (0,0). Note that there does not need to be a chunk at
-       (0,0). However all calculations take (0,0) as the origin. Position should
-       be updated indirectly by rules.physics() or a function it calls and it
-       along with lastUpdatedPosition is used to calculate which chunks should
-       be drawn into buffer and when. Position should also be used to draw from
-       the first stage draw buffer into the second stage draw buffer if the
-       first stage draw buffer has changed (which of course can be checked by
-       checking if position has changed relative to last position since the last
-       draw was done.) */
-    yx position {};
+    static const int fSDBYChunks {5}, fSDBXChunks {5};
     yx lastUpdatedPosition {};
     /* Holds a 3Y by 3X buffer of the currently visible or "close to visible"
        chunks. Where Y is the height of the view port and X it's width. */
@@ -89,16 +78,18 @@ private:
   void verifyCollapsedChunkSize(const backgroundChunk & rawChunk,
 				const ssize_t chunksReadIn,
 				const bool attemptedCompression) const;
+  void fillFirstStageDrawBuffer(const yx position);
   
 public:
   const char * fileName;
   
-  backgroundData(const yx maxyxIn, const char bgFileName []):
-    maxyx (maxyxIn.y, maxyxIn.x),
+  backgroundData(const yx chunkSizeIn, const char bgFileName []):
+    chunkSize (chunkSizeIn.y, chunkSizeIn.x),
     background(loadAndInitialiseBackground(bgFileName)),
-    fileName(bgFileName), firstStageDrawBuffer
+    firstStageDrawBuffer
     (firstStageDrawBufferType::fSDBYChunks *
-     firstStageDrawBufferType::fSDBXChunks * maxyxIn.y * maxyxIn.x)
+     firstStageDrawBufferType::fSDBXChunks * chunkSizeIn.y * chunkSizeIn.x),
+    fileName(bgFileName)
   {
   }
 
@@ -131,18 +122,21 @@ public:
 
   // std::vector<int> & getChunkFromCoord(const int y, const int x)
   // {
-  //   // Return backgroundChunks[y / maxyx, x / maxyx] (or something like this?)
+  //   // Return backgroundChunks[y / chunkSize, x / chunkSize] (or something like this?)
   //   if(background.size)
   //     {
   //     }
   // }
   //
 
-  /* Updates the first stage draw buffer if firstStageDrawBuffer.position and
+  /* Updates the first stage draw buffer if newPosition and
      firstStageDrawBuffer.lastUpdatedPosition have diverged by a sufficient
      delta. If an update is performed lastUpdatedPosition is set to the same
-     values as position. */
-  void updateFirstStageDrawBuffer();
+     values as position. Where newPosition is position of the view port that is
+     calculated from the player position (the player can move around some
+     amount in the centre of the view port without moving the view port if the
+     player doesn't go to close to any edge of the view port.) */
+  void updateFirstStageDrawBuffer(const yx newPosition);
 };
 
 

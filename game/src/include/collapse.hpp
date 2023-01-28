@@ -1,5 +1,5 @@
-#ifndef COLLAPS_H_
-#define COLLAPS_H_
+#ifndef COLLAPS_HPP_
+#define COLLAPS_HPP_
 #include <string>
 #include <vector>
 #include <map>

@@ -1,5 +1,5 @@
-#ifndef INITCURSES_H_
-#define INITCURSES_H_
+#ifndef INITCURSES_HPP_
+#define INITCURSES_HPP_
 
 #include <string>
 #include <ncurses.h>

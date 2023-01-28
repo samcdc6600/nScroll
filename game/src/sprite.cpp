@@ -8,7 +8,7 @@
 sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
 	       const backgroundData & background, const yx pos,
 	       const directions dir, const bool fullyIn)
-  : maxyx(max), position(pos), direction(checkDirection(dir)),
+  : viewPortSize(max), position(pos), direction(checkDirection(dir)),
     currentSliceNumber(0),
     startTime(std::chrono::high_resolution_clock::now()),
     currentTime(std::chrono::high_resolution_clock::now())
@@ -257,30 +257,30 @@ void sprite::checkInitialPosIsInLevelChunk
 
   // Non sprites can have negative origins.
 
-  // background.keyExists(createChunkCoordKey(yx(position.y / maxyx.y,
-  // 					      position.x / maxyx.x)));
+  // background.keyExists(createChunkCoordKey(yx(position.y / viewPortSize.y,
+  // 					      position.x / viewPortSize.x)));
 
 
   // endwin();
   // std::cout<<"in sprite::checkInitialPosIsInRangeOfLevel"<<std::endl;
-  // std::cout<<"maxyx.y = "<<maxyx.y<<", maxyx.x = "
-  // 	   <<maxyx.x<<std::endl;
+  // std::cout<<"viewPortSize.y = "<<viewPortSize.y<<", viewPortSize.x = "
+  // 	   <<viewPortSize.x<<std::endl;
   //   std::cout<<"position.y = "<<position.y<<", position.x = "<<position.x<<std::endl;
-  // std::cout<<"Key = "<<createChunkCoordKey(yx(position.y / maxyx.y,
-  // 					      position.x / maxyx.x))
+  // std::cout<<"Key = "<<createChunkCoordKey(yx(position.y / viewPortSize.y,
+  // 					      position.x / viewPortSize.x))
   // 	   <<'\n';
   // std::cout<<"  background.keyExists(createChunkCoordKey(yx(pos.y / "
-  //   "maxyx.y, pos.x / maxyx.x))) = "
-  // 	   <<  background.keyExists(createChunkCoordKey(yx(position.y / maxyx.y,
-  // 							   position.x / maxyx.x)))
+  //   "viewPortSize.y, pos.x / viewPortSize.x))) = "
+  // 	   <<  background.keyExists(createChunkCoordKey(yx(position.y / viewPortSize.y,
+  // 							   position.x / viewPortSize.x)))
   // 	   <<std::endl;
   // exit(-1);
 
   
   
-  // const size_t bgLen {bgXSize / maxyx.y};
+  // const size_t bgLen {bgXSize / viewPortSize.y};
   // if((pos.x + maxBottomRightOffset.x) < 0 || pos.x > (long)bgLen -1 ||
-  //    (pos.y + maxBottomRightOffset.y) < 0 || pos.y > maxyx.y -1)
+  //    (pos.y + maxBottomRightOffset.y) < 0 || pos.y > viewPortSize.y -1)
   //   {
   //     std::stringstream e {};
   //     e<<"Error: initial position for non player sprite with file/s (";
@@ -290,7 +290,7 @@ void sprite::checkInitialPosIsInLevelChunk
   // 	}
   //     e<<") is out of range. ("<<pos.y<<','<<pos.x<<") given for position, but"
   // 	" sprite has maximum size ("<<maxBottomRightOffset.y + 1<<','
-  //      <<maxBottomRightOffset.x + 1<<") and background has size ("<<maxyx.y<<','
+  //      <<maxBottomRightOffset.x + 1<<") and background has size ("<<viewPortSize.y<<','
   //      <<bgLen<<"). Remember coords start at 0 and are in the form (y,x).\n";
   //     exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
   //   }
@@ -405,7 +405,7 @@ bool sprite::notInWindowInnerMarginY(const int y, const int yMargin)
   checkBoundValue(yMargin);
   const int maximumY {y + maxBottomRightOffset.y};
   // >= and < because we start at 0.
-  return (y >= yMargin) && maximumY < (maxyx.y - yMargin);
+  return (y >= yMargin) && maximumY < (viewPortSize.y - yMargin);
 }
 
 
@@ -414,7 +414,7 @@ bool sprite::notInWindowInnerMarginX(const int x, const int xMargin)
     checkBoundValue(xMargin);
     const int maximumX {x + maxBottomRightOffset.x};
     // >= and < because we start at 0.
-    return (x >= xMargin && maximumX < (maxyx.x - xMargin));
+    return (x >= xMargin && maximumX < (viewPortSize.x - xMargin));
 }
 
 
@@ -422,7 +422,7 @@ bool sprite::notInWindowInnerMarginX(const int x, const int xMargin)
 // {
 //   const int maximumY {y + maxBottomRightOffset.y};
 //   // >= and < because we start at 0.
-//   return (y >= 0) && (maximumY < maxyx.y);
+//   return (y >= 0) && (maximumY < viewPortSize.y);
 // }
 
 
@@ -430,7 +430,7 @@ bool sprite::notInWindowInnerMarginX(const int x, const int xMargin)
 // {
 //   const int maximumX {x + maxBottomRightOffset.x};
 //   // >= and < because we start at 0.
-//   return (x >= 0) && (maximumX < maxyx.x);
+//   return (x >= 0) && (maximumX < viewPortSize.x);
 // }
 
 
@@ -449,10 +449,10 @@ bool sprite::inLevelX(const int x, const int bgXLen)
 
 
 bool sprite::leftOfWindowInnerRightMargin(const int x, const int xBound,
-					  const yx maxyx)
+					  const yx viewPortSize)
 { // Return true if we are to the left of the windows right inner margin.
   checkBoundValue(xBound);
-  return ((x + maxBottomRightOffset.x) < (maxyx.x - xBound));
+  return ((x + maxBottomRightOffset.x) < (viewPortSize.x - xBound));
 }
 
 

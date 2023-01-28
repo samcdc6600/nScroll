@@ -1,5 +1,5 @@
-#ifndef SLICE_H_
-#define SLICE_H_
+#ifndef SLICE_HPP_
+#define SLICE_HPP_
 #include <vector>
 
 /* returns vector<int> of size y * x from buff (starting at offset). Note buff

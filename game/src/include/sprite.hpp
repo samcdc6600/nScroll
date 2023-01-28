@@ -30,7 +30,7 @@ private:
   //   };
   
 protected:
-    const yx maxyx;		// Window size.
+    const yx viewPortSize;
   /* Sprites should only have these numbers of sets of slices. 5
      and not 4 because we must account for DIR_NONE. */
   static constexpr int spriteNums1 {1}, spriteNums2 {5};
@@ -177,7 +177,7 @@ public:
   bool inLevelY(const int y, const int bgYLen);
   bool inLevelX(const int x, const int bgXLen);
   bool leftOfWindowInnerRightMargin(const int x, const int xBound,
-				    const yx maxyx);
+				    const yx viewPortSize);
   bool rightOfWindowInnerLeftMargin(const int x, const int xBound);
   // /* Checks that y and x are in range (0 to screen height and width), by calling
   //    checkRange(const int, const int). */

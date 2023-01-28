@@ -1,5 +1,5 @@
-#ifndef COLOUROFFSET_H_
-#define COLOUROFFSET_H_
+#ifndef COLOUROFFSET_HPP_
+#define COLOUROFFSET_HPP_
 #include <map>
 #include <string>
 #include <vector>
