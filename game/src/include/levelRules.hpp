@@ -91,8 +91,8 @@ private:
   // ===========================================================================
   // Where rulesBuffer holds the contents of a RULES_CONFIG_FILE_EXTENSION file.
   void parseRulesConfigFileAndInitialiseVariables
-  (const yx viewPortPosition, const char rulesFileName [], const std::string & rulesBuffer,
-   const backgroundData & background);
+  (const yx viewPortSize, const char rulesFileName [],
+   const std::string & rulesBuffer, const backgroundData & background);
   // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files END ====
   // ===========================================================================
   

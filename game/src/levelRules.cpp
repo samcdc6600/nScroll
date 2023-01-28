@@ -520,8 +520,8 @@ void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
 
 
 void rules::parseRulesConfigFileAndInitialiseVariables
-(const yx viewPortSize, const char rulesFileName [], const std::string & rulesBuffer,
- const backgroundData & background)
+(const yx viewPortSize, const char rulesFileName [],
+ const std::string & rulesBuffer, const backgroundData & background)
 {
   using namespace levelFileKeywords;
 
