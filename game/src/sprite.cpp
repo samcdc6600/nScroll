@@ -257,8 +257,7 @@ void sprite::checkInitialPosIsInLevelChunk
 
   // Non sprites can have negative origins.
 
-  // background.keyExists(createChunkCoordKey(yx(position.y / viewPortSize.y,
-  // 					      position.x / viewPortSize.x)));
+  // background.keyExists(createChunkCoordKeyFromCharCoord(position));
 
 
   // endwin();
@@ -266,13 +265,10 @@ void sprite::checkInitialPosIsInLevelChunk
   // std::cout<<"viewPortSize.y = "<<viewPortSize.y<<", viewPortSize.x = "
   // 	   <<viewPortSize.x<<std::endl;
   //   std::cout<<"position.y = "<<position.y<<", position.x = "<<position.x<<std::endl;
-  // std::cout<<"Key = "<<createChunkCoordKey(yx(position.y / viewPortSize.y,
-  // 					      position.x / viewPortSize.x))
+  // std::cout<<"Key = "<<createChunkCoordKeyFromCharCoord(position)
   // 	   <<'\n';
-  // std::cout<<"  background.keyExists(createChunkCoordKey(yx(pos.y / "
-  //   "viewPortSize.y, pos.x / viewPortSize.x))) = "
-  // 	   <<  background.keyExists(createChunkCoordKey(yx(position.y / viewPortSize.y,
-  // 							   position.x / viewPortSize.x)))
+  // std::cout<<"  background.keyExists(createChunkCoordKeyFromcharcoord(pos)) = "
+  // 	   <<  background.keyExists(createChunkCoordKeyFromcharcoord(position))
   // 	   <<std::endl;
   // exit(-1);
 

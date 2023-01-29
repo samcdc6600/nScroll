@@ -24,6 +24,7 @@ void draw
  player * playerSprite, std::vector<bgSprite *> & bgSprites,
  const yx viewPortSize, const yx viewPortPosition)
 {
+  background.updateFirstStageDrawBuffer(viewPortPosition);
   drawBackground
     (secondStageDrawBuffer, background, viewPortSize, viewPortPosition);
 

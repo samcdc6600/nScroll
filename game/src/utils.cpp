@@ -307,6 +307,13 @@ std::string createChunkCoordKey(const yx coord)
 }
 
 
+std::string createChunkCoordKeyFromCharCoord(const yx charCoord)
+{
+  return createChunkCoordKey(yx(charCoord.y / yHeight, charCoord.x / xWidth));
+}
+
+
+
 // SkipSpace has a default value.
 std::string skipSpaceUpTo(const std::string & buff,
 			  std::string::const_iterator & buffPos,

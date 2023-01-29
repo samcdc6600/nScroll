@@ -103,7 +103,7 @@ public:
   {
     return !(background.find(key) == background.end());
   }
-  
+
   /* Uses coord to create a key and searches background for that key. If it is
      found sets chunk to the address of the chunk that was found in the map
      (this should be safe since this function will print an error and exit if

@@ -104,7 +104,7 @@ int gameLoop
     {std::chrono::high_resolution_clock::now()};
   // NOTE THAT VIEWPORTPOSITION SHOULD BE INITIALISED RELATIVE TO THE PLAYER
   // POSITION! (I.E. WE NEED TO FIX THIS AT SOME POINT.)
-  yx viewPortPosition {0, 0};
+  yx viewPortPosition {24, 170};
   
   while(true)
     {

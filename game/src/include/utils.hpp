@@ -115,7 +115,10 @@ int readSingleNum
 void getChunk
 (const std::string & data, std::string::const_iterator & buffPos,
  const std::string & eMsg, std::string & chunk, const yx expectedChunkSize);
+/* Creates a chunk coord key from a chunk coordinate. I.e. the input must
+   already be a chunk coordinate and not a character coordinate. */
 std::string createChunkCoordKey(const yx coord);
+std::string createChunkCoordKeyFromCharCoord(const yx charCoord);
 /* Advances buffPos (past white space) until it reads one past a sequence of
    characters that matches a string in targets, where buffPos points to
    somewhere in buff and the strings in targets will be checked in order of the
