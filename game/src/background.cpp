@@ -201,17 +201,101 @@ void backgroundData::verifyCollapsedChunkSize
 {
   const std::string key {createChunkCoordKey(coord)};
   backgroundChunk & ret {};
-  
+
   // try
   //   {
   //     ret = background.at(key);
   //   }
   // catch()
   //   {
-      
+
   //   }
   return ret;
   }*/
+
+
+#include <curses.h>
+#include <iostream>
+
+void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
+{
+  // CALCULATE VIEW PORT POSITION FROM PLAYER POS (MAYBE WE SHOULD PASS THE
+  // BACKGROUND OBJECT INTO THE RULES OBJECT VIA THE PHYSICS FUNCTION AND THEN
+  // THE RULES OBJECT CAN CALL A MEMBER FUNCTION ON THIS OBJECT TO CALCULATE
+  // WHEN THE VIEW PORT SHOULD BE UPDATED (AS OPPOSED TO THE RULES OBJECT DOING
+  // IT DIRECTLY.) THIS WAY WAS CAN PROBABLY DUPLICATE THE CODE NEEDED HERE FOR
+  // CALCULATING HOW TO UPDATE THE VIEW PORT POSITION FROM THE PLAYER
+  // POSITION. MAYBBE WE SHOULD ALSO JUST MAKE THIS FUNCTION CALL INITLK
+  // SAJFLKJDSAF LKJ... WE WILL HAVE TO THINK ABOUT IT MORE!
+  /* Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
+     map. Then (y % (chunkSize.y * fSDBYChunks)) * chunkSize.x + (x %
+     (chunkSize.x * fSDBXChunks)) can be used to index into the backgroundChunk
+     returned from the map (as the stage 1 draw buffer will be fSDBYChunks by
+     fSDBXChunks chunks.) */
+
+  const yx loopStartOffset
+    {(viewPortPosition.y %
+      (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) /
+     chunkSize.y,
+     (viewPortPosition.x %
+      (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) /
+     chunkSize.x};
+
+    endwin();
+    std::cout<<"viewPortPosition = ("<<viewPortPosition.y<<", "
+	     <<viewPortPosition.x<<")\n";
+    std::cout<<"draw buffer position = "<<loopStartOffset.y<<", "
+	     <<loopStartOffset.x<<'\n';
+  
+  for(int yIter {-loopStartOffset.y};
+      yIter < (firstStageDrawBuffer.fSDBYChunks - loopStartOffset.y); ++yIter)
+    {
+      for(int  xIter {-loopStartOffset.x};
+	  xIter < (firstStageDrawBuffer.fSDBXChunks - loopStartOffset.x);
+	  ++xIter)
+	{
+	  // Calculate key for chunk map.
+	  const std::string chunkKey
+	    {createChunkCoordKeyFromCharCoord
+	     (yx{viewPortPosition.y + (yIter * chunkSize.y),
+		 viewPortPosition.x + (xIter * chunkSize.x)})};
+	  /* Calculate position in the first stage draw buffer to be
+	     updated. The position is in chunks. */
+	  const yx fSDBUpdateTargetCoord
+	    {(viewPortPosition.y %
+	      (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) /
+	     chunkSize.y + yIter,
+	     (viewPortPosition.x %
+	      (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) /
+	     chunkSize.x + xIter};
+	  /* Lookup key in map. If found copy chunk into first stage draw
+	     buffer. Else if not found fill target chunk in first stage draw
+	     buffer with stuff (you know what.) */
+
+	  std::cout<<"chunkKey = "<<chunkKey<<'\n';
+	  std::cout<<"y = "<<fSDBUpdateTargetCoord.y
+		   <<", x = "<<fSDBUpdateTargetCoord.x<<'\n';
+	  try
+	    {
+	      // At will throw an exception if the key isn't found.
+	      backgroundChunk chunk {background.at(chunkKey)};
+	      // endwin();		// 
+	      std::cout<<"key found\n";
+	      // exit(-1);
+	    }
+	  catch(const std::out_of_range& err)
+	    {
+	      /* Key not found... Fill target chunk in first stage buffer with
+		 some stuff. */
+	      // endwin();
+	      std::cout<<"no key found :'(\n";
+	      // exit(-1);
+	    }
+	}
+    }
+  std::cout<<"\n";
+  exit(-1);
+}
 
 
 void backgroundData::updateFirstStageDrawBuffer(const yx viewPortPosition)
@@ -264,67 +348,4 @@ void backgroundData::updateFirstStageDrawBuffer(const yx viewPortPosition)
     OPERATIONS PERFORMED BY THE UPDATING THREAD.
    */
 
-  static bool firstCall {true};
-
-  if(firstCall)
-    {
-      firstCall = false;
-      firstStageDrawBuffer.lastUpdatedPosition.y = viewPortPosition.y;
-      firstStageDrawBuffer.lastUpdatedPosition.x = viewPortPosition.x;
-
-      fillFirstStageDrawBuffer(viewPortPosition);
-    }
-  else
-    {
-    }
-}
-
-#include <curses.h>
-#include <iostream>
-
-void backgroundData::fillFirstStageDrawBuffer(const yx viewPortPosition)
-{
-  /* Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
-     map. Then (y % (chunkSize.y * fSDBYChunks)) * chunkSize.x + (x %
-     (chunkSize.x * fSDBXChunks)) can be used to index into the backgroundChunk
-     returned from the map (as the stage 1 draw buffer will be fSDBYChunks by
-     fSDBXChunks chunks.) */
-
-  for(int iter {}; iter < (firstStageDrawBuffer.fSDBYChunks *
-			   firstStageDrawBuffer.fSDBXChunks); ++iter)
-    {
-      // Calculate key for chunk map.
-      const std::string chunkKey
-	{createChunkCoordKeyFromCharCoord(viewPortPosition)};
-      /* Calculate position in the first stage draw buffer to be updated. The
-	 position is in chunks. */
-      const yx fSDBUpdateTargetCoord
-	{(viewPortPosition.y %
-	  (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) /
-	 chunkSize.y,
-	 (viewPortPosition.x %
-	  (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) /
-	 chunkSize.x};
-      /* Lookup key in map. If found copy chunk into first stage draw buffer.
-	 Else if not found fill target chunk in first stage draw buffer with
-	 stuff (you know what.) */
-
-
-      try
-	{
-	  // At will throw an exception if the key isn't found.
-	  backgroundChunk chunk {background.at(chunkKey)};
-	  endwin();
-	  std::cout<<"key found\n";
-	  exit(-1);
-	}
-      catch(const std::out_of_range& err)
-	{
-	  /* Key not found... Fill target chunk in first stage buffer with some
-	     stuff. */
-	  	  endwin();
-	  std::cout<<"no key found :'(\n";
-	  exit(-1);
-	}
-    }
 }

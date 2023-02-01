@@ -61,6 +61,7 @@ void menu(const yx viewPortSize, unsigned short * secondStageDrawBuffer)
   rules levelRules
     {viewPortSize, "assets/level1/level1.coordRules.lev",
      "assets/level1/level1.rules.lev", background};
+  background.initFirstStageDrawBuffer(levelRules.gamePlayer->getPos());
 
   /* Note this should be done in the menu or loop or some sub function
      called from within it since multiple level's can be played. It is
@@ -104,7 +105,7 @@ int gameLoop
     {std::chrono::high_resolution_clock::now()};
   // NOTE THAT VIEWPORTPOSITION SHOULD BE INITIALISED RELATIVE TO THE PLAYER
   // POSITION! (I.E. WE NEED TO FIX THIS AT SOME POINT.)
-  yx viewPortPosition {24, 170};
+  //  yx viewPortPosition {24, 170};
   
   while(true)
     {

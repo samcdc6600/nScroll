@@ -78,7 +78,6 @@ private:
   void verifyCollapsedChunkSize(const backgroundChunk & rawChunk,
 				const ssize_t chunksReadIn,
 				const bool attemptedCompression) const;
-  void fillFirstStageDrawBuffer(const yx position);
   
 public:
   const char * fileName;
@@ -129,14 +128,17 @@ public:
   // }
   //
 
-  /* Updates the first stage draw buffer if newPosition and
+  /* Should be called once initial player position is known, but before the main
+     game loop. */
+  void initFirstStageDrawBuffer(const yx playerPos);
+  /* Updates the first stage draw buffer if viewPortPosition and
      firstStageDrawBuffer.lastUpdatedPosition have diverged by a sufficient
      delta. If an update is performed lastUpdatedPosition is set to the same
-     values as position. Where newPosition is position of the view port that is
-     calculated from the player position (the player can move around some
-     amount in the centre of the view port without moving the view port if the
-     player doesn't go to close to any edge of the view port.) */
-  void updateFirstStageDrawBuffer(const yx newPosition);
+     values as position. Where viewPortPosition is position of the view port
+     that is calculated from the player position (the player can move around
+     some amount in the centre of the view port without moving the view port if
+     the player doesn't go to close to any edge of the view port.) */
+  void updateFirstStageDrawBuffer(const yx viewPortPosition);
 };
 
 
