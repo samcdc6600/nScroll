@@ -1,6 +1,7 @@
 #include "include/background.hpp"
 #include "include/colorS.hpp"
 #include "include/collapse.hpp"
+#include <cstdlib>
 
 
 backgroundData::backgroundType backgroundData::loadAndInitialiseBackground
@@ -346,8 +347,68 @@ void backgroundData::updateFirstStageDrawBuffer()
     THAN THE UPDATING THREAD. HOWEVER THE UPDATING THREAD WILL NEED TO DO 5
     LOOKUPS TO FIND THE THREADS AND THESE LOOKUPS WILL PROBABLY BE THE SLOWEST
     OPERATIONS PERFORMED BY THE UPDATING THREAD.
-   */
+  */
+  // Size of the first stage draw buffer in characters.
+  const yx fSDBSize {chunkSize.y * firstStageDrawBuffer.fSDBYChunks,
+		     chunkSize.x * firstStageDrawBuffer.fSDBXChunks};
+  
+  /* NOTE THAT THE CODE HERE WILL ONLY WORK CORRECTLY WHEN fSDBYChunks AND
+     fSDBXChunks ARE UNEVEN. HOWEVER THEY SHOULD BE. SO THIS SHOULDN'T BE A
+     PROBLEM. */
+  if(abs(firstStageDrawBuffer.lastUpdatedPosition.x -
+	 firstStageDrawBuffer.viewPortPosition.x) > chunkSize.x -1)
+    {
+      // Iterate over chunks to be updated in the FSDB.
+      for(int yChunkIter {-(firstStageDrawBuffer.fSDBYChunks / 2)};
+	  yChunkIter <= (firstStageDrawBuffer.fSDBYChunks / 2); ++yChunkIter)
+	{
+	  if(firstStageDrawBuffer.viewPortPosition.y +
+	     (yChunkIter * chunkSize.y) > 0)
+	    {
+	      // Calculate index of potential chunk to be copied into FSDB.
+	      const std::string chunkKey
+		{createChunkCoordKeyFromCharCoord
+		 (yx{firstStageDrawBuffer.viewPortPosition.y +
+		     (yChunkIter * chunkSize.y),
+		     firstStageDrawBuffer.viewPortPosition.x + (2 * chunkSize.x)})};
 
+	      // Try to get chunk and then perform the copy to the FSDB.
+	      try
+		{
+		  // At will throw an exception if the key isn't found.
+		  const backgroundChunk * chunk {&background.at(chunkKey)};
+
+		  for(int yIter {}; yIter < chunkSize.y; ++yIter)
+		    {
+		      for(int xIter {}; xIter < chunkSize.x; ++xIter)
+			{
+			  firstStageDrawBuffer.buffer
+			    [(yChunkIter * fSDBSize.x * chunkSize.y) +
+			     (firstStageDrawBuffer.viewPortPosition.y + yIter) *
+			     fSDBSize.x
+			     (firstStageDrawBuffer.viewPortPosition.x + xIter)];
+			}
+		    }
+		}
+	      catch(const std::out_of_range& err)
+		{
+		  /* Key not found... Fill target chunk in first stage buffer with
+		     some stuff. */
+		}
+	    }
+	}
+      
+      firstStageDrawBuffer.viewPortPosition =
+	firstStageDrawBuffer.lastUpdatedPosition;
+    }
+  else if(abs(firstStageDrawBuffer.lastUpdatedPosition.y -
+	 firstStageDrawBuffer.viewPortPosition.y) > chunkSize.y -1)
+    {
+
+      
+      firstStageDrawBuffer.viewPortPosition =
+	firstStageDrawBuffer.lastUpdatedPosition;
+    }
 }
 
 

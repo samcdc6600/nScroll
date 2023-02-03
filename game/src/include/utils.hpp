@@ -9,11 +9,22 @@
 
 struct yx
 {
+  int y;
+  int x;
+
+  
   yx() {}  
   yx(const int y, const int x)
   {
     this->y = y;
     this->x = x;
+  }
+
+  yx operator=(const yx & rhs)
+  {
+    y = rhs.y;
+    x = rhs.x;
+    return *this;
   }
 
   bool operator==(const yx & rhs)
@@ -29,9 +40,6 @@ struct yx
   {
     return !operator==(rhs);
   }
-
-  int y;
-  int x;
 };
 
 
