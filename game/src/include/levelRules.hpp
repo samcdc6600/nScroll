@@ -189,9 +189,9 @@ public:
     parseRulesConfigFileAndInitialiseVariables
       (viewPortSize, rulesFileName, rulesBuffer, background);
   }
-  void physics(const player::directionChars input, yx & viewPortPosition,
-	       const yx viewPortSize, const size_t backgroundLength,
-	       std::__1::chrono::steady_clock::time_point & secStartTime);
+  void physics
+  (backgroundData & background, const player::directionChars input,
+   std::__1::chrono::steady_clock::time_point & secStartTime);
   ~rules()
   {
     delete gamePlayer;

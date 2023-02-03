@@ -20,13 +20,12 @@ setColorMode colorMode{56};
 
 
 void draw
-(unsigned short * secondStageDrawBuffer, backgroundData & background,
- player * playerSprite, std::vector<bgSprite *> & bgSprites,
- const yx viewPortSize, const yx viewPortPosition)
+(backgroundData::drawBufferType * secondStageDrawBuffer,
+ backgroundData & background,
+ player * playerSprite, std::vector<bgSprite *> & bgSprites)
 {
-  background.updateFirstStageDrawBuffer(viewPortPosition);
-  drawBackground
-    (secondStageDrawBuffer, background, viewPortSize, viewPortPosition);
+  background.updateFirstStageDrawBuffer();
+  background.updateSecondStageDrawBuffer(secondStageDrawBuffer);
 
   /* NOTE THAT A FLAG THAT IS SETTABLE FROM A RULES.LEV FILE SHOULD BE ADDED TO
      THE SPRITE CLASS THAT SPECIFIES IF A SPRITE SHOULD BE DISPLAYED IN FRONT
@@ -79,27 +78,13 @@ void draw
   //     bgSF->draw(secondStageDrawBuffer, true, viewPortPosition);
   //   }
       
-  drawDrawBuffer(secondStageDrawBuffer, viewPortSize);
+  printDrawBuffer(secondStageDrawBuffer, background.chunkSize);
   refresh();
 }
 
 
-void drawBackground
-(unsigned short * secondStageDrawBuffer, backgroundData & background,
- const yx viewPortSize, const yx viewPortPosition)
-{
-  // std::vector<int> slice {getSlice(background, viewPortPosition, viewPortSize.y, viewPortSize.x)};
-
-  // for(auto iter: slice)
-  //   {
-  //     *secondStageDrawBuffer=iter;
-  //     ++secondStageDrawBuffer;
-  //   }
-}
-
-
-void drawDrawBuffer
-(unsigned short * secondStageDrawBuffer, const yx viewPortSize)
+void printDrawBuffer
+(backgroundData::drawBufferType * secondStageDrawBuffer, const yx viewPortSize)
 {
   mvprintw(0, 0, "");
 
@@ -146,8 +131,8 @@ void setColor(const int charCodeWithColor)
 
 
 inline bool getContiguouslyColordString
-(const unsigned short * const secondStageDrawBuffer, int & buffIndex,
- const yx viewPortSize, std::string & contiguousColorChars,
+(const backgroundData::drawBufferType * const secondStageDrawBuffer,
+ int & buffIndex, const yx viewPortSize, std::string & contiguousColorChars,
  unsigned short & acsCode)
 {
   const unsigned short startColorCode =

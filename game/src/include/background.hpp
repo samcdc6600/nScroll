@@ -16,6 +16,7 @@ public:
   typedef std::vector<unsigned short> backgroundChunk;
   // (View port size) used to retrieve a chunk given a coordinate.
   const yx chunkSize;
+  typedef unsigned short drawBufferType;
   
 private:
   /* Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
@@ -31,13 +32,17 @@ private:
   public:
     // Dimensions of firstStageDrawBuffer in chunks.
     static const int fSDBYChunks {5}, fSDBXChunks {5};
+    /* Holds the current position of the view port (Note that buffer may not yet
+       be updated as a result this new position.) */
+    yx viewPortPosition {};
+    // Holds the position of the view port the last time buffer was updated.
     yx lastUpdatedPosition {};
     /* Holds a 3Y by 3X buffer of the currently visible or "close to visible"
        chunks. Where Y is the height of the view port and X it's width. */
-    unsigned short * buffer;
+    drawBufferType * buffer;
 
     firstStageDrawBufferType(const ssize_t bufferSize) :
-      buffer(new unsigned short [bufferSize])
+      buffer(new drawBufferType [bufferSize])
     {
     }
 
@@ -131,14 +136,16 @@ public:
   /* Should be called once initial player position is known, but before the main
      game loop. */
   void initFirstStageDrawBuffer(const yx playerPos);
-  /* Updates the first stage draw buffer if viewPortPosition and
+  /* Updates the first stage draw buffer if
+     firstStageDrawBuffer.viewPortPosition and
      firstStageDrawBuffer.lastUpdatedPosition have diverged by a sufficient
-     delta. If an update is performed lastUpdatedPosition is set to the same
-     values as position. Where viewPortPosition is position of the view port
-     that is calculated from the player position (the player can move around
-     some amount in the centre of the view port without moving the view port if
-     the player doesn't go to close to any edge of the view port.) */
-  void updateFirstStageDrawBuffer(const yx viewPortPosition);
+     delta. If an update is performed lastUpdatedPosition is set to the same 
+     values as viewPortPosition. */
+  void updateFirstStageDrawBuffer();
+  /* Copies one chunk (relative to viewPortPosition) from firstStageDrawbuffer
+     to secondStageDrawBuffer. */
+  void updateSecondStageDrawBuffer
+  (drawBufferType * secondStageDrawBuffer);
 };
 
 

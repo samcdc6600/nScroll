@@ -25,12 +25,13 @@ enum gameFuncRetCodes
   };
 
 
-void menu(const yx viewPortSize, unsigned short * secondStageDrawBuffer);
+void menu
+(const yx viewPortSize, backgroundData::drawBufferType * secondStageDrawBuffer);
 /* Where the horror happens
    (returns a game menu switch option.) :) */
 int gameLoop
-(unsigned short * secondStageDrawBuffer, backgroundData & background,
- rules & levelRules, const yx viewPortSize);
+(backgroundData::drawBufferType * secondStageDrawBuffer,
+ backgroundData & background, rules & levelRules);
 
 
 int main()
@@ -40,8 +41,8 @@ int main()
   yx viewPortSize;
   initialiseCurses(viewPortSize);	// Start and setup ncurses
   // Allocate memory for drawBuffer.
-  unsigned short * secondStageDrawBuffer
-    = new unsigned short [viewPortSize.y * viewPortSize.x];
+  backgroundData::drawBufferType * secondStageDrawBuffer
+    = new backgroundData::drawBufferType [viewPortSize.y * viewPortSize.x];
   
   menu(viewPortSize, secondStageDrawBuffer);
   
@@ -51,25 +52,15 @@ int main()
 }
 
 
-void menu(const yx viewPortSize, unsigned short * secondStageDrawBuffer)
+void menu
+(const yx viewPortSize, backgroundData::drawBufferType * secondStageDrawBuffer)
 {
-  // std::vector<int> background {};	// Hold's the background
   backgroundData background
     {viewPortSize, "assets/level1/level1.background.lev"};
-  /* Hold's the "rules" for the current level. (see physics.h and
-     rules.lev.txt.) */
   rules levelRules
     {viewPortSize, "assets/level1/level1.coordRules.lev",
      "assets/level1/level1.rules.lev", background};
   background.initFirstStageDrawBuffer(levelRules.gamePlayer->getPos());
-
-  /* Note this should be done in the menu or loop or some sub function
-     called from within it since multiple level's can be played. It is
-     placed here right now only for testing and development purposes. */
-  
-  /*  loadAssets(viewPortSize, "assets/level1/level1.backgound.lev", background,
-      "assets/level1/level1.rules.lev", levelRules);*/
-  
   
   bool run = true;
   while(run)
@@ -81,8 +72,7 @@ void menu(const yx viewPortSize, unsigned short * secondStageDrawBuffer)
 	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	switch(gameLoop
 	(secondStageDrawBuffer, background, levelRules, )) */
-      switch(gameLoop
-	     (secondStageDrawBuffer, background, levelRules, viewPortSize))
+      switch(gameLoop(secondStageDrawBuffer, background, levelRules))
 	{
 	case M_QUIT_GAME:
 	  run = false;
@@ -98,14 +88,14 @@ void menu(const yx viewPortSize, unsigned short * secondStageDrawBuffer)
 
 
 int gameLoop
-(unsigned short * secondStageDrawBuffer, backgroundData & background,
- rules & levelRules, const yx viewPortSize)
+(backgroundData::drawBufferType * secondStageDrawBuffer,
+ backgroundData & background, rules & levelRules)
 {
   std::__1::chrono::steady_clock::time_point secStartTime
     {std::chrono::high_resolution_clock::now()};
   // NOTE THAT VIEWPORTPOSITION SHOULD BE INITIALISED RELATIVE TO THE PLAYER
   // POSITION! (I.E. WE NEED TO FIX THIS AT SOME POINT.)
-  //  yx viewPortPosition {24, 170};
+   yx viewPortPosition {24, 170};
   
   while(true)
     {
@@ -125,9 +115,9 @@ int gameLoop
 	  break;
 	}
 
-      // levelRules.physics(player::directionChars(input), viewPortPosition, viewPortSize,
-      // 			 backgroundLen, secStartTime);
+      levelRules.physics
+	(background, player::directionChars(input), secStartTime);
       draw(secondStageDrawBuffer, background, levelRules.gamePlayer,
-	   levelRules.bgSprites, viewPortSize, viewPortPosition);
+	   levelRules.bgSprites);
     }
 }

@@ -234,16 +234,16 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
      fSDBXChunks chunks.) */
 
   const yx loopStartOffset
-    {(viewPortPosition.y %
+    {(firstStageDrawBuffer.viewPortPosition.y %
       (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) /
      chunkSize.y,
-     (viewPortPosition.x %
+     (firstStageDrawBuffer.viewPortPosition.x %
       (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) /
      chunkSize.x};
 
     endwin();
-    std::cout<<"viewPortPosition = ("<<viewPortPosition.y<<", "
-	     <<viewPortPosition.x<<")\n";
+    std::cout<<"firstStageDrawBuffer.viewPortPosition = ("<<firstStageDrawBuffer.viewPortPosition.y<<", "
+	     <<firstStageDrawBuffer.viewPortPosition.x<<")\n";
     std::cout<<"draw buffer position = "<<loopStartOffset.y<<", "
 	     <<loopStartOffset.x<<'\n';
   
@@ -257,15 +257,15 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
 	  // Calculate key for chunk map.
 	  const std::string chunkKey
 	    {createChunkCoordKeyFromCharCoord
-	     (yx{viewPortPosition.y + (yIter * chunkSize.y),
-		 viewPortPosition.x + (xIter * chunkSize.x)})};
+	     (yx{firstStageDrawBuffer.viewPortPosition.y + (yIter * chunkSize.y),
+		 firstStageDrawBuffer.viewPortPosition.x + (xIter * chunkSize.x)})};
 	  /* Calculate position in the first stage draw buffer to be
 	     updated. The position is in chunks. */
 	  const yx fSDBUpdateTargetCoord
-	    {(viewPortPosition.y %
+	    {(firstStageDrawBuffer.viewPortPosition.y %
 	      (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) /
 	     chunkSize.y + yIter,
-	     (viewPortPosition.x %
+	     (firstStageDrawBuffer.viewPortPosition.x %
 	      (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) /
 	     chunkSize.x + xIter};
 	  /* Lookup key in map. If found copy chunk into first stage draw
@@ -298,14 +298,14 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
 }
 
 
-void backgroundData::updateFirstStageDrawBuffer(const yx viewPortPosition)
+void backgroundData::updateFirstStageDrawBuffer()
 {
   /*
     The first stage draw buffer is a 5 by 5 array of chunks.
     When the delta between the last updated position and the new position
     (viewPortPosition) have diverged by the dimension of one chunk (note that
-    this differs depending on the axis) the chunks two chunks ahead of the delta
-    (in y or x) detected are updated. 
+    this differs depending on the axis.) The chunks two chunks ahead of the
+    viewPortPosition (in y or x) are updated. 
 
     The diagram below shows the position of the last updated position and the
     current position upon entering this function and the chunks that will be
@@ -348,4 +348,24 @@ void backgroundData::updateFirstStageDrawBuffer(const yx viewPortPosition)
     OPERATIONS PERFORMED BY THE UPDATING THREAD.
    */
 
+}
+
+
+void backgroundData::updateSecondStageDrawBuffer
+(backgroundData::drawBufferType *  secondStageDrawBuffer)
+{
+  // Size of the first stage draw buffer in characters.
+  const yx fSDBSize {chunkSize.y * firstStageDrawBuffer.fSDBYChunks,
+		     chunkSize.x * firstStageDrawBuffer.fSDBXChunks};
+      
+  for(int yIter {}; yIter < chunkSize.y; ++yIter)
+    {
+      for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	{
+	  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
+	  firstStageDrawBuffer.buffer
+	    [(firstStageDrawBuffer.viewPortPosition.y + yIter) * fSDBSize.x +
+	     (firstStageDrawBuffer.viewPortPosition.x + xIter)];
+	}  
+    }
 }

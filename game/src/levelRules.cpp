@@ -1748,17 +1748,16 @@ void rules::printRuleChars(const int position, const int maxY, const int maxX)
 
 
 void rules::physics
-(const player::directionChars input, yx & viewPortPosition,
- const yx viewPortSize, const size_t backgroundLength,
+(backgroundData & background, const player::directionChars input,
  std::__1::chrono::steady_clock::time_point & secStartTime)
 {
 #ifdef DEBUG
   printRuleChars(position, viewPortSize.y, viewPortSize.x);
 #endif
   
-  movePlayer
-    (player::convertDirectionCharsToDirections(input), viewPortPosition,
-     viewPortSize, backgroundLength);
+  // movePlayer
+  //   (player::convertDirectionCharsToDirections(input), viewPortPosition,
+  //    viewPortSize, backgroundLength);
   sleep(engineSleepTime);
   resetOldTime(secStartTime);
 }
