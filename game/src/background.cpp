@@ -372,9 +372,19 @@ void backgroundData::updateFirstStageDrawBuffer()
       for(int yChunkIter {-(firstStageDrawBuffer.fSDBYChunks / 2)};
 	  yChunkIter <= (firstStageDrawBuffer.fSDBYChunks / 2); ++yChunkIter)
 	{
-	  if((firstStageDrawBuffer.viewPortPosition.y %
-	     (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) +
-	     (yChunkIter * chunkSize.y) > 0)
+	  const yx fSDBTargetChunk
+	    {(firstStageDrawBuffer.viewPortPosition.y %
+	      (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) /
+	     chunkSize.y,
+	      (firstStageDrawBuffer.viewPortPosition.x %
+	       (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) /
+	      chunkSize.x};
+
+	  endwin();
+	  std::cout<<fSDBTargetChunk.y<<", "<<fSDBTargetChunk.x<<'\n';
+	  exit(-1);
+	  
+	  if(fSDBTargetChunk.y + yChunkIter > 0)
 	    {
 	      // Calculate index of potential chunk to be copied into FSDB.
 	      const std::string chunkKey
@@ -395,13 +405,12 @@ void backgroundData::updateFirstStageDrawBuffer()
 		      for(int xIter {}; xIter < chunkSize.x; ++xIter)
 			{
 			  firstStageDrawBuffer.buffer
-			    [(yChunkIter * fSDBSize.x * chunkSize.y) +
-			     ((firstStageDrawBuffer.viewPortPosition.y %
-			       (chunkSize.y * firstStageDrawBuffer.fSDBYChunks))
-			      + yIter) * fSDBSize.x +
-			     ((firstStageDrawBuffer.viewPortPosition.x %
-			      (chunkSize.x * firstStageDrawBuffer.fSDBXChunks))
-			      + xIter)]
+			    [((fSDBTargetChunk.y + yChunkIter) *
+			      fSDBSize.x * chunkSize.y) +
+			     yIter * fSDBSize.x +
+			     
+			     ((fSDBTargetChunk.x * chunkSize.x)
+			      + xIter)] 
 			    = (*chunk)[(yIter * chunkSize.x) + xIter];
 			}
 		    }
