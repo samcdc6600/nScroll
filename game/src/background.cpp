@@ -236,9 +236,9 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
 
   const yx initialViewPortPosition {playerPos};
   firstStageDrawBuffer.viewPortPosition = initialViewPortPosition;
-  firstStageDrawBuffer.lastUpdatedPosition = initialViewPortPosition;
+  firstStageDrawBuffer.lastUpdatedPosition.y = initialViewPortPosition.y;
   firstStageDrawBuffer.lastUpdatedPosition.x =
-    firstStageDrawBuffer.lastUpdatedPosition.x - chunkSize.x;
+    initialViewPortPosition.x - 2 * chunkSize.x;
   updateFirstStageDrawBuffer();
   firstStageDrawBuffer.viewPortPosition = initialViewPortPosition;
   firstStageDrawBuffer.lastUpdatedPosition = initialViewPortPosition;
@@ -369,62 +369,57 @@ void backgroundData::updateFirstStageDrawBuffer()
 	 firstStageDrawBuffer.viewPortPosition.x) > chunkSize.x -1)
     {
       // Iterate over chunks to be updated in the FSDB.
-      for(int yChunkIter {-(firstStageDrawBuffer.fSDBYChunks / 2)};
-	  yChunkIter <= (firstStageDrawBuffer.fSDBYChunks / 2); ++yChunkIter)
+      for(int yChunkIter {};
+	  yChunkIter < firstStageDrawBuffer.fSDBYChunks; ++yChunkIter)
 	{
 	  const yx fSDBTargetChunk
-	    {(firstStageDrawBuffer.viewPortPosition.y %
-	      (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) /
-	     chunkSize.y,
-	      (firstStageDrawBuffer.viewPortPosition.x %
-	       (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) /
-	      chunkSize.x};
+	    {calculateFSDBTargetChunkWithHorizontalChange(yChunkIter)};
+
 
 	  endwin();
-	  std::cout<<fSDBTargetChunk.y<<", "<<fSDBTargetChunk.x<<'\n';
-	  exit(-1);
+	  std::cout<<fSDBTargetChunk.y<<", "<<fSDBTargetChunk.x<<"\n\n";
+	  // exit(-1);
 	  
-	  if(fSDBTargetChunk.y + yChunkIter > 0)
+	  // Calculate index of potential chunk to be copied into FSDB.
+	  const std::string chunkKey
+	    {createChunkCoordKeyFromCharCoord
+	     (yx{firstStageDrawBuffer.viewPortPosition.y +
+		 ((yChunkIter - (firstStageDrawBuffer.fSDBYChunks /
+				 firstStageDrawBuffer.fSDBYUpdateOffset)) *
+		  chunkSize.y),
+		 firstStageDrawBuffer.viewPortPosition.x +
+		 (firstStageDrawBuffer.fSDBXUpdateOffset * chunkSize.x)})};
+
+	  // Try to get chunk and then perform the copy to the FSDB.
+	  try
 	    {
-	      // Calculate index of potential chunk to be copied into FSDB.
-	      const std::string chunkKey
-		{createChunkCoordKeyFromCharCoord
-		 (yx{firstStageDrawBuffer.viewPortPosition.y +
-		     (yChunkIter * chunkSize.y),
-		     firstStageDrawBuffer.viewPortPosition.x + (2 * chunkSize.x)})};
+	      // At() will throw an exception if the key isn't found.
+	      const backgroundChunk * chunk {&background.at(chunkKey)};
 
-	      // Try to get chunk and then perform the copy to the FSDB.
-	      try
+	      // Iterate over lines of target chunk in the FSDB.
+	      for(int yIter {}; yIter < chunkSize.y; ++yIter)
 		{
-		  // At() will throw an exception if the key isn't found.
-		  const backgroundChunk * chunk {&background.at(chunkKey)};
-
-		  // Iterate over lines of target chunk in the FSDB.
-		  for(int yIter {}; yIter < chunkSize.y; ++yIter)
+		  for(int xIter {}; xIter < chunkSize.x; ++xIter)
 		    {
-		      for(int xIter {}; xIter < chunkSize.x; ++xIter)
-			{
-			  firstStageDrawBuffer.buffer
-			    [((fSDBTargetChunk.y + yChunkIter) *
-			      fSDBSize.x * chunkSize.y) +
-			     yIter * fSDBSize.x +
+		      firstStageDrawBuffer.buffer
+			[(fSDBTargetChunk.y * fSDBSize.x * chunkSize.y) +
+			 yIter * fSDBSize.x +
 			     
-			     ((fSDBTargetChunk.x * chunkSize.x)
-			      + xIter)] 
-			    = (*chunk)[(yIter * chunkSize.x) + xIter];
-			}
+			 ((fSDBTargetChunk.x * chunkSize.x)
+			  + xIter)] 
+			= (*chunk)[(yIter * chunkSize.x) + xIter];
 		    }
-      // 		        endwin();
-      // std::cout<<"Found chunk!\n";
-      // std::cout<<"chunkKey = "
-      // 	       <<chunkKey<<std::endl;
-      // exit(-1);
 		}
-	      catch(const std::out_of_range& err)
-		{
-		  /* Key not found... Fill target chunk in first stage buffer with
-		     some stuff. */
-		}
+	      // 		        endwin();
+	      // std::cout<<"Found chunk!\n";
+	      // std::cout<<"chunkKey = "
+	      // 	       <<chunkKey<<std::endl;
+	      // exit(-1);
+	    }
+	  catch(const std::out_of_range& err)
+	    {
+	      /* Key not found... Fill target chunk in first stage buffer with
+		 some stuff. */
 	    }
 	}
       
@@ -440,6 +435,43 @@ void backgroundData::updateFirstStageDrawBuffer()
 	firstStageDrawBuffer.lastUpdatedPosition;
     }
 }
+
+
+yx backgroundData::calculateFSDBTargetChunkWithHorizontalChange
+    (const int yChunkOffset) const
+{
+  /* Y should change each iteration, but x shouldn't. We have to
+     wrap around in y if y >= firstStageDrawBuffer.fSDBYChunks. */
+  yx targetChunk {0, (firstStageDrawBuffer.viewPortPosition.x %
+		      (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) /
+		  chunkSize.x};
+  /* Add offset in the x dimension based on the direction the view port has
+     moved. */
+  targetChunk.x += firstStageDrawBuffer.viewPortPosition.x >
+    firstStageDrawBuffer.lastUpdatedPosition.x ?
+    firstStageDrawBuffer.fSDBXUpdateOffset:
+    - firstStageDrawBuffer.fSDBXUpdateOffset;
+  // Maybe wrap around in x.
+  targetChunk.x %= firstStageDrawBuffer.fSDBXChunks;
+  targetChunk.x = targetChunk.x < 0?
+  firstStageDrawBuffer.fSDBXChunks + targetChunk.x: targetChunk.x;
+  // firstStageDrawBuffer.fSDBYChunks & 1 returns 1 if fSDBYChunks is even.
+  const int targetYPreWrap {((firstStageDrawBuffer.viewPortPosition.y %
+			      (chunkSize.y * firstStageDrawBuffer.fSDBYChunks))
+			     / chunkSize.y +
+			     (firstStageDrawBuffer.fSDBYChunks /
+			      firstStageDrawBuffer.fSDBYUpdateOffset +
+			      (firstStageDrawBuffer.fSDBYChunks & 1)) +
+			     yChunkOffset)};
+  targetChunk.y = targetYPreWrap % firstStageDrawBuffer.fSDBYChunks;
+
+  return targetChunk;
+}
+
+
+// yx backgroundData::calculatePotentialChunkKeyForChunkToGoInFSDB()
+// {
+// }
 
 
 void backgroundData::updateSecondStageDrawBuffer
@@ -458,6 +490,7 @@ void backgroundData::updateSecondStageDrawBuffer
 	    [((firstStageDrawBuffer.viewPortPosition.y %
 	       (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) + yIter) *
 	     fSDBSize.x +
+	     
 	     ((firstStageDrawBuffer.viewPortPosition.x %
 	       (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) + xIter)];
 	}  

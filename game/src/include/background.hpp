@@ -19,19 +19,18 @@ public:
   typedef unsigned short drawBufferType;
   
 private:
-  /* Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
-     map. Then (y % (chunkSize.y * fSDBYChunks)) * chunkSize.x + (x %
-     (chunkSize.x * fSDBXChunks)) can be used to index into the backgroundChunk
-     returned from the map (as the stage 1 draw buffer will be fSDBYChunks by
-     fSDBXChunks chunks.) */
+  /* Concatenate (y / chunkSize.y) and (x / chunkSize.x) and use as index into
+     map. */
   typedef std::map<std::string, backgroundChunk> backgroundType;
   const backgroundType  background;
 
   class firstStageDrawBufferType
   {
   public:
-    // Dimensions of firstStageDrawBuffer in chunks.
-    static const int fSDBYChunks {5}, fSDBXChunks {5};
+    /* Dimensions of first stage draw buffer in chunks and the offsets when
+       updating the first stage draw buffer. */
+    static const int fSDBYChunks {5}, fSDBXChunks {5},
+      fSDBYUpdateOffset {2}, fSDBXUpdateOffset {2};
     /* Holds the current position of the view port (Note that buffer may not yet
        be updated as a result this new position.) */
     yx viewPortPosition {};
@@ -83,6 +82,15 @@ private:
   void verifyCollapsedChunkSize(const backgroundChunk & rawChunk,
 				const ssize_t chunksReadIn,
 				const bool attemptedCompression) const;
+  /* Calculates the coordinates in the FSDB that a chunk should be copied to
+     when the view port has moved chunkSize.x in the x dimension. Where
+     yChunkOffset is used as an offset (in chunks) in the y dimension. Handles
+     wrap around. I.e. if the view port position is (0,0) and the old position
+     was (0, 170) (where 170 is the size of a chunk in the x dimension in this
+     example) then the set of chunks to be updated given 5 calls with
+     yChunkOffset being set to (0, 1, 2, 3, 4) for each respective call, should
+     be (3, 3), (4, 3), (0, 3), (1, 3), (2, 3). */
+  yx calculateFSDBTargetChunkWithHorizontalChange(const int yChunkOffset) const;
   
 public:
   const char * fileName;

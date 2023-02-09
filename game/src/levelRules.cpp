@@ -1758,6 +1758,6 @@ void rules::physics
   // movePlayer
   //   (player::convertDirectionCharsToDirections(input), viewPortPosition,
   //    viewPortSize, backgroundLength);
-  sleep(engineSleepTime);
-  resetOldTime(secStartTime);
+  // sleep(engineSleepTime);
+  // resetOldTime(secStartTime);
 }

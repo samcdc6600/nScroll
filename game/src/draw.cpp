@@ -77,7 +77,7 @@ void draw
   //   {
   //     bgSF->draw(secondStageDrawBuffer, true, viewPortPosition);
   //   }
-      
+ 
   printDrawBuffer(secondStageDrawBuffer, background.chunkSize);
   refresh();
 }
