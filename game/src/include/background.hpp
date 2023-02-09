@@ -91,6 +91,8 @@ private:
      yChunkOffset being set to (0, 1, 2, 3, 4) for each respective call, should
      be (3, 3), (4, 3), (0, 3), (1, 3), (2, 3). */
   yx calculateFSDBTargetChunkWithHorizontalChange(const int yChunkOffset) const;
+  std::string calculatePotentialChunkKeyForChunkToGoInFSDBWithHorizChange
+  (const int yChunkIter) const;
   
 public:
   const char * fileName;
