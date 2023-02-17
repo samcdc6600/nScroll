@@ -234,14 +234,23 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
      returned from the map (as the stage 1 draw buffer will be fSDBYChunks by
      fSDBXChunks chunks.) */
 
-  const yx initialViewPortPosition {playerPos};
-  firstStageDrawBuffer.viewPortPosition = initialViewPortPosition;
-  firstStageDrawBuffer.lastUpdatedPosition.y = initialViewPortPosition.y;
-  firstStageDrawBuffer.lastUpdatedPosition.x =
-    initialViewPortPosition.x - 2 * chunkSize.x;
-  updateFirstStageDrawBuffer();
-  firstStageDrawBuffer.viewPortPosition = initialViewPortPosition;
+  const yx initialViewPortPosition {playerPos.y, playerPos.x + chunkSize.x * 3};
   firstStageDrawBuffer.lastUpdatedPosition = initialViewPortPosition;
+  firstStageDrawBuffer.viewPortPosition =
+    yx{playerPos.y, playerPos.x + chunkSize.x * 2};
+  
+  updateFirstStageDrawBuffer();
+
+  firstStageDrawBuffer.viewPortPosition = playerPos;
+
+  
+  // firstStageDrawBuffer.viewPortPosition = initialViewPortPosition;
+  // firstStageDrawBuffer.lastUpdatedPosition.y = initialViewPortPosition.y;
+  // firstStageDrawBuffer.lastUpdatedPosition.x =
+  //   initialViewPortPosition.x - 2 * chunkSize.x;
+  // updateFirstStageDrawBuffer();
+  // firstStageDrawBuffer.viewPortPosition = initialViewPortPosition;
+  // firstStageDrawBuffer.lastUpdatedPosition = initialViewPortPosition;
 
   
   // const yx loopStartOffset
@@ -376,21 +385,16 @@ void backgroundData::updateFirstStageDrawBuffer()
 	    {calculateFSDBTargetChunkWithHorizontalChange(yChunkIter)};
 
 
-	  endwin();
-	  std::cout<<fSDBTargetChunk.y<<", "<<fSDBTargetChunk.x<<"\n";
-	  // exit(-1);
+	  // endwin();
+	  // std::cout<<fSDBTargetChunk.y<<", "<<fSDBTargetChunk.x<<"\n";
+	  // // exit(-1);
 	  
 	  // Calculate index of potential chunk to be copied into FSDB.
 	  const std::string chunkKey
-	    {createChunkCoordKeyFromCharCoord
-	     (yx{firstStageDrawBuffer.viewPortPosition.y +
-		 ((yChunkIter - (firstStageDrawBuffer.fSDBYChunks /
-				 firstStageDrawBuffer.fSDBYUpdateOffset)) *
-		  chunkSize.y),
-		 firstStageDrawBuffer.viewPortPosition.x +
-		 (firstStageDrawBuffer.fSDBXUpdateOffset * chunkSize.x)})};
+	    {calculatePotentialChunkKeyForChunkToGoInFSDBWithHorizChange
+	     (yChunkIter)};
 	  
-	  std::cout<<chunkKey<<"\n\n";
+	  // std::cout<<chunkKey<<"\n\n";
 
 	  // Try to get chunk and then perform the copy to the FSDB.
 	  try
@@ -475,10 +479,11 @@ std::string
 backgroundData::calculatePotentialChunkKeyForChunkToGoInFSDBWithHorizChange
 (const int yChunkIter)const
 {
+  /* Note here that we account for the direction of movement when calculating
+     the x coordinate. */
   return createChunkCoordKeyFromCharCoord
     (yx{firstStageDrawBuffer.viewPortPosition.y +
-	((yChunkIter - (firstStageDrawBuffer.fSDBYChunks /
-			firstStageDrawBuffer.fSDBYUpdateOffset)) *
+	((yChunkIter - (firstStageDrawBuffer.fSDBYChunks / 2)) *
 	 chunkSize.y),
 	firstStageDrawBuffer.viewPortPosition.x +
 	((firstStageDrawBuffer.viewPortPosition.x >

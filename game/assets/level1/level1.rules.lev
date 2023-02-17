@@ -1,6 +1,6 @@
 (
   player(
-    initialCoordinate(96,0)
+    initialCoordinate(144,850)
     sprites("./assets/sprites/sprite(0).sprite",
     "./assets/sprites/sprite(1).sprite",
     "./assets/sprites/sprite(2).sprite",

@@ -5,6 +5,7 @@
 nscrl
 nscrl.core
 clangd.core
+*.core
 
 game/~*
 game/*~
@@ -14,6 +15,7 @@ game/tmp
 game/nscrl
 game/clangd.core
 game/.clangd
+game/*.core
 game/src/.#*
 game/src/~*
 game/src/*~
