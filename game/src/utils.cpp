@@ -7,6 +7,12 @@
 #include "include/utils.hpp"
 
 
+std::ostream & operator<<(std::ostream &lhs, const yx rhs)
+{
+  return lhs<<"("<<rhs.y<<", "<<rhs.x<<")";
+}
+
+
 /* NOTE THAT WE DECLARE THIS HEADING HERE BECAUSE A FUNCTION WITH THE SAME
    SIGNATURE (OR AT LEAST THIS WOULD BE THE CASE, BUT APPARENTLY THE LINKER
    DOESN'T LIKE IT WHEN TWO FUNCTIONS HAVE THE SAME SIGNATURE EVEN IF THEIR

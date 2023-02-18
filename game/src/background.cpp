@@ -386,7 +386,7 @@ void backgroundData::updateFirstStageDrawBuffer()
 
 
 	  // endwin();
-	  // std::cout<<fSDBTargetChunk.y<<", "<<fSDBTargetChunk.x<<"\n";
+	  // std::cout<<"target: "<<fSDBTargetChunk.y<<", "<<fSDBTargetChunk.x<<"\n";
 	  // // exit(-1);
 	  
 	  // Calculate index of potential chunk to be copied into FSDB.
@@ -394,7 +394,7 @@ void backgroundData::updateFirstStageDrawBuffer()
 	    {calculatePotentialChunkKeyForChunkToGoInFSDBWithHorizChange
 	     (yChunkIter)};
 	  
-	  // std::cout<<chunkKey<<"\n\n";
+	  // std::cout<<"chunkKey: "<<chunkKey<<"\n\n"; 
 
 	  // Try to get chunk and then perform the copy to the FSDB.
 	  try
@@ -429,16 +429,14 @@ void backgroundData::updateFirstStageDrawBuffer()
 	    }
 	}
       
-      firstStageDrawBuffer.viewPortPosition =
-	firstStageDrawBuffer.lastUpdatedPosition;
+      firstStageDrawBuffer.lastUpdatedPosition =
+	firstStageDrawBuffer.viewPortPosition;
     }
   else if(abs(firstStageDrawBuffer.lastUpdatedPosition.y -
 	 firstStageDrawBuffer.viewPortPosition.y) > chunkSize.y -1)
     {
-
-      
-      firstStageDrawBuffer.viewPortPosition =
-	firstStageDrawBuffer.lastUpdatedPosition;
+      firstStageDrawBuffer.lastUpdatedPosition =
+	firstStageDrawBuffer.viewPortPosition;
     }
 }
 
@@ -500,18 +498,44 @@ void backgroundData::updateSecondStageDrawBuffer
   const yx fSDBSize {chunkSize.y * firstStageDrawBuffer.fSDBYChunks,
 		     chunkSize.x * firstStageDrawBuffer.fSDBXChunks};
       
+  // for(int yIter {}; yIter < chunkSize.y; ++yIter)
+  //   {
+  //     for(int xIter {}; xIter < chunkSize.x; ++xIter)
+  // 	{
+  // 	  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
+  // 	    firstStageDrawBuffer.buffer
+  // 	    [((firstStageDrawBuffer.viewPortPosition.y %
+  // 	       (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) + yIter) *
+  // 	     fSDBSize.x +
+	     
+  // 	     ((firstStageDrawBuffer.viewPortPosition.x %
+  // 	       (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) + xIter)];
+  // 	}  
+  //   }
+
+ // endwin();
+ // std::cout<<firstStageDrawBuffer.viewPortPosition<<'\n';
+ // exit(-1);
+
+
   for(int yIter {}; yIter < chunkSize.y; ++yIter)
     {
       for(int xIter {}; xIter < chunkSize.x; ++xIter)
 	{
 	  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
 	    firstStageDrawBuffer.buffer
-	    [((firstStageDrawBuffer.viewPortPosition.y %
-	       (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) + yIter) *
-	     fSDBSize.x +
-	     
-	     ((firstStageDrawBuffer.viewPortPosition.x %
-	       (chunkSize.x * firstStageDrawBuffer.fSDBXChunks)) + xIter)];
-	}  
+	    [((firstStageDrawBuffer.viewPortPosition.y + yIter) %
+	      (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) * fSDBSize.x +
+	     ((firstStageDrawBuffer.viewPortPosition.x + xIter) %
+	      (chunkSize.x * firstStageDrawBuffer.fSDBXChunks))];
+
+
+	  // endwin();
+	  // std::cout<<"Ypos = "<<((firstStageDrawBuffer.viewPortPosition.y + yIter) %
+	  // (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) * fSDBSize.x<<'\n';
+	  // std::cout<<"Xpos = "<<((firstStageDrawBuffer.viewPortPosition.x + xIter) %
+	  // 			 (chunkSize.x * firstStageDrawBuffer.fSDBXChunks))<<"\n\n";
+	}
     }
+  // exit(-1);
 }

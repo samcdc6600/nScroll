@@ -43,6 +43,9 @@ struct yx
 };
 
 
+std::ostream & operator<<(std::ostream &lhs, const yx rhs);
+
+
 // The window must be these dimensions.
 constexpr int yHeight {48}, xWidth {170};
 constexpr int ASCII_CH_MAX {127};
