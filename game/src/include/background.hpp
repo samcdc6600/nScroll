@@ -82,6 +82,12 @@ private:
   void verifyCollapsedChunkSize(const backgroundChunk & rawChunk,
 				const ssize_t chunksReadIn,
 				const bool attemptedCompression) const;
+  /* UpdateFirstStageDrawBuffer() will call this function (to do the actuall
+     update) If horizontal is true an update will be done assuming that the
+     triggering change in view port position was in the x dimension. Otherwise
+     it will be done assuming that the trigger change in the view port
+     position was in the y dimension. */
+  void updateFirstStageDrawBuffer(const bool horizontal);
   /* Calculates the coordinates in the FSDB that a chunk should be copied to
      when the view port has moved chunkSize.x in the x dimension. Where
      yChunkOffset is used as an offset (in chunks) in the y dimension. Handles
@@ -90,9 +96,16 @@ private:
      example) then the set of chunks to be updated given 5 calls with
      yChunkOffset being set to (0, 1, 2, 3, 4) for each respective call, should
      be (3, 3), (4, 3), (0, 3), (1, 3), (2, 3). */
-  yx calculateFSDBTargetChunkWithHorizontalChange(const int yChunkOffset) const;
-  std::string calculatePotentialChunkKeyForChunkToGoInFSDBWithHorizChange
-  (const int yChunkIter) const;
+  yx calculateFSDBTargetChunkWithHorizontalChange(const yx fSDBSize,
+						  const int yChunkOffset) const;
+  yx calculateFSDBTargetChunkWithVerticalChange(const yx fSDBSize,
+						const int xChunkOffset) const;
+  /* Where horizontal determines whether or not to use chunkUpdateDimensionIter
+     as a component of y or x when creating the key. Horizontal should be set
+     to true when the triggering change in view port position was in the x
+     dimension. */
+  std::string calculatePotentialChunkKeyForChunkToGoInFSDB
+  (const bool horizontal, const int chunkUpdateDimensionIter) const;
   
 public:
   const char * fileName;
