@@ -124,14 +124,14 @@ private:
   void getMaxYXOffset();
   
 protected:
-  /* Checks that the sprite is in a level chunk. If fullyIn is set to false only
-     one character of the sprite needs to be in a chunk. If it is set to true
-     the sprite must be fully visible within the chunk. Exits with an error
-     message if the sprite isn't in a chunk. GetMaxYXOffset() should be called
-     before this function to set maxBottomRightOffset. */ 
-  void checkInitialPosIsInLevelChunk
-  (std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
-   const backgroundData & background, const bool fullyIn);
+  // /* Checks that the sprite is in a level chunk. If fullyIn is set to false only
+  //    one character of the sprite needs to be in a chunk. If it is set to true
+  //    the sprite must be fully visible within the chunk. Exits with an error
+  //    message if the sprite isn't in a chunk. GetMaxYXOffset() should be called
+  //    before this function to set maxBottomRightOffset. */ 
+  // void checkInitialPosIsInLevelChunk
+  // (std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
+  //  const backgroundData & background, const bool fullyIn);
   /* Initialises sD_base */
   void loadSprite(const char spriteFileName [], spriteData & sD);
   void resetCurrentSliceNum()
@@ -174,8 +174,8 @@ public:
   //    if the sprite (with it's x position set to x) would be within the window
   //    in the x axis. */
   // bool inWindowX(const int x);
-  bool inLevelY(const int y, const int bgYLen);
-  bool inLevelX(const int x, const int bgXLen);
+  // bool inLevelY(const int y, const int bgYLen);
+  // bool inLevelX(const int x, const int bgXLen);
   bool leftOfWindowInnerRightMargin(const int x, const int xBound,
 				    const yx viewPortSize);
   bool rightOfWindowInnerLeftMargin(const int x, const int xBound);
@@ -186,7 +186,7 @@ public:
      diagonal movement) in the direction dir */
   yx peekAtPos(const directions dir);
   // Returns the sprite position.
-  yx getPos() {return position;}
+  yx getPos() const {return position;}
   std::string getXPosAsStr() const
   {
     std::stringstream ss {};

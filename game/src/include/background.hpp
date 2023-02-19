@@ -169,6 +169,12 @@ public:
      to secondStageDrawBuffer. */
   void updateSecondStageDrawBuffer
   (drawBufferType * secondStageDrawBuffer);
+  /* Updates the view port position based on the player position. Note that the
+     view port position may not be updated if the play is still within certain
+     bounds.*/
+  void updateViewPortPosition
+  (const yx playerMovementAreaPadding, const yx playerPosTopLeft,
+   const yx playerPosBottomRight);
 };
 
 

@@ -65,13 +65,6 @@ void menu
   bool run = true;
   while(run)
     {
-      /* REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	 REPLACE THE BELOW WITH THE FOLLOWING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	switch(gameLoop
-	(secondStageDrawBuffer, background, levelRules, )) */
       switch(gameLoop(secondStageDrawBuffer, background, levelRules))
 	{
 	case M_QUIT_GAME:
@@ -93,18 +86,16 @@ int gameLoop
 {
   std::__1::chrono::steady_clock::time_point secStartTime
     {std::chrono::high_resolution_clock::now()};
-  // NOTE THAT VIEWPORTPOSITION SHOULD BE INITIALISED RELATIVE TO THE PLAYER
-  // POSITION! (I.E. WE NEED TO FIX THIS AT SOME POINT.)
-   yx viewPortPosition {24, 170};
   
   while(true)
     {
-      int input {};
+      sprite::directions input {};
 
       // const size_t backgroundLen {background.size() /
       // 	viewPortSize.y};
 
-      input = getch();
+      input = player::convertDirectionCharsToDirections
+	(static_cast<player::directionChars>(getch()));
       switch(input)
 	{
 	case ESC_CHAR:
@@ -116,7 +107,7 @@ int gameLoop
 	}
 
       levelRules.physics
-	(background, player::directionChars(input), secStartTime);
+	(background, input, secStartTime);
       draw(secondStageDrawBuffer, background, levelRules.gamePlayer,
 	   levelRules.bgSprites);
     }

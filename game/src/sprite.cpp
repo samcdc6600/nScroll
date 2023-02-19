@@ -21,8 +21,8 @@ sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
     }
   initialiseDirectionsVector();
   getMaxYXOffset();
-  checkInitialPosIsInLevelChunk
-    (spritePaths, maxBottomRightOffset, background, fullyIn);
+  // checkInitialPosIsInLevelChunk
+  //   (spritePaths, maxBottomRightOffset, background, fullyIn);
 }
 
 
@@ -250,10 +250,10 @@ void sprite::getMaxYXOffset()
 }
 
 
-void sprite::checkInitialPosIsInLevelChunk
-(std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
- const backgroundData & background, const bool fullyIn)
-{
+// void sprite::checkInitialPosIsInLevelChunk
+// (std::vector<std::string> & spritePaths, const yx maxBottomRightOffset,
+//  const backgroundData & background, const bool fullyIn)
+// {
 
   // Non sprites can have negative origins.
 
@@ -290,7 +290,7 @@ void sprite::checkInitialPosIsInLevelChunk
   //      <<bgLen<<"). Remember coords start at 0 and are in the form (y,x).\n";
   //     exit(e.str().c_str(), ERROR_SPRITE_POS_RANGE);
   //   }
-}
+// }
 
 
 void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
@@ -430,18 +430,18 @@ bool sprite::notInWindowInnerMarginX(const int x, const int xMargin)
 // }
 
 
-bool sprite::inLevelY(const int y, const int bgYLen)
-{
-  const int maximumY {y + maxBottomRightOffset.y};
-  return (y >= 0) && (maximumY < bgYLen);
-}
+// bool sprite::inLevelY(const int y, const int bgYLen)
+// {
+//   const int maximumY {y + maxBottomRightOffset.y};
+//   return (y >= 0) && (maximumY < bgYLen);
+// }
 
 
-bool sprite::inLevelX(const int x, const int bgXLen)
-{
-  const int maximumX {x + maxBottomRightOffset.x};
-  return (x >= 0) && (maximumX < bgXLen);
-}
+// bool sprite::inLevelX(const int x, const int bgXLen)
+// {
+//   const int maximumX {x + maxBottomRightOffset.x};
+//   return (x >= 0) && (maximumX < bgXLen);
+// }
 
 
 bool sprite::leftOfWindowInnerRightMargin(const int x, const int xBound,

@@ -1358,8 +1358,7 @@ char rules::nearPass(const std::vector<int> playerSpChoords,
 
 
 void rules::movePlayer
-(sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
- const size_t backgroundLength)
+  (backgroundData & background, sprite::directions input)
 { /* Move the player as long as they will stay within
      PLAYER_MOVMENT_INNER_MARGIN of the left and right borders. If the
      player is PLAYER_MOVMENT_INNER_MARGIN away from either the left or
@@ -1389,40 +1388,38 @@ void rules::movePlayer
   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
      input == sprite::DIR_DOWN)
     {
-      input = handleGroundCollision(viewPortPosition, viewPortSize.y);
+      // input = handleGroundCollision(viewPortPosition, viewPortSize.y);
     }
   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
     {
-      input = handleRightCollision(viewPortPosition, viewPortSize.y);
+      // input = handleRightCollision(viewPortPosition, viewPortSize.y);
     }
   else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_LEFT)
     {
-      input = handleLeftCollision(viewPortPosition, viewPortSize.y);
+      // input = handleLeftCollision(viewPortPosition, viewPortSize.y);
     }
 
-  handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
-    (input, viewPortPosition, viewPortSize, backgroundLength);
+  handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe(input);
 }
 
 
 void rules::handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
-(const sprite::directions newDir, yx & viewPortPosition, const yx viewPortSize,
- const size_t backgroundLength)
+(const sprite::directions newDir)
 {
   const yx peekPos {gamePlayer->peekAtPos(newDir)};
-  if(gamePlayer->inLevelY(peekPos.y, viewPortSize.y) &&
-     gamePlayer->inLevelX(peekPos.x + viewPortPosition.x, backgroundLength))
-    {
-      // We won't be outside of the level if we move.
-      handleFinalPlayerMovementAndWindowAndMarginInteractions
-	(newDir, viewPortPosition, viewPortSize, backgroundLength, peekPos);
-    }
-  else
-    {
+  // if(gamePlayer->inLevelY(peekPos.y, viewPortSize.y) &&
+  //    gamePlayer->inLevelX(peekPos.x + viewPortPosition.x, backgroundLength))
+  //   {
+  //     // We won't be outside of the level if we move.
+  //     handleFinalPlayerMovementAndWindowAndMarginInteractions
+  // 	(newDir, viewPortPosition, viewPortSize, backgroundLength, peekPos);
+  //   }
+  // else
+  //   {
       gamePlayer->updateDirection(sprite::DIR_NONE);
-    }
+    // }
 }
 
 
@@ -1430,21 +1427,21 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractions
 (const sprite::directions newDir, yx & viewPortPosition, const yx viewPortSize,
  const size_t backgroundLength, const yx peekPos)
 {
-    /* Make any final movement, check for window margin contact and take
+    /* Make any final movement, check for window padding contact and take
      appropriate action if such contact is made. */
   if(((newDir == sprite::DIR_LEFT || newDir == sprite::DIR_RIGHT) &&
       gamePlayer->notInWindowInnerMarginX(peekPos.x,
-					  PLAYER_MOVEMENT_INNER_MARGIN.x)) ||
+					  PLAYER_MOVEMENT_AREA_PADDING.x)) ||
      newDir == sprite::DIR_NONE)	// Only need to check for DIR_NONE here.
     {
-      // We're not going to go into the margin.
+      // We're not going to go into the padding.
       gamePlayer->updatePosRel(newDir);
     }
   else if((newDir == sprite::DIR_DOWN || newDir == sprite::DIR_UP)
 	  && gamePlayer->notInWindowInnerMarginY(peekPos.y,
-						 PLAYER_MOVEMENT_INNER_MARGIN.y))
+						 PLAYER_MOVEMENT_AREA_PADDING.y))
     {
-      // We're not going to go into the margin.
+      // We're not going to go into the padding.
       gamePlayer->updatePosRel(newDir);
     }
   else
@@ -1492,8 +1489,8 @@ void rules::movePlayerRightWhenInteractingWithInnerMargin
  const int REACHED_INNER_MARGIN_X)
 {
   if(gamePlayer->leftOfWindowInnerRightMargin
-     (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x, viewPortSize))
-    { // We are to the left of the inner right margin.
+     (peekPos.x, PLAYER_MOVEMENT_AREA_PADDING.x, viewPortSize))
+    { // We are to the left of the inner right padding.
       gamePlayer->updatePosRel(input);
     }
   else if(size_t(viewPortPosition.x + viewPortSize.x) < backgroundLength)
@@ -1515,8 +1512,8 @@ void rules::movePlayerLeftWhenInteractingWithInnerMargin
  const int REACHED_INNER_MARGIN_X)
 {
   if(gamePlayer->rightOfWindowInnerLeftMargin
-     (peekPos.x, PLAYER_MOVEMENT_INNER_MARGIN.x))
-    { // We are to the righ of the inner left margin.
+     (peekPos.x, PLAYER_MOVEMENT_AREA_PADDING.x))
+    { // We are to the righ of the inner left padding.
       gamePlayer->updatePosRel(input);
     }
   else if(viewPortPosition.x > 0)
@@ -1748,16 +1745,18 @@ void rules::printRuleChars(const int position, const int maxY, const int maxX)
 
 
 void rules::physics
-(backgroundData & background, const player::directionChars input,
+(backgroundData & background, const sprite::directions input,
  std::__1::chrono::steady_clock::time_point & secStartTime)
 {
 #ifdef DEBUG
   printRuleChars(position, viewPortSize.y, viewPortSize.x);
 #endif
   
-  // movePlayer
-  //   (player::convertDirectionCharsToDirections(input), viewPortPosition,
-  //    viewPortSize, backgroundLength);
-  // sleep(engineSleepTime);
-  // resetOldTime(secStartTime);
+  movePlayer
+    (background, input);
+  background.updateViewPortPosition
+    (PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
+     gamePlayer->getMaxBottomRightOffset());
+  sleep(engineSleepTime);
+  resetOldTime(secStartTime);
 }

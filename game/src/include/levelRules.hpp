@@ -17,7 +17,7 @@ public:
   typedef std::vector<char> coordRulesChunk;
   
   // The player cannot pass widthin this many character's of the window boarder's (y, x).
-  const yx PLAYER_MOVEMENT_INNER_MARGIN {0, 52};
+  const yx PLAYER_MOVEMENT_AREA_PADDING {11, 52};
   static constexpr size_t second {1};
   // Contains position based rules.
   
@@ -113,16 +113,14 @@ private:
 		const std::vector<int> spChoords);
   // Moves the player 
   void movePlayer
-  (sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
-   const size_t backgroundLength);
+  (backgroundData & background, sprite::directions input);
   /* No functions that change the position of the player should be called after
      this one for a given frame. */
   /* Calls handleFinalPlayerMovementAndWindowAndMarginInteractions after
      checking that the player won't go outside of the level after it's position
      is updated to peekPos. */
   void handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
-  (const sprite::directions newDir, yx & viewPortPosition,
-   const yx viewPortSize, const size_t backgroundLength);
+  (const sprite::directions newDir);
   void handleFinalPlayerMovementAndWindowAndMarginInteractions
   (const sprite::directions newDir, yx & viewPortPosition, const yx viewPortSize,
    const size_t backgroundLength, const yx peekPos);
@@ -190,7 +188,7 @@ public:
       (viewPortSize, rulesFileName, rulesBuffer, background);
   }
   void physics
-  (backgroundData & background, const player::directionChars input,
+  (backgroundData & background, const sprite::directions input,
    std::__1::chrono::steady_clock::time_point & secStartTime);
   ~rules()
   {

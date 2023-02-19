@@ -72,7 +72,7 @@ void draw
   // 	  drawInForground.push_back(bgS);
   // 	}
   //   }  
-  // playerSprite->draw(secondStageDrawBuffer, true);
+  playerSprite->draw(secondStageDrawBuffer, true);
   // for(auto bgSF: drawInForground)
   //   {
   //     bgSF->draw(secondStageDrawBuffer, true, viewPortPosition);

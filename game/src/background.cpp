@@ -529,3 +529,49 @@ void backgroundData::updateSecondStageDrawBuffer
 	}  
     }
 }
+
+
+void backgroundData::updateViewPortPosition
+(const yx playerMovementAreaPadding, const yx playerPosTopLeft,
+ const yx playerPosBottomRight)
+{
+  std::function<bool()> testPaddingInX = [&]()
+  {
+    return playerPosTopLeft.x <=
+      (firstStageDrawBuffer.viewPortPosition.x +
+       playerMovementAreaPadding.x) &&
+      playerPosBottomRight.x >=
+      (firstStageDrawBuffer.viewPortPosition.x + chunkSize.x
+       - playerMovementAreaPadding.x);
+  };
+  
+  
+  if(playerPosTopLeft.y <
+     (firstStageDrawBuffer.viewPortPosition.y + playerMovementAreaPadding.y) &&
+     playerPosBottomRight.y >
+     (firstStageDrawBuffer.viewPortPosition.y +
+      chunkSize.y - playerMovementAreaPadding.y))
+    {
+      if(testPaddingInX())
+	{
+	  /* The left of the player is in or to the left of the left padding or
+	     the right of the player is in or to the right of the right
+	     padding.
+	     UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
+	}
+    }
+  else
+    {
+      /* Top of player is in or above the top padding or the bottom of the
+	 player is in or below the bottom padding.
+	 Check x dimension... */
+      if(testPaddingInX())
+	{
+	  /* The left of the player is in or to the left of the left padding or
+	     the right of the player is in or to the right of the right
+	     padding.
+	     UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
+	}
+      // UPDATE Y DIMENSION OF THE VIEW PORT POSITION.
+    }
+}
