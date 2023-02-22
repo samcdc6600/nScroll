@@ -271,14 +271,23 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
 
 
 void backgroundData::updateFirstStageDrawBuffer()
-{ 
-  if(abs(firstStageDrawBuffer.lastUpdatedPosition.x -
-	 firstStageDrawBuffer.viewPortPosition.x) > chunkSize.x -1)
+{
+  // x > y ? x - y : y - x. Get distance between two numbers on number line.
+  if((firstStageDrawBuffer.lastUpdatedPosition.x >
+      firstStageDrawBuffer.viewPortPosition.x) ?
+     ((firstStageDrawBuffer.lastUpdatedPosition.x -
+       firstStageDrawBuffer.viewPortPosition.x) > chunkSize.x -1) :
+     ((firstStageDrawBuffer.viewPortPosition.x -
+       firstStageDrawBuffer.lastUpdatedPosition.x) > chunkSize.x -1))
     {
       updateFirstStageDrawBuffer(true);
     }
-  else if(abs(firstStageDrawBuffer.lastUpdatedPosition.y -
-	      firstStageDrawBuffer.viewPortPosition.y) > chunkSize.y -1)
+  else if((firstStageDrawBuffer.lastUpdatedPosition.y >
+	   firstStageDrawBuffer.viewPortPosition.y) ?
+	  ((firstStageDrawBuffer.lastUpdatedPosition.y -
+	    firstStageDrawBuffer.viewPortPosition.y) > chunkSize.y -1) :
+	  ((firstStageDrawBuffer.viewPortPosition.y -
+	    firstStageDrawBuffer.lastUpdatedPosition.y) > chunkSize.y -1))
     {
       updateFirstStageDrawBuffer(false);
     }
@@ -410,8 +419,18 @@ yx backgroundData::calculateFSDBTargetChunkWithHorizontalChange
   /* Y should change each iteration of the loop in the calling function, but x
      shouldn't. We have to wrap around in y if y >=
      firstStageDrawBuffer.fSDBYChunks. */
-  yx targetChunk {0, (firstStageDrawBuffer.viewPortPosition.x % fSDBSize.x) /
-		  chunkSize.x};
+  /* We may add -chunkSize.x here because -0.2 / 2 = 0 and 0.2 / 2 = 0 (when
+     using integer division.) So negative chunk coordinates may have to have
+     -chunkSize.x added (depending on the situation.) to ensure that the first
+     negative chunk in the x or y dimension is always mapped to -1 for the
+     dimension in question and not 0. */
+  yx targetChunk
+    {0, (firstStageDrawBuffer.viewPortPosition.x >= 0 ?
+     ((firstStageDrawBuffer.viewPortPosition.x % fSDBSize.x) /
+      chunkSize.x) :
+     (((firstStageDrawBuffer.viewPortPosition.x % fSDBSize.x) - chunkSize.x) /
+      chunkSize.x))};
+  
   /* Add offset in the x dimension based on the direction the view port has
      moved. */
   targetChunk.x += firstStageDrawBuffer.viewPortPosition.x >
