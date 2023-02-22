@@ -228,7 +228,7 @@ int readSingleNum
   if(targetFound == "")
     {
       std::stringstream e {};
-      e<<"Error: expected non-negative number when "<<eMsg
+      e<<"Error: expected number when "<<eMsg
        <<". Encountered \""<<*buffPos<<"\".\n";
       exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }

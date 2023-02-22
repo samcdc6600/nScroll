@@ -667,7 +667,7 @@ void initPlayer
     {keywordAction::headerKeywordAction
      {SPRITE_FILE_SECTION_HEADER, readStringsSection},
      keywordAction::headerKeywordAction
-     {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInNNumbers},
+     {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInZNumbers},
      keywordAction::headerKeywordAction
      {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
      keywordAction::headerKeywordAction
