@@ -353,7 +353,8 @@ void backgroundData::updateFirstStageDrawBuffer(const bool horizontal)
   
   // Iterate over chunks to be updated in the FSDB.
   for(int chunkUpdateDimensionIter {};
-      chunkUpdateDimensionIter < firstStageDrawBuffer.fSDBYChunks;
+      chunkUpdateDimensionIter < (horizontal ? firstStageDrawBuffer.fSDBYChunks:
+				  firstStageDrawBuffer.fSDBXChunks);
       ++chunkUpdateDimensionIter)
     {
       const yx fSDBTargetChunk
@@ -416,31 +417,23 @@ void backgroundData::updateFirstStageDrawBuffer(const bool horizontal)
 yx backgroundData::calculateFSDBTargetChunkWithHorizontalChange
 (const yx fSDBSize, const int yChunkOffset) const
 {
+  /* Note that the code in this function assumes that a mod can produce a
+     negative result. */
   /* Y should change each iteration of the loop in the calling function, but x
      shouldn't. We have to wrap around in y if y >=
      firstStageDrawBuffer.fSDBYChunks. */
-  /* We may add -chunkSize.x here because -0.2 / 2 = 0 and 0.2 / 2 = 0 (when
-     using integer division.) So negative chunk coordinates may have to have
-     -chunkSize.x added (depending on the situation.) to ensure that the first
-     negative chunk in the x or y dimension is always mapped to -1 for the
-     dimension in question and not 0. */
   yx targetChunk
-    {0, (firstStageDrawBuffer.viewPortPosition.x >= 0 ?
-     ((firstStageDrawBuffer.viewPortPosition.x % fSDBSize.x) /
-      chunkSize.x) :
-     (((firstStageDrawBuffer.viewPortPosition.x % fSDBSize.x) - chunkSize.x) /
-      chunkSize.x))};
-  
+    {0, ((firstStageDrawBuffer.viewPortPosition.x % fSDBSize.x) / chunkSize.x)};
+  // Account for negative coordinate
+  targetChunk.x = targetChunk.x < 0 ?
+    firstStageDrawBuffer.fSDBXChunks + targetChunk.x: targetChunk.x;
   /* Add offset in the x dimension based on the direction the view port has
-     moved. */
+     moved. */  
   targetChunk.x += firstStageDrawBuffer.viewPortPosition.x >
     firstStageDrawBuffer.lastUpdatedPosition.x ?
     firstStageDrawBuffer.fSDBXUpdateOffset:
     - firstStageDrawBuffer.fSDBXUpdateOffset;
-  /* Maybe wrap around in x... NOTE THAT THE PLAYER SHOULD NOT BE ABLE TO HAVE A
-     NEGATIVE COORDINATE AND AS SUCH THE FOLLOWING CODE SHOULDN'T BE AN ISSUE
-     BECAUSE WHEN targetChunk.x IS NEGATIVE |targetChunk.x| SHOULD NEVER BE MORE
-     THAN firstStageDrawBuffer.fSDBXChunks. */
+  /* Maybe fix negative and wrap around in x... */
   targetChunk.x %= firstStageDrawBuffer.fSDBXChunks;
   targetChunk.x = targetChunk.x < 0 ?
     firstStageDrawBuffer.fSDBXChunks + targetChunk.x: targetChunk.x;
@@ -459,11 +452,16 @@ yx backgroundData::calculateFSDBTargetChunkWithHorizontalChange
 yx backgroundData::calculateFSDBTargetChunkWithVerticalChange
 (const yx fSDBSize, const int xChunkOffset) const
 {
+  /* Note that the code in this function assumes that a mod can produce a
+     negative result. */
   /* X should change each iteration of the loop in the calling function, but y
      shouldn't. We have to wrap around in x if x >=
      firstStageDrawBuffer.fSDBXChunks. */
   yx targetChunk {(firstStageDrawBuffer.viewPortPosition.y % fSDBSize.y) /
 		  chunkSize.y, 0};
+  // Account for negative coordinate
+  targetChunk.y = targetChunk.y < 0 ?
+    firstStageDrawBuffer.fSDBYChunks + targetChunk.y: targetChunk.y;
   /* Add offset in the y dimension based on the direction the view port has
      moved. */
   targetChunk.y += firstStageDrawBuffer.viewPortPosition.y >
