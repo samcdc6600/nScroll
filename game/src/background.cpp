@@ -242,7 +242,7 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
   const yx initialViewPortPosition {playerPos.y, playerPos.x + chunkSize.x * 4};
   firstStageDrawBuffer.lastUpdatedPosition = initialViewPortPosition;
   firstStageDrawBuffer.viewPortPosition =
-    yx{playerPos.y, playerPos.x + chunkSize.x * 3};
+    yx{playerPos.y, playerPos.x + chunkSize.x * 2};
   
   updateFirstStageDrawBuffer();
 
@@ -444,6 +444,9 @@ yx backgroundData::calculateFSDBTargetChunkWithHorizontalChange
 			      (firstStageDrawBuffer.fSDBYChunks & 1)) +
 			     yChunkOffset)};
   targetChunk.y = targetYPreWrap % firstStageDrawBuffer.fSDBYChunks;
+  /* Maybe fix negative and wrap around in y... */
+  targetChunk.y = targetChunk.y < 0 ?
+    firstStageDrawBuffer.fSDBYChunks + targetChunk.y: targetChunk.y;
 
   return targetChunk;
 }
@@ -482,6 +485,9 @@ yx backgroundData::calculateFSDBTargetChunkWithVerticalChange
 			      (firstStageDrawBuffer.fSDBXChunks & 1)) +
 			     xChunkOffset)};
   targetChunk.x = targetXPreWrap % firstStageDrawBuffer.fSDBXChunks;
+  /* Maybe fix negative and wrap around in x... */
+  targetChunk.x = targetChunk.x < 0 ?
+    firstStageDrawBuffer.fSDBXChunks + targetChunk.x: targetChunk.x;
 
   return targetChunk;
 }
@@ -535,7 +541,24 @@ void backgroundData::updateSecondStageDrawBuffer
     {
       for(int xIter {}; xIter < chunkSize.x; ++xIter)
 	{
-	  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
+  // // Account for negative coordinate
+  // targetChunk.x = targetChunk.x < 0 ?
+  //   firstStageDrawBuffer.fSDBXChunks + targetChunk.x: targetChunk.x;
+
+
+  // yx yAndXComponents
+  //   {((firstStageDrawBuffer.viewPortPosition.y + yIter) % fSDBSize.y),
+  //   ((firstStageDrawBuffer.viewPortPosition.x + xIter) % fSDBSize.y)};
+
+  // if(yAndXComponents.y < 0)
+  //   {
+      
+  //   }
+  
+  // 	  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
+  // 	    ;
+
+		  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
 	    firstStageDrawBuffer.buffer
 	    [((firstStageDrawBuffer.viewPortPosition.y + yIter) %
 	       (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) *

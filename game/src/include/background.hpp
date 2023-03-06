@@ -163,7 +163,7 @@ public:
      firstStageDrawBuffer.viewPortPosition and
      firstStageDrawBuffer.lastUpdatedPosition have diverged by a sufficient
      delta. If an update is performed lastUpdatedPosition is set to the same 
-     values as viewPortPosition. */
+<     values as viewPortPosition. */
   void updateFirstStageDrawBuffer();
   /* Copies one chunk (relative to viewPortPosition) from firstStageDrawbuffer
      to secondStageDrawBuffer. */
