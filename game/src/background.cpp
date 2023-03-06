@@ -242,7 +242,7 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
   const yx initialViewPortPosition {playerPos.y, playerPos.x + chunkSize.x * 4};
   firstStageDrawBuffer.lastUpdatedPosition = initialViewPortPosition;
   firstStageDrawBuffer.viewPortPosition =
-    yx{playerPos.y, playerPos.x + chunkSize.x * 2};
+    yx{playerPos.y, playerPos.x + chunkSize.x * 3};
   
   updateFirstStageDrawBuffer();
 
@@ -539,33 +539,42 @@ void backgroundData::updateSecondStageDrawBuffer
   
   for(int yIter {}; yIter < chunkSize.y; ++yIter)
     {
+      yx yAndXComponents
+	{((firstStageDrawBuffer.viewPortPosition.y + yIter) % fSDBSize.y), 0};
+      // Maybe fix negative and wrap around in y...
+      yAndXComponents.y = yAndXComponents.y < 0 ?
+	fSDBSize.y + yAndXComponents.y:
+	yAndXComponents.y;
+      // Convert to linear position in array with respect to y.
+      yAndXComponents.y *= fSDBSize.x;
+      
       for(int xIter {}; xIter < chunkSize.x; ++xIter)
 	{
-  // // Account for negative coordinate
-  // targetChunk.x = targetChunk.x < 0 ?
-  //   firstStageDrawBuffer.fSDBXChunks + targetChunk.x: targetChunk.x;
+	  yAndXComponents.x =
+	    ((firstStageDrawBuffer.viewPortPosition.x + xIter) % fSDBSize.x);
+	  // Maybe fix negative and wrap around in x...
+	  yAndXComponents.x = yAndXComponents.x < 0 ?
+	    fSDBSize.x + yAndXComponents.x:
+	    yAndXComponents.x;
 
+	  endwin();
+	  std::cout<<yAndXComponents<<'\n';
+	  exit(-1);
 
-  // yx yAndXComponents
-  //   {((firstStageDrawBuffer.viewPortPosition.y + yIter) % fSDBSize.y),
-  //   ((firstStageDrawBuffer.viewPortPosition.x + xIter) % fSDBSize.y)};
-
-  // if(yAndXComponents.y < 0)
-  //   {
-      
-  //   }
+	  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
+	    firstStageDrawBuffer.buffer[yAndXComponents.y + yAndXComponents.x];
   
-  // 	  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
-  // 	    ;
+	  // secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
+	  //   ;
 
-		  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
-	    firstStageDrawBuffer.buffer
-	    [((firstStageDrawBuffer.viewPortPosition.y + yIter) %
-	       (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) *
-	     fSDBSize.x +
+	    // 	  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
+	    // firstStageDrawBuffer.buffer
+	    // [((firstStageDrawBuffer.viewPortPosition.y + yIter) %
+	    //    (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) *
+	    //  fSDBSize.x +
 	     
-	     ((firstStageDrawBuffer.viewPortPosition.x + xIter) %
-	       (chunkSize.x * firstStageDrawBuffer.fSDBXChunks))];
+	    //  ((firstStageDrawBuffer.viewPortPosition.x + xIter) %
+	    //    (chunkSize.x * firstStageDrawBuffer.fSDBXChunks))];
 	}  
     }
 }

@@ -117,7 +117,7 @@ bool getChunkCoordinate
   if(buffPos != std::end(data))
     {
       readSingleCoordSectionUtils
-	(data, buffPos, eMsg, false, & chunkCoord, "natural numbers (without "
+	(data, buffPos, eMsg, true, & chunkCoord, "integers (without "
 	 "skipping space up until the coordinate)", false);
       return true;
     }
