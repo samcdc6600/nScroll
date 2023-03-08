@@ -313,9 +313,22 @@ std::string createChunkCoordKey(const yx coord)
 }
 
 
-std::string createChunkCoordKeyFromCharCoord(const yx charCoord)
+std::string createChunkCoordKeyFromCharCoord(const yx chunkCoord)
 {
-  return createChunkCoordKey(yx(charCoord.y / yHeight, charCoord.x / xWidth));
+  /* If y or x is less than 0 we must sub one of the view port dimension (minus
+     1) sizes from the value before devision otherwise the result will be
+     wrong. E.g. -50 / 170 = 0 and what we need is -1. This is because 50 / 170
+     is also 0, but these two coordinates aren't in the same chunks. Minus 1
+     because the negative chunks don't have a coordinate zero and as such
+     -yHeight or -xHeight both have coordinate -1 where as yHeight and
+     xHeight both have coordinate 1 but (yHeight -1) and (xHeight -1) both have
+     coordinate 0. */
+  yx chunkCoordKey
+    {(chunkCoord.y < 0 ? (chunkCoord.y - (yHeight -1)) / yHeight :
+      chunkCoord.y / yHeight),
+     (chunkCoord.x < 0 ? (chunkCoord.x - (xWidth -1)) / xWidth :
+      chunkCoord.x / xWidth)};
+  return createChunkCoordKey(chunkCoordKey);
 }
 
 
