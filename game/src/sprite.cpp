@@ -396,21 +396,21 @@ bool sprite::checkBoundValue(const int bound)
 }
 
 
-bool sprite::notInWindowInnerMarginY(const int y, const int yMargin)
+bool sprite::notInWindowInnerPaddingY(const int y, const int yPadding)
 {
-  checkBoundValue(yMargin);
+  checkBoundValue(yPadding);
   const int maximumY {y + maxBottomRightOffset.y};
   // >= and < because we start at 0.
-  return (y >= yMargin) && maximumY < (viewPortSize.y - yMargin);
+  return (y >= yPadding) && maximumY < (viewPortSize.y - yPadding);
 }
 
 
-bool sprite::notInWindowInnerMarginX(const int x, const int xMargin)
+bool sprite::notInWindowInnerPaddingX(const int x, const int xPadding)
 {
-    checkBoundValue(xMargin);
+    checkBoundValue(xPadding);
     const int maximumX {x + maxBottomRightOffset.x};
     // >= and < because we start at 0.
-    return (x >= xMargin && maximumX < (viewPortSize.x - xMargin));
+    return (x >= xPadding && maximumX < (viewPortSize.x - xPadding));
 }
 
 
@@ -444,16 +444,16 @@ bool sprite::notInWindowInnerMarginX(const int x, const int xMargin)
 // }
 
 
-bool sprite::leftOfWindowInnerRightMargin(const int x, const int xBound,
+bool sprite::leftOfWindowInnerRightPadding(const int x, const int xBound,
 					  const yx viewPortSize)
-{ // Return true if we are to the left of the windows right inner margin.
+{ // Return true if we are to the left of the windows right inner padding.
   checkBoundValue(xBound);
   return ((x + maxBottomRightOffset.x) < (viewPortSize.x - xBound));
 }
 
 
-bool sprite::rightOfWindowInnerLeftMargin(const int x, const int xBound)
-{ // Return true if we are to the right of the windows left inner margin.
+bool sprite::rightOfWindowInnerLeftPadding(const int x, const int xBound)
+{ // Return true if we are to the right of the windows left inner padding.
     checkBoundValue(xBound);
     return (xBound < x);
 }
@@ -461,7 +461,7 @@ bool sprite::rightOfWindowInnerLeftMargin(const int x, const int xBound)
 
 // bool sprite::inWindow(const int y, const int x)
 // {
-//   return inWindowInnerMargin(y, x, 0, 0); // We have an inner boarder of 0, 0
+//   return inWindowInnerPadding(y, x, 0, 0); // We have an inner boarder of 0, 0
 // }
 
 

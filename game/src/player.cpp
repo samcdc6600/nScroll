@@ -9,11 +9,15 @@
 
 
 player::player
-(std::vector<std::string> spritePaths, const yx viewPortSize,
- const backgroundData & background, const yx pos, const sprite::directions dir,
- const int h, const double g, const double v, const unsigned maxFallingJmpNum,
- const unsigned maxJmpNum)
- : sprite(spritePaths, viewPortSize, background, pos, dir, true), health(h),
+(std::vector<std::string> spritePaths, const yx PLAYER_MOVEMENT_AREA_PADDING,
+ const backgroundData & background, const yx initialViewPortPosition,
+ const yx initialRelativePos, const sprite::directions dir, const int h,
+ const double g, const double v, const unsigned maxFallingJmpNum,
+ const unsigned maxJmpNum)    
+  : sprite(spritePaths, background.chunkSize, background,
+	   calcInitialPos(background.chunkSize, PLAYER_MOVEMENT_AREA_PADDING,
+			  initialRelativePos),
+	   dir, true), health(h),
     gravitationalConstant(g), maxVertVelocity(v),
     maxFallingJumpNum(maxFallingJmpNum), maxJumpNum(maxJmpNum)
 {
@@ -39,6 +43,32 @@ player::player
 	" maxJmpNum. ("<<maxJmpNum<<").";
       exit(err.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
     }
+}
+
+
+yx player::calcInitialPos
+(const std::string & fieldName, const yx viewPortSize,
+ const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialViewPortPosition,
+ const yx initialRelativePos)
+{
+  if(PLAYER_MOVEMENT_AREA_PADDING.y > initialViewPortPosition.y ||
+     initialViewPortPosition.y >
+     (viewPortSize.y - PLAYER_MOVEMENT_AREA_PADDING.y) ||
+     PLAYER_MOVEMENT_AREA_PADDING.x > initialViewPortPosition.x ||
+     initialViewPortPosition.x >
+     (viewPortSize.x - PLAYER_MOVEMENT_AREA_PADDING.x))
+    {
+      exit(concat
+	   ("Error: ", fieldName, " (", initialRelativePos.y, ",",
+	    initialRelativePos.x, ") is out of bounds!", fieldName,
+	    " should be in the range (", PLAYER_MOVEMENT_AREA_PADDING.y, ",",
+	    PLAYER_MOVEMENT_AREA_PADDING.x, ") to (",
+	    viewPortSize.y - PLAYER_MOVEMENT_AREA_PADDING.y, ",",
+	    viewPortSize.x - PLAYER_MOVEMENT_AREA_PADDING.x, ")."),
+	   ERROR_SPRITE_POS_RANGE);
+    }
+  return yx{initialViewPortPosition.y + initialRelativePos.y,
+	    initialViewPortPosition.x + initialRelativePos.x};
 }
 
 

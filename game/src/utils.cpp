@@ -227,10 +227,9 @@ int readSingleNum
   targetFound = skipSpaceUpTo(buff, buffPos, targets);
   if(targetFound == "")
     {
-      std::stringstream e {};
-      e<<"Error: expected number when "<<eMsg
-       <<". Encountered \""<<*buffPos<<"\".\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+      exit(concat("Error: expected ", useIntegers ? "integer": "natural",
+		  " number when ", eMsg, ". Encountered \"", *buffPos, "\".\n"),
+	   ERROR_RULES_LEV_HEADER);
     }
 
   --buffPos;

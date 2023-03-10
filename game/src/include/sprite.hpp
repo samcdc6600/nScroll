@@ -156,16 +156,16 @@ protected:
   // // 			const int xBound);
   
 public:
-  /* Y is a potential y position of the sprite (e.g. peekPos.y) and yMargin is
-     the margin size in the y dimension. Returns true if the sprite is not in
-     the inner margins in the y axis, that is the sprite is in the inner most
+  /* Y is a potential y position of the sprite (e.g. peekPos.y) and yPadding is
+     the padding size in the y dimension. Returns true if the sprite is not in
+     the inner paddings in the y axis, that is the sprite is in the inner most
      part of the window. */
-  bool notInWindowInnerMarginY(const int y, const int yMargin);
-    /* X is a potential x position of the sprite (e.g. peekPos.x) and xMargin is
-     the margin size in the x dimension. Returns true if the sprite is not in
-     the inner margins in the x axis, that is the sprite is in the inner most
+  bool notInWindowInnerPaddingY(const int y, const int yPadding);
+    /* X is a potential x position of the sprite (e.g. peekPos.x) and xPadding is
+     the padding size in the x dimension. Returns true if the sprite is not in
+     the inner paddings in the x axis, that is the sprite is in the inner most
      part of the window. */
-  bool notInWindowInnerMarginX(const int x, const int xMargin);
+  bool notInWindowInnerPaddingX(const int x, const int xPadding);
   // /* Y is a potential y position of the sprite (e.g. peekPos.y). Returns true
   //    if the sprite (with it's y position set to y) would be within the window in
   //    the y axis. */
@@ -176,9 +176,9 @@ public:
   // bool inWindowX(const int x);
   // bool inLevelY(const int y, const int bgYLen);
   // bool inLevelX(const int x, const int bgXLen);
-  bool leftOfWindowInnerRightMargin(const int x, const int xBound,
+  bool leftOfWindowInnerRightPadding(const int x, const int xBound,
 				    const yx viewPortSize);
-  bool rightOfWindowInnerLeftMargin(const int x, const int xBound);
+  bool rightOfWindowInnerLeftPadding(const int x, const int xBound);
   // /* Checks that y and x are in range (0 to screen height and width), by calling
   //    checkRange(const int, const int). */
   // bool inWindow(const int y, const int x);

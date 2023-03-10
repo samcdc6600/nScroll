@@ -174,15 +174,19 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
      returned from the map (as the stage 1 draw buffer will be fSDBYChunks by
      fSDBXChunks chunks.) */
 
-  const yx initialViewPortPosition {playerPos.y, playerPos.x + chunkSize.x * 4};
+  const yx initialCenterPos {playerPos.y - (chunkSize.y / 2),
+			     playerPos.x - (chunkSize.x / 2)};
+  
+  const yx initialViewPortPosition
+    {initialCenterPos.y, initialCenterPos.x + chunkSize.x * 4};
   firstStageDrawBuffer.lastUpdatedPosition = initialViewPortPosition;
   firstStageDrawBuffer.viewPortPosition =
-    yx{playerPos.y, playerPos.x + chunkSize.x * 3};
+    yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * 3};
   
   updateFirstStageDrawBuffer();
 
   firstStageDrawBuffer.viewPortPosition =
-    yx{playerPos.y, playerPos.x + chunkSize.x * 2};
+    yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * 2};
 
   updateFirstStageDrawBuffer();
 
@@ -199,7 +203,7 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
   // out.close();
   // exit(-1);
 
-  firstStageDrawBuffer.viewPortPosition = playerPos;
+  firstStageDrawBuffer.viewPortPosition = initialCenterPos;
 }
 
 

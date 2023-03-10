@@ -50,9 +50,16 @@ namespace levelFileKeywords
   // Header section header.
   const std::string PLAYER_HEADER_SECTION_SPECIFIER {"player"};
   const std::string BG_SPRITE_HEADER_SECTION_SPECIFIER {"backgroundSprite"};
-  // Header sub section headers.
-  // Sub section headers for general player and sprites.
   const std::string SPRITE_FILE_SECTION_HEADER		{"sprites"};
+  // Header sub section headers.
+  // Sub section headers for general sprite stuff and player.
+  /* Initial position of the view port (from the top left.) */
+  const std::string PLAYER_VIEW_PORT_INIT_COORD_SECTION_HEADER
+    {"initialViewPortCoordinate"};
+  /* The initial coordinate of the player is relative to the initial view port
+     position and the player movement padding. */
+  const std::string PLAYER_VIEW_PORT_PADDING_REL_INIT_COORD_SECTION_HEADER
+    {"initialPlayerCoordinateViewPortPaddingRelative"};
   const std::string SPRITE_INIT_COORD_SECTION_HEADER	{"initialCoordinate"};
   // Sub section headers for player sprite.
   const std::string SPRITE_INIT_DIR_SECTION_HEADER	{"initialDirection"};
@@ -81,13 +88,16 @@ namespace levelFileKeywords
   const std::map<std::string, orderAndDefaultVal> playerSectionKeywordToId
     {
       {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
-      {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
-      {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
-      {SPRITE_HEALTH_SECTION_HEADER,	orderAndDefaultVal {3, true}},
-      {SPRITE_GRAV_CONST_SECTION_HEADER,	orderAndDefaultVal {4, true}},
-      {SPRITE_MAX_VERT_V_SECTION_HEADER,	orderAndDefaultVal {5, true}},
-      {SPRITE_MAX_FALL_JMP_SECTION_HEADER, orderAndDefaultVal {6, true}},
-      {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {7, true}}
+      {PLAYER_VIEW_PORT_INIT_COORD_SECTION_HEADER, orderAndDefaultVal
+       {1, false}},
+      {PLAYER_VIEW_PORT_PADDING_REL_INIT_COORD_SECTION_HEADER,
+       orderAndDefaultVal {2, false}},
+      {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {3, true}},
+      {SPRITE_HEALTH_SECTION_HEADER,	orderAndDefaultVal {4, true}},
+      {SPRITE_GRAV_CONST_SECTION_HEADER,	orderAndDefaultVal {5, true}},
+      {SPRITE_MAX_VERT_V_SECTION_HEADER,	orderAndDefaultVal {6, true}},
+      {SPRITE_MAX_FALL_JMP_SECTION_HEADER, orderAndDefaultVal {7, true}},
+      {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {8, true}}
     };
   const std::map<std::string, orderAndDefaultVal> bgSpriteSectionKeywordToId
     {
@@ -104,7 +114,8 @@ namespace levelFileKeywords
     namespace player
     {
       const std::vector<std::string> spritePaths {{""}};
-      const yx coordinate {0, 1};
+      const yx initialViewPortCoordinates {0, 0};
+      const yx initialCoordinatesRelative {yHeight / 2, xWidth / 2};
       const sprite::directions direction {sprite::DIR_NONE};
       const int health {16};
       const double gravitationalConstant {-0.38};
@@ -125,7 +136,8 @@ namespace levelFileKeywords
   struct playerInitialData
   {
     std::vector<std::string> spritePaths {};
-    yx coordinate {};
+    yx initialViewPortCoordinates {};
+    yx initialCoordinatesRelative {};
     sprite::directions direction {};
     int health {};
     double gravitationalConstant {};
@@ -482,10 +494,6 @@ void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
 (const char coordRulesFileName [], const coordRulesType & coordRules,
  const backgroundData & background) const
 {
-  // endwin();
-  // std::cout<<"coordRules.size() = "<<<<'\n'
-  // 	   <<"background.size() = "<<<<'\n';
-
   if(coordRules.size() != background.numberOfChunks())
     {
       exit
@@ -510,11 +518,6 @@ void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
 	     ERROR_RULES_CHAR_FILE);
 	}
     }
-  
-  // for ( const auto &twoTuple : coordRules ) {
-  //   std::cout<<twoTuple.first<<"\n";
-  // }
-  // exit(-1);
 }
 
 
@@ -529,7 +532,9 @@ void rules::parseRulesConfigFileAndInitialiseVariables
 
   readSectionOpeningBracket
     (rulesBuffer, buffPos,
-     concat("reading start of rules.lev header file \"", rulesFileName, "\""),
+     concat("reading start of ",
+	    RULES_CONFIG_FILE_EXTENSION,
+	    " header file \"", rulesFileName, "\""),
      concat("the header"));
 
   /* Setup keyword actions associations for header section. If there is a
@@ -573,7 +578,8 @@ void rules::parseRulesConfigFileAndInitialiseVariables
 	       if(headerKeywordActions[foundIter].found)
 		 {
 		   std::stringstream e {};
-		   e<<"Error: reading rules.lev header file \""<<rulesFileName
+		   e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
+		    <<" header file \""<<rulesFileName
 		    <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
 		     "reading header section, however this keyword is only "
 		     "expected once in this section.\n";
@@ -667,7 +673,13 @@ void initPlayer
     {keywordAction::headerKeywordAction
      {SPRITE_FILE_SECTION_HEADER, readStringsSection},
      keywordAction::headerKeywordAction
-     {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInZNumbers},
+     {PLAYER_VIEW_PORT_INIT_COORD_SECTION_HEADER,
+      // View port coordinate can be negative.
+      readSingleCoordSectionInZNumbers},
+     keywordAction::headerKeywordAction
+     {PLAYER_VIEW_PORT_PADDING_REL_INIT_COORD_SECTION_HEADER,
+      // Relative player coordinate must be positive.
+      readSingleCoordSectionInNNumbers},
      keywordAction::headerKeywordAction
      {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
      keywordAction::headerKeywordAction
@@ -717,7 +729,8 @@ void initPlayer
 	      if(playerHeaderKeywordActions[foundIter].found)
 		{
 		  std::stringstream e {};
-		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
+		   <<" header file \""<<rulesFileName
 		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
 		    "reading header sub section player section, however this "
 		    "keyword is only expected once in this section.\n";
@@ -729,30 +742,42 @@ void initPlayer
 		  playerHeaderKeywordActions[foundIter].found = true;
 		  playerHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
-		     concat("reading sprite dir strings from rules.lev header "
+		     concat("reading sprite dir strings from ",
+			    RULES_CONFIG_FILE_EXTENSION, " header "
 			    "file \"", rulesFileName, "\""),
 		     &playerInitData.spritePaths);
-		 
 		  break;
 		case 1:
 		  playerHeaderKeywordActions[foundIter].found = true;
 		  playerHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
-		     concat("reading single coord section from rules.lev header"
-			    " file  \"", rulesFileName, "\""),
-		     &playerInitData.coordinate);
+		     concat("reading coord section (from ",
+			    RULES_CONFIG_FILE_EXTENSION, " header file "
+			    "\"", rulesFileName, "\") for the initial view port"
+			    "position"),
+		     &playerInitData.initialViewPortCoordinates);
 		  break;
 		case 2:
-		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+		  playerHeaderKeywordActions[foundIter].found = true;
+		  playerHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat("reading coord section (from ",
+			    RULES_CONFIG_FILE_EXTENSION, " header file "
+			    "\"", rulesFileName, "\") for the initial player "
+			    "coordinate (which is view port padding relative)"),
+		     &playerInitData.initialCoordinatesRelative);
+		  break;
 		case 3:
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
 		case 4:
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
 		case 5:
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
-                case 6:
+		case 6:
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
-		case 7:
+                case 7:
+		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+		case 8:
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
 		}
 
@@ -760,7 +785,8 @@ void initPlayer
 		{
 		ENCOUNTERED_FORBIDDEN_KEYWORD:
 		  std::stringstream e {};
-		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
+		   <<" header file \""<<rulesFileName
 		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
 		    "reading header sub section player section, however this "
 		    "keyword is forbidden.\n";
@@ -790,8 +816,10 @@ void initPlayer
 
   levelRules.gamePlayer =
     new player(playerInitData.spritePaths, viewPortSize, background,
-	       playerInitData.coordinate, playerInitData.direction,
-	       playerInitData.health, playerInitData.gravitationalConstant,
+	       playerInitData.initialViewPortCoordinates,
+	       playerInitData.initialCoordinatesRelative,
+	       playerInitData.direction, playerInitData.health,
+	       playerInitData.gravitationalConstant,
 	       playerInitData.maxVerticalVelocity,
 	       playerInitData.maxFallingJumpNumber,
 	       playerInitData.maxJumpNumber);
@@ -856,7 +884,8 @@ void initBgSprites(const yx viewPortSize, const char rulesFileName[],
 	      if(bgSpriteHeaderKeywordActions[foundIter].found)
 		{
 		  std::stringstream e {};
-		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
+		   <<" header file \""<<rulesFileName
 		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
 		    "reading header sub section background sprite section, "
 		    "however this keyword is only expected once in this "
@@ -870,14 +899,16 @@ void initBgSprites(const yx viewPortSize, const char rulesFileName[],
 		  bgSpriteHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
 		     concat("reading background sprite dir strings from "
-			    "rules.lev header file \"", rulesFileName, "\""),
+			    "", RULES_CONFIG_FILE_EXTENSION, " header file \"",
+			    rulesFileName, "\""),
 		     &bgSpriteInitData.spritePaths);
 		  break;
 		case 1:
 		  bgSpriteHeaderKeywordActions[foundIter].found = true;
 		  bgSpriteHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
-		     concat("reading single coord section from rules.lev header"
+		     concat("reading single coord section from ",
+			    RULES_CONFIG_FILE_EXTENSION, " header"
 			    "file  \"", rulesFileName, "\""),
 		     &bgSpriteInitData.coordinate);
 		  break;
@@ -887,7 +918,8 @@ void initBgSprites(const yx viewPortSize, const char rulesFileName[],
 		  bgSpriteHeaderKeywordActions[foundIter].found = true;
 		  bgSpriteHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
-		     concat("reading boolean section from rules.lev header file"
+		     concat("reading boolean section from ",
+			    RULES_CONFIG_FILE_EXTENSION, " header file"
 			    " \"", rulesFileName, "\""),
 		     &bgSpriteInitData.displayInForground);
 		  break;
@@ -897,7 +929,8 @@ void initBgSprites(const yx viewPortSize, const char rulesFileName[],
 		{
 		ENCOUNTERED_FORBIDDEN_KEYWORD:
 		  std::stringstream e {};
-		  e<<"Error: reading rules.lev header file \""<<rulesFileName
+		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
+		   <<" header file \""<<rulesFileName
 		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
 		    "reading header sub section background sprite section, "
 		    "however this keyword is forbidden.\n";
@@ -1213,27 +1246,31 @@ void checkForDefaultPlayerValues
       playerInitData.spritePaths = defaultValues::player::spritePaths;
       break;
     case 1:
-      playerInitData.coordinate = defaultValues::player::coordinate;
-      break;
+      playerInitData.initialViewPortCoordinates =
+	defaultValues::player::initialViewPortCoordinates;
     case 2:
-      playerInitData.direction = defaultValues::player::direction;
+      playerInitData.coordinate =
+	defaultValues::player::initialCoordinatesRelative;
       break;
     case 3:
-      playerInitData.health = defaultValues::player::health;
+      playerInitData.direction = defaultValues::player::direction;
       break;
     case 4:
+      playerInitData.health = defaultValues::player::health;
+      break;
+    case 5:
       playerInitData.gravitationalConstant =
 	defaultValues::player::gravitationalConstant;
       break;
-    case 5:
+    case 6:
       playerInitData.maxVerticalVelocity =
 	defaultValues::player::maxVerticalVelocity;
       break;
-    case 6:
+    case 7:
       playerInitData.maxFallingJumpNumber =
 	defaultValues::player::maxFallingJumpNumber;
       break;
-    case 7:
+    case 8:
       playerInitData.maxJumpNumber = defaultValues::player::maxJumpNumber;
       break;
     default:
@@ -1360,8 +1397,8 @@ char rules::nearPass(const std::vector<int> playerSpChoords,
 void rules::movePlayer
   (backgroundData & background, sprite::directions input)
 { /* Move the player as long as they will stay within
-     PLAYER_MOVMENT_INNER_MARGIN of the left and right borders. If the
-     player is PLAYER_MOVMENT_INNER_MARGIN away from either the left or
+     PLAYER_MOVMENT_INNER_PADDING of the left and right borders. If the
+     player is PLAYER_MOVMENT_INNER_PADDING away from either the left or
      right boarder and tries to move closer to the boarder they are closest
      too then the background should be moved instead of the player in the
      appropriate direction (If there is background to spare.) If we are at
@@ -1401,11 +1438,11 @@ void rules::movePlayer
       // input = handleLeftCollision(viewPortPosition, viewPortSize.y);
     }
 
-  handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe(input);
+  handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe(input);
 }
 
 
-void rules::handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
+void rules::handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe
 (const sprite::directions newDir)
 {
   const yx peekPos {gamePlayer->peekAtPos(newDir)};
@@ -1413,7 +1450,7 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
   //    gamePlayer->inLevelX(peekPos.x + viewPortPosition.x, backgroundLength))
   //   {
   //     // We won't be outside of the level if we move.
-  //     handleFinalPlayerMovementAndWindowAndMarginInteractions
+  //     handleFinalPlayerMovementAndWindowAndPaddingInteractions
   // 	(newDir, viewPortPosition, viewPortSize, backgroundLength, peekPos);
   //   }
   // else
@@ -1423,14 +1460,14 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
 }
 
 
-void rules::handleFinalPlayerMovementAndWindowAndMarginInteractions
+void rules::handleFinalPlayerMovementAndWindowAndPaddingInteractions
 (const sprite::directions newDir, yx & viewPortPosition, const yx viewPortSize,
  const size_t backgroundLength, const yx peekPos)
 {
     /* Make any final movement, check for window padding contact and take
      appropriate action if such contact is made. */
   if(((newDir == sprite::DIR_LEFT || newDir == sprite::DIR_RIGHT) &&
-      gamePlayer->notInWindowInnerMarginX(peekPos.x,
+      gamePlayer->notInWindowInnerPaddingX(peekPos.x,
 					  PLAYER_MOVEMENT_AREA_PADDING.x)) ||
      newDir == sprite::DIR_NONE)	// Only need to check for DIR_NONE here.
     {
@@ -1438,7 +1475,7 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractions
       gamePlayer->updatePosRel(newDir);
     }
   else if((newDir == sprite::DIR_DOWN || newDir == sprite::DIR_UP)
-	  && gamePlayer->notInWindowInnerMarginY(peekPos.y,
+	  && gamePlayer->notInWindowInnerPaddingY(peekPos.y,
 						 PLAYER_MOVEMENT_AREA_PADDING.y))
     {
       // We're not going to go into the padding.
@@ -1446,19 +1483,19 @@ void rules::handleFinalPlayerMovementAndWindowAndMarginInteractions
     }
   else
     {
-      movePlayerWhenInteractingWithInnerMargin(newDir, viewPortPosition, viewPortSize,
+      movePlayerWhenInteractingWithInnerPadding(newDir, viewPortPosition, viewPortSize,
 					       backgroundLength, peekPos);
     }
 }
 
 
-void rules::movePlayerWhenInteractingWithInnerMargin
+void rules::movePlayerWhenInteractingWithInnerPadding
 (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
  const size_t backgroundLength, const yx peekPos)
 {
-  /* We use this variable in the call's to inWindowInnerMargin() when peekPos
+  /* We use this variable in the call's to inWindowInnerPadding() when peekPos
      is out of the x boarder range. */
-  constexpr int REACHED_INNER_MARGIN_X {0};
+  constexpr int REACHED_INNER_PADDING_X {0};
   switch(input)
     {
     case sprite::DIR_NONE:
@@ -1467,28 +1504,28 @@ void rules::movePlayerWhenInteractingWithInnerMargin
       gamePlayer->updatePosRel(input);
       break;
     case sprite::DIR_RIGHT:
-      movePlayerRightWhenInteractingWithInnerMargin
+      movePlayerRightWhenInteractingWithInnerPadding
 	(input, viewPortPosition, viewPortSize, backgroundLength, peekPos,
-	 REACHED_INNER_MARGIN_X);
+	 REACHED_INNER_PADDING_X);
       break;
     case sprite::DIR_DOWN:
       gamePlayer->updatePosRel(input);
       break;
     case sprite::DIR_LEFT:
-      movePlayerLeftWhenInteractingWithInnerMargin
+      movePlayerLeftWhenInteractingWithInnerPadding
 	(input, viewPortPosition, viewPortSize, backgroundLength, peekPos,
-	 REACHED_INNER_MARGIN_X);
+	 REACHED_INNER_PADDING_X);
       break;
     }
 }
 
 
-void rules::movePlayerRightWhenInteractingWithInnerMargin
+void rules::movePlayerRightWhenInteractingWithInnerPadding
 (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
  const size_t backgroundLength, const yx peekPos,
- const int REACHED_INNER_MARGIN_X)
+ const int REACHED_INNER_PADDING_X)
 {
-  if(gamePlayer->leftOfWindowInnerRightMargin
+  if(gamePlayer->leftOfWindowInnerRightPadding
      (peekPos.x, PLAYER_MOVEMENT_AREA_PADDING.x, viewPortSize))
     { // We are to the left of the inner right padding.
       gamePlayer->updatePosRel(input);
@@ -1506,12 +1543,12 @@ void rules::movePlayerRightWhenInteractingWithInnerMargin
 }
 
 
-void rules::movePlayerLeftWhenInteractingWithInnerMargin
+void rules::movePlayerLeftWhenInteractingWithInnerPadding
 (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
  const size_t backgroundLength, const yx peekPos,
- const int REACHED_INNER_MARGIN_X)
+ const int REACHED_INNER_PADDING_X)
 {
-  if(gamePlayer->rightOfWindowInnerLeftMargin
+  if(gamePlayer->rightOfWindowInnerLeftPadding
      (peekPos.x, PLAYER_MOVEMENT_AREA_PADDING.x))
     { // We are to the righ of the inner left padding.
       gamePlayer->updatePosRel(input);

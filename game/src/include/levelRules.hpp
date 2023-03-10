@@ -116,33 +116,33 @@ private:
   (backgroundData & background, sprite::directions input);
   /* No functions that change the position of the player should be called after
      this one for a given frame. */
-  /* Calls handleFinalPlayerMovementAndWindowAndMarginInteractions after
+  /* Calls handleFinalPlayerMovementAndWindowAndPaddingInteractions after
      checking that the player won't go outside of the level after it's position
      is updated to peekPos. */
-  void handleFinalPlayerMovementAndWindowAndMarginInteractionsSafe
+  void handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe
   (const sprite::directions newDir);
-  void handleFinalPlayerMovementAndWindowAndMarginInteractions
+  void handleFinalPlayerMovementAndWindowAndPaddingInteractions
   (const sprite::directions newDir, yx & viewPortPosition, const yx viewPortSize,
    const size_t backgroundLength, const yx peekPos);
-  /* Moves the player when interacting with the inner margin (NOTE THAT THIS
+  /* Moves the player when interacting with the inner padding (NOTE THAT THIS
      FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
-     THE INNER MARGIN AND NOT OUTSIDE THE BOUNDS OF THE LEVEL AS DEFINED BY THE
+     THE INNER PADDING AND NOT OUTSIDE THE BOUNDS OF THE LEVEL AS DEFINED BY THE
      BACKGROUND.) */
-  void movePlayerWhenInteractingWithInnerMargin
+  void movePlayerWhenInteractingWithInnerPadding
   (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
    const size_t backgroundLength, const yx peekPos);
   /* NOTE THAT THIS FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
-   THE INNER MARGIN */
-  void movePlayerRightWhenInteractingWithInnerMargin
+   THE INNER PADDING */
+  void movePlayerRightWhenInteractingWithInnerPadding
   (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
    const size_t backgroundLength, const yx peekPos,
-   const int REACHED_INNER_MARGIN_X);
+   const int REACHED_INNER_PADDING_X);
   /* NOTE THAT THIS FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
-   THE INNER MARGIN */
-  void movePlayerLeftWhenInteractingWithInnerMargin
+   THE INNER PADDING */
+  void movePlayerLeftWhenInteractingWithInnerPadding
   (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
    const size_t backgroundLength, const yx peekPos,
-   const int REACHED_INNER_MARGIN_X);
+   const int REACHED_INNER_PADDING_X);
   // /* Returns number of characters untill the player bits a boarder character
   //    (if moving up). Will return -1 if there are no boarder characters above */
   // int getClosestBoarderCharAbove(const int position, const bool directContact);

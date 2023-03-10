@@ -1,6 +1,7 @@
 (
   player(
-    initialCoordinate(-40, -40)
+  initialViewPortCoordinate(0, 0),
+    initialPlayerCoordinateViewPortPaddingRelative(1, 0),
     sprites("./assets/sprites/sprite(0).sprite",
     "./assets/sprites/sprite(1).sprite",
     "./assets/sprites/sprite(2).sprite",
