@@ -141,45 +141,6 @@ void backgroundData::initialiseBackground
 }
 
 
-// bool backgroundData::getChunkCoordinate(const std::string & bgData,
-// 			std::string::const_iterator & buffPos,
-// 			const std::string & eMsg, yx & chunkCoord) const
-// {
-//   if(buffPos != std::end(bgData))
-//     {
-//       readSingleCoordSectionInNNumbersNoSkpSp
-// 	(bgData, buffPos, eMsg, &chunkCoord);
-
-//       return true;
-//     }
-//   else
-//     {
-//       return false;
-//     }
-// }
-
-
-// void backgroundData::getChunk(const std::string & bgData,
-// 	      std::string::const_iterator & buffPos, const std::string & eMsg,
-// 	      std::string & chunk) const
-// {
-//   chunk.clear();
-
-//   int lnCount {};
-//   for( ; lnCount < chunkSize.y && buffPos != std::end(bgData); )
-//     {
-//       char newCh {};
-//       newCh = *buffPos++;
-//       chunk += newCh;
-//       lnCount += (newCh == '\n' ? 1: 0);
-//     }
-//   if(lnCount != chunkSize.y)
-//     {
-//       exit(eMsg, ERROR_BACKGROUND);
-//     }
-// }
-
-
 void backgroundData::verifyCollapsedChunkSize
 (const backgroundChunk & rawChunk, const ssize_t chunksReadIn,
  const bool attemptedCompression) const
@@ -196,33 +157,6 @@ void backgroundData::verifyCollapsedChunkSize
     }
 }
 
-
-/*void backgroundData::checkForChunk(const yx coord)
-{
-}*/
-
-
-/*bool backgroundData::getChunk
-    (const yx & coord, backgroundData::backgroundChunk * chunk) const
-{
-  const std::string key {createChunkCoordKey(coord)};
-  backgroundChunk & ret {};
-
-  // try
-  //   {
-  //     ret = background.at(key);
-  //   }
-  // catch()
-  //   {
-
-  //   }
-  return ret;
-  }*/
-
-
-#include <curses.h>
-#include <iostream>
-#include <fstream>
 
 void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
 {
@@ -247,60 +181,25 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
   
   updateFirstStageDrawBuffer();
 
-  // std::cout<<'\n';
-
   firstStageDrawBuffer.viewPortPosition =
     yx{playerPos.y, playerPos.x + chunkSize.x * 2};
 
   updateFirstStageDrawBuffer();
 
-
-
-  //   const yx initialViewPortPosition {playerPos.y + chunkSize.y * 4, playerPos.x};
-  // firstStageDrawBuffer.lastUpdatedPosition = initialViewPortPosition;
-  // firstStageDrawBuffer.viewPortPosition =
-  //   yx{playerPos.y + chunkSize.y * 3, playerPos.x};
-  
-  // updateFirstStageDrawBuffer();
-
-  // std::cout<<'\n';
-
-  // firstStageDrawBuffer.viewPortPosition =
-  //   yx{playerPos.y + chunkSize.y * 2, playerPos.x};
-
-  // updateFirstStageDrawBuffer();
-
-  
-
-      std::ofstream out("out.txt");
-  for(int i {};
-      i < (firstStageDrawBufferType::fSDBXChunks * chunkSize.x *
-	   firstStageDrawBufferType::fSDBYChunks * chunkSize.y);
-      ++i)
-    {
-      if(i % (firstStageDrawBufferType::fSDBXChunks * chunkSize.x) == 0)
-	out<<'\n';
-      out<<(char)(firstStageDrawBuffer.buffer[i] % 159);
-    }
-  out.close();
-  exit(-1);
+  //     std::ofstream out("out.txt");
+  // for(int i {};
+  //     i < (firstStageDrawBufferType::fSDBXChunks * chunkSize.x *
+  // 	   firstStageDrawBufferType::fSDBYChunks * chunkSize.y);
+  //     ++i)
+  //   {
+  //     if(i % (firstStageDrawBufferType::fSDBXChunks * chunkSize.x) == 0)
+  // 	out<<'\n';
+  //     out<<(char)(firstStageDrawBuffer.buffer[i] % 159);
+  //   }
+  // out.close();
+  // exit(-1);
 
   firstStageDrawBuffer.viewPortPosition = playerPos;
-
-
-  // const yx initialViewPortPosition {playerPos.y + chunkSize.y * 4, playerPos.x};
-  // firstStageDrawBuffer.lastUpdatedPosition = initialViewPortPosition;
-  // firstStageDrawBuffer.viewPortPosition =
-  //   yx{playerPos.y + chunkSize.y * 3, playerPos.x};
-  
-  // updateFirstStageDrawBuffer();
-
-  // firstStageDrawBuffer.viewPortPosition =
-  //   yx{playerPos.y + chunkSize.y * 2, playerPos.x};
-
-  // updateFirstStageDrawBuffer();
-
-  // firstStageDrawBuffer.viewPortPosition = playerPos;
 }
 
 
@@ -384,45 +283,29 @@ void backgroundData::updateFirstStageDrawBuffer(const bool horizontal)
   // Size of the first stage draw buffer in characters.
   const yx fSDBSize {chunkSize.y * firstStageDrawBuffer.fSDBYChunks,
 		     chunkSize.x * firstStageDrawBuffer.fSDBXChunks};
-
-        std::cout<<'\n';
   
   // Iterate over chunks to be updated in the FSDB.
   for(int chunkUpdateDimensionIter {};
       chunkUpdateDimensionIter < (horizontal ? firstStageDrawBuffer.fSDBYChunks:
 				  firstStageDrawBuffer.fSDBXChunks);
       ++chunkUpdateDimensionIter)
-    {
-      endwin();
-      
+    { 
       const yx fSDBTargetChunk
 	{horizontal ?
 	 calculateFSDBTargetChunkWithHorizontalChange
 	 (fSDBSize, chunkUpdateDimensionIter):
 	 calculateFSDBTargetChunkWithVerticalChange
 	 (fSDBSize, chunkUpdateDimensionIter)};
-
-
-
-      
       // Calculate index of potential chunk to be copied into FSDB.
       const std::string chunkKey
 	{calculatePotentialChunkKeyForChunkToGoInFSDB
-	 (horizontal, chunkUpdateDimensionIter)};
-
-      // endwin();
-      
-      // std::cout<<firstStageDrawBuffer.viewPortPosition<<'\n';
-      // std::cout<<"Potential target chunk "<<chunkKey<<'\n';
-      // std::cout<<"FSDB target chunk "<<fSDBTargetChunk<<" ---------\n\n";
-      
+	 (horizontal, chunkUpdateDimensionIter)};      
 
       // Try to get chunk and then perform the copy to the FSDB.
       try
 	{
 	  // At() will throw an exception if the key isn't found.
 	  const backgroundChunk * chunk {&background.at(chunkKey)};
-
 	  // Iterate over lines of target chunk in the FSDB.
 	  for(int yIter {}; yIter < chunkSize.y; ++yIter)
 	    {
@@ -466,7 +349,6 @@ void backgroundData::updateFirstStageDrawBuffer(const bool horizontal)
 yx backgroundData::calculateFSDBTargetChunkWithHorizontalChange
 (const yx fSDBSize, const int yChunkOffset) const
 {
-  // endwin();
   /* Note that the code in this function assumes that a mod can produce a
      negative result. */
   /* Y should change each iteration of the loop in the calling function, but x
@@ -495,22 +377,17 @@ yx backgroundData::calculateFSDBTargetChunkWithHorizontalChange
   targetChunk.x = targetChunk.x < 0 ?
     firstStageDrawBuffer.fSDBXChunks + targetChunk.x: targetChunk.x;
   // FirstStageDrawBuffer.fSDBYChunks & 1 returns 1 if fSDBYChunks is even.
-  const int targetYPreWrap {((firstStageDrawBuffer.viewPortPosition.y %
-			      fSDBSize.y) / chunkSize.y +
-			     (firstStageDrawBuffer.fSDBYChunks / 2 +
-			      (firstStageDrawBuffer.fSDBYChunks & 1)) +
-			     yChunkOffset)};
+  const int targetYPreWrap
+    {(((firstStageDrawBuffer.viewPortPosition.y -
+	(firstStageDrawBuffer.viewPortPosition.y < 0 ? yHeight -1: 0)) %
+       fSDBSize.y) / chunkSize.y +
+      (firstStageDrawBuffer.fSDBYChunks / 2 +
+       (firstStageDrawBuffer.fSDBYChunks & 1)) +
+      yChunkOffset)};
   targetChunk.y = targetYPreWrap % firstStageDrawBuffer.fSDBYChunks;
-
-  endwin();
-  std::cout<<"targetChunk.y =  "<<targetChunk.y<<",    ";
-
-  
   /* Maybe fix negative and wrap around in y... */
   targetChunk.y = targetChunk.y < 0 ?
     firstStageDrawBuffer.fSDBYChunks + targetChunk.y: targetChunk.y;
-
-  std::cout<<"targetChunk.y after chage = "<<targetChunk.y<<'\n';
 
   return targetChunk;
 }
@@ -562,7 +439,6 @@ std::string backgroundData::calculatePotentialChunkKeyForChunkToGoInFSDB
 {
   /* Note here that we account for the direction of movement when calculating
      the y or x coordinate based on the value of horizontal. */
-
   yx chunkCoord {};
 
   if(horizontal)
@@ -589,8 +465,6 @@ std::string backgroundData::calculatePotentialChunkKeyForChunkToGoInFSDB
 	((chunkUpdateDimensionIter -
 	  (firstStageDrawBuffer.fSDBXChunks  / 2)) * chunkSize.x)};
     }
-
-  // std::cout<<"chunkCoord"<<chunkCoord<<'\n';
   
   return createChunkCoordKeyFromCharCoord(chunkCoord);
 }
@@ -623,24 +497,8 @@ void backgroundData::updateSecondStageDrawBuffer
 	    fSDBSize.x + yAndXComponents.x:
 	    yAndXComponents.x;
 
-	  // endwin();
-	  // std::cout<<yAndXComponents<<'\n';
-	  // exit(-1);
-
 	  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
 	    firstStageDrawBuffer.buffer[yAndXComponents.y + yAndXComponents.x];
-  
-	  // secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
-	  //   ;
-
-	    // 	  secondStageDrawBuffer[(yIter * chunkSize.x) + xIter] =
-	    // firstStageDrawBuffer.buffer
-	    // [((firstStageDrawBuffer.viewPortPosition.y + yIter) %
-	    //    (chunkSize.y * firstStageDrawBuffer.fSDBYChunks)) *
-	    //  fSDBSize.x +
-	     
-	    //  ((firstStageDrawBuffer.viewPortPosition.x + xIter) %
-	    //    (chunkSize.x * firstStageDrawBuffer.fSDBXChunks))];
 	}  
     }
 }
