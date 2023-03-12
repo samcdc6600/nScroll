@@ -3,7 +3,6 @@
 #include "include/sprite.hpp"
 #include "include/collapse.hpp"
 
-
 // FullyIn has a default argument of false.
 sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
 	       const backgroundData & background, const yx pos,
@@ -20,7 +19,7 @@ sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
       loadSprite(spriteFileName->c_str(), *spriteSliceSets.back());
     }
   initialiseDirectionsVector();
-  getMaxYXOffset();
+  setMaxYXOffset();
   // checkInitialPosIsInLevelChunk
   //   (spritePaths, maxBottomRightOffset, background, fullyIn);
 }
@@ -217,11 +216,8 @@ void sprite::parserPhaseTwo
 }
 
 
-void sprite::getMaxYXOffset()
-{ /* I tried my best to make maxBottomRightOffset const, however I was thwarted
-     by a seg fault that would occur when calling resize() on a vector in
-     getSprite() when getSprite() was called in the constructors member
-     initializer list >:'( */
+void sprite::setMaxYXOffset()
+{
   size_t max {};
 
   for(auto spriteSlices: spriteSliceSets)

@@ -158,7 +158,7 @@ void backgroundData::verifyCollapsedChunkSize
 }
 
 
-void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
+void backgroundData::initFirstStageDrawBuffer(const yx initialViewPortPos)
 {
   // CALCULATE VIEW PORT POSITION FROM PLAYER POS (MAYBE WE SHOULD PASS THE
   // BACKGROUND OBJECT INTO THE RULES OBJECT VIA THE PHYSICS FUNCTION AND THEN
@@ -174,8 +174,7 @@ void backgroundData::initFirstStageDrawBuffer(const yx playerPos)
      returned from the map (as the stage 1 draw buffer will be fSDBYChunks by
      fSDBXChunks chunks.) */
 
-  const yx initialCenterPos {playerPos.y - (chunkSize.y / 2),
-			     playerPos.x - (chunkSize.x / 2)};
+  const yx initialCenterPos {initialViewPortPos};
   
   const yx initialViewPortPosition
     {initialCenterPos.y, initialCenterPos.x + chunkSize.x * 4};

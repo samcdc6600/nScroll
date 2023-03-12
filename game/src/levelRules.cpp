@@ -242,23 +242,6 @@ void readSingleCoordSection
 void readBoolSection
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, void * boolean);
-// /* Attempts to read a number starting at buffPos (will skip any space before the
-//    number.) */
-// int readSingleNum
-// (const std::string & buff, std::string::const_iterator & buffPos,
-//  const std::string & eMsg, const bool useIntegers);
-// Verifies that the header of a RULES_CONFIG_FILE_EXTENSION file is present.
-// void readEndOfHeader
-// (const std::string & buff, std::string::const_iterator & buffPos,
-//  const std::string & eMsg);
-// void parseRulesMain(const yx maxyx, const char bgFileName[],
-//                     const char rulesFileName[], rules &levelRules,
-//                     const size_t bgSize, const std::string &rawRules,
-//                     std::string::const_iterator &buffPos);
-// /* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
-//    Or if the argument is a space character. If either of these is true then
-//    returns. Otherwise calls exit() */
-// void checkRuleChar(const char potentialRule, const std::string eMsg);
 
 /* Should be called after checking for all header sections related to the
    player. Checks if all sections were found. If a section is encountered that
@@ -305,10 +288,6 @@ void rules::initialiseCoordRules
  rules::coordRulesType & coordRules, const std::string & coordRulesData,
  const backgroundData & background) const
 {
-  // std::string::const_iterator buffPos {coordRulesData.begin()};
-  // const size_t expectedLineLength {bgSize / expectedChunkSize.y};
-  // int lineNumber {};
-  // int lineLength {};
   yx chunkCoord {};
   std::string chunk {};
   coordRulesChunk rawChunk {};
@@ -650,12 +629,7 @@ void rules::parseRulesConfigFileAndInitialiseVariables
 	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 	}
     }
-  
-  // readEndOfHeader
-  //   (rulesBuffer, buffPos,
-  //    concat("reading end of rules.lev header \"", rulesFileName, "\""));
 }
-
 
 void initPlayer
 (const yx viewPortSize, const char rulesFileName[], rules & levelRules,
@@ -732,8 +706,9 @@ void initPlayer
 		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
 		   <<" header file \""<<rulesFileName
 		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
-		    "reading header sub section player section, however this "
-		    "keyword is only expected once in this section.\n";
+		    "reading header sub section "
+		   <<PLAYER_HEADER_SECTION_SPECIFIER<<", however this keyword "
+		    "is only expected once in this section.\n";
 		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 		}
 	      switch(playerSectionKeywordToId.at(targetFound).order)
@@ -788,8 +763,9 @@ void initPlayer
 		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
 		   <<" header file \""<<rulesFileName
 		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
-		    "reading header sub section player section, however this "
-		    "keyword is forbidden.\n";
+		    "reading header sub section "
+		   <<PLAYER_HEADER_SECTION_SPECIFIER<<", however this keyword "
+		    "is forbidden.\n";
 		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 		}
 	    }
@@ -815,7 +791,8 @@ void initPlayer
     }
 
   levelRules.gamePlayer =
-    new player(playerInitData.spritePaths, viewPortSize, background,
+    new player(background, levelRules.PLAYER_MOVEMENT_AREA_PADDING,
+	       playerInitData.spritePaths,
 	       playerInitData.initialViewPortCoordinates,
 	       playerInitData.initialCoordinatesRelative,
 	       playerInitData.direction, playerInitData.health,
@@ -887,9 +864,9 @@ void initBgSprites(const yx viewPortSize, const char rulesFileName[],
 		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
 		   <<" header file \""<<rulesFileName
 		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
-		    "reading header sub section background sprite section, "
-		    "however this keyword is only expected once in this "
-		    "section.\n";
+		    "reading header sub section "
+		   <<BG_SPRITE_HEADER_SECTION_SPECIFIER<<" section, however "
+		    "this keyword is only expected once in this section.\n";
 		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 		}
 	      switch(bgSpriteSectionKeywordToId.at(targetFound).order)
@@ -932,8 +909,9 @@ void initBgSprites(const yx viewPortSize, const char rulesFileName[],
 		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
 		   <<" header file \""<<rulesFileName
 		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
-		    "reading header sub section background sprite section, "
-		    "however this keyword is forbidden.\n";
+		    "reading header sub section "
+		   <<BG_SPRITE_HEADER_SECTION_SPECIFIER<<" section, however "
+		    "this keyword is forbidden.\n";
 		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 		}
 	    }
@@ -1249,7 +1227,7 @@ void checkForDefaultPlayerValues
       playerInitData.initialViewPortCoordinates =
 	defaultValues::player::initialViewPortCoordinates;
     case 2:
-      playerInitData.coordinate =
+      playerInitData.initialCoordinatesRelative =
 	defaultValues::player::initialCoordinatesRelative;
       break;
     case 3:

@@ -158,7 +158,7 @@ public:
 
   /* Should be called once initial player position is known, but before the main
      game loop. */
-  void initFirstStageDrawBuffer(const yx playerPos);
+  void initFirstStageDrawBuffer(const yx initialViewPortPos);
   /* Updates the first stage draw buffer if
      firstStageDrawBuffer.viewPortPosition and
      firstStageDrawBuffer.lastUpdatedPosition have diverged by a sufficient

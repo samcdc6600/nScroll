@@ -17,7 +17,7 @@ public:
   typedef std::vector<char> coordRulesChunk;
   
   // The player cannot pass widthin this many character's of the window boarder's (y, x).
-  const yx PLAYER_MOVEMENT_AREA_PADDING {11, 52};
+  const yx PLAYER_MOVEMENT_AREA_PADDING {14, 44};
   static constexpr size_t second {1};
   // Contains position based rules.
   

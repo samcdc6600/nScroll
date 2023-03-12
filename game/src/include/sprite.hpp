@@ -118,10 +118,10 @@ private:
    spriteData & sD);
   /* Sets maxBottomRightOffset to the maximum yOffset and xOffset as calculated
      from the tallest spriteSlice and longest sliceLine in sD_basespriteSlices.
-     The offsets are interprited as a point at (0,0) or to the lower left of
+     The offsets are interpreted as a point at (0,0) or to the lower left of
      position. These values are used for collision detection and bounds
      checking. */
-  void getMaxYXOffset();
+  void setMaxYXOffset();
   
 protected:
   // /* Checks that the sprite is in a level chunk. If fullyIn is set to false only

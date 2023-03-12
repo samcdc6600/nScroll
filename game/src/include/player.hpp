@@ -55,11 +55,6 @@ class player: public sprite
   virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
   
 public:
-  /* This values is read from the player section of the rules.lev file and is
-     needed to calculate the initial position of the player and so we place it
-     here. It can be passed to the background object when that object is
-     initialised. */
-  const yx initialViewPortPosition;
   enum directionChars
     { /* Input character to direction mapping.
          '---W---'
@@ -74,22 +69,29 @@ public:
     };
 
   player
-  (std::vector<std::string> spritePaths, const yx PLAYER_MOVEMENT_AREA_PADDING,
-   const backgroundData & background, const yx initialViewPortPosition,
+  (const backgroundData &background, const yx PLAYER_MOVEMENT_AREA_PADDING,
+   std::vector<std::string> spritePaths, const yx initialViewPortPosition,
    const yx initialRelativePos, const sprite::directions dir, const int h,
    const double g, const double v, const unsigned maxFallingJmpNum,
    const unsigned maxJmpNum);
   
   virtual ~player() {};
 
+    /* This values is read from the player section of the rules.lev file and is
+     needed to calculate the initial position of the player and so we place it
+     here. It can be accessed by the public function getInitialViewPortPos() and
+     passed to the background object when that object is
+     initialised. */
+  const yx initialViewPortPosition;
   /* Checks that initialRelativePos is not out of bounds. If it is not, then
-     calculate the initial player position by adding initialViewPortPosition and
-     initialRelativePos and return the result. If it is we print an error
-     message and abort the program. */
+     calculate the initial player position by adding initialViewPortPosition,
+     PLAYER_MOVEMENT_AREA_PADDING and initialRelativePos and return the result.
+     If it is we print an error message and abort the program.
+     InitialRelativePos's origin is initialViewPortPosition +
+     initialRelativePos. */
   yx calcInitialPos
-  (const std::string & fieldName, const yx viewPortSize,
-   const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialViewPortPosition,
-   const yx initialRelativePos);
+  (const yx viewPortSize, const yx PLAYER_MOVEMENT_AREA_PADDING,
+   const yx initialViewPortPosition, const yx initialRelativePos);
   // Unlike sprite player needs to handle input direction characters.
   static directions convertDirectionCharsToDirections(const directionChars dir);
   static bool isDirectionCharInputValid(const int input);
