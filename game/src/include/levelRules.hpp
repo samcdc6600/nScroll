@@ -12,13 +12,15 @@
 class rules
 {
 public:
+  // Divided by 1000 to get milliseconds.
+  const double engineTickTime {16.2 / 1000};
   /* This type is used for storing the the rules that correspond to a background
      chunk from the background class. */
   typedef std::vector<char> coordRulesChunk;
   
   // The player cannot pass widthin this many character's of the window boarder's (y, x).
-  const yx PLAYER_MOVEMENT_AREA_PADDING {14, 44};
-  static constexpr size_t second {1};
+  const yx PLAYER_MOVEMENT_AREA_PADDING {13, 50};
+  // static constexpr size_t second {1};
   // Contains position based rules.
   
   //  	std::vector<char> coordRules {}; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -47,10 +49,6 @@ private:
      calculation) to get the character rule (if any) for a given position on the
      screen. */ 
   char * coordRulesCurrentContextBuffer;
-  // const size_t millisecondsInSec {1000*second};
-  // The duration of time we call sleep() for (in milliseconds.)
-  const size_t engineSleepTime {32};
-  // const double sleepTimeAsAPercentageOfASecond {double(engineSleepTime / millisecondsInSec)};
 
   // ==== Headers Related To Loading COORD_RULES_FILE_EXTENSION Files START ====
   // ===========================================================================
@@ -96,9 +94,9 @@ private:
   // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files END ====
   // ===========================================================================
   
-  /* Set's oldTime to the current time if
-     (oldTime - (the current time) >= second). */
-  void resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime);
+  // /* Set's oldTime to the current time if
+  //    (oldTime - (the current time) >= second). */
+  // void resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime);
   // check level agains sprite
   char intersection(const std::string & boundsInteraction,
 		    const std::vector<int> spChoords);
@@ -188,8 +186,7 @@ public:
       (viewPortSize, rulesFileName, rulesBuffer, background);
   }
   void physics
-  (backgroundData & background, const sprite::directions input,
-   std::__1::chrono::steady_clock::time_point & secStartTime);
+  (backgroundData & background, const sprite::directions input);
   ~rules()
   {
     delete gamePlayer;

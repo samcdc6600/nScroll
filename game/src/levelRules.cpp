@@ -1317,16 +1317,16 @@ void checkForDefaultBgSpriteValues
 }
 
 
-void rules::resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime)
-{
-  std::__1::chrono::steady_clock::time_point currentTime
-    {std::chrono::high_resolution_clock::now()};
-  if((duration_cast<std::chrono::duration<double>>
-      (currentTime - oldTime)).count() >= rules::second)
-    {
-      oldTime = currentTime;
-    }
-}
+// void rules::resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime)
+// {
+//   std::__1::chrono::steady_clock::time_point currentTime
+//     {std::chrono::high_resolution_clock::now()};
+//   if((duration_cast<std::chrono::duration<double>>
+//       (currentTime - oldTime)).count() >= rules::second)
+//     {
+//       oldTime = currentTime;
+//     }
+// }
 
 
 //test level agains sprite's
@@ -1760,8 +1760,7 @@ void rules::printRuleChars(const int position, const int maxY, const int maxX)
 
 
 void rules::physics
-(backgroundData & background, const sprite::directions input,
- std::__1::chrono::steady_clock::time_point & secStartTime)
+(backgroundData & background, const sprite::directions input)
 {
 #ifdef DEBUG
   printRuleChars(position, viewPortSize.y, viewPortSize.x);
@@ -1772,6 +1771,6 @@ void rules::physics
   background.updateViewPortPosition
     (PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
      gamePlayer->getMaxBottomRightOffset());
-  sleep(engineSleepTime);
-  resetOldTime(secStartTime);
+  // sleep(engineSleepTime);
+  // resetOldTime(secStartTime);
 }

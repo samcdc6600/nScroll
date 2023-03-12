@@ -55,6 +55,12 @@ class player: public sprite
   virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
   
 public:
+  /* This values is read from the player section of the rules.lev file and is
+     needed to calculate the initial position of the player and so we place it
+     here. It can be accessed by the public function getInitialViewPortPos() and
+     passed to the background object when that object is
+     initialised. */
+  const yx initialViewPortPosition;
   enum directionChars
     { /* Input character to direction mapping.
          '---W---'
@@ -77,12 +83,6 @@ public:
   
   virtual ~player() {};
 
-    /* This values is read from the player section of the rules.lev file and is
-     needed to calculate the initial position of the player and so we place it
-     here. It can be accessed by the public function getInitialViewPortPos() and
-     passed to the background object when that object is
-     initialised. */
-  const yx initialViewPortPosition;
   /* Checks that initialRelativePos is not out of bounds. If it is not, then
      calculate the initial player position by adding initialViewPortPosition,
      PLAYER_MOVEMENT_AREA_PADDING and initialRelativePos and return the result.

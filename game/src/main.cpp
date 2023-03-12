@@ -32,7 +32,8 @@ void menu
 int gameLoop
 (backgroundData::drawBufferType * secondStageDrawBuffer,
  backgroundData & background, rules & levelRules);
-
+bool oneTickPassed(const rules & levelRules,
+		   std::__1::chrono::steady_clock::time_point & lastTickTime);
 
 int main()
 {
@@ -85,7 +86,7 @@ int gameLoop
 (backgroundData::drawBufferType * secondStageDrawBuffer,
  backgroundData & background, rules & levelRules)
 {
-  std::__1::chrono::steady_clock::time_point secStartTime
+  std::__1::chrono::steady_clock::time_point lastTickTime
     {std::chrono::high_resolution_clock::now()};
   
   while(true)
@@ -107,9 +108,27 @@ int gameLoop
 	  break;
 	}
 
-      levelRules.physics
-	(background, input, secStartTime);
+      if(oneTickPassed(levelRules, lastTickTime))
+	{
+	  levelRules.physics
+	    (background, input);
+	}
       draw(secondStageDrawBuffer, background, levelRules.gamePlayer,
 	   levelRules.bgSprites);
     }
+}
+
+
+bool oneTickPassed(const rules & levelRules,
+		   std::__1::chrono::steady_clock::time_point & lastTickTime)
+{
+  std::__1::chrono::steady_clock::time_point currentTime
+    {std::chrono::high_resolution_clock::now()};
+    if((duration_cast<std::chrono::duration<double>>
+      (currentTime - lastTickTime)).count() >= levelRules.engineTickTime)
+    {
+      lastTickTime = currentTime;
+      return true;
+    }
+    return false;
 }
