@@ -1771,6 +1771,4 @@ void rules::physics
   background.updateViewPortPosition
     (PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
      gamePlayer->getMaxBottomRightOffset());
-  // sleep(engineSleepTime);
-  // resetOldTime(secStartTime);
 }

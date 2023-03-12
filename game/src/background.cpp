@@ -45,7 +45,6 @@ void backgroundData::initialiseBackground
       //    to the code to support that feature. */
       // const yx chunkSize {getChunkSize(bgData)};
       yx chunkCoord {};
-      std::string chunk {};
       backgroundChunk rawChunk {};
       std::string::const_iterator buffPos {std::begin(bgData)};
 	  
