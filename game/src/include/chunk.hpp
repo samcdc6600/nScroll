@@ -317,6 +317,70 @@ private:
   
     return createChunkCoordKeyFromCharCoord(chunkCoord);
   }
+  
+protected:
+    /* Updates the first stage buffer if
+     firstStageBuffer.viewPortPosition and firstStageBuffer.lastUpdatedPosition
+     have diverged by a sufficient delta. If an update is performed
+     lastUpdatedPosition is set to the same values as viewPortPosition. */
+  void updateFirstStageBuffer()
+  {
+    // x > y ? x - y : y - x. Get distance between two numbers on number line.
+    if((firstStageBuffer.lastUpdatedPosition.x >
+	firstStageBuffer.viewPortPosition.x) ?
+       ((firstStageBuffer.lastUpdatedPosition.x -
+	 firstStageBuffer.viewPortPosition.x) > chunkSize.x -1) :
+       ((firstStageBuffer.viewPortPosition.x -
+	 firstStageBuffer.lastUpdatedPosition.x) > chunkSize.x -1))
+      {
+	updateFirstStageBuffer(true);
+      }
+    else if((firstStageBuffer.lastUpdatedPosition.y >
+	     firstStageBuffer.viewPortPosition.y) ?
+	    ((firstStageBuffer.lastUpdatedPosition.y -
+	      firstStageBuffer.viewPortPosition.y) > chunkSize.y -1) :
+	    ((firstStageBuffer.viewPortPosition.y -
+	      firstStageBuffer.lastUpdatedPosition.y) > chunkSize.y -1))
+      {
+	updateFirstStageBuffer(false);
+      }
+  }
+
+  
+    /* Copies one chunk (relative to viewPortPosition) from firstStageBuffer
+     to secondStageBuffer. */
+  void updateSecondStageBuffer
+  (chunkElementType *  secondStageBuffer)
+  { 
+    // Size of the first stage buffer in characters.
+    const yx fSBSize {chunkSize.y * firstStageBuffer.fSBYChunks,
+		      chunkSize.x * firstStageBuffer.fSBXChunks};  
+  
+    for(int yIter {}; yIter < chunkSize.y; ++yIter)
+      {
+	yx yAndXComponents
+	  {((firstStageBuffer.viewPortPosition.y + yIter) % fSBSize.y), 0};
+	// Maybe fix negative and wrap around in y...
+	yAndXComponents.y = yAndXComponents.y < 0 ?
+	  fSBSize.y + yAndXComponents.y:
+	  yAndXComponents.y;
+	// Convert to linear position in array with respect to y.
+	yAndXComponents.y *= fSBSize.x;
+      
+	for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	  {
+	    yAndXComponents.x =
+	      ((firstStageBuffer.viewPortPosition.x + xIter) % fSBSize.x);
+	    // Maybe fix negative and wrap around in x...
+	    yAndXComponents.x = yAndXComponents.x < 0 ?
+	      fSBSize.x + yAndXComponents.x:
+	      yAndXComponents.x;
+
+	    secondStageBuffer[(yIter * chunkSize.x) + xIter] =
+	      firstStageBuffer.buffer[yAndXComponents.y + yAndXComponents.x];
+	  }  
+      }
+  }
        
   
 public:
@@ -331,15 +395,18 @@ public:
   {
   }
   
+  
   ssize_t numberOfChunks() const
   {
     return chunkMap.size();
   }
+
   
   bool keyExists(const std::string & key) const
   {
     return !(chunkMap.find(key) == chunkMap.end());
   }
+  
   
   /* Should be called once initial player position is known, but before the main
      game loop. */
@@ -380,70 +447,6 @@ public:
     // exit(-1);
 
     firstStageBuffer.viewPortPosition = initialCenterPos;
-  }
-
-  
-  /* Updates the first stage buffer if
-     firstStageBuffer.viewPortPosition and firstStageBuffer.lastUpdatedPosition
-     have diverged by a sufficient delta. If an update is performed
-     lastUpdatedPosition is set to the same values as viewPortPosition. */
-  void updateFirstStageBuffer()
-  {
-    // x > y ? x - y : y - x. Get distance between two numbers on number line.
-    if((firstStageBuffer.lastUpdatedPosition.x >
-	firstStageBuffer.viewPortPosition.x) ?
-       ((firstStageBuffer.lastUpdatedPosition.x -
-	 firstStageBuffer.viewPortPosition.x) > chunkSize.x -1) :
-       ((firstStageBuffer.viewPortPosition.x -
-	 firstStageBuffer.lastUpdatedPosition.x) > chunkSize.x -1))
-      {
-	updateFirstStageBuffer(true);
-      }
-    else if((firstStageBuffer.lastUpdatedPosition.y >
-	     firstStageBuffer.viewPortPosition.y) ?
-	    ((firstStageBuffer.lastUpdatedPosition.y -
-	      firstStageBuffer.viewPortPosition.y) > chunkSize.y -1) :
-	    ((firstStageBuffer.viewPortPosition.y -
-	      firstStageBuffer.lastUpdatedPosition.y) > chunkSize.y -1))
-      {
-	updateFirstStageBuffer(false);
-      }
-  }
-
-  
-  /* Copies one chunk (relative to viewPortPosition) from firstStageBuffer
-     to secondStageBuffer. */
-  void updateSecondStageBuffer
-  (chunkElementType *  secondStageBuffer)
-  { 
-    // Size of the first stage buffer in characters.
-    const yx fSBSize {chunkSize.y * firstStageBuffer.fSBYChunks,
-		      chunkSize.x * firstStageBuffer.fSBXChunks};  
-  
-    for(int yIter {}; yIter < chunkSize.y; ++yIter)
-      {
-	yx yAndXComponents
-	  {((firstStageBuffer.viewPortPosition.y + yIter) % fSBSize.y), 0};
-	// Maybe fix negative and wrap around in y...
-	yAndXComponents.y = yAndXComponents.y < 0 ?
-	  fSBSize.y + yAndXComponents.y:
-	  yAndXComponents.y;
-	// Convert to linear position in array with respect to y.
-	yAndXComponents.y *= fSBSize.x;
-      
-	for(int xIter {}; xIter < chunkSize.x; ++xIter)
-	  {
-	    yAndXComponents.x =
-	      ((firstStageBuffer.viewPortPosition.x + xIter) % fSBSize.x);
-	    // Maybe fix negative and wrap around in x...
-	    yAndXComponents.x = yAndXComponents.x < 0 ?
-	      fSBSize.x + yAndXComponents.x:
-	      yAndXComponents.x;
-
-	    secondStageBuffer[(yIter * chunkSize.x) + xIter] =
-	      firstStageBuffer.buffer[yAndXComponents.y + yAndXComponents.x];
-	  }  
-      }
   }
 
   

@@ -26,15 +26,14 @@ enum gameFuncRetCodes
 
 
 void menu
-(const yx viewPortSize,
- backgroundData::chunkElementBaseType * secondStageDrawBuffer);
+(const yx viewPortSize);
 /* Where the horror happens
    (returns a game menu switch option.) :) */
 int gameLoop
-(backgroundData::chunkElementBaseType * secondStageDrawBuffer,
- backgroundData & background, rules & levelRules);
-bool oneTickPassed(const rules & levelRules,
-		   std::__1::chrono::steady_clock::time_point & lastTickTime);
+(backgroundData & background, rules & levelRules);
+bool oneTickPassed
+(const rules & levelRules,
+ std::__1::chrono::steady_clock::time_point & lastTickTime);
 
 int main()
 {
@@ -42,20 +41,17 @@ int main()
      future.) */
   yx viewPortSize;
   initialiseCurses(viewPortSize);	// Start and setup ncurses
-  // Allocate memory for drawBuffer.
-  backgroundData::chunkElementBaseType * secondStageDrawBuffer
-    = new backgroundData::chunkElementBaseType [viewPortSize.y * viewPortSize.x];
   
-  menu(viewPortSize, secondStageDrawBuffer);
+  menu(viewPortSize);
   
   endwin(); //end curses mode!
-  delete [] secondStageDrawBuffer;
+
   return 0;
 }
 
 
 void menu
-(const yx viewPortSize, backgroundData::chunkElementBaseType * secondStageDrawBuffer)
+(const yx viewPortSize)
 {
   backgroundData background
     {viewPortSize, "assets/level1/level1.background.lev"};
@@ -64,11 +60,13 @@ void menu
      "assets/level1/level1.rules.lev", background};
   background.initFirstStageBuffer
     (levelRules.gamePlayer->initialViewPortPosition);
+  levelRules.initFirstStageBuffer
+    (levelRules.gamePlayer->initialViewPortPosition);
   
   bool run = true;
   while(run)
     {
-      switch(gameLoop(secondStageDrawBuffer, background, levelRules))
+      switch(gameLoop(background, levelRules))
 	{
 	case M_QUIT_GAME:
 	  run = false;
@@ -84,8 +82,7 @@ void menu
 
 
 int gameLoop
-(backgroundData::chunkElementBaseType * secondStageDrawBuffer,
- backgroundData & background, rules & levelRules)
+(backgroundData & background, rules & levelRules)
 {
   std::__1::chrono::steady_clock::time_point lastTickTime
     {std::chrono::high_resolution_clock::now()};
@@ -114,8 +111,7 @@ int gameLoop
 	  levelRules.physics
 	    (background, input);
 	}
-      draw(secondStageDrawBuffer, background, levelRules.gamePlayer,
-	   levelRules.bgSprites);
+      draw(background, levelRules.gamePlayer, levelRules.bgSprites);
     }
 }
 

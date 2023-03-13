@@ -9,21 +9,15 @@
 #include "background.hpp"
 
 
-class rules
+class rules: public chunk<char>
 {
 public:
   // Divided by 1000 to get milliseconds.
   const double engineTickTime {16.2 / 1000};
-  /* This type is used for storing the the rules that correspond to a background
-     chunk from the background class. */
-  typedef std::vector<char> coordRulesChunk;
   
   // The player cannot pass widthin this many character's of the window boarder's (y, x).
   const yx PLAYER_MOVEMENT_AREA_PADDING {13, 50};
-  // static constexpr size_t second {1};
-  // Contains position based rules.
-  
-  //  	std::vector<char> coordRules {}; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   //For sprites (holds sprite data (slices) and the rule for the sprite.)
   struct spriteInfo
   { // Sprite data to go here (when I do it.)
@@ -39,25 +33,17 @@ public:
   const yx playerMovementInnerLRBoarder {0, 44};
   
 private:
-  typedef std::map<std::string, coordRulesChunk> coordRulesType;
-  const coordRulesType coordRules;
-  const ssize_t coordRulesCurrentContextBufferSize;
-  /* This is equivalent to the first stage draw buffer in
-     backgroundData. Coord rule chunks are copied into this buffer based on the
-     players position (according to exactly the same rules as those followed in
-     backgroundData.) This array can then be indexed into (after a simple
-     calculation) to get the character rule (if any) for a given position on the
-     screen. */ 
-  char * coordRulesCurrentContextBuffer;
-
+  // Contains position based rules for current view port position.
+  chunkElementBaseType * secondStageRulesBuffer;
+  
   // ==== Headers Related To Loading COORD_RULES_FILE_EXTENSION Files START ====
   // ===========================================================================
-  coordRulesType loadAndInitialiseCoordRules
-  (const yx expectedChunkSize, const char coordRulesFileName [],
-   const backgroundData & background) const;
+  void loadAndInitialiseCoordRules(const yx expectedChunkSize,
+				   const char coordRulesFileName [],
+				   const backgroundData & background);
   void initialiseCoordRules
   (const yx expectedChunkSize, const char coordRulesFileName [],
-   rules::coordRulesType & coordRules, const std::string & coordRulesData,
+   chunkMapType & coordRules, const std::string & coordRulesData,
    const backgroundData & background) const;
   /* Attempts to decompress chunk in chunkIn. If successful returns
      decompressed chunk via rawChunk. ChunkIn is assumed to be compressed using
@@ -70,7 +56,7 @@ private:
      there is an  error an error message is printed and the program is
      terminated. */
   void decompressChunk
-  (const std::string & chunkIn, coordRulesChunk & rawChunk,
+  (const std::string & chunkIn, chunkType & rawChunk,
    const yx expectedChunkSize, const ssize_t chunksReadIn,
    const char coordRulesFileName[]) const;
   /* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
@@ -80,8 +66,7 @@ private:
   /* Make sure that for each key in coordRules there is a corresponding key in
      background and that coordRules and background have the same cardinality. */
   void verifyTotalOneToOneOntoMappingOfCoordToBgKeys
-  (const char coordRulesFileName [], const coordRulesType & coordRules,
-   const backgroundData & background) const;
+  (const chunkMapType & coordRules, const backgroundData & background) const;
   // ===== Headers Related To Loading COORD_RULES_FILE_EXTENSION Files END =====
   // ===========================================================================
   
@@ -93,7 +78,13 @@ private:
    const std::string & rulesBuffer, const backgroundData & background);
   // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files END ====
   // ===========================================================================
-  
+
+  // Updates rule characters buffers.
+  void updateBuffers()
+  {
+    updateFirstStageBuffer();
+    updateSecondStageBuffer(secondStageRulesBuffer);
+  }
   // /* Set's oldTime to the current time if
   //    (oldTime - (the current time) >= second). */
   // void resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime);
@@ -163,8 +154,7 @@ private:
 					 const int backgroundHeight);
 
 #ifdef DEBUG
-  // Where maxX should be the maximum size of the window and not the level.
-  void printRuleChars(const int position, const int maxY, const int maxX);
+  void printRuleChars(const yx viewPortSize);
 #endif
 
 public:
@@ -173,25 +163,33 @@ public:
   rules
   (const yx viewPortSize, const char coordRulesFileName [],
    const char rulesFileName [], const backgroundData & background) :
-    coordRules
-    (loadAndInitialiseCoordRules(viewPortSize, coordRulesFileName, background)),
-    coordRulesCurrentContextBufferSize(viewPortSize.y * viewPortSize.x * 9),
-    coordRulesCurrentContextBuffer(new char [viewPortSize.y * viewPortSize.x * 9])
+    chunk(viewPortSize, coordRulesFileName),
+    secondStageRulesBuffer
+    (new chunkElementBaseType [viewPortSize.y * viewPortSize.x])
+    // coordRules
+    // (loadAndInitialiseCoordRules(viewPortSize, background)),
+    // coordRulesCurrentContextBufferSize(viewPortSize.y * viewPortSize.x * 9),
+    // coordRulesCurrentContextBuffer(new char [viewPortSize.y * viewPortSize.x * 9])
   {
     std::string rulesBuffer {};
+    loadAndInitialiseCoordRules(viewPortSize, coordRulesFileName, background);
     loadFileIntoString
       (rulesFileName, rulesBuffer,
        concat("trying to read ", RULES_CONFIG_FILE_EXTENSION, " file"));
     parseRulesConfigFileAndInitialiseVariables
       (viewPortSize, rulesFileName, rulesBuffer, background);
   }
-  void physics
-  (backgroundData & background, const sprite::directions input);
+
+  
   ~rules()
   {
+    delete [] secondStageRulesBuffer;
     delete gamePlayer;
-    delete [] coordRulesCurrentContextBuffer;
   }
+
+  
+  void physics
+  (backgroundData & background, const sprite::directions input);
 };
 
 

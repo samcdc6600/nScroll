@@ -79,7 +79,6 @@ void backgroundData::initialiseBackground
     }
   else
     {
-      // const yx chunkSize {getChunkSize(bgData)};
       yx chunkCoord {};
       std::string chunk {};
       chunkType rawChunk {};

@@ -264,33 +264,29 @@ void checkForDefaultBgSpriteValues
 // =============================================================================
 
 
-rules::coordRulesType rules::loadAndInitialiseCoordRules
-(const yx expectedChunkSize, const char coordRulesFileName [],
- const backgroundData & background) const
+void rules::loadAndInitialiseCoordRules(const yx expectedChunkSize,
+					const char coordRulesFileName[],
+					const backgroundData & background)
 {
   std::string rawCoordRules {};
-  coordRulesType coordRules;
   
   loadFileIntoString(coordRulesFileName, rawCoordRules,
 		     concat("trying to read ", COORD_RULES_FILE_EXTENSION,
 			    " file"));
   initialiseCoordRules
-    (expectedChunkSize, coordRulesFileName, coordRules, rawCoordRules,
+    (expectedChunkSize, coordRulesFileName, chunkMap, rawCoordRules,
      background);
-  /* This will result in a deep copy when this function is called from the
-     constructor. However this only happens once per level load. */
-  return coordRules;
 }
 
 
 void rules::initialiseCoordRules
 (const yx expectedChunkSize, const char coordRulesFileName [],
- rules::coordRulesType & coordRules, const std::string & coordRulesData,
+ chunkMapType & coordRules, const std::string & coordRulesData,
  const backgroundData & background) const
 {
   yx chunkCoord {};
   std::string chunk {};
-  coordRulesChunk rawChunk {};
+  chunkType rawChunk {};
   std::string::const_iterator buffPos {std::begin(coordRulesData)};
   ssize_t chunksReadIn {};
 
@@ -345,13 +341,12 @@ void rules::initialiseCoordRules
      need to be, however this shouldn't be much of a problem since the files
      wouldn't be too large anyway (especially with compressed chunks.) Although
      some extra memory will be used the game logic will be slightly simpler. */
-  verifyTotalOneToOneOntoMappingOfCoordToBgKeys
-    (coordRulesFileName, coordRules, background);
+  verifyTotalOneToOneOntoMappingOfCoordToBgKeys(coordRules, background);
 }
 
 
 void rules::decompressChunk
-(const std::string & chunkIn, coordRulesChunk & rawChunk,
+(const std::string & chunkIn, chunkType & rawChunk,
  const yx expectedChunkSize, const ssize_t chunksReadIn,
  const char coordRulesFileName[]) const
 {
@@ -470,8 +465,7 @@ void rules::checkRuleChar
 
 
 void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
-(const char coordRulesFileName [], const coordRulesType & coordRules,
- const backgroundData & background) const
+(const chunkMapType & coordRules, const backgroundData & background) const
 {
   if(coordRules.size() != background.numberOfChunks())
     {
@@ -481,17 +475,17 @@ void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
 		background.fileName, ") not equal to number (",
 		coordRules.size(), ") of chunks read in from ",
 		COORD_RULES_FILE_EXTENSION, " file (",
-		coordRulesFileName, ")."), ERROR_GENERIC_RANGE_ERROR);
+		fileName, ")."), ERROR_GENERIC_RANGE_ERROR);
     }
 
-  for(const auto & coordRulesChunkTwoTuple : coordRules)
+  for(const auto & chunkTypeTwoTuple : coordRules)
     {
-      if(!background.keyExists(coordRulesChunkTwoTuple.first))
+      if(!background.keyExists(chunkTypeTwoTuple.first))
 	{
 	  exit
-	    (concat("Error: found chunk (", coordRulesChunkTwoTuple.first,
+	    (concat("Error: found chunk (", chunkTypeTwoTuple.first,
 		    ") in ", COORD_RULES_FILE_EXTENSION, " file (",
-		    coordRulesFileName, ") with no counterpart in ",
+		    fileName, ") with no counterpart in ",
 		    BACKGROUND_FILE_EXTENSION, " file (",
 		    background.fileName, ")."),
 	     ERROR_RULES_CHAR_FILE);
@@ -1738,23 +1732,32 @@ sprite::directions rules::handleLeftCollision(const yx viewPortPosition,
 
 
 #ifdef DEBUG
-#include <sstream>
+#include <curses.h>
+#include <stdlib.h>
+#include "include/colorS.hpp"
 
-void rules::printRuleChars(const int position, const int maxY, const int maxX)
+void rules::printRuleChars(const yx viewPortSize)
 {
-  for(int y {}; y < maxY; ++y)
+  const colourMap cuMap;
+  setColorMode setCuMode {0};
+  
+  for(int yIter {}; yIter < viewPortSize.y; ++yIter)
     {
-      for(int x {}; x < (coordRules.size() / maxY); ++x)
+      for(int xIter {}; xIter < viewPortSize.x; ++xIter)
 	{
-	  char coordRule;
-	  getCoordRule(y, x, coordRules, maxY, coordRule);
-	  if(coordRule != ' ' && (x - position) < maxX)
+	  int sSRBIndex {yIter * viewPortSize.x + xIter};
+	  if(secondStageRulesBuffer[sSRBIndex] != ' ')
 	    {
-	      mvprintw(y, (x - position), (std::string {coordRule}).c_str());
+	      setCuMode.setColor((sSRBIndex * rand()) % cuMap.colorPairs.size());
+	      mvprintw(yIter, xIter,
+		       concat("", secondStageRulesBuffer[sSRBIndex]).c_str());
 	    }
 	}
     }
+
   refresh();
+  /* The game will slow down a bit in debug mode. */
+  sleep(9);
 }
 #endif
 
@@ -1762,8 +1765,10 @@ void rules::printRuleChars(const int position, const int maxY, const int maxX)
 void rules::physics
 (backgroundData & background, const sprite::directions input)
 {
+  updateBuffers();
+  
 #ifdef DEBUG
-  printRuleChars(position, viewPortSize.y, viewPortSize.x);
+  printRuleChars(background.chunkSize);
 #endif
   
   movePlayer

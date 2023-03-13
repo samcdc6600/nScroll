@@ -13,6 +13,7 @@ class backgroundData: public chunk<unsigned short>
 public:
   // ========================== MEMBER VARIABLES START =========================
   // ===========================================================================
+  chunkElementBaseType * secondStageDrawBuffer;
   
 private:
 
@@ -33,9 +34,22 @@ private:
 public:
   
   backgroundData(const yx chunkSizeIn, const char bgFileName []):
-    chunk(chunkSizeIn, bgFileName)
+    chunk(chunkSizeIn, bgFileName),
+    secondStageDrawBuffer
+    (new chunkElementBaseType [chunkSizeIn.y * chunkSizeIn.x])
   {
     loadAndInitialiseBackground();
+  }
+
+  ~backgroundData()
+  {
+    delete [] secondStageDrawBuffer;
+  }
+
+  void updateBuffers()
+  {
+    updateFirstStageBuffer();
+    updateSecondStageBuffer(secondStageDrawBuffer);
   }
 };
 
