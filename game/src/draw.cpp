@@ -20,12 +20,12 @@ setColorMode colorMode{56};
 
 
 void draw
-(backgroundData::drawBufferType * secondStageDrawBuffer,
+(backgroundData::chunkElementBaseType * secondStageDrawBuffer,
  backgroundData & background,
  player * playerSprite, std::vector<bgSprite *> & bgSprites)
 {
-  background.updateFirstStageDrawBuffer();
-  background.updateSecondStageDrawBuffer(secondStageDrawBuffer);
+  background.updateFirstStageBuffer();
+  background.updateSecondStageBuffer(secondStageDrawBuffer);
 
   /* NOTE THAT A FLAG THAT IS SETTABLE FROM A RULES.LEV FILE SHOULD BE ADDED TO
      THE SPRITE CLASS THAT SPECIFIES IF A SPRITE SHOULD BE DISPLAYED IN FRONT
@@ -84,7 +84,7 @@ void draw
 
 
 void printDrawBuffer
-(backgroundData::drawBufferType * secondStageDrawBuffer, const yx viewPortSize)
+(backgroundData::chunkElementBaseType * secondStageDrawBuffer, const yx viewPortSize)
 {
   mvprintw(0, 0, "");
 
@@ -131,7 +131,7 @@ void setColor(const int charCodeWithColor)
 
 
 inline bool getContiguouslyColordString
-(const backgroundData::drawBufferType * const secondStageDrawBuffer,
+(const backgroundData::chunkElementBaseType * const secondStageDrawBuffer,
  int & buffIndex, const yx viewPortSize, std::string & contiguousColorChars,
  unsigned short & acsCode)
 {

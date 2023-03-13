@@ -13,7 +13,14 @@ struct yx
   int x;
 
   
-  yx() {}  
+  yx() {}
+
+  yx(const yx & yxIn)
+  {
+    this->y = yxIn.y;
+    this->x = yxIn.x;
+  }
+  
   yx(const int y, const int x)
   {
     this->y = y;
@@ -24,7 +31,7 @@ struct yx
   {
     y = rhs.y;
     x = rhs.x;
-    return *this;
+    return * this;
   }
 
   bool operator==(const yx & rhs)

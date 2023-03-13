@@ -12,12 +12,12 @@ extern const int yHeight;
 
 
 void draw
-(backgroundData::drawBufferType * secondStageDrawBuffer,
+(backgroundData::chunkElementBaseType * secondStageDrawBuffer,
  backgroundData & background, player * playerSprite,
  std::vector<bgSprite *> & bgSprites);
 // //Draws background at current position into secondStageDrawBuffer.
 void printDrawBuffer
-(backgroundData::drawBufferType * secondStageDrawBuffer, const yx viewPortSize);
+(backgroundData::chunkElementBaseType * secondStageDrawBuffer, const yx viewPortSize);
 // Set's or clears the colour code based on the value of charCodeWithColor.
 void setColor(const int charCodeWithColor);
 /* Pushes sucessive characters from secondStageDrawBuffer (starting at
@@ -31,7 +31,7 @@ void setColor(const int charCodeWithColor);
    found and with contiguousColorChars and buffIndex set as they are with the
    situation where an ACS character isn't found. */
 inline bool getContiguouslyColordString
-(const backgroundData::drawBufferType * const secondStageDrawBuffer,
+(const backgroundData::chunkElementBaseType * const secondStageDrawBuffer,
  int & buffIndex, const yx viewPortSize, std::string & contiguousColorChars,
  unsigned short & acsCode);
 void printAcs(const int acsCode, const bool inColor);

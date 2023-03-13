@@ -26,11 +26,12 @@ enum gameFuncRetCodes
 
 
 void menu
-(const yx viewPortSize, backgroundData::drawBufferType * secondStageDrawBuffer);
+(const yx viewPortSize,
+ backgroundData::chunkElementBaseType * secondStageDrawBuffer);
 /* Where the horror happens
    (returns a game menu switch option.) :) */
 int gameLoop
-(backgroundData::drawBufferType * secondStageDrawBuffer,
+(backgroundData::chunkElementBaseType * secondStageDrawBuffer,
  backgroundData & background, rules & levelRules);
 bool oneTickPassed(const rules & levelRules,
 		   std::__1::chrono::steady_clock::time_point & lastTickTime);
@@ -42,8 +43,8 @@ int main()
   yx viewPortSize;
   initialiseCurses(viewPortSize);	// Start and setup ncurses
   // Allocate memory for drawBuffer.
-  backgroundData::drawBufferType * secondStageDrawBuffer
-    = new backgroundData::drawBufferType [viewPortSize.y * viewPortSize.x];
+  backgroundData::chunkElementBaseType * secondStageDrawBuffer
+    = new backgroundData::chunkElementBaseType [viewPortSize.y * viewPortSize.x];
   
   menu(viewPortSize, secondStageDrawBuffer);
   
@@ -54,14 +55,14 @@ int main()
 
 
 void menu
-(const yx viewPortSize, backgroundData::drawBufferType * secondStageDrawBuffer)
+(const yx viewPortSize, backgroundData::chunkElementBaseType * secondStageDrawBuffer)
 {
   backgroundData background
     {viewPortSize, "assets/level1/level1.background.lev"};
   rules levelRules
     {viewPortSize, "assets/level1/level1.coordRules.lev",
      "assets/level1/level1.rules.lev", background};
-  background.initFirstStageDrawBuffer
+  background.initFirstStageBuffer
     (levelRules.gamePlayer->initialViewPortPosition);
   
   bool run = true;
@@ -83,7 +84,7 @@ void menu
 
 
 int gameLoop
-(backgroundData::drawBufferType * secondStageDrawBuffer,
+(backgroundData::chunkElementBaseType * secondStageDrawBuffer,
  backgroundData & background, rules & levelRules)
 {
   std::__1::chrono::steady_clock::time_point lastTickTime
