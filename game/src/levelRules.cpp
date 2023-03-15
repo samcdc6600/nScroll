@@ -1311,18 +1311,6 @@ void checkForDefaultBgSpriteValues
 }
 
 
-// void rules::resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime)
-// {
-//   std::__1::chrono::steady_clock::time_point currentTime
-//     {std::chrono::high_resolution_clock::now()};
-//   if((duration_cast<std::chrono::duration<double>>
-//       (currentTime - oldTime)).count() >= rules::second)
-//     {
-//       oldTime = currentTime;
-//     }
-// }
-
-
 //test level agains sprite's
 char rules::intersection(const std::string & boundsInteraction,
 			 const std::vector<int> spChoords)
@@ -1762,6 +1750,39 @@ void rules::printRuleChars(const yx viewPortSize)
 #endif
 
 
+#include <iostream>
+bool rules::oneEngineTickPassed()
+{ 
+  const long double currentTime
+    {getClockTicks()};
+
+  static int callCount {};
+  // std::cout<<"lastTickTime = "<<lastTickTime<<'\n'<<"currentTime = "<<currentTime<<'\n';
+  // std::cout<<"ticksPerMs = "<<ticksPerMs<<'\n';
+  // std::cout<<"CLOCKS_PER_SEC = "<<CLOCKS_PER_SEC<<"\n\n";
+  // callCount++;
+  // if(callCount > 3)
+  //   exit(-1);
+  if(callCount == 925)
+    {
+      exit(-1);
+    }
+  
+  if((currentTime - lastTickTime) >= engineTickTime)
+    {
+        callCount++;
+	// std::cout<<callCount<<'\n';
+
+	// std::cout<<"currentTime = "<<currentTime<<", lastTickTime = "<<lastTickTime<<'\n';
+      lastTickTime = currentTime;
+      // endwin();
+      
+      return true;
+    }
+  return false;
+}
+
+
 void rules::physics
 (backgroundData & background, const sprite::directions input)
 {
@@ -1770,10 +1791,13 @@ void rules::physics
 #ifdef DEBUG
   printRuleChars(background.chunkSize);
 #endif
-  
-  movePlayer
-    (background, input);
-  background.updateViewPortPosition
-    (PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
-     gamePlayer->getMaxBottomRightOffset());
+
+  //  if()
+    {
+      movePlayer
+	(background, input);
+      background.updateViewPortPosition
+	(PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
+	 gamePlayer->getMaxBottomRightOffset());
+    }
 }

@@ -12,12 +12,8 @@
 class rules: public chunk<char>
 {
 public:
-  // Divided by 1000 to get milliseconds.
-  const double engineTickTime {16.2 / 1000};
-  
   // The player cannot pass widthin this many character's of the window boarder's (y, x).
   const yx PLAYER_MOVEMENT_AREA_PADDING {13, 50};
-
   //For sprites (holds sprite data (slices) and the rule for the sprite.)
   struct spriteInfo
   { // Sprite data to go here (when I do it.)
@@ -33,6 +29,10 @@ public:
   const yx playerMovementInnerLRBoarder {0, 44};
   
 private:
+  // These are in seconds.
+  const long double engineTickTime {0.0162};
+  const long double ticksPerSec {((long double)CLOCKS_PER_SEC)};
+  long double lastTickTime;
   // Contains position based rules for current view port position.
   chunkElementBaseType * secondStageRulesBuffer;
   
@@ -85,6 +85,7 @@ private:
     updateFirstStageBuffer();
     updateSecondStageBuffer(secondStageRulesBuffer);
   }
+  long double getClockTicks() {return (long double)clock() / ticksPerSec;}
   // /* Set's oldTime to the current time if
   //    (oldTime - (the current time) >= second). */
   // void resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime);
@@ -163,13 +164,13 @@ public:
   rules
   (const yx viewPortSize, const char coordRulesFileName [],
    const char rulesFileName [], const backgroundData & background) :
+    /* Clock() returns the number of clock ticks elapsed since the program was
+       started. NOTE that this is not the actual number of clock ticks and is
+       determined by the compiler. */
+    lastTickTime(getClockTicks()),
     chunk(viewPortSize, coordRulesFileName),
     secondStageRulesBuffer
     (new chunkElementBaseType [viewPortSize.y * viewPortSize.x])
-    // coordRules
-    // (loadAndInitialiseCoordRules(viewPortSize, background)),
-    // coordRulesCurrentContextBufferSize(viewPortSize.y * viewPortSize.x * 9),
-    // coordRulesCurrentContextBuffer(new char [viewPortSize.y * viewPortSize.x * 9])
   {
     std::string rulesBuffer {};
     loadAndInitialiseCoordRules(viewPortSize, coordRulesFileName, background);
@@ -188,6 +189,7 @@ public:
   }
 
   
+  bool oneEngineTickPassed();
   void physics
   (backgroundData & background, const sprite::directions input);
 };

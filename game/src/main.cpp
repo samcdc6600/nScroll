@@ -30,10 +30,9 @@ void menu
 /* Where the horror happens
    (returns a game menu switch option.) :) */
 int gameLoop
-(backgroundData & background, rules & levelRules);
-bool oneTickPassed
-(const rules & levelRules,
- std::__1::chrono::steady_clock::time_point & lastTickTime);
+(std::__1::chrono::steady_clock::time_point lastTickTime,
+ backgroundData & background, rules & levelRules);
+
 
 int main()
 {
@@ -53,6 +52,9 @@ int main()
 void menu
 (const yx viewPortSize)
 {
+  std::__1::chrono::steady_clock::time_point startTick
+    {std::chrono::high_resolution_clock::now()};
+  
   backgroundData background
     {viewPortSize, "assets/level1/level1.background.lev"};
   rules levelRules
@@ -66,7 +68,7 @@ void menu
   bool run = true;
   while(run)
     {
-      switch(gameLoop(background, levelRules))
+      switch(gameLoop(startTick, background, levelRules))
 	{
 	case M_QUIT_GAME:
 	  run = false;
@@ -82,11 +84,9 @@ void menu
 
 
 int gameLoop
-(backgroundData & background, rules & levelRules)
-{
-  std::__1::chrono::steady_clock::time_point lastTickTime
-    {std::chrono::high_resolution_clock::now()};
-  
+(std::__1::chrono::steady_clock::time_point lastTickTime,
+ backgroundData & background, rules & levelRules)
+{ 
   while(true)
     {
       sprite::directions input {};
@@ -105,27 +105,13 @@ int gameLoop
 	  return LEVEL_COMPLEAT;
 	  break;
 	}
-
-      if(oneTickPassed(levelRules, lastTickTime))
+      
+      if(levelRules.oneEngineTickPassed())
 	{
-	  levelRules.physics
-	    (background, input);
+	  // std::cout<<"hello\n";
+	  // levelRules.physics
+	  //   (background, input);
 	}
-      draw(background, levelRules.gamePlayer, levelRules.bgSprites);
+      // draw(background, levelRules.gamePlayer, levelRules.bgSprites);
     }
-}
-
-
-bool oneTickPassed(const rules & levelRules,
-		   std::__1::chrono::steady_clock::time_point & lastTickTime)
-{
-  std::__1::chrono::steady_clock::time_point currentTime
-    {std::chrono::high_resolution_clock::now()};
-    if((duration_cast<std::chrono::duration<double>>
-      (currentTime - lastTickTime)).count() >= levelRules.engineTickTime)
-    {
-      lastTickTime = currentTime;
-      return true;
-    }
-    return false;
 }
