@@ -7,8 +7,8 @@ player::player
  const yx initialRelativePos, const sprite::directions dir, const int h,
  const double g, const double v, const unsigned maxFallingJmpNum,
  const unsigned maxJmpNum)
-  : sprite(spritePaths, background.chunkSize, background,
-	   yx {0, 0}, dir, true), initialViewPortPosition(initialViewPortPos),
+  : sprite(spritePaths, background.chunkSize, yx {0, 0}, dir, true),
+    initialViewPortPosition(initialViewPortPos),
     health(h),
     gravitationalConstant(g), maxVertVelocity(v),
     maxFallingJumpNum(maxFallingJmpNum), maxJumpNum(maxJmpNum)
@@ -16,7 +16,7 @@ player::player
   /* We give sprite() an initial dummy value above and reset the value here
      because sprite() calculates maxBottomRightOffset, which calcInitialPos
      needs. */ 
-  position = calcInitialPos(background.chunkSize, PLAYER_MOVEMENT_AREA_PADDING,
+  position = calcInitialPos(background, PLAYER_MOVEMENT_AREA_PADDING,
 			    initialViewPortPos, initialRelativePos);
   if(gravitationalConstant > 0)
     {
@@ -44,16 +44,16 @@ player::player
 
 
 yx player::calcInitialPos
-(const yx viewPortSize, const yx PLAYER_MOVEMENT_AREA_PADDING,
+(const backgroundData & background, const yx PLAYER_MOVEMENT_AREA_PADDING,
  const yx initialViewPortPosition, const yx initialRelativePos)
 {
     if(initialRelativePos.y < 0 ||
        initialRelativePos.y >
-       viewPortSize.y -
+       background.chunkSize.y -
        (PLAYER_MOVEMENT_AREA_PADDING.y * 2) -1 -maxBottomRightOffset.y ||
        initialRelativePos.x < 0 ||
        initialRelativePos.x >
-       viewPortSize.x -
+       background.chunkSize.x -
        (PLAYER_MOVEMENT_AREA_PADDING.x * 2) -1 -maxBottomRightOffset.x)
     {
       exit(concat
@@ -61,18 +61,21 @@ yx player::calcInitialPos
 	    "(", initialRelativePos.y, ",", initialRelativePos.x, ") is out of "
 	    "bounds! InitialPlayerCoordinateViewPortPaddingRelative should be "
 	    "in the range (", 0, ",", 0, ") to (",
-	    viewPortSize.y -
+	    background.chunkSize.y -
 	    (PLAYER_MOVEMENT_AREA_PADDING.y * 2) -1
 	    -maxBottomRightOffset.y, ",",
-	    viewPortSize.x -
+	    background.chunkSize.x -
 	    (PLAYER_MOVEMENT_AREA_PADDING.x * 2) -1
 	    -maxBottomRightOffset.x, ")."),
 	   ERROR_SPRITE_POS_RANGE);
     }
-  return yx{initialViewPortPosition.y + PLAYER_MOVEMENT_AREA_PADDING.y +
-	    initialRelativePos.y,
-	    initialViewPortPosition.x + PLAYER_MOVEMENT_AREA_PADDING.x +
-	    initialRelativePos.x};
+
+    return yx{(initialViewPortPosition.y / background.chunkSize.y) *
+	      background.chunkSize.y + PLAYER_MOVEMENT_AREA_PADDING.y +
+	      initialRelativePos.y,
+	      (initialViewPortPosition.x / background.chunkSize.x) *
+	      background.chunkSize.x + PLAYER_MOVEMENT_AREA_PADDING.x +
+	      initialRelativePos.x};
 }
 
 
@@ -301,7 +304,7 @@ void player::handleFallingSimple
 
 
 void player::draw
-(unsigned short * secondStageDrawBuffer, const bool updateSlice)
+(const backgroundData &background, const bool updateSlice)
 {
   for(size_t sliceLine{}; sliceLine <
 	spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
@@ -319,9 +322,9 @@ void player::draw
 	  if(ch != DRAW_NO_OP)
 	    {
 	      // Add character (if not DRAW_NO_OP.)
-	      secondStageDrawBuffer
-		[((position.y + sliceLine) * viewPortSize.x) +
-		 position.x + spriteS[direction].
+	      background.secondStageDrawBuffer
+		[(((position.y % background.chunkSize.y)  + sliceLine) * viewPortSize.x) +
+		 (position.x % background.chunkSize.x) + spriteS[direction].
 		 spriteSlices[currentSliceNumber].slice[sliceLine].offset +
 		 sliceLineIter] = ch;
 	    }

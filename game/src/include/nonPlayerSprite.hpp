@@ -7,9 +7,9 @@ class nonPlayerSprite: public sprite
 {
 public:
   nonPlayerSprite
-  (std::vector<std::string> & spritePaths, const yx max,
-   const backgroundData & background, const yx pos, const directions dir) :
-    sprite(spritePaths, max, background, pos, dir)
+  (std::vector<std::string> & spritePaths, const yx max, const yx pos,
+   const directions dir) :
+    sprite(spritePaths, max, pos, dir)
   { }
   void draw(unsigned short * secondStageDrawBuffer, const bool updateSlice,
 	    const int bgPos);

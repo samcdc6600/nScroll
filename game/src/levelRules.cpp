@@ -931,7 +931,7 @@ void initBgSprites(const yx viewPortSize, const char rulesFileName[],
     }
 
   levelRules.bgSprites.push_back
-    (new bgSprite(bgSpriteInitData.spritePaths, viewPortSize, background,
+    (new bgSprite(bgSpriteInitData.spritePaths, viewPortSize,
 		  bgSpriteInitData.coordinate, bgSpriteInitData.direction,
 		  bgSpriteInitData.displayInForground));
 }

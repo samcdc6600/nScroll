@@ -75,7 +75,7 @@ public:
     };
 
   player
-  (const backgroundData &background, const yx PLAYER_MOVEMENT_AREA_PADDING,
+  (const backgroundData & background, const yx PLAYER_MOVEMENT_AREA_PADDING,
    std::vector<std::string> spritePaths, const yx initialViewPortPosition,
    const yx initialRelativePos, const sprite::directions dir, const int h,
    const double g, const double v, const unsigned maxFallingJmpNum,
@@ -90,7 +90,7 @@ public:
      InitialRelativePos's origin is initialViewPortPosition +
      initialRelativePos. */
   yx calcInitialPos
-  (const yx viewPortSize, const yx PLAYER_MOVEMENT_AREA_PADDING,
+  (const backgroundData & background, const yx PLAYER_MOVEMENT_AREA_PADDING,
    const yx initialViewPortPosition, const yx initialRelativePos);
   // Unlike sprite player needs to handle input direction characters.
   static directions convertDirectionCharsToDirections(const directionChars dir);
@@ -211,7 +211,8 @@ public:
   
   /* Since the player sprite can never go off screen we declare a simpler draw
      function for it here */
-  void draw(unsigned short * secondStageDrawBuffer, const bool updateSlice);
+  void draw
+  (const backgroundData &background, const bool updateSlice);
 };
 
 #endif

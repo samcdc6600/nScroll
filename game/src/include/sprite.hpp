@@ -94,8 +94,7 @@ public:
      converts it's/their contents to the internal data structure needed by the
      sprite. */
   sprite(std::vector<std::string> & spritePaths, const yx max,
-	 const backgroundData & background, const yx pos, const directions dir,
-	 const bool fullyIn = false);
+	 const yx pos, const directions dir, const bool fullyIn = false);
   ~sprite();
 private:
   // Split up file into cycleSpeed and unprocessesd representation of sprite.

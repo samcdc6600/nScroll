@@ -5,8 +5,7 @@
 
 // FullyIn has a default argument of false.
 sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
-	       const backgroundData & background, const yx pos,
-	       const directions dir, const bool fullyIn)
+	       const yx pos, const directions dir, const bool fullyIn)
   : viewPortSize(max), position(pos), direction(checkDirection(dir)),
     currentSliceNumber(0),
     startTime(std::chrono::high_resolution_clock::now()),
