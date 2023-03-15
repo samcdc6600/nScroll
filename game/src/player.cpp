@@ -70,10 +70,10 @@ yx player::calcInitialPos
 	   ERROR_SPRITE_POS_RANGE);
     }
 
-    return yx{(initialViewPortPosition.y / background.chunkSize.y) *
+    return yx{abs(initialViewPortPosition.y / background.chunkSize.y) *
 	      background.chunkSize.y + PLAYER_MOVEMENT_AREA_PADDING.y +
 	      initialRelativePos.y,
-	      (initialViewPortPosition.x / background.chunkSize.x) *
+	      abs(initialViewPortPosition.x / background.chunkSize.x) *
 	      background.chunkSize.x + PLAYER_MOVEMENT_AREA_PADDING.x +
 	      initialRelativePos.x};
 }
@@ -321,10 +321,9 @@ void player::draw
 
 	  if(ch != DRAW_NO_OP)
 	    {
-	      // Add character (if not DRAW_NO_OP.)
 	      background.secondStageDrawBuffer
-		[(((position.y % background.chunkSize.y)  + sliceLine) * viewPortSize.x) +
-		 (position.x % background.chunkSize.x) + spriteS[direction].
+		[((abs(position.y % background.chunkSize.y)  + sliceLine) * viewPortSize.x) +
+		 abs(position.x % background.chunkSize.x) + spriteS[direction].
 		 spriteSlices[currentSliceNumber].slice[sliceLine].offset +
 		 sliceLineIter] = ch;
 	    }
