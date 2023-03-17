@@ -1751,56 +1751,6 @@ void rules::printRuleChars(const yx viewPortSize)
 #endif
 
 
-// #include <iostream>
-// #include <curses.h>
-// bool rules::oneEngineTickPassed()
-// {
-//   endwin();
-//   static int count {};
-//   // std::cout<<chrono.getCurrent()<<'\n';
-//   // std::cout<<chrono.getLast()<<'\n';
-  
-//   if(chrono.getDelta() > (long double)1)
-//     {
-//       std::cout<<chrono.getLast()<<"\t-- "<<chrono.getCurrent()<<'\n';
-//       count++;
-//       if(count == 30)
-// 	{
-// 	  std::cout<<CLOCKS_PER_SEC<<'\n';
-// 	  exit(-1);
-// 	}
-//       chrono.update();
-//     }
-//   // const long double currentTime
-//   //   {getClockTicks()};
-
-//   // static int callCount {};
-//   // // std::cout<<"lastTickTime = "<<lastTickTime<<'\n'<<"currentTime = "<<currentTime<<'\n';
-//   // // std::cout<<"ticksPerMs = "<<ticksPerMs<<'\n';
-//   // // std::cout<<"CLOCKS_PER_SEC = "<<CLOCKS_PER_SEC<<"\n\n";
-//   // // callCount++;
-//   // // if(callCount > 3)
-//   // //   exit(-1);
-//   // if(callCount == 925)
-//   //   {
-//   //     exit(-1);
-//   //   }
-  
-//   // if((currentTime - lastTickTime) >= engineTickTime)
-//   //   {
-//   //       callCount++;
-//   // 	// std::cout<<callCount<<'\n';
-
-//   // 	// std::cout<<"currentTime = "<<currentTime<<", lastTickTime = "<<lastTickTime<<'\n';
-//   //     lastTickTime = currentTime;
-//   //     // endwin();
-
-//   //     return true;
-//   //   }
-//   return false;
-// }
-
-
 void rules::startTimers()
 {
   gameTiming.allPhysics.start();

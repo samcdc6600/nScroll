@@ -18,16 +18,15 @@ private:
   bool started {false};
   /* const */ bool tickTimeSet {false};
   /* const */ std::string toSeeIfError;
-    /* T holds the last updated time for this object, tLast holds the time before
-     that and tickTime holds the time delta at which an event should take
-     place. */
+    /* T holds the last updated time for this object, tLast holds the time
+       before that. */
   long t, tLast;
   /* const */ long double scaleFactor {0.001};
 
 
   /* Most if not every public function belonging to this object (apart from any
      constructor and start() must call this function as their first action. */
-  void checkIfFullyInitialised(std::string funcName)
+  void checkIfFullyInitialised(std::string funcName) const
   {
     if(!tickTimeSet)
       {
@@ -68,6 +67,8 @@ private:
 
   
 public:
+  /* TickTime holds the time delta at which an event should take
+     place. */
   /* const */ long double tickTime;
 
 
@@ -121,11 +122,20 @@ public:
     tLast = t;
   }
 
-  long getCurrentTime()
+  /* Can be used to get the current time of a master chronological object so
+     that other chronological object may be fully initialised with the same
+     start time (using start()). Can also be used to update an objects current
+     time to the time of a master chronological object. */
+  long getCurrentTime() const
   {
     checkIfFullyInitialised("getCurrentTime()");
     
     return t;
+  }
+
+  void setCurrentTime(const chronological & master)
+  {
+    t = master.getCurrentTime();
   }
   
   
