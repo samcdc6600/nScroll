@@ -5,6 +5,7 @@
 #include <ctime>
 #include "utils.hpp"
 
+#include <iostream>  
 
 class chronological
 {
@@ -21,7 +22,7 @@ private:
     /* T holds the last updated time for this object, tLast holds the time
        before that. */
   long t, tLast;
-  /* const */ long double scaleFactor {0.001};
+  /* const */ long double scaleFactor {1000};
 
 
   /* Most if not every public function belonging to this object (apart from any
@@ -51,19 +52,19 @@ private:
       }
   }
   
-  
-  long double getDelta()
-  {
-    t = time(nullptr);
-    return (long double)(t - tLast) / scaleFactor;
-  }
+
+  // long double getDelta()
+  // {
+  //   t = time(nullptr);
+  //   return (long double)(t - tLast) / scaleFactor;
+  // }
 
 
-  void update()
-  { 
-    tLast = t;
-    t = time(nullptr);
-  }
+  // void update()
+  // { 
+  //   tLast = t;
+  //   t = time(nullptr);
+  // }
 
   
 public:
@@ -124,8 +125,7 @@ public:
 
   /* Can be used to get the current time of a master chronological object so
      that other chronological object may be fully initialised with the same
-     start time (using start()). Can also be used to update an objects current
-     time to the time of a master chronological object. */
+     start time (using start()). */
   long getCurrentTime() const
   {
     checkIfFullyInitialised("getCurrentTime()");
@@ -133,6 +133,8 @@ public:
     return t;
   }
 
+  /* Can be used to update an objects current time to the time of a master
+     chronological object. */
   void setCurrentTime(const chronological & master)
   {
     t = master.getCurrentTime();
@@ -141,11 +143,21 @@ public:
   
   bool startNextTick()
   {
-    checkIfFullyInitialised("startNextTick()");
-	
-    if(getDelta() > tickTime)
+    // checkIfFullyInitialised("startNextTick()");
+
+      t = time(nullptr);
+      // return (long double)(t - tLast) / scaleFactor;
+      //    if(getDelta() > tickTime)
+      if(((long double)(t - tLast) / scaleFactor) > tickTime)
       {
-	update();
+	std::cout<<"(t - tLast) = "<<(t - tLast)<<'\t'<<"(t - tLast) / scaleFactor) = "<<(t - tLast) / scaleFactor<<'\t';
+	// std::cout<<"(long double)(t - tLast) / scaleFactor; = "<< (long double)(t - tLast) / scaleFactor<<'\n';
+	// std::cout<<"tickTime = "<<tickTime;
+	    std::cout<<"t = "<<t<<'\t';
+	    std::cout<<"tLast = "<<tLast<<'\n';
+	// update();
+	    tLast = t;
+	    
 	return true;
       }
     else
@@ -160,6 +172,7 @@ public:
 struct timers
 {
   chronological allPhysics {};
+  chronological movePlayer {};
 };
 
 

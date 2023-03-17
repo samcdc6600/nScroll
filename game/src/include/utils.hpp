@@ -211,12 +211,12 @@ getAdvancedIter(T_A i, const T_B iEnd, const size_t n, const std::string & eMsg)
 
 
 template<typename T>
-bool getCoordRule(const int y, const int x, const std::vector<T> & rules,
-		  int bgHeight, T & coordRulesRet)
+bool getCoordRule(const yx pos, const yx viewPortSize, const T * rules,
+		  T & coordRulesRet)
 {
   bool ret {false};
-  int linearAddress = {y * ((int)rules.size() / bgHeight) + x};
-  if(size_t(linearAddress) < rules.size())
+  int linearAddress = {pos.y * viewPortSize.x + pos.x};
+  if(linearAddress < (viewPortSize.y * viewPortSize.x))
     {
       coordRulesRet = rules[linearAddress];
       for(auto rule: boarderRuleChars::CHARS)

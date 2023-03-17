@@ -11,15 +11,18 @@ namespace levelFileKeywords
     struct headerKeywordAction
     {
       headerKeywordAction
-      (const std::string & kword, void (* a)
+      (const std::string & kword,
+       void (* a)
        (const std::string & buff, std::string::const_iterator & buffPos,
 	const std::string & eMsg, void * retObj),
-       void (*hA)(const yx maxyx, const char rulesFileName[],
-		  rules &levelRules, const backgroundData & background,
-		  const std::string &rawRules,
-		  std::string::const_iterator &buffPos) = nullptr,
+       void (*hA)
+       (const yx viewPortSize, const char rulesFileName[],
+	rules & levelRules, const backgroundData & background,
+	const std::string & rawRules,
+	std::string::const_iterator & buffPos) = nullptr,
        const bool fMO = false)
-	: keyword(kword), foundMultipleOptional(fMO), action(a), headerAction(hA)
+	: keyword(kword), foundMultipleOptional(fMO), action(a),
+	  headerAction(hA)
       { }
 
       const std::string keyword;
@@ -33,15 +36,15 @@ namespace levelFileKeywords
 	 function doesn't encounter any error (in which case it should print a
 	 message and exit) *retObj should be populated with what is essential the
 	 return value of the function. */
-      void (*action)(const std::string &buff,
-		     std::string::const_iterator &buffPos,
-		     const std::string &eMsg, void *retObj);
+      void (* action)(const std::string & buff,
+		     std::string::const_iterator & buffPos,
+		     const std::string & eMsg, void * retObj);
       /* This function should be used as the action instead of the above if we
 	 are at the top level of the header (in terms of sections). */
-      void (*headerAction)(const yx maxyx, const char rulesFileName[],
+      void (* headerAction)(const yx viewPortSize, const char rulesFileName[],
 			   rules &levelRules, const backgroundData & background,
-			   const std::string &rawRules,
-			   std::string::const_iterator &buffPos);
+			   const std::string & rawRules,
+			   std::string::const_iterator & buffPos);
     };
   };
   // Each new section should start with a header char followed by this char.
@@ -497,8 +500,8 @@ void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
 
 
 void rules::parseRulesConfigFileAndInitialiseVariables
-(const yx viewPortSize, const char rulesFileName [],
- const std::string & rulesBuffer, const backgroundData & background)
+(const char rulesFileName [], const std::string & rulesBuffer,
+ const backgroundData & background)
 {
   using namespace levelFileKeywords;
 
@@ -564,14 +567,14 @@ void rules::parseRulesConfigFileAndInitialiseVariables
 		 case 0:
 		   headerKeywordActions[foundIter].found = true;
 		   headerKeywordActions[foundIter].headerAction
-		     (viewPortSize, rulesFileName, *this, background,
+		     (chunkSize, rulesFileName, *this, background,
 		      rulesBuffer, buffPos);
 		   break;
 		 case 1:
 		   /* We don't set found here because this keyword should have
 		      headerKeywordAction.foundMultipleOptional set to true. */
 		   headerKeywordActions[foundIter].headerAction
-		     (viewPortSize, rulesFileName, *this, background,
+		     (chunkSize, rulesFileName, *this, background,
 		      rulesBuffer, buffPos);
 		   break;
 		 }
@@ -798,10 +801,10 @@ void initPlayer
 }
 
 
-void initBgSprites(const yx viewPortSize, const char rulesFileName[],
-		   rules & levelRules, const backgroundData & background,
-		   const std::string & rawRules,
-		   std::string::const_iterator & buffPos)
+void initBgSprites
+(const yx viewPortSize, const char rulesFileName[], rules & levelRules,
+ const backgroundData & background, const std::string & rawRules,
+ std::string::const_iterator & buffPos)
 {
   using namespace levelFileKeywords;
   /* Setup keyword actions associations for background sprite section. This
@@ -1357,21 +1360,14 @@ char rules::nearPass(const std::vector<int> playerSpChoords,
 
 void rules::movePlayer
   (backgroundData & background, sprite::directions input)
-{ /* Move the player as long as they will stay within
-     PLAYER_MOVMENT_INNER_PADDING of the left and right borders. If the
-     player is PLAYER_MOVMENT_INNER_PADDING away from either the left or
-     right boarder and tries to move closer to the boarder they are closest
-     too then the background should be moved instead of the player in the
-     appropriate direction (If there is background to spare.) If we are at
-     either end of the level then the player cannot move further of
-     course. */
+{
   const int currDir {gamePlayer->getDirection()};
   
   if(input == sprite::DIR_UP // && !gamePlayer->isJumpNumMaxedOut()
      )
     {
       // Start jump.
-      //      gamePlayer->startJumping(viewPortPosition, viewPortSize, coordRulesCurrentContextBuffer);
+      gamePlayer->startJumping(chunkSize, secondStageRulesBuffer);
       // We wan't to keep moving in the direction we were moving in before.
       input = (sprite::directions)currDir;
     }
@@ -1379,7 +1375,8 @@ void rules::movePlayer
     {
       /* We are not jumping or we are past the start of a jump.
 	 If we can move down. */
-      //      gamePlayer->handleJumpingAndFalling(viewPortPosition, viewPortSize, coordRulesCurrentContextBuffer);
+      gamePlayer->handleJumpingAndFalling
+	(chunkSize, secondStageRulesBuffer);
     }
 
   // Handle contact with boarder characters.
@@ -1746,7 +1743,7 @@ void rules::printRuleChars(const yx viewPortSize)
 
   refresh();
   /* The game will slow down a bit in debug mode. */
-  sleep(9);
+  sleep(3);
 }
 #endif
 
@@ -1754,24 +1751,40 @@ void rules::printRuleChars(const yx viewPortSize)
 void rules::startTimers()
 {
   gameTiming.allPhysics.start();
+  gameTiming.movePlayer.start();
 }
 
+#include <curses.h>
+#include <iostream>
 
 void rules::physics
 (backgroundData & background, const sprite::directions input)
-{
+{ 
   updateBuffers();
   
 #ifdef DEBUG
-  printRuleChars(background.chunkSize);
+  // printRuleChars(background.chunkSize);
 #endif
+
+  static int timer {};
 
   if(gameTiming.allPhysics.startNextTick())
     {
-      movePlayer
-	(background, input);
-      background.updateViewPortPosition
-	(PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
-	 gamePlayer->getMaxBottomRightOffset());
+      endwin();
+      std::cout<<"tick tick tomorrow no. "<<timer<<'\n';
+      timer++;
+      if(timer > 30)
+	{
+	  exit(-1);
+	}
+      if(gameTiming.movePlayer.startNextTick())
+	{
+	  // gameTiming.movePlayer.setCurrentTime(gameTiming.allPhysics);
+	  movePlayer
+	    (background, input);
+	  background.updateViewPortPosition
+	    (PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
+	     gamePlayer->getMaxBottomRightOffset());
+	}
     }
 }

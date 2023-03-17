@@ -118,189 +118,187 @@ void player::updatePosRel(const sprite::directions dir)
 }
 
 
-bool player::startJumping
-(const int bgPosition, yx viewPortSize, const std::vector<char> & coordRules)
-{
-  bool retVar {false};
-  if(jumpNum < maxJumpNum)
-    {
-      jumpNum++;
-      vertVelocity = -gravitationalConstant;
-      jumping = jumpingUp;
-      retVar = true;
+// bool player::startJumping
+// (const int bgPosition, yx viewPortSize, char * )
+// {
+//   bool retVar {false};
+//   if(jumpNum < maxJumpNum)
+//     {
+//       jumpNum++;
+//       vertVelocity = -gravitationalConstant;
+//       jumping = jumpingUp;
+//       retVar = true;
 
-      for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
-	{
-	  for(auto coord: this->getXAbsRangeAsStrs(bgPosition, false, false))
-	    {
-	      char rule {};
-	      if(getCoordRule(coord, coordRules, viewPortSize.y, rule) &&
-		 rule == boarderRuleChars::BOARDER_CHAR)
-		{
-		  // We're going to hit something.
-		  goto RETURN;
-		}
-	    }
-	  // We don't want to hit the top of the level.
-	  if(position.y == 0)
-	    {
-	      goto RETURN;
-	    }
-	  // We're not going to hit anything, so jump!
-	  updatePosRel(sprite::DIR_UP);
-	}
-    }
-  else
-    {
-      /* We must call this here because this function is called (INSTEAD OF HANDLEJUMPINGANDFALLING())  when
-         sprite::DIR_UP is pressed and if we can't perform a new jump we must
-         continue the current jump / fall. */
-      handleJumpingAndFalling(bgPosition, viewPortSize, coordRules);
-    }
+//       for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
+// 	{
+// 	  for(auto coord: this->getXAbsRangeAsStrs(bgPosition, false, false))
+// 	    {
+// 	      char rule {};
+// 	      if(getCoordRule(coord, coordRules, viewPortSize.y, rule) &&
+// 		 rule == boarderRuleChars::BOARDER_CHAR)
+// 		{
+// 		  // We're going to hit something.
+// 		  goto RETURN;
+// 		}
+// 	    }
+// 	  // We don't want to hit the top of the level.
+// 	  if(position.y == 0)
+// 	    {
+// 	      goto RETURN;
+// 	    }
+// 	  // We're not going to hit anything, so jump!
+// 	  updatePosRel(sprite::DIR_UP);
+// 	}
+//     }
+//   else
+//     {
+//       /* We must call this here because this function is called (INSTEAD OF HANDLEJUMPINGANDFALLING())  when
+//          sprite::DIR_UP is pressed and if we can't perform a new jump we must
+//          continue the current jump / fall. */
+//       handleJumpingAndFalling(bgPosition, viewPortSize, coordRules);
+//     }
 
- RETURN:
-  return retVar;
-}
-
-
-void player::handleJumpingAndFalling
-(const int bgPosition, const yx & viewPortSize,
- const std::vector<char> & coordRules)
-{
-  if(jumping == notJumping)
-    {
-      handleFalling(bgPosition, viewPortSize, coordRules);
-    }
-  else
-    {
-      handleJumping(bgPosition, viewPortSize, coordRules);
-    }
-
-  return;			// Required by RETURN label I guess.
-}
+//  RETURN:
+//   return retVar;
+// }
 
 
-void player::handleFalling
-(const int bgPosition, const yx &viewPortSize,
- const std::vector<char> &coordRules)
-{
-  using namespace boarderRuleChars;
+// template<typename T>
+// void player::handleJumpingAndFalling
+// (const yx & viewPortSize, const T * coordRules)
+// {
+//   if(jumping == notJumping)
+//     {
+//       handleFalling(viewPortSize, coordRules);
+//     }
+//   else
+//     {
+//       handleJumping(viewPortSize, coordRules);
+//     }
+
+//   return;			// Required by RETURN label I guess.
+// }
+
+
+// void player::handleFalling
+// (const yx &viewPortSize, const std::vector<char> &coordRules)
+// {
+//   using namespace boarderRuleChars;
   
-  if((position.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
-    {
-      // We're at the bottom of the level.
-      return;
-    }
-  else
-    {
-      for(auto coord: this->getXAbsRangeAsStrs(bgPosition, true, false))
-	{
-	  char rule {};
-	  if(getCoordRule(coord, coordRules, viewPortSize.y, rule) &&
-	     (rule == BOARDER_CHAR ||
-	      rule == PLATFORM_CHAR))
-	    {
-	      // There's a rule character below stopping us from falling.
-	      return;
-	    }
-	}
-    }
+//   if((position.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
+//     {
+//       // We're at the bottom of the level.
+//       return;
+//     }
+//   else
+//     {
+//       for(auto coord: this->getXAbsRangeAsStrs(true, false))
+// 	{
+// 	  char rule {};
+// 	  if(getCoordRule(coord, coordRules, viewPortSize.y, rule) &&
+// 	     (rule == BOARDER_CHAR ||
+// 	      rule == PLATFORM_CHAR))
+// 	    {
+// 	      // There's a rule character below stopping us from falling.
+// 	      return;
+// 	    }
+// 	}
+//     }
   
-  jumpNum = maxJumpNum -maxFallingJumpNum;
-  vertVelocity = gravitationalConstant;
-  jumping = jumpingDown;
+//   jumpNum = maxJumpNum -maxFallingJumpNum;
+//   vertVelocity = gravitationalConstant;
+//   jumping = jumpingDown;
 
-  // We're jumping down.
-  handleFallingSimple(bgPosition, viewPortSize, coordRules);
-}
-
-
-void player::handleJumping
-(const int bgPosition, const yx & viewPortSize,
- const std::vector<char> & coordRules)
-{
-  if(jumping == jumpingUp)
-    {
-      if(vertVelocity <= maxVertVelocity)
-	{
-	  vertVelocity -= gravitationalConstant;
-	}
-      else
-	{
-	  jumping = jumpingDown;
-	  vertVelocity += gravitationalConstant;
-	}
-    }
-  else if(jumping == jumpingDown)
-    {
-      if(vertVelocity > -maxVertVelocity)
-	{
-	  vertVelocity += gravitationalConstant;
-	}
-    }
-
-  if(vertVelocity > 0)
-    {
-      // We are jumping up.
-      for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
-	{
-	  for(auto coord: this->getXAbsRangeAsStrs(bgPosition, false, false))
-	    {
-	      char rule {};
-	      if(getCoordRule(coord, coordRules, viewPortSize.y, rule) &&
-		 rule == boarderRuleChars::BOARDER_CHAR)
-		{
-		  // We're going to hit something.
-		  return;
-		}
-	    }
-	  if(position.y == 0)
-	    {
-	      return;
-	    }
-	  updatePosRel(sprite::DIR_UP);
-	}
-    }
-  else
-    {
-      // We're jumping down.
-      handleFallingSimple(bgPosition, viewPortSize, coordRules);
-    }
-}
+//   // We're jumping down.
+//   handleFallingSimple(viewPortSize, coordRules);
+// }
 
 
-void player::handleFallingSimple
-(const int bgPosition, const yx & viewPortSize,
- const std::vector<char> & coordRules)
-{
-  for(int jumps {(int)-vertVelocity}; jumps > 0; jumps--)
-    {
-      for(auto coord: this->getXAbsRangeAsStrs(bgPosition, true, false))
-	{
-	  char rule {};
-	  if(getCoordRule(coord, coordRules, viewPortSize.y, rule))
-	    {
-	      // We're going to hit something (stop jumping!)
-	      vertVelocity = 0;
-	      jumping = notJumping;
-	      jumpNum = 0;
-	      return;
-	    }
-	}
-      /* This is a simpler check but probably much less common, so we put it
-	 second. */
-      if((position.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
-	{
-	  // We're going to hit the bottom of the level (stop jumping!)
-	  vertVelocity = 0;
-	  jumping = notJumping;
-	  jumpNum = 0;
-	  return;
-	}
-      updatePosRel(sprite::DIR_DOWN);
-    }
+// void player::handleJumping
+// (const yx & viewPortSize, const std::vector<char> & coordRules)
+// {
+//   if(jumping == jumpingUp)
+//     {
+//       if(vertVelocity <= maxVertVelocity)
+// 	{
+// 	  vertVelocity -= gravitationalConstant;
+// 	}
+//       else
+// 	{
+// 	  jumping = jumpingDown;
+// 	  vertVelocity += gravitationalConstant;
+// 	}
+//     }
+//   else if(jumping == jumpingDown)
+//     {
+//       if(vertVelocity > -maxVertVelocity)
+// 	{
+// 	  vertVelocity += gravitationalConstant;
+// 	}
+//     }
 
-}
+//   if(vertVelocity > 0)
+//     {
+//       // We are jumping up.
+//       for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
+// 	{
+// 	  for(auto coord: this->getXAbsRangeAsStrs(false, false))
+// 	    {
+// 	      char rule {};
+// 	      if(getCoordRule(coord, coordRules, viewPortSize.y, rule) &&
+// 		 rule == boarderRuleChars::BOARDER_CHAR)
+// 		{
+// 		  // We're going to hit something.
+// 		  return;
+// 		}
+// 	    }
+// 	  if(position.y == 0)
+// 	    {
+// 	      return;
+// 	    }
+// 	  updatePosRel(sprite::DIR_UP);
+// 	}
+//     }
+//   else
+//     {
+//       // We're jumping down.
+//       handleFallingSimple(viewPortSize, coordRules);
+//     }
+// }
+
+
+// void player::handleFallingSimple
+// (const yx & viewPortSize,
+//  const std::vector<char> & coordRules)
+// {
+//   for(int jumps {(int)-vertVelocity}; jumps > 0; jumps--)
+//     {
+//       for(auto coord: this->getXAbsRangeAsStrs(true, false))
+// 	{
+// 	  char rule {};
+// 	  if(getCoordRule(coord, coordRules, viewPortSize.y, rule))
+// 	    {
+// 	      // We're going to hit something (stop jumping!)
+// 	      vertVelocity = 0;
+// 	      jumping = notJumping;
+// 	      jumpNum = 0;
+// 	      return;
+// 	    }
+// 	}
+//       /* This is a simpler check but probably much less common, so we put it
+// 	 second. */
+//       if((position.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
+// 	{
+// 	  // We're going to hit the bottom of the level (stop jumping!)
+// 	  vertVelocity = 0;
+// 	  jumping = notJumping;
+// 	  jumpNum = 0;
+// 	  return;
+// 	}
+//       updatePosRel(sprite::DIR_DOWN);
+//     }
+
+// }
 
 
 void player::draw

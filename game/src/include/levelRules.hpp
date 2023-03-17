@@ -76,8 +76,8 @@ private:
   // ===========================================================================
   // Where rulesBuffer holds the contents of a RULES_CONFIG_FILE_EXTENSION file.
   void parseRulesConfigFileAndInitialiseVariables
-  (const yx viewPortSize, const char rulesFileName [],
-   const std::string & rulesBuffer, const backgroundData & background);
+  (const char rulesFileName [], const std::string & rulesBuffer,
+   const backgroundData & background);
   // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files END ====
   // ===========================================================================
 
@@ -175,9 +175,12 @@ public:
       (rulesFileName, rulesBuffer,
        concat("trying to read ", RULES_CONFIG_FILE_EXTENSION, " file"));
     parseRulesConfigFileAndInitialiseVariables
-      (viewPortSize, rulesFileName, rulesBuffer, background);
+      (rulesFileName, rulesBuffer, background);
     // Initialise game timers.
-    gameTiming.allPhysics = chronological{0.0162, gameTimingErrorInfo};
+    /* NOTE THAT WE HAVE HARD CODED THESE VALUES HERE FOR NOW, BUT WE INTEND TO
+       HAVE AT LEAST SOME OF THEM LOADED FROM RULES.LEV FILES. */
+    gameTiming.allPhysics = chronological{16.2, gameTimingErrorInfo};
+    gameTiming.movePlayer = chronological{0.0324, gameTimingErrorInfo};
   }
 
   
