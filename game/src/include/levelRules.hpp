@@ -7,6 +7,7 @@
 #include "player.hpp"
 #include "backgroundSprite.hpp"
 #include "background.hpp"
+#include "chronological.hpp"
 
 
 class rules: public chunk<char>
@@ -14,6 +15,11 @@ class rules: public chunk<char>
 public:
   // The player cannot pass widthin this many character's of the window boarder's (y, x).
   const yx PLAYER_MOVEMENT_AREA_PADDING {13, 50};
+  /* Used to provide a nicer error message if the members of gameTiming aren't
+     initialised properly. */
+  const std::string gameTimingErrorInfo {"rules::startTimers()"};
+  // Used to handle all timing for the game.
+  timers gameTiming {};
   //For sprites (holds sprite data (slices) and the rule for the sprite.)
   struct spriteInfo
   { // Sprite data to go here (when I do it.)
@@ -29,10 +35,6 @@ public:
   const yx playerMovementInnerLRBoarder {0, 44};
   
 private:
-  // These are in seconds.
-  const long double engineTickTime {0.0162};
-  const long double ticksPerSec {((long double)CLOCKS_PER_SEC)};
-  long double lastTickTime;
   // Contains position based rules for current view port position.
   chunkElementBaseType * secondStageRulesBuffer;
   
@@ -79,17 +81,16 @@ private:
   // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files END ====
   // ===========================================================================
 
+  
   // Updates rule characters buffers.
   void updateBuffers()
   {
     updateFirstStageBuffer();
     updateSecondStageBuffer(secondStageRulesBuffer);
   }
-  long double getClockTicks() {return (long double)clock() / ticksPerSec;}
-  // /* Set's oldTime to the current time if
-  //    (oldTime - (the current time) >= second). */
-  // void resetOldTime(std::__1::chrono::steady_clock::time_point & oldTime);
-  // check level agains sprite
+
+  
+  // check level against sprite
   char intersection(const std::string & boundsInteraction,
 		    const std::vector<int> spChoords);
   // check player against sprite
@@ -163,11 +164,7 @@ public:
      be a corresponding chunk in rules::coordRules. */
   rules
   (const yx viewPortSize, const char coordRulesFileName [],
-   const char rulesFileName [], const backgroundData & background) :
-    /* Clock() returns the number of clock ticks elapsed since the program was
-       started. NOTE that this is not the actual number of clock ticks and is
-       determined by the compiler. */
-    lastTickTime(getClockTicks()),
+   const char rulesFileName [], const backgroundData & background):
     chunk(viewPortSize, coordRulesFileName),
     secondStageRulesBuffer
     (new chunkElementBaseType [viewPortSize.y * viewPortSize.x])
@@ -179,6 +176,8 @@ public:
        concat("trying to read ", RULES_CONFIG_FILE_EXTENSION, " file"));
     parseRulesConfigFileAndInitialiseVariables
       (viewPortSize, rulesFileName, rulesBuffer, background);
+    // Initialise game timers.
+    gameTiming.allPhysics = chronological{0.0162, gameTimingErrorInfo};
   }
 
   
@@ -188,8 +187,9 @@ public:
     delete gamePlayer;
   }
 
-  
-  bool oneEngineTickPassed();
+
+  // Initialises all timers used for game timing.
+  void startTimers();
   void physics
   (backgroundData & background, const sprite::directions input);
 };

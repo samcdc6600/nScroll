@@ -86,13 +86,12 @@ void menu
 int gameLoop
 (std::__1::chrono::steady_clock::time_point lastTickTime,
  backgroundData & background, rules & levelRules)
-{ 
+{
+  levelRules.startTimers();
+  
   while(true)
     {
       sprite::directions input {};
-
-      // const size_t backgroundLen {background.size() /
-      // 	viewPortSize.y};
 
       input = player::convertDirectionCharsToDirections
 	(static_cast<player::directionChars>(getch()));
@@ -106,12 +105,8 @@ int gameLoop
 	  break;
 	}
       
-      if(levelRules.oneEngineTickPassed())
-	{
-	  // std::cout<<"hello\n";
-	  // levelRules.physics
-	  //   (background, input);
-	}
-      // draw(background, levelRules.gamePlayer, levelRules.bgSprites);
+      levelRules.physics
+	(background, input);
+      draw(background, levelRules.gamePlayer, levelRules.bgSprites);
     }
 }
