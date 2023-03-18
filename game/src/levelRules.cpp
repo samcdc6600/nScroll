@@ -1750,12 +1750,9 @@ void rules::printRuleChars(const yx viewPortSize)
 
 void rules::startTimers()
 {
-  gameTiming.allPhysics.start();
   gameTiming.movePlayer.start();
 }
 
-#include <curses.h>
-#include <iostream>
 
 void rules::physics
 (backgroundData & background, const sprite::directions input)
@@ -1763,28 +1760,15 @@ void rules::physics
   updateBuffers();
   
 #ifdef DEBUG
-  // printRuleChars(background.chunkSize);
+  printRuleChars(background.chunkSize);
 #endif
 
-  static int timer {};
-
-  if(gameTiming.allPhysics.startNextTick())
+  if(gameTiming.movePlayer.startNextTick())
     {
-      endwin();
-      std::cout<<"tick tick tomorrow no. "<<timer<<'\n';
-      timer++;
-      if(timer > 30)
-	{
-	  exit(-1);
-	}
-      if(gameTiming.movePlayer.startNextTick())
-	{
-	  // gameTiming.movePlayer.setCurrentTime(gameTiming.allPhysics);
-	  movePlayer
-	    (background, input);
-	  background.updateViewPortPosition
-	    (PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
-	     gamePlayer->getMaxBottomRightOffset());
-	}
+      movePlayer
+	(background, input);
+      background.updateViewPortPosition
+	(PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
+	 gamePlayer->getMaxBottomRightOffset());
     }
 }

@@ -179,8 +179,9 @@ public:
     // Initialise game timers.
     /* NOTE THAT WE HAVE HARD CODED THESE VALUES HERE FOR NOW, BUT WE INTEND TO
        HAVE AT LEAST SOME OF THEM LOADED FROM RULES.LEV FILES. */
-    gameTiming.allPhysics = chronological{16.2, gameTimingErrorInfo};
-    gameTiming.movePlayer = chronological{0.0324, gameTimingErrorInfo};
+    gameTiming.movePlayer = chronological{22.2, gameTimingErrorInfo};
+    // 8.3333 ~ 120 FPS
+    gameTiming.drawTime = chronological{8.3333, gameTimingErrorInfo};
   }
 
   

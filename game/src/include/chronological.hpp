@@ -5,7 +5,6 @@
 #include <ctime>
 #include "utils.hpp"
 
-#include <iostream>  
 
 class chronological
 {
@@ -19,10 +18,8 @@ private:
   bool started {false};
   /* const */ bool tickTimeSet {false};
   /* const */ std::string toSeeIfError;
-    /* T holds the last updated time for this object, tLast holds the time
-       before that. */
-  long t, tLast;
-  /* const */ long double scaleFactor {1000};
+  std::__1::chrono::steady_clock::time_point tLast;
+  const long double scaleFactor {1000};
 
 
   /* Most if not every public function belonging to this object (apart from any
@@ -51,25 +48,11 @@ private:
 	     ERROR_BAD_LOGIC);
       }
   }
-  
-
-  // long double getDelta()
-  // {
-  //   t = time(nullptr);
-  //   return (long double)(t - tLast) / scaleFactor;
-  // }
-
-
-  // void update()
-  // { 
-  //   tLast = t;
-  //   t = time(nullptr);
-  // }
 
   
 public:
-  /* TickTime holds the time delta at which an event should take
-     place. */
+  /* TickTime holds the time delta (in milliseconds) at which an event should
+     take place. */
   /* const */ long double tickTime;
 
 
@@ -91,17 +74,11 @@ public:
       {
 	return * this;
       }
-    
     tickTime = rhs.tickTime;
     started = rhs.started;
     tickTimeSet = rhs.tickTimeSet;
     toSeeIfError = rhs.toSeeIfError;
-    /* T holds the last updated time for this object, tLast holds the time before
-     that and tickTime holds the time delta at which an event should take
-     place. */
-    t = rhs.t;
     tLast = rhs.tLast;
-    
     /* NOTE THAT THERE IS NO NEED FOR THIS. IT SHOULD ALWAYS BE THE SAME AND IS
        ALWAYS ALREADY DEFINED.
        scaleFactor = rhs.scaleFactor;
@@ -109,70 +86,58 @@ public:
     return *this;
   }
 
+  
   void start()
   {
     started = true;
-    t = time(nullptr);
-    tLast = t;
+    tLast = std::chrono::steady_clock::now();
   }
 
-  void start(long startTime)
+  
+  void start(std::__1::chrono::steady_clock::time_point startTime)
   {
     started = true;
-    t = startTime;
-    tLast = t;
+    tLast = startTime;
   }
 
-  /* Can be used to get the current time of a master chronological object so
+
+  /* Can be used to get the last time of a master chronological object so
      that other chronological object may be fully initialised with the same
      start time (using start()). */
-  long getCurrentTime() const
+  std::__1::chrono::steady_clock::time_point getLastTime() const
   {
     checkIfFullyInitialised("getCurrentTime()");
     
-    return t;
-  }
-
-  /* Can be used to update an objects current time to the time of a master
-     chronological object. */
-  void setCurrentTime(const chronological & master)
-  {
-    t = master.getCurrentTime();
+    return tLast;
   }
   
   
   bool startNextTick()
   {
-    // checkIfFullyInitialised("startNextTick()");
+    checkIfFullyInitialised("startNextTick()");
 
-      t = time(nullptr);
-      // return (long double)(t - tLast) / scaleFactor;
-      //    if(getDelta() > tickTime)
-      if(((long double)(t - tLast) / scaleFactor) > tickTime)
-      {
-	std::cout<<"(t - tLast) = "<<(t - tLast)<<'\t'<<"(t - tLast) / scaleFactor) = "<<(t - tLast) / scaleFactor<<'\t';
-	// std::cout<<"(long double)(t - tLast) / scaleFactor; = "<< (long double)(t - tLast) / scaleFactor<<'\n';
-	// std::cout<<"tickTime = "<<tickTime;
-	    std::cout<<"t = "<<t<<'\t';
-	    std::cout<<"tLast = "<<tLast<<'\n';
-	// update();
-	    tLast = t;
-	    
-	return true;
-      }
-    else
-      {
-	return false;
-      }
+    std::__1::chrono::steady_clock::time_point currentTime
+    {std::chrono::steady_clock::now()};
+  if((duration_cast<std::chrono::duration<long double>>
+      (currentTime - tLast)).count() >= (tickTime / scaleFactor))
+    {
+      tLast = currentTime;
+      return true;
+    }
+  else
+    {
+      return false;
+    }
   }
 };
 
 
-// This struct conatins all timers for the game.
+/* This struct contains all timers for the game (note that timers should not be
+   nested.) */
 struct timers
 {
-  chronological allPhysics {};
   chronological movePlayer {};
+  chronological drawTime {};
 };
 
 

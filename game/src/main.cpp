@@ -107,6 +107,6 @@ int gameLoop
       
       levelRules.physics
 	(background, input);
-      // draw(background, levelRules.gamePlayer, levelRules.bgSprites);
+      draw(background, levelRules.gamePlayer, levelRules.bgSprites);
     }
 }
