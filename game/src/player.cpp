@@ -47,6 +47,20 @@ yx player::calcInitialPos
 (const backgroundData & background, const yx PLAYER_MOVEMENT_AREA_PADDING,
  const yx initialViewPortPosition, const yx initialRelativePos)
 {
+  if(((viewPortSize.y -1 -maxBottomRightOffset.y) / 2)
+     < PLAYER_MOVEMENT_AREA_PADDING.y ||
+     ((viewPortSize.x -1 -maxBottomRightOffset.x) / 2)
+     < PLAYER_MOVEMENT_AREA_PADDING.x)
+    {
+      exit(concat
+	   ("Error: viewPortPadding (", PLAYER_MOVEMENT_AREA_PADDING.y, ", ",
+	    PLAYER_MOVEMENT_AREA_PADDING.x, ") is out of range. Assuming "
+	    "initialCoordinateViewPortPaddingRelative is (0, 0), the range for "
+	    "viewPortPadding is [0, 0] to [",
+	    ((viewPortSize.y -1 -maxBottomRightOffset.y) / 2), ", ",
+	    ((viewPortSize.x -1 -maxBottomRightOffset.x) / 2), "]."),
+	   ERROR_SPRITE_POS_RANGE);
+    }
     if(initialRelativePos.y < 0 ||
        initialRelativePos.y >
        background.chunkSize.y -
@@ -57,9 +71,9 @@ yx player::calcInitialPos
        (PLAYER_MOVEMENT_AREA_PADDING.x * 2) -1 -maxBottomRightOffset.x)
     {
       exit(concat
-	   ("Error: InitialPlayerCoordinateViewPortPaddingRelative "
+	   ("Error: initialCoordinateViewPortPaddingRelative "
 	    "(", initialRelativePos.y, ",", initialRelativePos.x, ") is out of "
-	    "bounds! InitialPlayerCoordinateViewPortPaddingRelative should be "
+	    "bounds! InitialCoordinateViewPortPaddingRelative should be "
 	    "in the range (", 0, ",", 0, ") to (",
 	    background.chunkSize.y -
 	    (PLAYER_MOVEMENT_AREA_PADDING.y * 2) -1

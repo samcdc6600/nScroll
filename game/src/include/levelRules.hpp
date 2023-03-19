@@ -13,8 +13,6 @@
 class rules: public chunk<char>
 {
 public:
-  // The player cannot pass widthin this many character's of the window boarder's (y, x).
-  const yx PLAYER_MOVEMENT_AREA_PADDING {13, 50};
   /* Used to provide a nicer error message if the members of gameTiming aren't
      initialised properly. */
   const std::string gameTimingErrorInfo {"rules::startTimers()"};
@@ -35,6 +33,9 @@ public:
   const yx playerMovementInnerLRBoarder {0, 44};
   
 private:
+  /* The player cannot pass widthin this many character's of the window
+     boarder's (y, x). This variable shouldn't be changed once it is set. */
+  yx PLAYER_MOVEMENT_AREA_PADDING {};
   // Contains position based rules for current view port position.
   chunkElementBaseType * secondStageRulesBuffer;
   
@@ -192,6 +193,7 @@ public:
   }
 
 
+  yx getPlayerMovementAreaPadding() {return PLAYER_MOVEMENT_AREA_PADDING;}
   // Initialises all timers used for game timing.
   void startTimers();
   void physics

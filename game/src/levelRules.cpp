@@ -51,21 +51,24 @@ namespace levelFileKeywords
   constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
   constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
   // constexpr char RULES_HEADER_END_DENOTATION [] {"\n#"};
-  // Header section header.
+  // Header section header. ====================================================
   const std::string PLAYER_HEADER_SECTION_SPECIFIER {"player"};
   const std::string BG_SPRITE_HEADER_SECTION_SPECIFIER {"backgroundSprite"};
   const std::string SPRITE_FILE_SECTION_HEADER		{"sprites"};
-  // Header sub section headers.
-  // Sub section headers for general sprite stuff and player.
+  // Header sub section headers. ===============================================
+  // Sub section headers for general sprite stuff and player. ==================
+  const std::string SPRITE_INIT_COORD_SECTION_HEADER	{"initialCoordinate"};
+  // Sub section headers for player sprite. ====================================
   /* Initial position of the view port (from the top left.) */
   const std::string PLAYER_VIEW_PORT_INIT_COORD_SECTION_HEADER
     {"initialViewPortCoordinate"};
   /* The initial coordinate of the player is relative to the initial view port
      position and the player movement padding. */
   const std::string PLAYER_VIEW_PORT_PADDING_REL_INIT_COORD_SECTION_HEADER
-    {"initialPlayerCoordinateViewPortPaddingRelative"};
-  const std::string SPRITE_INIT_COORD_SECTION_HEADER	{"initialCoordinate"};
-  // Sub section headers for player sprite.
+    {"initialCoordinateViewPortPaddingRelative"};
+  /* The player sprite cannot be within this many characters of any edge of the
+     view port. */
+  const std::string VIEW_PORT_PADDING {"viewPortPadding"};
   const std::string SPRITE_INIT_DIR_SECTION_HEADER	{"initialDirection"};
   const std::string SPRITE_HEALTH_SECTION_HEADER	{"initialHealth"};
   const std::string SPRITE_GRAV_CONST_SECTION_HEADER	{"gravConst"};
@@ -101,7 +104,8 @@ namespace levelFileKeywords
       {SPRITE_GRAV_CONST_SECTION_HEADER,	orderAndDefaultVal {5, true}},
       {SPRITE_MAX_VERT_V_SECTION_HEADER,	orderAndDefaultVal {6, true}},
       {SPRITE_MAX_FALL_JMP_SECTION_HEADER, orderAndDefaultVal {7, true}},
-      {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {8, true}}
+      {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {8, true}},
+      {VIEW_PORT_PADDING, orderAndDefaultVal {9, true}}
     };
   const std::map<std::string, orderAndDefaultVal> bgSpriteSectionKeywordToId
     {
@@ -134,6 +138,10 @@ namespace levelFileKeywords
       const sprite::directions direction {sprite::DIR_NONE};
       const bool displayInForground {false};
     }
+    namespace misc
+    {
+      const yx viewPortPadding {0, 0};
+    }
   }
   /* This struct should be populated with the values that the player will
      eventually be initialised with. */
@@ -158,6 +166,12 @@ namespace levelFileKeywords
     sprite::directions direction {};
     bool displayInForground {};
   };
+  /* Misc is used for variables read in that are used in the rules object
+     itself. */
+  struct
+  {
+    yx viewPortPadding;
+  } misc;
   // Misc.
   constexpr char STRING_DENOTATION		{'\"'};
   constexpr char STRING_SEPARATION		{','};
@@ -627,6 +641,10 @@ void rules::parseRulesConfigFileAndInitialiseVariables
 	  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
 	}
     }
+
+  // exit(concat("viewPortPadding = ", misc.viewPortPadding), 0);
+  // Init class member variables with values from misc struct.
+  PLAYER_MOVEMENT_AREA_PADDING = misc.viewPortPadding;
 }
 
 void initPlayer
@@ -663,7 +681,9 @@ void initPlayer
      keywordAction::headerKeywordAction
      {SPRITE_MAX_FALL_JMP_SECTION_HEADER, nullptr},
      keywordAction::headerKeywordAction
-     {SPRITE_MAX_JMP_NUM_SECTION_HEADER, nullptr}};
+     {SPRITE_MAX_JMP_NUM_SECTION_HEADER, nullptr},
+     keywordAction::headerKeywordAction
+     {VIEW_PORT_PADDING, readSingleCoordSectionInNNumbers}};
 
   std::vector<std::string> targets {};
   std::string targetFound {};
@@ -752,6 +772,15 @@ void initPlayer
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
 		case 8:
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+		case 9:
+		  playerHeaderKeywordActions[foundIter].found = true;
+		  playerHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat("reading \"coord section\" (from",
+			    RULES_CONFIG_FILE_EXTENSION, " header file "
+			    "\"", rulesFileName, "\") for the view port "
+			    "padding values"),
+		     &misc.viewPortPadding);
 		}
 
 	      if(false)
@@ -789,7 +818,7 @@ void initPlayer
     }
 
   levelRules.gamePlayer =
-    new player(background, levelRules.PLAYER_MOVEMENT_AREA_PADDING,
+    new player(background, misc.viewPortPadding,
 	       playerInitData.spritePaths,
 	       playerInitData.initialViewPortCoordinates,
 	       playerInitData.initialCoordinatesRelative,
@@ -1248,6 +1277,9 @@ void checkForDefaultPlayerValues
       break;
     case 8:
       playerInitData.maxJumpNumber = defaultValues::player::maxJumpNumber;
+      break;
+    case 9:
+      misc.viewPortPadding = defaultValues::misc::viewPortPadding;
       break;
     default:
     DEFAULT:
