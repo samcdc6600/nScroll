@@ -391,22 +391,22 @@ bool sprite::checkBoundValue(const int bound)
 }
 
 
-bool sprite::notInWindowInnerPaddingY(const int y, const int yPadding)
-{
-  checkBoundValue(yPadding);
-  const int maximumY {y + maxBottomRightOffset.y};
-  // >= and < because we start at 0.
-  return (y >= yPadding) && maximumY < (viewPortSize.y - yPadding);
-}
+// bool sprite::notBetweenWindowPaddingY(const int y, const int yPadding)
+// {
+//   checkBoundValue(yPadding);
+//   const int maximumY {y + maxBottomRightOffset.y};
+//   // >= and < because we start at 0.
+//   return (y >= yPadding) && maximumY < (viewPortSize.y - yPadding);
+// }
 
 
-bool sprite::notInWindowInnerPaddingX(const int x, const int xPadding)
-{
-    checkBoundValue(xPadding);
-    const int maximumX {x + maxBottomRightOffset.x};
-    // >= and < because we start at 0.
-    return (x >= xPadding && maximumX < (viewPortSize.x - xPadding));
-}
+// bool sprite::notBetweenWindowPaddingX(const int x, const int xPadding)
+// {
+//     checkBoundValue(xPadding);
+//     const int maximumX {x + maxBottomRightOffset.x};
+//     // >= and < because we start at 0.
+//     return (x >= xPadding && maximumX < (viewPortSize.x - xPadding));
+// }
 
 
 // bool sprite::inWindowY(const int y)

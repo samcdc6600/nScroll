@@ -1394,6 +1394,7 @@ void rules::movePlayer
   (backgroundData & background, sprite::directions input)
 {
   const int currDir {gamePlayer->getDirection()};
+  gamePlayer->setPreviousPos();
   
   if(input == sprite::DIR_UP // && !gamePlayer->isJumpNumMaxedOut()
      )
@@ -1415,7 +1416,7 @@ void rules::movePlayer
   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
      input == sprite::DIR_DOWN)
     {
-      // input = handleGroundCollision(viewPortPosition, viewPortSize.y);
+      input = handleGroundCollision();
     }
   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
@@ -1428,132 +1429,102 @@ void rules::movePlayer
       // input = handleLeftCollision(viewPortPosition, viewPortSize.y);
     }
 
-  handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe(input);
+  //handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe(input);
+  // handleFinalPlayerMovement(input);
+
+  gamePlayer->updatePosRel(input);
 }
 
 
-void rules::handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe
-(const sprite::directions newDir)
-{
-  const yx peekPos {gamePlayer->peekAtPos(newDir)};
-  // if(gamePlayer->inLevelY(peekPos.y, viewPortSize.y) &&
-  //    gamePlayer->inLevelX(peekPos.x + viewPortPosition.x, backgroundLength))
-  //   {
-  //     // We won't be outside of the level if we move.
-  //     handleFinalPlayerMovementAndWindowAndPaddingInteractions
-  // 	(newDir, viewPortPosition, viewPortSize, backgroundLength, peekPos);
-  //   }
-  // else
-  //   {
-      gamePlayer->updateDirection(sprite::DIR_NONE);
-    // }
-}
+// void rules::handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe
+// (const sprite::directions newDir)
+// {
+//   const yx peekPos {gamePlayer->peekAtPos(newDir)};
+  
+//       // We won't be outside of the level if we move.
+//       handleFinalPlayerMovementAndWindowAndPaddingInteractions
+// 	(newDir, peekPos);
+// }
 
 
-void rules::handleFinalPlayerMovementAndWindowAndPaddingInteractions
-(const sprite::directions newDir, yx & viewPortPosition, const yx viewPortSize,
- const size_t backgroundLength, const yx peekPos)
-{
-    /* Make any final movement, check for window padding contact and take
-     appropriate action if such contact is made. */
-  if(((newDir == sprite::DIR_LEFT || newDir == sprite::DIR_RIGHT) &&
-      gamePlayer->notInWindowInnerPaddingX(peekPos.x,
-					  PLAYER_MOVEMENT_AREA_PADDING.x)) ||
-     newDir == sprite::DIR_NONE)	// Only need to check for DIR_NONE here.
-    {
-      // We're not going to go into the padding.
-      gamePlayer->updatePosRel(newDir);
-    }
-  else if((newDir == sprite::DIR_DOWN || newDir == sprite::DIR_UP)
-	  && gamePlayer->notInWindowInnerPaddingY(peekPos.y,
-						 PLAYER_MOVEMENT_AREA_PADDING.y))
-    {
-      // We're not going to go into the padding.
-      gamePlayer->updatePosRel(newDir);
-    }
-  else
-    {
-      movePlayerWhenInteractingWithInnerPadding(newDir, viewPortPosition, viewPortSize,
-					       backgroundLength, peekPos);
-    }
-}
+// void rules::handleFinalPlayerMovement(const sprite::directions newDir)
+// {
+  
+// }
 
 
-void rules::movePlayerWhenInteractingWithInnerPadding
-(const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
- const size_t backgroundLength, const yx peekPos)
-{
-  /* We use this variable in the call's to inWindowInnerPadding() when peekPos
-     is out of the x boarder range. */
-  constexpr int REACHED_INNER_PADDING_X {0};
-  switch(input)
-    {
-    case sprite::DIR_NONE:
-      break;
-    case sprite::DIR_UP:
-      gamePlayer->updatePosRel(input);
-      break;
-    case sprite::DIR_RIGHT:
-      movePlayerRightWhenInteractingWithInnerPadding
-	(input, viewPortPosition, viewPortSize, backgroundLength, peekPos,
-	 REACHED_INNER_PADDING_X);
-      break;
-    case sprite::DIR_DOWN:
-      gamePlayer->updatePosRel(input);
-      break;
-    case sprite::DIR_LEFT:
-      movePlayerLeftWhenInteractingWithInnerPadding
-	(input, viewPortPosition, viewPortSize, backgroundLength, peekPos,
-	 REACHED_INNER_PADDING_X);
-      break;
-    }
-}
+// void rules::movePlayerWhenInteractingWithInnerPadding
+// (const sprite::directions input, const yx peekPos)
+// {
+//   /* We use this variable in the call's to inWindowInnerPadding() when peekPos
+//      is out of the x boarder range. */
+//   constexpr int REACHED_INNER_PADDING_X {0};
+//   switch(input)
+//     {
+//     case sprite::DIR_NONE:
+//       break;
+//     case sprite::DIR_UP:
+//       gamePlayer->updatePosRel(input);
+//       break;
+//     case sprite::DIR_RIGHT:
+//       movePlayerRightWhenInteractingWithInnerPadding
+// 	(input, peekPos, REACHED_INNER_PADDING_X);
+//       break;
+//     case sprite::DIR_DOWN:
+//       gamePlayer->updatePosRel(input);
+//       break;
+//     case sprite::DIR_LEFT:
+//       movePlayerLeftWhenInteractingWithInnerPadding
+// 	(input, peekPos, REACHED_INNER_PADDING_X);
+//       break;
+//     }
+// }
 
 
-void rules::movePlayerRightWhenInteractingWithInnerPadding
-(const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
- const size_t backgroundLength, const yx peekPos,
- const int REACHED_INNER_PADDING_X)
-{
-  if(gamePlayer->leftOfWindowInnerRightPadding
-     (peekPos.x, PLAYER_MOVEMENT_AREA_PADDING.x, viewPortSize))
-    { // We are to the left of the inner right padding.
-      gamePlayer->updatePosRel(input);
-    }
-  else if(size_t(viewPortPosition.x + viewPortSize.x) < backgroundLength)
-    { // There is still background left to spare.
-      gamePlayer->updateDirection(input);
-      viewPortPosition.x++;	// Move background.
-    }
-  else if(size_t(viewPortPosition.x + viewPortSize.x) == backgroundLength)
-    { /* No background left, so move the player to the right
-	 edge of the background. */
-      gamePlayer->updatePosRel(input);
-    }
-}
+// void rules::movePlayerRightWhenInteractingWithInnerPadding
+// (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
+//  const size_t backgroundLength, const yx peekPos,
+//  const int REACHED_INNER_PADDING_X)
+// {
+//   if(gamePlayer->leftOfWindowInnerRightPadding
+//      (peekPos.x, PLAYER_MOVEMENT_AREA_PADDING.x, viewPortSize))
+//     { // We are to the left of the inner right padding.
+//       gamePlayer->updatePosRel(input);
+//     }
+//   else if(size_t(viewPortPosition.x + viewPortSize.x) < backgroundLength)
+//     { // There is still background left to spare.
+//       gamePlayer->updateDirection(input);
+//       viewPortPosition.x++;	// Move background.
+//     }
+//   else if(size_t(viewPortPosition.x + viewPortSize.x) == backgroundLength)
+//     { /* No background left, so move the player to the right
+// 	 edge of the background. */
+//       gamePlayer->updatePosRel(input);
+//     }
+// }
 
 
-void rules::movePlayerLeftWhenInteractingWithInnerPadding
-(const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
- const size_t backgroundLength, const yx peekPos,
- const int REACHED_INNER_PADDING_X)
-{
-  if(gamePlayer->rightOfWindowInnerLeftPadding
-     (peekPos.x, PLAYER_MOVEMENT_AREA_PADDING.x))
-    { // We are to the righ of the inner left padding.
-      gamePlayer->updatePosRel(input);
-    }
-  else if(viewPortPosition.x > 0)
-    { // There is still background left to spare.
-      gamePlayer->updateDirection(input);
-      viewPortPosition.x--;	// Move background.
-    }
-  else if(viewPortPosition.x == 0)
-    { /* No background left, so move the player to the left
-	 edge of the background. */
-      gamePlayer->updatePosRel(input);
-    }
-}
+// void rules::movePlayerLeftWhenInteractingWithInnerPadding
+// (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
+//  const size_t backgroundLength, const yx peekPos,
+//  const int REACHED_INNER_PADDING_X)
+// {
+//   if(gamePlayer->rightOfWindowInnerLeftPadding
+//      (peekPos.x, PLAYER_MOVEMENT_AREA_PADDING.x))
+//     { // We are to the righ of the inner left padding.
+//       gamePlayer->updatePosRel(input);
+//     }
+//   else if(viewPortPosition.x > 0)
+//     { // There is still background left to spare.
+//       gamePlayer->updateDirection(input);
+//       viewPortPosition.x--;	// Move background.
+//     }
+//   else if(viewPortPosition.x == 0)
+//     { /* No background left, so move the player to the left
+// 	 edge of the background. */
+//       gamePlayer->updatePosRel(input);
+//     }
+// }
 
 
 // int rules::getClosestBoarderCharAbove(const int position,
@@ -1631,22 +1602,21 @@ void rules::movePlayerLeftWhenInteractingWithInnerPadding
 
 /* Checks for contact with boarder characters when moving down. Returns the
    direction that the player should be moving in. */
-sprite::directions rules::handleGroundCollision(const yx viewPortPosition,
-						const int backgroundHeight)
+sprite::directions rules::handleGroundCollision()
 {
   sprite::directions retDir {sprite::DIR_DOWN};
-  // for(yx coord:
-  // 	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact(position))
-  //   {
-  //     char rule {};
-  //     if(getCoordRule(coord, coordRules, backgroundHeight, rule) &&
-  // 	 (rule == boarderRuleChars::BOARDER_CHAR ||
-  // 	  rule == boarderRuleChars::PLATFORM_CHAR))
-  // 	{
-  // 	  retDir = sprite::DIR_NONE;
-  // 	  break;
-  // 	}
-  //   }
+  for(yx coord:
+	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact())
+    {
+      char rule {};
+      if(getCoordRule(coord, chunkSize, secondStageRulesBuffer, rule) &&
+	 (rule == boarderRuleChars::BOARDER_CHAR ||
+	  rule == boarderRuleChars::PLATFORM_CHAR))
+	{
+	  retDir = sprite::DIR_NONE;
+	  break;
+	}
+    }
   return retDir;
 }
 
@@ -1800,7 +1770,13 @@ void rules::physics
       movePlayer
 	(background, input);
       background.updateViewPortPosition
-	(PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
-	 gamePlayer->getMaxBottomRightOffset());
+	(PLAYER_MOVEMENT_AREA_PADDING,
+	 gamePlayer->getPos(background.getViewPortPosition()),
+	 gamePlayer->getMaxBottomRightOffset());      
+      gamePlayer->resetPositionWithPreviousPos
+	(updateViewPortPosition
+	 (PLAYER_MOVEMENT_AREA_PADDING,
+	  gamePlayer->getPos(background.getViewPortPosition()),
+	  gamePlayer->getMaxBottomRightOffset()));
     }
 }

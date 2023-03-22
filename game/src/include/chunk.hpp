@@ -5,6 +5,7 @@
 #include <map>
 #include "utils.hpp"
 
+#include <iostream>
 
 template <typename chunkElementType>
 class  chunk
@@ -449,54 +450,111 @@ public:
     firstStageBuffer.viewPortPosition = initialCenterPos;
   }
 
-  
+
   /* Updates the view port position based on the player position. Note that the
      view port position may not be updated if the play is still within certain
      bounds.*/
-  void updateViewPortPosition
-  (const yx playerMovementAreaPadding, const yx playerPosTopLeft,
-   const yx playerPosBottomRight)
+  bool updateViewPortPosition
+  (const yx playerMovementAreaPadding, const yx playerPos,
+   const yx playerMaxBottomRightOffset)
   {
-    std::function<bool()> testPaddingInX = [&]()
+    // Tests for if player is above or to the left of padding.
+    std::function<bool(bool)> testPaddingDirectionInDimension =
+      [&](bool yDimension)
+      {
+	if(yDimension)
+	  {
+	    return playerPos.y <
+	      (firstStageBuffer.viewPortPosition.y +
+	       playerMovementAreaPadding.y);
+	  }
+	else
+	  {
+	    return (playerPos.x <
+		    (firstStageBuffer.viewPortPosition.x +
+		     playerMovementAreaPadding.x));
+	  }
+      };
+    /* Test if player is if player is outisde of zone inside of padding in the y
+       or x dimension */
+    std::function<bool(bool)> testPaddingInDimension = [&](bool yDimension)
     {
-      return playerPosTopLeft.x <=
-	(firstStageBuffer.viewPortPosition.x +
-	 playerMovementAreaPadding.x) &&
-	playerPosBottomRight.x >=
-	(firstStageBuffer.viewPortPosition.x + chunkSize.x
-	 - playerMovementAreaPadding.x);
+      if(yDimension)
+	{ 
+	  return (testPaddingDirectionInDimension(true) ||
+		  (playerMaxBottomRightOffset.y + 1 + playerPos.y) >
+		  (firstStageBuffer.viewPortPosition.y + chunkSize.y
+		   - playerMovementAreaPadding.y));
+	}
+      else
+	{
+	  return (testPaddingDirectionInDimension(false) ||
+		  (playerMaxBottomRightOffset.x + playerPos.x) >
+		  (firstStageBuffer.viewPortPosition.x + chunkSize.x
+		   - playerMovementAreaPadding.x));
+	}
     };
-  
-  
-    if(playerPosTopLeft.y <
-       (firstStageBuffer.viewPortPosition.y + playerMovementAreaPadding.y) &&
-       playerPosBottomRight.y >
-       (firstStageBuffer.viewPortPosition.y +
-	chunkSize.y - playerMovementAreaPadding.y))
+
+    bool viewPortPosChanged {false};
+    
+    // Test in Y dimension.
+    if(testPaddingInDimension(true))
       {
-	if(testPaddingInX())
+	/* The top of the player is in or above the top padding
+	   or the bottom of the player player is in or below the bottom
+	   padding.
+	   UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
+	if(testPaddingDirectionInDimension(true))
 	  {
-	    /* The left of the player is in or to the left of the left padding
-	       or the right of the player is in or to the right of the right
-	       padding.
-	       UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
+	    // The player is in the top padding.
+	    firstStageBuffer.viewPortPosition.y -=
+	      abs((firstStageBuffer.viewPortPosition.y +
+		   playerMovementAreaPadding.y) - playerPos.y);
+	    viewPortPosChanged = true;
+	  }
+	else
+	  {
+	    // exit(-1);
+	    // The player is in the bottom padding.
+	    firstStageBuffer.viewPortPosition.y +=
+	      abs((firstStageBuffer.viewPortPosition.y + chunkSize.y
+		   - playerMovementAreaPadding.y) -
+		  (playerMaxBottomRightOffset.y + 1 + playerPos.y));
+	    viewPortPosChanged = true;
 	  }
       }
-    else
+    // Test in X dimension.
+    if(testPaddingInDimension(false))
       {
-	/* Top of player is in or above the top padding or the bottom of the
-	   player is in or below the bottom padding.
-	   Check x dimension... */
-	if(testPaddingInX())
+	// exit(-1);
+	/* The left of the player is in or to the left of the left padding
+	   or the right of the player is in or to the right of the right
+	   padding.
+	   UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
+	if(testPaddingDirectionInDimension(false))
 	  {
-	    /* The left of the player is in or to the left of the left padding
-	       or the right of the player is in or to the right of the right
-	       padding.
-	       UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
+	    // The player is in the left padding.
+	    firstStageBuffer.viewPortPosition.x -=
+	      abs((firstStageBuffer.viewPortPosition.x +
+		   playerMovementAreaPadding.x) - playerPos.x);
+	    viewPortPosChanged = true;
 	  }
-	// UPDATE Y DIMENSION OF THE VIEW PORT POSITION.
+	else
+	  {
+	    // The player is in the right padding.
+	    firstStageBuffer.viewPortPosition.x +=
+	      abs((firstStageBuffer.viewPortPosition.x + chunkSize.x
+		   - playerMovementAreaPadding.x) -
+		  (playerMaxBottomRightOffset.x + 1 + playerPos.x));
+	    viewPortPosChanged = true;
+	  }
       }
+    
+    return viewPortPosChanged;
   }
+
+
+  yx getViewPortPosition() const {return firstStageBuffer.viewPortPosition;}
 };
 
 

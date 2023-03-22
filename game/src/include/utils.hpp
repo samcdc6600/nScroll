@@ -47,6 +47,11 @@ struct yx
   {
     return !operator==(rhs);
   }
+
+  yx operator+(const yx & rhs) const
+  {
+    return yx{rhs.y + y, rhs.x + x};
+  }
 };
 
 

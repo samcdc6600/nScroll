@@ -1,6 +1,86 @@
 #include "include/draw.hpp"
 
 
+/* NOTE THAT THESE FUNCTIONS FROM SPRITE CANNOT BE USED BY PLAYER AND CANNOT BE
+   OVERLOADED AND AS SUCH THESE FUNCTIONS HAVE ALL BE MADE PRIVATE AND WE HAVE
+   THE FOLLOWING. */
+yx player::getNewPos(const directions dir)
+{
+  exit("Error: illegal function call to \"getNewPos(const directions dir)\" on "
+       "player object.",
+       ERROR_BAD_LOGIC);
+  return yx{};
+}
+bool player::notBetweenWindowPaddingY(const int y, const int yPadding)
+{
+  exit("Error: illegal function call to \"notBetweenWindowPaddingY"
+       "(const int y, const int yPadding)\" on player object.",
+       0);
+  return false;
+};
+bool player::notBetweenWindowPaddingX(const int x, const int xPadding)
+{
+  exit("Error: illegal function call to \"notBetweenWindowPaddingX"
+       "(const int x, const int xPadding\" on player object.",
+       0);
+  return false;
+};
+bool player::leftOfWindowInnerRightPadding(const int x, const int xBound,
+					   const yx viewPortSize)
+{
+  exit("Error: illegal function call to \"leftOfWindowInnerRightPadding"
+       "(const int x, const int xBound, const yx viewPortSize\")"
+       " on player object.",
+       0);
+  return false;
+};
+bool player::rightOfWindowInnerLeftPadding(const int x, const int xBound)
+{
+  exit("Error: illegal function call to \"rightOfWindowInnerLeftPadding"
+       "(const int x, const int xBound)\" on player object.",
+       0);
+  return false;
+};
+yx player::peekAtPos(const directions dir)
+{
+  exit("Error: illegal function call to \"peekAtPos(const directions dir)\" on "
+       "player object.",
+       0);
+  return yx{};
+};
+yx player::getPos() const
+{
+  exit("Error: illegal function call to \"getPos() const\" on player object.",
+       0);
+  return yx{};
+};
+std::string player::getXPosAsStr() const
+{
+  exit("Error: illegal function call to \"getXPosAsStr() const\" on player "
+       "object.",
+       0);
+  return "";
+};
+std::string player::getYPosAsStr() const
+{
+  exit("Error: illegal function call to \"getYPosAsStr() const\" on player "
+       "object.",
+       0);
+  return "";
+};
+void player::updatePosAbs(int y, int x)
+{
+  exit("Error: illegal function call to \"updatePosAbs(int y, int x)\" on "
+       "player object.",
+       0);
+};
+// void player::updatePosRel(const directions dir)
+// {
+//   exit("called function updatePosRel(const directions dir) on player object.",
+//        0);
+// };
+
+
 player::player
 (const backgroundData &background, const yx PLAYER_MOVEMENT_AREA_PADDING,
  std::vector<std::string> spritePaths, const yx initialViewPortPos,
@@ -16,8 +96,7 @@ player::player
   /* We give sprite() an initial dummy value above and reset the value here
      because sprite() calculates maxBottomRightOffset, which calcInitialPos
      needs. */ 
-  position = calcInitialPos(background, PLAYER_MOVEMENT_AREA_PADDING,
-			    initialViewPortPos, initialRelativePos);
+  position = calcInitialPos(PLAYER_MOVEMENT_AREA_PADDING, initialRelativePos);
   if(gravitationalConstant > 0)
     {
       std::stringstream err {};
@@ -44,51 +123,48 @@ player::player
 
 
 yx player::calcInitialPos
-(const backgroundData & background, const yx PLAYER_MOVEMENT_AREA_PADDING,
- const yx initialViewPortPosition, const yx initialRelativePos)
+(const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelativePos)
 {
-  if(((viewPortSize.y -1 -maxBottomRightOffset.y) / 2)
+  if(((viewPortSize.y -(maxBottomRightOffset.y +1)) / 2)
      < PLAYER_MOVEMENT_AREA_PADDING.y ||
-     ((viewPortSize.x -1 -maxBottomRightOffset.x) / 2)
+     ((viewPortSize.x -(maxBottomRightOffset.x +1)) / 2)
      < PLAYER_MOVEMENT_AREA_PADDING.x)
-    {
+    {      
       exit(concat
 	   ("Error: viewPortPadding (", PLAYER_MOVEMENT_AREA_PADDING.y, ", ",
 	    PLAYER_MOVEMENT_AREA_PADDING.x, ") is out of range. Assuming "
 	    "initialCoordinateViewPortPaddingRelative is (0, 0), the range for "
 	    "viewPortPadding is [0, 0] to [",
-	    ((viewPortSize.y -1 -maxBottomRightOffset.y) / 2), ", ",
-	    ((viewPortSize.x -1 -maxBottomRightOffset.x) / 2), "]."),
+	    ((viewPortSize.y -(maxBottomRightOffset.y +1)) / 2), ", ",
+	    ((viewPortSize.x -(maxBottomRightOffset.x +1)) / 2), "]."),
 	   ERROR_SPRITE_POS_RANGE);
     }
-    if(initialRelativePos.y < 0 ||
-       initialRelativePos.y >
-       background.chunkSize.y -
-       (PLAYER_MOVEMENT_AREA_PADDING.y * 2) -1 -maxBottomRightOffset.y ||
-       initialRelativePos.x < 0 ||
-       initialRelativePos.x >
-       background.chunkSize.x -
-       (PLAYER_MOVEMENT_AREA_PADDING.x * 2) -1 -maxBottomRightOffset.x)
-    {
+  if((initialRelativePos.y < 0) ||
+      initialRelativePos.y >
+     viewPortSize.y -
+     ((PLAYER_MOVEMENT_AREA_PADDING.y * 2) +(maxBottomRightOffset.y +1)) ||
+     (initialRelativePos.x < 0) ||
+      initialRelativePos.x >
+     viewPortSize.x -
+     ((PLAYER_MOVEMENT_AREA_PADDING.x * 2) +(maxBottomRightOffset.x +1)))
+    { 
       exit(concat
 	   ("Error: initialCoordinateViewPortPaddingRelative "
 	    "(", initialRelativePos.y, ",", initialRelativePos.x, ") is out of "
 	    "bounds! InitialCoordinateViewPortPaddingRelative should be "
 	    "in the range (", 0, ",", 0, ") to (",
-	    background.chunkSize.y -
-	    (PLAYER_MOVEMENT_AREA_PADDING.y * 2) -1
-	    -maxBottomRightOffset.y, ",",
-	    background.chunkSize.x -
-	    (PLAYER_MOVEMENT_AREA_PADDING.x * 2) -1
-	    -maxBottomRightOffset.x, ")."),
+	    viewPortSize.y -
+	    (PLAYER_MOVEMENT_AREA_PADDING.y * 2)
+	    -(maxBottomRightOffset.y + 1), ",",
+	    viewPortSize.x -
+	    (PLAYER_MOVEMENT_AREA_PADDING.x * 2)
+	    -(maxBottomRightOffset.x + 1), ")."),
 	   ERROR_SPRITE_POS_RANGE);
     }
 
-    return yx{abs(initialViewPortPosition.y / background.chunkSize.y) *
-	      background.chunkSize.y + PLAYER_MOVEMENT_AREA_PADDING.y +
+    return yx{PLAYER_MOVEMENT_AREA_PADDING.y +
 	      initialRelativePos.y,
-	      abs(initialViewPortPosition.x / background.chunkSize.x) *
-	      background.chunkSize.x + PLAYER_MOVEMENT_AREA_PADDING.x +
+	      PLAYER_MOVEMENT_AREA_PADDING.x +
 	      initialRelativePos.x};
 }
 

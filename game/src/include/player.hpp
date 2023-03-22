@@ -11,6 +11,7 @@
 
 class player: public sprite
 {
+  yx previousPos {};
   int health;
   const double gravitationalConstant;
   /* Negated for negative velocities (1 = 1 character per frame.). */
@@ -51,8 +52,30 @@ class player: public sprite
   const int leftCollisionOneOffOffset {leftCollisionDirectOffset -1};
 
 
-  // This function is not intended for use in player (and thus is private.)
-  virtual void getCurrentBoundaryCoordinates(std::vector<int> & spCoords) {}
+  /* NOTE THAT UNLIKE OTHER SPRITES THE PLAYERS POSITION IS NOT STORED AS AN
+     ABSOLUTE VALUE AND IS CALCULATED FOR THE POSITION VARIABLE PLUS THE
+     CURRENT VIEW PORT POSITION. THIS IS BECAUSE WHEN THE PLAYER MOVES THE VIEW
+     PORT IT'S POSITION MUST CHANGE BUT IT MUST BE SEEN TO STAY IN THE SAME
+     PLACE RELATIVE TO THE WINDOW. SO THE VIEW PORT POSITION IS UPDATED. THE
+     PLAYER IS DRAWN ONLY USING THE POSITION VALUE. BUT WHEN THE PLAYER
+     INTERACTS WITH THE LEVEL AND OTHER SPRITES IT'S POSITION SHOULD BE
+     CALCULATED AS POSITION + CURRENT VIEW PORT POSITION. THUS HERE WE HIDE
+     POSITION RELATED FUNCTION FROM SPRITE (AS THEY WILL NEED TO BE REDEFINED
+     WITH AN EXTRA ARGUMENT, THE CURRENT VIEW PORT POSITION AND AS SUCH
+     FUNCTIONS FROM SPRITE CANNOT SIMPLE BE OVERLOADED.) */
+  // Was protected.
+  yx getNewPos(const directions dir);
+  bool notBetweenWindowPaddingY(const int y, const int yPadding);
+  bool notBetweenWindowPaddingX(const int x, const int xPadding);
+  bool leftOfWindowInnerRightPadding(const int x, const int xBound,
+				     const yx viewPortSize);
+  bool rightOfWindowInnerLeftPadding(const int x, const int xBound);
+  yx peekAtPos(const directions dir);
+  yx getPos() const;
+  std::string getXPosAsStr() const;
+  std::string getYPosAsStr() const;
+  virtual void updatePosAbs(int y, int x);
+  // virtual void updatePosRel(const directions dir);
   
 public:
   /* This values is read from the player section of the rules.lev file and is
@@ -84,18 +107,36 @@ public:
   virtual ~player() {};
 
   /* Checks that initialRelativePos is not out of bounds. If it is not, then
-     calculate the initial player position by adding initialViewPortPosition,
-     PLAYER_MOVEMENT_AREA_PADDING and initialRelativePos and return the result.
-     If it is we print an error message and abort the program.
-     InitialRelativePos's origin is initialViewPortPosition +
-     initialRelativePos. */
+     calculate the initial player position by adding
+     PLAYER_MOVEMENT_AREA_PADDING and initialRelativePos.
+     If it is out of bounds we print an error message and abort the program. */
   yx calcInitialPos
-  (const backgroundData & background, const yx PLAYER_MOVEMENT_AREA_PADDING,
-   const yx initialViewPortPosition, const yx initialRelativePos);
+  (const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelativePos);
   // Unlike sprite player needs to handle input direction characters.
   static directions convertDirectionCharsToDirections(const directionChars dir);
   static bool isDirectionCharInputValid(const int input);
   virtual void updatePosRel(const sprite::directions dir);
+
+  yx getPos(const yx viewPortPosition) const
+  {return position + viewPortPosition;}
+
+
+  /* If a player movement causes the view port position to change then we need
+     to reset the player position to it's previous position after the view port
+     position has been updated. */
+  void setPreviousPos()
+  {
+    previousPos = position;
+  }
+
+
+  void resetPositionWithPreviousPos(const bool viewPortPosChanged)
+  {
+    if(viewPortPosChanged)
+      {
+	position = previousPos;
+      }
+  }
 
   
   /* Starts jump (by altering various variables) and moves the player up X

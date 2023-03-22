@@ -106,44 +106,38 @@ private:
   // Moves the player 
   void movePlayer
   (backgroundData & background, sprite::directions input);
-  /* No functions that change the position of the player should be called after
-     this one for a given frame. */
-  /* Calls handleFinalPlayerMovementAndWindowAndPaddingInteractions after
-     checking that the player won't go outside of the level after it's position
-     is updated to peekPos. */
-  void handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe
-  (const sprite::directions newDir);
-  void handleFinalPlayerMovementAndWindowAndPaddingInteractions
-  (const sprite::directions newDir, yx & viewPortPosition, const yx viewPortSize,
-   const size_t backgroundLength, const yx peekPos);
+  // /* No functions that change the position of the player should be called after
+  //    this one for a given frame. */
+  // /* Calls handleFinalPlayerMovementAndWindowAndPaddingInteractions after
+  //    checking that the player won't go outside of the level after it's position
+  //    is updated to peekPos. */
+  // void handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe
+  // (const sprite::directions newDir);
+  // void handleFinalPlayerMovement(const sprite::directions newDir);
   /* Moves the player when interacting with the inner padding (NOTE THAT THIS
      FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
      THE INNER PADDING AND NOT OUTSIDE THE BOUNDS OF THE LEVEL AS DEFINED BY THE
      BACKGROUND.) */
-  void movePlayerWhenInteractingWithInnerPadding
-  (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
-   const size_t backgroundLength, const yx peekPos);
+  // void movePlayerWhenInteractingWithInnerPadding
+  // (const sprite::directions input, const yx peekPos);
   /* NOTE THAT THIS FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
    THE INNER PADDING */
-  void movePlayerRightWhenInteractingWithInnerPadding
-  (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
-   const size_t backgroundLength, const yx peekPos,
-   const int REACHED_INNER_PADDING_X);
+  // void movePlayerRightWhenInteractingWithInnerPadding
+  // (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
+  //  const size_t backgroundLength, const yx peekPos,
+  //  const int REACHED_INNER_PADDING_X);
   /* NOTE THAT THIS FUNCTION ASSUMES THAT IT IS ALREADY KNOWN THAT PEEKPOS IS IN
    THE INNER PADDING */
-  void movePlayerLeftWhenInteractingWithInnerPadding
-  (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
-   const size_t backgroundLength, const yx peekPos,
-   const int REACHED_INNER_PADDING_X);
+  // void movePlayerLeftWhenInteractingWithInnerPadding
+  // (const sprite::directions input, yx & viewPortPosition, const yx viewPortSize,
+  //  const size_t backgroundLength, const yx peekPos,
+  //  const int REACHED_INNER_PADDING_X);
   // /* Returns number of characters untill the player bits a boarder character
   //    (if moving up). Will return -1 if there are no boarder characters above */
   // int getClosestBoarderCharAbove(const int position, const bool directContact);
-  /* Handles collision with boarder characters when the player is moving down
-     Input should be the player input direction and the current absolute
-     position of the player sprite in the x dimension. Returns updated
-     direction. */
-  sprite::directions handleGroundCollision(const yx viewPortPosition,
-					   const int backgroundHeight);
+  /* Handles collision with boarder characters when the player is moving down.
+     Returns updated direction. */
+  sprite::directions handleGroundCollision();
   /* Handles collision with boarder characters when the player sprite is moving
      right. If there is only one character to the bottom right then the player
      will continue moving in the right direction but be moved up by one
@@ -180,6 +174,7 @@ public:
     // Initialise game timers.
     /* NOTE THAT WE HAVE HARD CODED THESE VALUES HERE FOR NOW, BUT WE INTEND TO
        HAVE AT LEAST SOME OF THEM LOADED FROM RULES.LEV FILES. */
+    //gameTiming.movePlayer = chronological{22.2, gameTimingErrorInfo};
     gameTiming.movePlayer = chronological{22.2, gameTimingErrorInfo};
     // 8.3333 ~ 120 FPS
     gameTiming.drawTime = chronological{8.3333, gameTimingErrorInfo};

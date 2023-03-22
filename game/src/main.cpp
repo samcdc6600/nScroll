@@ -18,10 +18,7 @@
 // Values returned by branchOnInput
 enum gameFuncRetCodes
   {
-    NO_INPUT_ENTERED,		// The player did not enter any input.
-    INPUT_ENTERED,		// The player entered input.
-    M_QUIT_GAME,		// The player has decided to quit the game.    
-    LEVEL_COMPLEAT		// The player has compleated the level.
+    M_QUIT_GAME = 27,		// The player has decided to quit the game.
   };
 
 
@@ -73,9 +70,6 @@ void menu
 	case M_QUIT_GAME:
 	  run = false;
 	  break;
-	case LEVEL_COMPLEAT:
-	  run = false;		// TEMPORARY!!!!!!!!!!!!!!!
-	  break;
 	}
     }
 
@@ -91,22 +85,19 @@ int gameLoop
   
   while(true)
     {
-      sprite::directions input {};
+      char input {};
 
-      input = player::convertDirectionCharsToDirections
-	(static_cast<player::directionChars>(getch()));
+      input = getch();
       switch(input)
 	{
 	case ESC_CHAR:
 	  return M_QUIT_GAME;
 	  break;
-	case LEVEL_COMPLEAT:
-	  return LEVEL_COMPLEAT;
-	  break;
 	}
       
       levelRules.physics
-	(background, input);
+	(background, player::convertDirectionCharsToDirections
+	 (static_cast<player::directionChars>(input)));
       draw(background, levelRules.gamePlayer, levelRules.bgSprites);
     }
 }
