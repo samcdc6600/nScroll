@@ -1394,7 +1394,6 @@ void rules::movePlayer
   (backgroundData & background, sprite::directions input)
 {
   const int currDir {gamePlayer->getDirection()};
-  gamePlayer->setPreviousPos();
   
   if(input == sprite::DIR_UP // && !gamePlayer->isJumpNumMaxedOut()
      )
@@ -1771,12 +1770,12 @@ void rules::physics
 	(background, input);
       background.updateViewPortPosition
 	(PLAYER_MOVEMENT_AREA_PADDING,
-	 gamePlayer->getPos(background.getViewPortPosition()),
+	 gamePlayer->getPos(),
 	 gamePlayer->getMaxBottomRightOffset());      
-      gamePlayer->resetPositionWithPreviousPos
-	(updateViewPortPosition
-	 (PLAYER_MOVEMENT_AREA_PADDING,
-	  gamePlayer->getPos(background.getViewPortPosition()),
-	  gamePlayer->getMaxBottomRightOffset()));
+      // gamePlayer->resetPositionWithPreviousPos
+      // 	(updateViewPortPosition
+      // 	 (PLAYER_MOVEMENT_AREA_PADDING,
+      // 	  gamePlayer->getPos(background.getViewPortPosition()),
+      // 	  gamePlayer->getMaxBottomRightOffset()));
     }
 }

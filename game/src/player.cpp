@@ -1,16 +1,6 @@
 #include "include/draw.hpp"
 
 
-/* NOTE THAT THESE FUNCTIONS FROM SPRITE CANNOT BE USED BY PLAYER AND CANNOT BE
-   OVERLOADED AND AS SUCH THESE FUNCTIONS HAVE ALL BE MADE PRIVATE AND WE HAVE
-   THE FOLLOWING. */
-yx player::getNewPos(const directions dir)
-{
-  exit("Error: illegal function call to \"getNewPos(const directions dir)\" on "
-       "player object.",
-       ERROR_BAD_LOGIC);
-  return yx{};
-}
 bool player::notBetweenWindowPaddingY(const int y, const int yPadding)
 {
   exit("Error: illegal function call to \"notBetweenWindowPaddingY"
@@ -41,44 +31,6 @@ bool player::rightOfWindowInnerLeftPadding(const int x, const int xBound)
        0);
   return false;
 };
-yx player::peekAtPos(const directions dir)
-{
-  exit("Error: illegal function call to \"peekAtPos(const directions dir)\" on "
-       "player object.",
-       0);
-  return yx{};
-};
-yx player::getPos() const
-{
-  exit("Error: illegal function call to \"getPos() const\" on player object.",
-       0);
-  return yx{};
-};
-std::string player::getXPosAsStr() const
-{
-  exit("Error: illegal function call to \"getXPosAsStr() const\" on player "
-       "object.",
-       0);
-  return "";
-};
-std::string player::getYPosAsStr() const
-{
-  exit("Error: illegal function call to \"getYPosAsStr() const\" on player "
-       "object.",
-       0);
-  return "";
-};
-void player::updatePosAbs(int y, int x)
-{
-  exit("Error: illegal function call to \"updatePosAbs(int y, int x)\" on "
-       "player object.",
-       0);
-};
-// void player::updatePosRel(const directions dir)
-// {
-//   exit("called function updatePosRel(const directions dir) on player object.",
-//        0);
-// };
 
 
 player::player

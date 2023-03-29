@@ -28,9 +28,6 @@ public:
   // std::map<std::string, std::vector<spriteInfo>> spriteCoords {};
   player * gamePlayer; /* Info about user controlled sprite (AKA player.) */
   std::vector<bgSprite *> bgSprites;
-  /* The player cannot pass widthin this many character's of the left and right
-     window boarders (y, x). */
-  const yx playerMovementInnerLRBoarder {0, 44};
   
 private:
   /* The player cannot pass widthin this many character's of the window
