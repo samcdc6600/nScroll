@@ -65,7 +65,8 @@ private:
      the triggering change in view port position was in the x
      dimension. Otherwise it will be done assuming that the trigger change in
      the view port position was in the y dimension. */
-  void updateFirstStageBuffer(const yx playerPos, const bool horizontal)
+  // void updateFirstStageBuffer(const yx playerPos, const bool horizontal)
+  void updateFirstStageBuffer(const bool horizontal)
   {
     /*
       The first stage buffer is a 5 by 5 array of chunks. When the delta between
@@ -193,7 +194,8 @@ private:
      yChunkOffset being set to (0, 1, 2, 3, 4) for each respective call, should
      be (3, 3), (4, 3), (0, 3), (1, 3), (2, 3). */
   yx calculateFSBTargetChunkWithHorizontalChange
-  (const yx playerPos, const yx fSBSize, const int yChunkOffset) const
+  // (const yx playerPos, const yx fSBSize, const int yChunkOffset) const
+  (const yx fSBSize, const int yChunkOffset) const
   {
     /* Note that the code in this function assumes that a mod can produce a
        negative result. */
@@ -241,7 +243,8 @@ private:
 
 
   yx calculateFSBTargetChunkWithVerticalChange
-  (const yx playerPos, const yx fSBSize, const int xChunkOffset) const
+  // (const yx playerPos, const yx fSBSize, const int xChunkOffset) const
+  (const yx fSBSize, const int xChunkOffset) const
   {
     /* Note that the code in this function assumes that a mod can produce a
        negative result. */
@@ -285,8 +288,10 @@ private:
      as a component of y or x when creating the key. Horizontal should be set
      to true when the triggering change in view port position was in the x
      dimension. */
+  // std::string calculatePotentialChunkKeyForChunkToGoInFSB
+  // (const yx playerPos, const bool horizontal, const int chunkUpdateDimensionIter) const
   std::string calculatePotentialChunkKeyForChunkToGoInFSB
-  (const yx playerPos, const bool horizontal, const int chunkUpdateDimensionIter) const
+  (const bool horizontal, const int chunkUpdateDimensionIter) const
   {
     /* Note here that we account for the direction of movement when calculating
        the y or x coordinate based on the value of horizontal. */
@@ -325,7 +330,8 @@ protected:
      firstStageBuffer.viewPortPosition and firstStageBuffer.lastUpdatedPosition
      have diverged by a sufficient delta. If an update is performed
      lastUpdatedPosition is set to the same values as viewPortPosition. */
-  void updateFirstStageBuffer(const yx playerPos)
+  // void updateFirstStageBuffer(const yx playerPos)
+  void updateFirstStageBuffer()
   {
     // x > y ? x - y : y - x. Get distance between two numbers on number line.
     if((firstStageBuffer.lastUpdatedPosition.x >
@@ -349,10 +355,12 @@ protected:
   }
 
   
-    /* Copies one chunk (relative to viewPortPosition) from firstStageBuffer
+  /* Copies one chunk (relative to viewPortPosition) from firstStageBuffer
      to secondStageBuffer. */
+  // void updateSecondStageBuffer
+  // (const yx playerPos, chunkElementType *  secondStageBuffer)
   void updateSecondStageBuffer
-  (const yx playerPos, chunkElementType *  secondStageBuffer)
+  (chunkElementType *  secondStageBuffer)
   { 
     // Size of the first stage buffer in characters.
     const yx fSBSize {chunkSize.y * firstStageBuffer.fSBYChunks,
@@ -412,7 +420,7 @@ public:
   
   /* Should be called once initial player position is known, but before the main
      game loop. */
-  void initFirstStageBuffer(const yx initialViewPortPos)
+  void initFirstStageBuffer(const yx playerPos, const yx initialViewPortPos)
   {
     /* Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
        map. Then (y % (chunkSize.y * fSBYChunks)) * chunkSize.x + (x %
@@ -553,12 +561,6 @@ public:
     
     return viewPortPosChanged;
   }
-
-
-  // yx getViewPortPosition(const yx playerPos) const
-  // {
-  //   return firstStageBuffer.viewPortPosition + playerPos;
-  // }
 };
 
 

@@ -51,20 +51,14 @@ class player: public sprite
   const int leftCollisionOneOffOffset {leftCollisionDirectOffset -1};
 
 
-  bool notBetweenWindowPaddingY(const int y, const int yPadding);
-  bool notBetweenWindowPaddingX(const int x, const int xPadding);
-  bool leftOfWindowInnerRightPadding(const int x, const int xBound,
-				     const yx viewPortSize);
-  bool rightOfWindowInnerLeftPadding(const int x, const int xBound);
+  // bool notBetweenWindowPaddingY(const int y, const int yPadding);
+  // bool notBetweenWindowPaddingX(const int x, const int xPadding);
+  // bool leftOfWindowInnerRightPadding(const int x, const int xBound,
+  // 				     const yx viewPortSize);
+  // bool rightOfWindowInnerLeftPadding(const int x, const int xBound);
 
   
 public:
-  /* This values is read from the player section of the rules.lev file and is
-     needed to calculate the initial position of the player and so we place it
-     here. It can be accessed by the public function getInitialViewPortPos() and
-     passed to the background object when that object is
-     initialised. */
-  const yx initialViewPortPosition;
   enum directionChars
     { /* Input character to direction mapping.
          '---W---'
@@ -79,20 +73,13 @@ public:
     };
 
   player
-  (const backgroundData & background, const yx PLAYER_MOVEMENT_AREA_PADDING,
-   std::vector<std::string> spritePaths, const yx initialViewPortPosition,
-   const yx initialRelativePos, const sprite::directions dir, const int h,
+  (const backgroundData &background, std::vector<std::string> spritePaths,
+   // const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelViewPortPos,
+   const yx initialPos, const sprite::directions dir, const int h,
    const double g, const double v, const unsigned maxFallingJmpNum,
    const unsigned maxJmpNum);
   
   virtual ~player() {};
-
-  /* Checks that initialRelativePos is not out of bounds. If it is not, then
-     calculate the initial player position by adding
-     PLAYER_MOVEMENT_AREA_PADDING and initialRelativePos.
-     If it is out of bounds we print an error message and abort the program. */
-  yx calcInitialPos
-  (const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelativePos);
   // Unlike sprite player needs to handle input direction characters.
   static directions convertDirectionCharsToDirections(const directionChars dir);
   static bool isDirectionCharInputValid(const int input);

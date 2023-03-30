@@ -391,54 +391,6 @@ bool sprite::checkBoundValue(const int bound)
 }
 
 
-// bool sprite::notBetweenWindowPaddingY(const int y, const int yPadding)
-// {
-//   checkBoundValue(yPadding);
-//   const int maximumY {y + maxBottomRightOffset.y};
-//   // >= and < because we start at 0.
-//   return (y >= yPadding) && maximumY < (viewPortSize.y - yPadding);
-// }
-
-
-// bool sprite::notBetweenWindowPaddingX(const int x, const int xPadding)
-// {
-//     checkBoundValue(xPadding);
-//     const int maximumX {x + maxBottomRightOffset.x};
-//     // >= and < because we start at 0.
-//     return (x >= xPadding && maximumX < (viewPortSize.x - xPadding));
-// }
-
-
-// bool sprite::inWindowY(const int y)
-// {
-//   const int maximumY {y + maxBottomRightOffset.y};
-//   // >= and < because we start at 0.
-//   return (y >= 0) && (maximumY < viewPortSize.y);
-// }
-
-
-// bool sprite::inWindowX(const int x)
-// {
-//   const int maximumX {x + maxBottomRightOffset.x};
-//   // >= and < because we start at 0.
-//   return (x >= 0) && (maximumX < viewPortSize.x);
-// }
-
-
-// bool sprite::inLevelY(const int y, const int bgYLen)
-// {
-//   const int maximumY {y + maxBottomRightOffset.y};
-//   return (y >= 0) && (maximumY < bgYLen);
-// }
-
-
-// bool sprite::inLevelX(const int x, const int bgXLen)
-// {
-//   const int maximumX {x + maxBottomRightOffset.x};
-//   return (x >= 0) && (maximumX < bgXLen);
-// }
-
-
 bool sprite::leftOfWindowInnerRightPadding(const int x, const int xBound,
 					  const yx viewPortSize)
 { // Return true if we are to the left of the windows right inner padding.

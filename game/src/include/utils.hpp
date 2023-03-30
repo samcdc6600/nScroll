@@ -76,7 +76,9 @@ enum errorsCodes {                     /* Error codes. */
                    ERROR_WIN_PARAM,    // Window not initialised - there was a
                                        // problem with the window parameters.
                    ERROR_CURSOR_PARAM, // Cursor parameters out of range.
-                   ERROR_SPRITE_POS_RANGE,  // Sprite position out of range.
+		   /* Relative view port pos or padding out of range. */
+                   ERROR_VIEWPORT_POS_RANGE,  
+		   
                    ERROR_POS_CH_RANGE,      // Character position out of range.
                    ERROR_INVALID_DIRECTION, // Direction character found not to
                                             // be valid.

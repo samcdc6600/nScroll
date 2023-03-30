@@ -155,26 +155,6 @@ protected:
   // // 			const int xBound);
   
 public:
-  // /* Y is a potential y position of the sprite (e.g. peekPos.y) and yPadding is
-  //    the padding size in the y dimension. Returns true if the sprite is not in
-  //    the inner paddings in the y axis, that is the sprite is in the inner most
-  //    part of the window. */
-  // bool notBetweenWindowPaddingY(const int y, const int yPadding);
-  //   /* X is a potential x position of the sprite (e.g. peekPos.x) and xPadding is
-  //    the padding size in the x dimension. Returns true if the sprite is not in
-  //    the inner paddings in the x axis, that is the sprite is in the inner most
-  //    part of the window. */
-  // bool notBetweenWindowpaddingX(const int x, const int xPadding);
-  // /* Y is a potential y position of the sprite (e.g. peekPos.y). Returns true
-  //    if the sprite (with it's y position set to y) would be within the window in
-  //    the y axis. */
-  // bool inWindowY(const int y);
-  // /* X is a potential x position of the sprite (e.g. peekPos.x). Returns true
-  //    if the sprite (with it's x position set to x) would be within the window
-  //    in the x axis. */
-  // bool inWindowX(const int x);
-  // bool inLevelY(const int y, const int bgYLen);
-  // bool inLevelX(const int x, const int bgXLen);
   bool leftOfWindowInnerRightPadding(const int x, const int xBound,
 				    const yx viewPortSize);
   bool rightOfWindowInnerLeftPadding(const int x, const int xBound);

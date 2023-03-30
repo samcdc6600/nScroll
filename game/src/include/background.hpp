@@ -48,8 +48,8 @@ public:
 
   void updateBuffers()
   {
-    updateFirstStageBuffer();
-    updateSecondStageBuffer(secondStageDrawBuffer);
+    //    updateFirstStageBuffer();
+    //    updateSecondStageBuffer(secondStageDrawBuffer);
   }
 };
 
