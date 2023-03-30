@@ -77,8 +77,7 @@ enum errorsCodes {                     /* Error codes. */
                                        // problem with the window parameters.
                    ERROR_CURSOR_PARAM, // Cursor parameters out of range.
 		   /* Relative view port pos or padding out of range. */
-                   ERROR_VIEWPORT_POS_RANGE,  
-		   
+                   ERROR_VIEWPORT_POS_RANGE,
                    ERROR_POS_CH_RANGE,      // Character position out of range.
                    ERROR_INVALID_DIRECTION, // Direction character found not to
                                             // be valid.

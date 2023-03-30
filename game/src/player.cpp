@@ -1,38 +1,6 @@
 #include "include/draw.hpp"
 
 
-// bool player::notBetweenWindowPaddingY(const int y, const int yPadding)
-// {
-//   exit("Error: illegal function call to \"notBetweenWindowPaddingY"
-//        "(const int y, const int yPadding)\" on player object.",
-//        0);
-//   return false;
-// };
-// bool player::notBetweenWindowPaddingX(const int x, const int xPadding)
-// {
-//   exit("Error: illegal function call to \"notBetweenWindowPaddingX"
-//        "(const int x, const int xPadding\" on player object.",
-//        0);
-//   return false;
-// };
-// bool player::leftOfWindowInnerRightPadding(const int x, const int xBound,
-// 					   const yx viewPortSize)
-// {
-//   exit("Error: illegal function call to \"leftOfWindowInnerRightPadding"
-//        "(const int x, const int xBound, const yx viewPortSize\")"
-//        " on player object.",
-//        0);
-//   return false;
-// };
-// bool player::rightOfWindowInnerLeftPadding(const int x, const int xBound)
-// {
-//   exit("Error: illegal function call to \"rightOfWindowInnerLeftPadding"
-//        "(const int x, const int xBound)\" on player object.",
-//        0);
-//   return false;
-// };
-
-
 player::player
 (const backgroundData &background, std::vector<std::string> spritePaths,
  // const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelViewPortPos,
