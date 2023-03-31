@@ -50,7 +50,12 @@ struct yx
 
   yx operator+(const yx & rhs) const
   {
-    return yx{rhs.y + y, rhs.x + x};
+    return yx{y + rhs.y, x + rhs.x};
+  }
+
+    yx operator-(const yx & rhs) const
+  {
+    return yx{y - rhs.y, x - rhs.x};
   }
 };
 

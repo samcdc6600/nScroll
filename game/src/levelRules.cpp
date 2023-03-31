@@ -694,7 +694,8 @@ void rules::checkInitViewPortPosAndPadding()
 		  yx{abs(INITIAL_REL_VIEW_PORT_COORDINATES.y),
 		     abs(INITIAL_REL_VIEW_PORT_COORDINATES.x)} +
 		  PLAYER_MOVEMENT_AREA_PADDING + maxBR + yx{1,1}, " is out of "
-		  "range. It must not be greater than or equal to ", chunkSize,
+		  "range. It must not be greater than or equal to ", chunkSize -
+		  (PLAYER_MOVEMENT_AREA_PADDING + maxBR + yx{1,1}),
 		  "."),
 	   ERROR_VIEWPORT_POS_RANGE);
     }
@@ -1814,7 +1815,7 @@ void rules::startTimers()
 void rules::physics
 (backgroundData & background, const sprite::directions input)
 { 
-  updateBuffers();
+  this->updateBuffers();
   
 #ifdef DEBUG
   printRuleChars(background.chunkSize);
@@ -1824,10 +1825,10 @@ void rules::physics
     {
       movePlayer
 	(background, input);
-      background.updateViewPortPosition
-	(PLAYER_MOVEMENT_AREA_PADDING,
-	 gamePlayer->getPos(),
-	 gamePlayer->getMaxBottomRightOffset());      
+      // background.updateViewPortPosition
+      // 	(PLAYER_MOVEMENT_AREA_PADDING,
+      // 	 gamePlayer->getPos(),
+      // 	 gamePlayer->getMaxBottomRightOffset());      
       // gamePlayer->resetPositionWithPreviousPos
       // 	(updateViewPortPosition
       // 	 (PLAYER_MOVEMENT_AREA_PADDING,

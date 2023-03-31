@@ -89,8 +89,8 @@ private:
   // Updates rule characters buffers.
   void updateBuffers()
   {
-    // updateFirstStageBuffer();
-    // updateSecondStageBuffer(secondStageRulesBuffer);
+    updateFirstStageBuffer(gamePlayer->getPos());
+    updateSecondStageBuffer(gamePlayer->getPos(), secondStageRulesBuffer);
   }
 
   

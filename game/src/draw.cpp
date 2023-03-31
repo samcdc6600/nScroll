@@ -21,9 +21,9 @@ setColorMode colorMode{56};
 
 void draw
 (backgroundData & background,
- player * playerSprite, std::vector<bgSprite *> & bgSprites)
+ player * gamePlayer, std::vector<bgSprite *> & bgSprites)
 {
-  background.updateBuffers();
+  background.updateBuffers(gamePlayer->getPos());
 
   /* NOTE THAT A FLAG THAT IS SETTABLE FROM A RULES.LEV FILE SHOULD BE ADDED TO
      THE SPRITE CLASS THAT SPECIFIES IF A SPRITE SHOULD BE DISPLAYED IN FRONT
@@ -70,7 +70,7 @@ void draw
   // 	  drawInForground.push_back(bgS);
   // 	}
   //   }  
-  playerSprite->draw(background, true);
+  gamePlayer->draw(background, true);
   // for(auto bgSF: drawInForground)
   //   {
   //     bgSF->draw(secondStageDrawBuffer, true, viewPortPosition);
@@ -83,7 +83,7 @@ void draw
 
 void printDrawBuffer
 (backgroundData::chunkElementBaseType * secondStageDrawBuffer, const yx viewPortSize)
-{
+{   
   mvprintw(0, 0, "");
 
   for(int iter {}; iter < (viewPortSize.y * viewPortSize.x);
