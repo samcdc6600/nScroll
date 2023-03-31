@@ -3,68 +3,41 @@
 "+" mean's done.
 
 
-* ---> (20) Find out (and fix) what is causing a (seemingly) blank line to
-	    occasionally be printed.
-* ---> (19) Convert functions in levelRules.* that deal with the player sprite
+* ---> (22) MUST DO 21 FIRST!
+	    Fix player and view port movement.
+	    	when the player moves within the view port the player's position
+		is updated as well as the relative view port position (which
+		should be updated by the opposite amount as the view port should
+	    	not move in this case), but when the player touches the padding
+		only the players position is updated. Since the absolute view
+	        port position is calculated from the relative view port plus the
+	        player view port this behaviour will mean that when the player
+	        is not touching the padding (and moving in it's direction) the
+	        view port will not move however the player's position will
+	        change weather the view port moves or not (which is what we want
+	        since we need the players absolute position.)
+* ---> (21) Fix issue's with initial player and view port position (related to
+	    the configuration variables initialViewPortCoordinatePlayerRelative,
+	    viewPortPadding and initialCoordinate.
+* ---> (20) Find out (and fix) what is causing a blank line to occasionally be
+	    printed.
+*? ---> (19) Convert functions in levelRules.* that deal with the player sprite
 	    to be more general and work with anything that inherits the sprite base
 	    class.
-* ---> (18) Fix sprite bug. Start program move character right and wait to hit
+*? ---> (18) Fix sprite bug. Start program move character right and wait to hit
             the end of the level (this may not be required), attach debugger and
             step through. Notice that some of the characters are out of place on
             one of the frames (this may be a problem with the sprite file,
             however even if it is if you watch the sprite without the debugger
             attached this frame goes by very fast. Thus there is definitely
             something wrong.)
-* ---> (17) Convert all functions that return coordinates as strings in
-	    player.hpp to be private and have two functions that force the
-	    original function to use bottomCollisionDirectOffset or
-	    bottomCollisionOneOffOffset and their equivalents for the x axis.
-* --> (16) Change all errors to use error handling code from NESEmu (also
-	    replace code that uses exceptions.)?
-* ---> (15) Change all error messages to include the file name. This should be
-	    achieved by adding a static string called NAME_OF_THIS_FILE to the
-	    top of each .cpp file. For any functions in .hpp files a variable of
-	    the same name should be declared in the function.
 * ---> (14) Fix compilation warnings and then try to fix them as they come up.
-* ---> (13) Create sprite (called something different) class for enemy sprites
-	    (as they need to handle things like collision and also automated
-	    movement and the base class should only be used for things the
-	    player won't interact with like trees.)
-* ---> (12) Add code to the constructor for player to populate the vairables
+*? ---> (12) Add code to the constructor for player to populate the vairables
             topCollisionOffset, bottomCollisionOffset, rightCollisionOffset and
 	    leftCollissionOffset using values read in from the sprite file/s.
 	    The values are currently hard coded.
 
-+ ---> (11) Add physics code to handle b (boarder) characters.
 
-+ ---> (10) Figure out problem where input doesn't revert back to 0 on next
-	     loop.
-	     
-+ ---> (9) Add check in init code for invalid initial player positions
-	    (playerInnerBoarder!) (This has basically been covered by the fix
-	    for 1, however the sprite will be able to be mostly off of the
-	    bottom right of the map. We don't think this is a real problem
-	    though, since the sprite will still technically be on screen)
-	    
-+ ---> (8) Fix problem with player sprite not changing animation when direction
-	    is changed.
-	    
-+ ---> (7) Implement and possibly rename inBounds func and rewrite
-	    inScreenBounds to use it and then use inBounds in movePlayer.
-	    
-+ ---> (6) Implement basic boundry handling code.
-
-+ ---> (5) Fix lock up problem >':(.
-
-*? --> (4) Just go ahead a make rules struct a class called
-	    physics.
-	    
-+ ---> (3) Fix graphical sprite anomalies when switching between
-	   player directions and sprite files are set up a certin way.
-	    
-+ ---> (2) Finish the default in setUpBoundryCoordsVector.
-
-+ ---> (1) Add bound's checking into rules.lev parsing code.
 
 
 
