@@ -10,10 +10,6 @@
 #include "include/sprite.hpp"
 #include "include/player.hpp"
 
-  // TMP ======================================== VVVVVVV
-#include <iostream>
-  // TMP ======================================== ^^^^^^^
-
 
 // Values returned by branchOnInput
 enum gameFuncRetCodes
@@ -58,11 +54,9 @@ void menu
     {viewPortSize, "assets/level1/level1.coordRules.lev",
      "assets/level1/level1.rules.lev", background};
   background.initFirstStageBuffer
-    (levelRules.gamePlayer->getPos(),
-     levelRules.getInitialRelViewPortPosition());
+    (levelRules.gamePlayer->getPos(levelRules.getInitialViewPortPosition()));
   levelRules.initFirstStageBuffer
-    (levelRules.gamePlayer->getPos(),
-     levelRules.getInitialRelViewPortPosition());
+    (levelRules.gamePlayer->getPos(levelRules.getInitialViewPortPosition());
   
   bool run = true;
   while(run)
@@ -97,9 +91,9 @@ int gameLoop
 	  break;
 	}
       
-      levelRules.physics
-	(background, player::convertDirectionCharsToDirections
-	 (static_cast<player::directionChars>(input)));
+      // levelRules.physics
+      // 	(background, player::convertDirectionCharsToDirections
+      // 	 (static_cast<player::directionChars>(input)));
       draw(background, levelRules.gamePlayer, levelRules.bgSprites);
     }
 }

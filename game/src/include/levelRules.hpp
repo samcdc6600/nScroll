@@ -34,7 +34,7 @@ private:
      boarder's (y, x). This variable shouldn't be changed once it is set. */
   yx PLAYER_MOVEMENT_AREA_PADDING {};
   /* This variable shouldn't be changed once it is set.  */
-  yx INITIAL_REL_VIEW_PORT_COORDINATES {};
+  yx INITIAL_VIEW_PORT_COORDINATES {};
   // Contains position based rules for current view port position.
   chunkElementBaseType * secondStageRulesBuffer;
   
@@ -78,10 +78,10 @@ private:
   void parseRulesConfigFileAndInitialiseVariables
   (const char rulesFileName [], const std::string & rulesBuffer,
    const backgroundData & background);
-  /* Checks the validity of the initial values for the relative view port
-     position and padding. Exits with an error message if either of the values
-     aren't valid. */
-  void checkInitViewPortPosAndPadding();
+  /* Checks the validity of the initial values for the relative player position
+     and padding. Exits with an error message if either of the values aren't
+     valid. */
+  void checkInitPlayerPosAndPadding();
   // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files END ====
   // ===========================================================================
 
@@ -172,7 +172,16 @@ public:
        concat("trying to read ", RULES_CONFIG_FILE_EXTENSION, " file"));
     parseRulesConfigFileAndInitialiseVariables
       (rulesFileName, rulesBuffer, background);
-    checkInitViewPortPosAndPadding();
+    checkInitPlayerPosAndPadding();
+
+
+    // endwin();
+    // std::cout<<"\nINITIAL_REL_VIEW_PORT_COORDINATES = "<<INITIAL_REL_VIEW_PORT_COORDINATES
+    //   <<"\nPLAYER_MOVEMENT_AREA_PADDING = "<<PLAYER_MOVEMENT_AREA_PADDING
+    // 	     <<"\ngamePlayer->getPos() = "<<gamePlayer->getPos()<<'\n';
+    // exit(-1);
+
+  
     // Initialise game timers.
     /* NOTE THAT WE HAVE HARD CODED THESE VALUES HERE FOR NOW, BUT WE INTEND TO
        HAVE AT LEAST SOME OF THEM LOADED FROM RULES.LEV FILES. */
@@ -191,7 +200,7 @@ public:
 
 
   yx getPlayerMovementAreaPadding() {return PLAYER_MOVEMENT_AREA_PADDING;}
-  yx getInitialRelViewPortPosition() {return INITIAL_REL_VIEW_PORT_COORDINATES;}
+  yx getInitialViewPortPosition() {return INITIAL_VIEW_PORT_COORDINATES;}
   // Initialises all timers used for game timing.
   void startTimers();
   void physics

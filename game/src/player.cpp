@@ -18,7 +18,7 @@ player::player
      needs. */
   
   // position = calcInitialPos(PLAYER_MOVEMENT_AREA_PADDING, initialPos);
-  position = initialPos;
+  positionVPRel = initialPos;
   if(gravitationalConstant > 0)
     {
       std::stringstream err {};
@@ -74,7 +74,7 @@ void player::updatePosRel(const sprite::directions dir)
      sprite and update's direction. */
   checkDirection(dir);
   yx p {getNewPos(dir)};	// GetNewPos will check if dir is valid!
-  position = p;
+  positionVPRel = p;
   if(direction != dir)
     {				// Change direction.
       resetCurrentSliceNum();
@@ -285,8 +285,8 @@ void player::draw
 	  if(ch != DRAW_NO_OP)
 	    {
 	      background.secondStageDrawBuffer
-		[((abs(position.y % background.chunkSize.y)  + sliceLine) * viewPortSize.x) +
-		 abs(position.x % background.chunkSize.x) + spriteS[direction].
+		[((abs(positionVPRel.y % (background.chunkSize.y)) + 22  + sliceLine) * viewPortSize.x) +
+		 abs(positionVPRel.x % (background.chunkSize.x)) + 79 + spriteS[direction].
 		 spriteSlices[currentSliceNumber].slice[sliceLine].offset +
 		 sliceLineIter] = ch;
 	    }

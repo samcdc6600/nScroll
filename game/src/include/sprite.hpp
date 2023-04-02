@@ -38,7 +38,7 @@ protected:
   std::vector<directions> spriteAnimationDirections {};
   /* Position of the top left corner of the sprite object relative to the
      window. */
-  yx position;
+  yx positionVPRel;
   /* Holds the maximum bottom right offset. Calculated from all slices. Used
      (along with position) for inital collision detection and bounds checking */
   yx maxBottomRightOffset {};
@@ -165,17 +165,17 @@ public:
      diagonal movement) in the direction dir */
   yx peekAtPos(const directions dir);
   // Returns the sprite position.
-  yx getPos() const {return position;}
+  yx getPos(const yx viewPortPos) const {return positionVPRel + viewPortPos;}
   std::string getXPosAsStr() const
   {
     std::stringstream ss {};
-    ss<<position.x;
+    ss<<positionVPRel.x;
     return ss.str();
   }
   std::string getYPosAsStr() const
   {
     std::stringstream ss {};
-    ss<<position.y;
+    ss<<positionVPRel.y;
     return ss.str();
   }
   /* Returns largest bottom right coordinates (relative to the start of the

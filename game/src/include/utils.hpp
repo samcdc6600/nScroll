@@ -5,6 +5,13 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#ifdef DEBUG
+/* This file should be included directly or indirectly be almost every other
+   file. We put includes here because if building in debug mode we often need
+   them but don't want to accidentally leave includes in a file. */
+#include <iostream>
+#include <curses.h>
+#endif
 
 
 struct yx
@@ -17,9 +24,7 @@ struct yx
 
   yx(const int a)
   {
-    //    x = y = a;
-    y = a;
-    x = a;
+    x = y = a;
   }
   
   yx(const yx & yxIn)

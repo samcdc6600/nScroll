@@ -59,12 +59,11 @@ namespace levelFileKeywords
   // Sub section headers for general sprite stuff and player. ==================
   const std::string SPRITE_INIT_COORD_SECTION_HEADER	{"initialCoordinate"};
   // Sub section headers for player sprite. ====================================
-  /* Initial position of the view port (relative to the top left of the
-     player.) */
-  const std::string PLAYER_VIEW_PORT_INIT_COORD_PLAYER_REL_SECTION_HEADER
-    {"initialViewPortCoordinatePlayerRelative"};
-  const std::string PLAYER_INIT_COORD_SECTION_HEADER
-    {"initialCoordinate"};
+  /* Initial position of the view port. */
+  const std::string PLAYER_VIEW_PORT_INIT_COORD_SECTION_HEADER
+    {"initialViewPortCoordinate"};
+  const std::string PLAYER_INIT_COORD_VP_REL_SECTION_HEADER
+    {"initialCoordinateViewPortRelative"};
   /* The player sprite cannot be within this many characters of any edge of the
      view port. */
   const std::string VIEW_PORT_PADDING			 {"viewPortPadding"};
@@ -94,9 +93,9 @@ namespace levelFileKeywords
   const std::map<std::string, orderAndDefaultVal> playerSectionKeywordToId
     {
       {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
-      {PLAYER_VIEW_PORT_INIT_COORD_PLAYER_REL_SECTION_HEADER, orderAndDefaultVal
+      {PLAYER_VIEW_PORT_INIT_COORD_SECTION_HEADER, orderAndDefaultVal
        {1, false}},
-      {PLAYER_INIT_COORD_SECTION_HEADER,
+      {PLAYER_INIT_COORD_VP_REL_SECTION_HEADER,
        orderAndDefaultVal {2, false}},
       {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {3, true}},
       {SPRITE_HEALTH_SECTION_HEADER,	orderAndDefaultVal {4, true}},
@@ -121,9 +120,7 @@ namespace levelFileKeywords
     namespace player
     {
       const std::vector<std::string> spritePaths {{""}};
-      //      const yx initialViewPortCoordinates {0, 0};
-      //      const yx initialCoordinatesRelative {yHeight / 2, xWidth / 2};
-      const yx initialCoordinates {yHeight / 2, xWidth / 2};
+      const yx initialCoordinatesVPRel {yHeight / 2, xWidth / 2};
       const sprite::directions direction {sprite::DIR_NONE};
       const int health {16};
       const double gravitationalConstant {-0.38};
@@ -140,7 +137,7 @@ namespace levelFileKeywords
     }
     namespace misc
     {
-      const yx initialRelViewPortCoordinates {0, 0};
+      const yx initialViewPortCoordinates {0, 0};
       const yx viewPortPadding {0, 0};
     }
   }
@@ -149,8 +146,7 @@ namespace levelFileKeywords
   struct playerInitialData
   {
     std::vector<std::string> spritePaths {};
-    //    yx initialViewPortCoordinates {};
-    yx initialCoordinates {};
+    yx initialCoordinatesVPRel {};
     sprite::directions direction {};
     int health {};
     double gravitationalConstant {};
@@ -171,7 +167,7 @@ namespace levelFileKeywords
      itself. */
   struct
   {
-    yx initialRelViewPortCoordinates;
+    yx initialViewPortCoordinates;
     yx viewPortPadding;
   } misc;
   // Misc.
@@ -647,37 +643,37 @@ void rules::parseRulesConfigFileAndInitialiseVariables
   
   // Init class member variables with values from misc struct.
   PLAYER_MOVEMENT_AREA_PADDING = misc.viewPortPadding;
-  INITIAL_REL_VIEW_PORT_COORDINATES = misc.initialRelViewPortCoordinates;
+  INITIAL_VIEW_PORT_COORDINATES = misc.initialViewPortCoordinates;
 }
 
 
-void rules::checkInitViewPortPosAndPadding()
+void rules::checkInitPlayerPosAndPadding()
 {
-  /* We must check the view port position and padding as the absolute view port
-     position is calculated using the player position and the relative view
-     port position and as such if the magnitude of the relative view port
-     position is too large the player will not be visible or will be in the
+  /* We must check the player position and padding as the absolute player
+     position is calculated using the relative player position and the view port
+     port position and as such if the magnitude of the relative player position
+     is too large the player will not be visible or will be in the
      padding area. This of course is an error. */
 
   const yx maxBR {gamePlayer->getMaxBottomRightOffset()};
 
-  if(INITIAL_REL_VIEW_PORT_COORDINATES.y > 0 ||
-     INITIAL_REL_VIEW_PORT_COORDINATES.x > 0)
+  if(INITIAL_VIEW_PORT_COORDINATES.y > 0 ||
+     INITIAL_VIEW_PORT_COORDINATES.x > 0)
     {
       // Initial VPP is too large.
-      exit(concat("Error: initialViewPortCoordinatePlayerRelative ",
-		  INITIAL_REL_VIEW_PORT_COORDINATES, " must not be more than"
+      exit(concat("Error: initialViewPortCoordinate ",
+		  INITIAL_VIEW_PORT_COORDINATES, " must not be more than"
 		  " (0, 0)."), ERROR_VIEWPORT_POS_RANGE);
     }
-  else if((abs(INITIAL_REL_VIEW_PORT_COORDINATES) + yx{1}).y + maxBR.y / 2
+  else if((abs(INITIAL_VIEW_PORT_COORDINATES) + yx{1}).y + maxBR.y / 2
 	  > (chunkSize.y / 2) ||
-	  (abs(INITIAL_REL_VIEW_PORT_COORDINATES) + yx{1}).x + maxBR.x / 2
+	  (abs(INITIAL_VIEW_PORT_COORDINATES) + yx{1}).x + maxBR.x / 2
 	  > (chunkSize.x / 2))
     {
       // Abs(initial VPP) is too large.
-      exit(concat("Error: initialViewPortCoordinatePlayerRelative + "
+      exit(concat("Error: initialViewPortCoordinate + "
 		  "(player height and width) / 2 ",
-		  abs(INITIAL_REL_VIEW_PORT_COORDINATES) + yx{1} +
+		  abs(INITIAL_VIEW_PORT_COORDINATES) + yx{1} +
 		  yx{maxBR.y / 2, maxBR.x / 2}, " is more than chunk size / 2 ",
 		  yx{chunkSize.y / 2, chunkSize.x / 2}, " and shouldn't be."),
 	   ERROR_VIEWPORT_POS_RANGE);
@@ -695,15 +691,15 @@ void rules::checkInitViewPortPosAndPadding()
 	   ERROR_VIEWPORT_POS_RANGE);
     }
   else if(PLAYER_MOVEMENT_AREA_PADDING.y >
-	  abs(INITIAL_REL_VIEW_PORT_COORDINATES.y) ||
+	  abs(INITIAL_VIEW_PORT_COORDINATES.y) ||
 	  PLAYER_MOVEMENT_AREA_PADDING.x >
-	  abs(INITIAL_REL_VIEW_PORT_COORDINATES.x))
+	  abs(INITIAL_VIEW_PORT_COORDINATES.x))
     {
       // Padding is larger than abs(initial VPP).
       exit(concat("Error: viewPortPadding ", PLAYER_MOVEMENT_AREA_PADDING,
                   " is greater than "
-                  "abs(initialViewPortCoordinatePlayerRelative) ",
-		  INITIAL_REL_VIEW_PORT_COORDINATES, " and shouldn't be."),
+                  "abs(initialViewPortCoordinate) ",
+		  INITIAL_VIEW_PORT_COORDINATES, " and shouldn't be."),
 	   ERROR_VIEWPORT_POS_RANGE);
     }
 }
@@ -725,13 +721,11 @@ void initPlayer
     {keywordAction::headerKeywordAction
      {SPRITE_FILE_SECTION_HEADER, readStringsSection},
      keywordAction::headerKeywordAction
-     {PLAYER_VIEW_PORT_INIT_COORD_PLAYER_REL_SECTION_HEADER,
-      /* View port coordinate is relative to the top left of the player and must
-	 be 0 or less (depending on the value of the padding.) */
+     {PLAYER_VIEW_PORT_INIT_COORD_SECTION_HEADER,
       readSingleCoordSectionInZNumbers},
      keywordAction::headerKeywordAction
-     {PLAYER_INIT_COORD_SECTION_HEADER,
-      readSingleCoordSectionInZNumbers},
+     {PLAYER_INIT_COORD_VP_REL_SECTION_HEADER,
+      readSingleCoordSectionInNNumbers},
      keywordAction::headerKeywordAction
      {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
      keywordAction::headerKeywordAction
@@ -810,7 +804,7 @@ void initPlayer
 			    RULES_CONFIG_FILE_EXTENSION, " header file "
 			    "\"", rulesFileName, "\") for the initial view port"
 			    " position"),
-		     &misc.initialRelViewPortCoordinates);
+		     &misc.initialViewPortCoordinates);
 		     //&playerInitData.initialViewPortCoordinates);
 		  break;
 		case 2:
@@ -821,7 +815,7 @@ void initPlayer
 			    RULES_CONFIG_FILE_EXTENSION, " header file "
 			    "\"", rulesFileName, "\") for the initial player "
 			    "coordinate"),
-		     &playerInitData.initialCoordinates);
+		     &playerInitData.initialCoordinatesVPRel);
 		  break;
 		case 3:
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
@@ -884,8 +878,8 @@ void initPlayer
     new player(background,
 	       playerInitData.spritePaths,
 	       // misc.viewPortPadding,
-	       // misc.initialRelViewPortCoordinates,
-	       playerInitData.initialCoordinates,
+	       // misc.initialViewPortCoordinates,
+	       playerInitData.initialCoordinatesVPRel,
 	       playerInitData.direction, playerInitData.health,
 	       playerInitData.gravitationalConstant,
 	       playerInitData.maxVerticalVelocity,
@@ -1315,11 +1309,11 @@ void checkForDefaultPlayerValues
       playerInitData.spritePaths = defaultValues::player::spritePaths;
       break;
     case 1:
-      misc.initialRelViewPortCoordinates = 
-	defaultValues::misc::initialRelViewPortCoordinates;
+      misc.initialViewPortCoordinates = 
+	defaultValues::misc::initialViewPortCoordinates;
     case 2:
-      playerInitData.initialCoordinates =
-	defaultValues::player::initialCoordinates;
+      playerInitData.initialCoordinatesVPRel =
+	defaultValues::player::initialCoordinatesVPRel;
       break;
     case 3:
       playerInitData.direction = defaultValues::player::direction;
