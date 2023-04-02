@@ -7,6 +7,12 @@
 #include "include/utils.hpp"
 
 
+yx abs(const yx a)
+{
+  return yx{abs(a.y), abs(a.x)};
+}
+
+
 std::ostream & operator<<(std::ostream &lhs, const yx rhs)
 {
   return lhs<<"("<<rhs.y<<", "<<rhs.x<<")";

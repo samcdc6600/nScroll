@@ -67,7 +67,7 @@ namespace levelFileKeywords
     {"initialCoordinate"};
   /* The player sprite cannot be within this many characters of any edge of the
      view port. */
-  const std::string VIEW_PORT_PADDING {"viewPortPadding"};
+  const std::string VIEW_PORT_PADDING			 {"viewPortPadding"};
   const std::string SPRITE_INIT_DIR_SECTION_HEADER	{"initialDirection"};
   const std::string SPRITE_HEALTH_SECTION_HEADER	{"initialHealth"};
   const std::string SPRITE_GRAV_CONST_SECTION_HEADER	{"gravConst"};
@@ -664,39 +664,46 @@ void rules::checkInitViewPortPosAndPadding()
   if(INITIAL_REL_VIEW_PORT_COORDINATES.y > 0 ||
      INITIAL_REL_VIEW_PORT_COORDINATES.x > 0)
     {
+      // Initial VPP is too large.
       exit(concat("Error: initialViewPortCoordinatePlayerRelative ",
 		  INITIAL_REL_VIEW_PORT_COORDINATES, " must not be more than"
 		  " (0, 0)."), ERROR_VIEWPORT_POS_RANGE);
     }
-  else if(INITIAL_REL_VIEW_PORT_COORDINATES.y + PLAYER_MOVEMENT_AREA_PADDING.y > 0 ||
-     INITIAL_REL_VIEW_PORT_COORDINATES.x + PLAYER_MOVEMENT_AREA_PADDING.x > 0)
+  else if((abs(INITIAL_REL_VIEW_PORT_COORDINATES) + yx{1}).y + maxBR.y / 2
+	  > (chunkSize.y / 2) ||
+	  (abs(INITIAL_REL_VIEW_PORT_COORDINATES) + yx{1}).x + maxBR.x / 2
+	  > (chunkSize.x / 2))
     {
-      exit(concat("Error: initialViewPortCoordinatePlayerRelative ",
-		  INITIAL_REL_VIEW_PORT_COORDINATES, " + viewPortPadding ",
-		  PLAYER_MOVEMENT_AREA_PADDING, " ",
-		  INITIAL_REL_VIEW_PORT_COORDINATES +
-		  PLAYER_MOVEMENT_AREA_PADDING, " is out of range. It "
-		  "must not be greater than (0, 0)."),
+      // Abs(initial VPP) is too large.
+      exit(concat("Error: initialViewPortCoordinatePlayerRelative + "
+		  "(player height and width) / 2 ",
+		  abs(INITIAL_REL_VIEW_PORT_COORDINATES) + yx{1} +
+		  yx{maxBR.y / 2, maxBR.x / 2}, " is more than chunk size / 2 ",
+		  yx{chunkSize.y / 2, chunkSize.x / 2}, " and shouldn't be."),
 	   ERROR_VIEWPORT_POS_RANGE);
     }
-  else if
-    ((abs(INITIAL_REL_VIEW_PORT_COORDINATES.y) + PLAYER_MOVEMENT_AREA_PADDING.y
-      + maxBR.y + 1) >= chunkSize.y ||
-     (abs(INITIAL_REL_VIEW_PORT_COORDINATES.x) + PLAYER_MOVEMENT_AREA_PADDING.x
-     + maxBR.x + 1) >= chunkSize.x)
+  else if((PLAYER_MOVEMENT_AREA_PADDING  + yx{1}).y + maxBR.y / 2 >
+	  (chunkSize.y / 2) ||
+	  (PLAYER_MOVEMENT_AREA_PADDING + yx{1}).x + maxBR.x / 2 >
+	  (chunkSize.x / 2))
     {
-      exit(concat("Error: abs(initialViewPortCoordinatePlayerRelative) ",
-		  yx{abs(INITIAL_REL_VIEW_PORT_COORDINATES.y),
-		     abs(INITIAL_REL_VIEW_PORT_COORDINATES.x)},
-		  " + viewPortPadding ", PLAYER_MOVEMENT_AREA_PADDING,
-		  " + player height and "
-		  "width ", maxBR + yx{1,1}, " ",
-		  yx{abs(INITIAL_REL_VIEW_PORT_COORDINATES.y),
-		     abs(INITIAL_REL_VIEW_PORT_COORDINATES.x)} +
-		  PLAYER_MOVEMENT_AREA_PADDING + maxBR + yx{1,1}, " is out of "
-		  "range. It must not be greater than or equal to ", chunkSize -
-		  (PLAYER_MOVEMENT_AREA_PADDING + maxBR + yx{1,1}),
-		  "."),
+      // Padding is too large.
+      exit(concat("Error: viewPortPadding + (player height and width) / 2 ",
+		  PLAYER_MOVEMENT_AREA_PADDING + yx{1} +
+		  yx{maxBR.y / 2, maxBR.x / 2}, " is more than chunk size / 2 ",
+		  yx{chunkSize.y / 2, chunkSize.x / 2}, " and shouldn't be."),
+	   ERROR_VIEWPORT_POS_RANGE);
+    }
+  else if(PLAYER_MOVEMENT_AREA_PADDING.y >
+	  abs(INITIAL_REL_VIEW_PORT_COORDINATES.y) ||
+	  PLAYER_MOVEMENT_AREA_PADDING.x >
+	  abs(INITIAL_REL_VIEW_PORT_COORDINATES.x))
+    {
+      // Padding is larger than abs(initial VPP).
+      exit(concat("Error: viewPortPadding ", PLAYER_MOVEMENT_AREA_PADDING,
+                  " is greater than "
+                  "abs(initialViewPortCoordinatePlayerRelative) ",
+		  INITIAL_REL_VIEW_PORT_COORDINATES, " and shouldn't be."),
 	   ERROR_VIEWPORT_POS_RANGE);
     }
 }

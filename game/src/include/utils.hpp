@@ -1,5 +1,5 @@
-#ifndef COMMON_HPP_
-#define COMMON_HPP_
+#ifndef UTILS_HPP_
+#define UTILS_HPP_
 
 
 #include <string>
@@ -15,6 +15,13 @@ struct yx
   
   yx() {}
 
+  yx(const int a)
+  {
+    //    x = y = a;
+    y = a;
+    x = a;
+  }
+  
   yx(const yx & yxIn)
   {
     this->y = yxIn.y;
@@ -58,6 +65,9 @@ struct yx
     return yx{y - rhs.y, x - rhs.x};
   }
 };
+
+
+yx abs(const yx a);
 
 
 std::ostream & operator<<(std::ostream &lhs, const yx rhs);
