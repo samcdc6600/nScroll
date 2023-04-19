@@ -91,9 +91,9 @@ int gameLoop
 	  break;
 	}
       
-      // levelRules.physics
-      // 	(background, player::convertDirectionCharsToDirections
-      // 	 (static_cast<player::directionChars>(input)));
+      levelRules.physics
+	(background, player::convertDirectionCharsToDirections
+	 (static_cast<player::directionChars>(input)));
       draw(background, levelRules.gamePlayer, levelRules.bgSprites);
     }
 }

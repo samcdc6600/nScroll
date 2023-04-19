@@ -168,8 +168,8 @@ private:
   void handleFalling(const T * coordRules)
   {
     using namespace boarderRuleChars;
-  
-    if((positionVPRel.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
+
+    if((positionVPRel.y + maxBottomRightOffset.y) == viewPortSize.y)
       {
 	// We're at the bottom of the level.
 	return;

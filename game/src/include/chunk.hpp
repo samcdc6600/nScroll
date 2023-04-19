@@ -451,28 +451,23 @@ public:
   }
 
 
-  /* Updates the view port position based on the player position. Note that the
-     view port position may not be updated if the play is still within certain
-     bounds.*/
+  /* Updates the view port pos if the relative player position has changed
+     enough since the last time the view port pos was updates. */
   bool updateViewPortPosition
   (const yx playerMovementAreaPadding, const yx playerPos,
    const yx playerMaxBottomRightOffset)
-  {
+  { 
     // Tests for if player is above or to the left of padding.
     std::function<bool(bool)> testPaddingDirectionInDimension =
       [&](bool yDimension)
       {
 	if(yDimension)
 	  {
-	    return playerPos.y <
-	      (firstStageBuffer.viewPortPosition.y +
-	       playerMovementAreaPadding.y);
+	    return playerPos.y - playerMovementAreaPadding.y < 0;
 	  }
 	else
 	  {
-	    return (playerPos.x <
-		    (firstStageBuffer.viewPortPosition.x +
-		     playerMovementAreaPadding.x));
+	    return playerPos.x - playerMovementAreaPadding.x < 0;
 	  }
       };
     /* Test if player is if player is outisde of zone inside of padding in the y
@@ -482,16 +477,14 @@ public:
       if(yDimension)
 	{ 
 	  return (testPaddingDirectionInDimension(true) ||
-		  (playerMaxBottomRightOffset.y + 1 + playerPos.y) >
-		  (firstStageBuffer.viewPortPosition.y + chunkSize.y
-		   - playerMovementAreaPadding.y));
+		  (playerPos.y + playerMaxBottomRightOffset.y + 1) >
+		  (chunkSize.y - playerMovementAreaPadding.y));
 	}
       else
 	{
 	  return (testPaddingDirectionInDimension(false) ||
-		  (playerMaxBottomRightOffset.x + playerPos.x) >
-		  (firstStageBuffer.viewPortPosition.x + chunkSize.x
-		   - playerMovementAreaPadding.x));
+		  (playerPos.x + playerMaxBottomRightOffset.x + 1) >
+		  (chunkSize.x - playerMovementAreaPadding.x));
 	}
     };
 
@@ -506,20 +499,19 @@ public:
 	   UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
 	if(testPaddingDirectionInDimension(true))
 	  {
-	    // The player is in the top padding.
+	    // The player is in or above the top padding.
+	    /* Here if the playerPos is positive we want to subtract it from
+	       the padding, but if it is negative we wan't to add it. Luckily
+	       simply subtracting it from the padding will do the job. */
 	    firstStageBuffer.viewPortPosition.y -=
-	      abs((firstStageBuffer.viewPortPosition.y +
-		   playerMovementAreaPadding.y) - playerPos.y);
+	      playerMovementAreaPadding.y - playerPos.y;
 	    viewPortPosChanged = true;
 	  }
 	else
 	  {
-	    // exit(-1);
-	    // The player is in the bottom padding.
+	    // The player is in or below the bottom padding.
 	    firstStageBuffer.viewPortPosition.y +=
-	      abs((firstStageBuffer.viewPortPosition.y + chunkSize.y
-		   - playerMovementAreaPadding.y) -
-		  (playerMaxBottomRightOffset.y + 1 + playerPos.y));
+	      abs(playerPos.y) - (chunkSize.y - playerMovementAreaPadding.y);
 	    viewPortPosChanged = true;
 	  }
       }
@@ -534,23 +526,33 @@ public:
 	if(testPaddingDirectionInDimension(false))
 	  {
 	    // The player is in the left padding.
+	    // firstStageBuffer.viewPortPosition.x -=
+	    //   abs((firstStageBuffer.viewPortPosition.x +
+	    // 	   playerMovementAreaPadding.x) - playerPos.x);
 	    firstStageBuffer.viewPortPosition.x -=
-	      abs((firstStageBuffer.viewPortPosition.x +
-		   playerMovementAreaPadding.x) - playerPos.x);
+	      playerMovementAreaPadding.x - playerPos.x;
 	    viewPortPosChanged = true;
 	  }
 	else
 	  {
 	    // The player is in the right padding.
+	    // firstStageBuffer.viewPortPosition.x +=
+	    //   abs((firstStageBuffer.viewPortPosition.x + chunkSize.x
+	    // 	   - playerMovementAreaPadding.x) -
+	    // 	  (playerMaxBottomRightOffset.x + 1 + playerPos.x));
 	    firstStageBuffer.viewPortPosition.x +=
-	      abs((firstStageBuffer.viewPortPosition.x + chunkSize.x
-		   - playerMovementAreaPadding.x) -
-		  (playerMaxBottomRightOffset.x + 1 + playerPos.x));
+	      abs(playerPos.x) - (chunkSize.x - playerMovementAreaPadding.x);
 	    viewPortPosChanged = true;
 	  }
       }
     
     return viewPortPosChanged;
+  }
+
+
+  void updateViewPortPosition(const yx newPosition)
+  {
+    firstStageBuffer.viewPortPosition = newPosition;
   }
 
 

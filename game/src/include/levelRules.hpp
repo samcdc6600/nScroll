@@ -154,7 +154,7 @@ private:
 					 const int backgroundHeight);
 
 #ifdef DEBUG
-  void printRuleChars(const yx viewPortSize);
+  void printRuleChars();
 #endif
 
 public:

@@ -1761,20 +1761,19 @@ sprite::directions rules::handleLeftCollision(const yx viewPortPosition,
 
 
 #ifdef DEBUG
-#include <curses.h>
 #include <stdlib.h>
 #include "include/colorS.hpp"
 
-void rules::printRuleChars(const yx viewPortSize)
+void rules::printRuleChars()
 {
   const colourMap cuMap;
   setColorMode setCuMode {0};
-  
-  for(int yIter {}; yIter < viewPortSize.y; ++yIter)
+
+  for(int yIter {}; yIter < chunkSize.y; ++yIter)
     {
-      for(int xIter {}; xIter < viewPortSize.x; ++xIter)
+      for(int xIter {}; xIter < chunkSize.x; ++xIter)
 	{
-	  int sSRBIndex {yIter * viewPortSize.x + xIter};
+	  int sSRBIndex {yIter * chunkSize.x + xIter};
 	  if(secondStageRulesBuffer[sSRBIndex] != ' ')
 	    {
 	      setCuMode.setColor((sSRBIndex * rand()) % cuMap.colorPairs.size());
@@ -1803,17 +1802,20 @@ void rules::physics
   this->updateBuffers();
   
 #ifdef DEBUG
-  printRuleChars(background.chunkSize);
+  printRuleChars();
 #endif
 
   if(gameTiming.movePlayer.startNextTick())
     {
       movePlayer
 	(background, input);
-      // background.updateViewPortPosition
-      // 	(PLAYER_MOVEMENT_AREA_PADDING,
-      // 	 gamePlayer->getPos(),
-      // 	 gamePlayer->getMaxBottomRightOffset());      
+      // Update position for rules chars.
+      updateViewPortPosition
+	(PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
+	 gamePlayer->getMaxBottomRightOffset());
+      // Update background position with new rules chars pos.
+      background.updateViewPortPosition
+	(getViewPortPosition());
       // gamePlayer->resetPositionWithPreviousPos
       // 	(updateViewPortPosition
       // 	 (PLAYER_MOVEMENT_AREA_PADDING,
