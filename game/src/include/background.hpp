@@ -46,10 +46,10 @@ public:
     delete [] secondStageDrawBuffer;
   }
 
-  void updateBuffers(const yx playerPos)
+  void updateBuffers()
   {
-       updateFirstStageBuffer(playerPos);
-       updateSecondStageBuffer(playerPos, secondStageDrawBuffer);
+    updateFirstStageBuffer();
+    updateSecondStageBuffer(secondStageDrawBuffer);
   }
 };
 

@@ -164,8 +164,8 @@ public:
   /* Returns the of position of the sprite after moving one character (including
      diagonal movement) in the direction dir */
   yx peekAtPos(const directions dir);
-  // Returns the sprite position.
-  yx getPos(const yx viewPortPos) const {return positionVPRel + viewPortPos;}
+  // Returns the relative sprite position.
+  yx getPos() const {return positionVPRel;}
   std::string getXPosAsStr() const
   {
     std::stringstream ss {};
@@ -188,12 +188,10 @@ public:
     resetCurrentSliceNum();
     direction = spriteAnimationDirections[dir];
   }
-  /* update's position of sprite in an absoulte fashion with reference to the
-     background */
-  virtual void updatePosAbs(int y, int x);
-  /* update's sprite's y and x position value's by a difference of no more then
-     1. The direction depends on the value of ch. */
-  virtual void updatePosRel(const directions dir);
+  /* Sets relative position to newRelPos */
+  virtual void updatePos(const yx newRelPos);
+  /* Adds to relative position based on the value of dir. */
+  virtual void updatePos(const directions dir);
 };
 
 #endif

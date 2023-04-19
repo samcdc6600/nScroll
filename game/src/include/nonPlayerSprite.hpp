@@ -12,7 +12,7 @@ public:
     sprite(spritePaths, max, pos, dir)
   { }
   void draw(unsigned short * secondStageDrawBuffer, const bool updateSlice,
-	    const int bgPos);
+	    const yx viewPortPos);
 };
 
 

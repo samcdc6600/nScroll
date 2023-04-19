@@ -656,51 +656,36 @@ void rules::checkInitPlayerPosAndPadding()
      padding area. This of course is an error. */
 
   const yx maxBR {gamePlayer->getMaxBottomRightOffset()};
+  const yx relPlayerPos {gamePlayer->getPos()};
+  
 
-  if(INITIAL_VIEW_PORT_COORDINATES.y > 0 ||
-     INITIAL_VIEW_PORT_COORDINATES.x > 0)
-    {
-      // Initial VPP is too large.
-      exit(concat("Error: initialViewPortCoordinate ",
-		  INITIAL_VIEW_PORT_COORDINATES, " must not be more than"
-		  " (0, 0)."), ERROR_VIEWPORT_POS_RANGE);
-    }
-  else if((abs(INITIAL_VIEW_PORT_COORDINATES) + yx{1}).y + maxBR.y / 2
-	  > (chunkSize.y / 2) ||
-	  (abs(INITIAL_VIEW_PORT_COORDINATES) + yx{1}).x + maxBR.x / 2
-	  > (chunkSize.x / 2))
-    {
-      // Abs(initial VPP) is too large.
-      exit(concat("Error: initialViewPortCoordinate + "
-		  "(player height and width) / 2 ",
-		  abs(INITIAL_VIEW_PORT_COORDINATES) + yx{1} +
-		  yx{maxBR.y / 2, maxBR.x / 2}, " is more than chunk size / 2 ",
-		  yx{chunkSize.y / 2, chunkSize.x / 2}, " and shouldn't be."),
-	   ERROR_VIEWPORT_POS_RANGE);
-    }
-  else if((PLAYER_MOVEMENT_AREA_PADDING  + yx{1}).y + maxBR.y / 2 >
-	  (chunkSize.y / 2) ||
-	  (PLAYER_MOVEMENT_AREA_PADDING + yx{1}).x + maxBR.x / 2 >
-	  (chunkSize.x / 2))
+  if((PLAYER_MOVEMENT_AREA_PADDING + yx{1}).y + maxBR.y / 2 >
+     (chunkSize.y / 2) ||
+     (PLAYER_MOVEMENT_AREA_PADDING + yx{1}).x + maxBR.x / 2 >
+     (chunkSize.x / 2))
     {
       // Padding is too large.
-      exit(concat("Error: viewPortPadding + (player height and width) / 2 ",
+      exit(concat("Error: ", levelFileKeywords::VIEW_PORT_PADDING, " + ",
+		  maxBR + yx{1}, " (player height and width) / 2 ",
 		  PLAYER_MOVEMENT_AREA_PADDING + yx{1} +
 		  yx{maxBR.y / 2, maxBR.x / 2}, " is more than chunk size / 2 ",
 		  yx{chunkSize.y / 2, chunkSize.x / 2}, " and shouldn't be."),
-	   ERROR_VIEWPORT_POS_RANGE);
+	   ERROR_PLAYER_PADDING_RANGE);
     }
-  else if(PLAYER_MOVEMENT_AREA_PADDING.y >
-	  abs(INITIAL_VIEW_PORT_COORDINATES.y) ||
-	  PLAYER_MOVEMENT_AREA_PADDING.x >
-	  abs(INITIAL_VIEW_PORT_COORDINATES.x))
+  else if(relPlayerPos.y < PLAYER_MOVEMENT_AREA_PADDING.y ||
+	  relPlayerPos.x < PLAYER_MOVEMENT_AREA_PADDING.x ||
+	  (relPlayerPos + maxBR + yx{1}).y >
+	  (chunkSize - PLAYER_MOVEMENT_AREA_PADDING).y ||
+	  (relPlayerPos + maxBR + yx{1}).x >
+	  (chunkSize - PLAYER_MOVEMENT_AREA_PADDING).x)
     {
-      // Padding is larger than abs(initial VPP).
-      exit(concat("Error: viewPortPadding ", PLAYER_MOVEMENT_AREA_PADDING,
-                  " is greater than "
-                  "abs(initialViewPortCoordinate) ",
-		  INITIAL_VIEW_PORT_COORDINATES, " and shouldn't be."),
-	   ERROR_VIEWPORT_POS_RANGE);
+      // Player position is out of bounds.
+      exit(concat("Error: initial relative player position ", relPlayerPos,
+		  " out of bounds. Must be within padding (relative to the "
+		  "view port). That is between ", PLAYER_MOVEMENT_AREA_PADDING,
+		  " and ", chunkSize - (PLAYER_MOVEMENT_AREA_PADDING + maxBR +
+					yx{1}), "."),
+	   ERROR_PLAYER_PADDING_RANGE);
     }
 }
 
@@ -813,8 +798,8 @@ void initPlayer
 		    (rawRules, buffPos,
 		     concat("reading coord section (from ",
 			    RULES_CONFIG_FILE_EXTENSION, " header file "
-			    "\"", rulesFileName, "\") for the initial player "
-			    "coordinate"),
+			    "\"", rulesFileName, "\") for the initial relative"
+			    " player coordinate"),
 		     &playerInitData.initialCoordinatesVPRel);
 		  break;
 		case 3:
@@ -1457,7 +1442,7 @@ void rules::movePlayer
      )
     {
       // Start jump.
-      gamePlayer->startJumping(chunkSize, secondStageRulesBuffer);
+      gamePlayer->startJumping(secondStageRulesBuffer);
       // We wan't to keep moving in the direction we were moving in before.
       input = (sprite::directions)currDir;
     }
@@ -1465,8 +1450,7 @@ void rules::movePlayer
     {
       /* We are not jumping or we are past the start of a jump.
 	 If we can move down. */
-      gamePlayer->handleJumpingAndFalling
-	(chunkSize, secondStageRulesBuffer);
+      gamePlayer->handleJumpingAndFalling(secondStageRulesBuffer);
     }
 
   // Handle contact with boarder characters.

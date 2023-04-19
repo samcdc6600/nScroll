@@ -5,6 +5,7 @@
 #include <map>
 #include "utils.hpp"
 
+#include <iostream>
 
 template <typename chunkElementType>
 class  chunk
@@ -29,14 +30,11 @@ protected:
        the first stage buffer. */
     static const int fSBYChunks {5}, fSBXChunks {5},
       fSBYUpdateOffset {2}, fSBXUpdateOffset {2};
-    
-    /* Holds the current position of the view port relative to the player (Note
-       that buffer may not yet be updated as a result this new position.) */
-    yx relViewPortPos {};
-    yx lastPlayerPos {};
-    /* Holds the position of the view port relative to the player the last time
-       buffer was updated. */
-    yx lastUpdatedRelVPPos {};
+    /* Holds the current position of the view port (Note that buffer may not yet
+       be updated as a result this new position.) */
+    yx viewPortPosition {};
+    // Holds the position of the view port the last time buffer was updated.
+    yx lastUpdatedPosition {};
     /* Holds a fSBYChunks by fSBXChunks buffer of the currently visible or
        "close to visible" chunks. */
     chunkElementType * buffer;
@@ -66,13 +64,13 @@ private:
      the triggering change in view port position was in the x
      dimension. Otherwise it will be done assuming that the trigger change in
      the view port position was in the y dimension. */
-  void updateFirstStageBuffer(const yx playerPos, const bool horizontal)
+  void updateFirstStageBuffer(const bool horizontal)
   {
     /*
       The first stage buffer is a 5 by 5 array of chunks. When the delta between
-      the last updated position and the new position (relViewPortPos) have
+      the last updated position and the new position (viewPortPosition) have
       diverged by the dimension of one chunk (note that this differs depending
-      on the axis.) The chunks two chunks ahead of the relViewPortPos (in y or
+      on the axis.) The chunks two chunks ahead of the viewPortPosition (in y or
       x) are updated.
       The diagram below shows the position of the last updated position and the
       current position upon entering this function and the chunks that will be
@@ -114,7 +112,8 @@ private:
       TO DO 5 LOOKUPS TO FIND THE THREADS AND THESE LOOKUPS WILL PROBABLY BE THE
       SLOWEST OPERATIONS PERFORMED BY THE UPDATING THREAD. THIS DOESN'T TAKE
       INTO ACCOUNT DIAGONAL MOVEMENT PATTERNS.
-    */  
+    */
+  
     /* NOTE THAT THE CODE HERE WILL ONLY WORK CORRECTLY WHEN fSBYChunks AND
        fSBXChunks ARE UNEVEN. HOWEVER THEY SHOULD BE. SO THIS SHOULDN'T BE A
        PROBLEM. */
@@ -131,20 +130,19 @@ private:
 	const yx fSBTargetChunk
 	  {horizontal ?
 	   calculateFSBTargetChunkWithHorizontalChange
-	   (playerPos, fSBSize, chunkUpdateDimensionIter):
+	   (fSBSize, chunkUpdateDimensionIter):
 	   calculateFSBTargetChunkWithVerticalChange
-	   (playerPos, fSBSize, chunkUpdateDimensionIter)};
+	   (fSBSize, chunkUpdateDimensionIter)};
 	// Calculate index of potential chunk to be copied into FSB.
 	const std::string chunkKey
 	  {calculatePotentialChunkKeyForChunkToGoInFSB
-	   (playerPos, horizontal, chunkUpdateDimensionIter)};
-	
+	   (horizontal, chunkUpdateDimensionIter)};      
+
 	// Try to get chunk and then perform the copy to the FSB.
 	try
 	  {
 	    // At() will throw an exception if the key isn't found.
 	    const chunkType * chunk {&chunkMap.at(chunkKey)};
-	    
 	    // Iterate over lines of target chunk in the FSB.
 	    for(int yIter {}; yIter < chunkSize.y; ++yIter)
 	      {
@@ -180,8 +178,8 @@ private:
 	  }
       }
 
-    firstStageBuffer.lastUpdatedRelVPPos = firstStageBuffer.relViewPortPos;
-    firstStageBuffer.lastPlayerPos = playerPos;
+    firstStageBuffer.lastUpdatedPosition =
+      firstStageBuffer.viewPortPosition;
   }
 
   
@@ -194,32 +192,30 @@ private:
      yChunkOffset being set to (0, 1, 2, 3, 4) for each respective call, should
      be (3, 3), (4, 3), (0, 3), (1, 3), (2, 3). */
   yx calculateFSBTargetChunkWithHorizontalChange
-  (const yx playerPos, const yx fSBSize, const int yChunkOffset) const
+  (const yx fSBSize, const int yChunkOffset) const
   {
     /* Note that the code in this function assumes that a mod can produce a
        negative result. */
     /* Y should change each iteration of the loop in the calling function, but x
        shouldn't. We have to wrap around in y if y >=
        firstStageBuffer.fSBYChunks. */
-    const yx lastUpdatedVPPos {firstStageBuffer.lastUpdatedRelVPPos +
-			       firstStageBuffer.lastPlayerPos},
-      currentVPPos {firstStageBuffer.relViewPortPos + playerPos};
-    /* Here if relViewPortPos.x < 0 we must sub the x view port dimension
-       (minus 1) from relViewPortPos.x before the modulous (maybe?) and
+    /* Here if viewPortPosition.x < 0 we must sub the x view port dimension
+       (minus 1) from viewPortPosition.x before the modulous (maybe?) and
        division operations because -50 / 170 and 50 / 170 are both 0. However we
        need -50 / 170 to be -1, because otherwise we would have two chunks
        mapping to one (actually more than that when taking into account the y
-       dimension.) */
+       dimension.) */ 
     yx targetChunk
-      {0, ((currentVPPos.x - (currentVPPos.x < 0 ? xWidth -1: 0))
+      {0, ((firstStageBuffer.viewPortPosition.x -
+	    (firstStageBuffer.viewPortPosition.x < 0 ? xWidth -1: 0))
 	   % fSBSize.x) / chunkSize.x};
     // Account for negative coordinate
     targetChunk.x = targetChunk.x < 0 ?
       firstStageBuffer.fSBXChunks + targetChunk.x: targetChunk.x;
     /* Add offset in the x dimension based on the direction the view port has
        moved. */  
-    targetChunk.x += currentVPPos.x >
-      lastUpdatedVPPos.x ?
+    targetChunk.x += firstStageBuffer.viewPortPosition.x >
+      firstStageBuffer.lastUpdatedPosition.x ?
       firstStageBuffer.fSBXUpdateOffset:
       - firstStageBuffer.fSBXUpdateOffset;
     /* Maybe fix negative and wrap around in x... */
@@ -228,8 +224,8 @@ private:
       firstStageBuffer.fSBXChunks + targetChunk.x: targetChunk.x;
     // FirstStageBuffer.fSBYChunks & 1 returns 1 if fSBYChunks is even.
     const int targetYPreWrap
-      {(((currentVPPos.y -
-	  (currentVPPos.y < 0 ? yHeight -1: 0)) %
+      {(((firstStageBuffer.viewPortPosition.y -
+	  (firstStageBuffer.viewPortPosition.y < 0 ? yHeight -1: 0)) %
 	 fSBSize.y) / chunkSize.y +
 	(firstStageBuffer.fSBYChunks / 2 +
 	 (firstStageBuffer.fSBYChunks & 1)) +
@@ -244,25 +240,22 @@ private:
 
 
   yx calculateFSBTargetChunkWithVerticalChange
-  (const yx playerPos, const yx fSBSize, const int xChunkOffset) const
+  (const yx fSBSize, const int xChunkOffset) const
   {
     /* Note that the code in this function assumes that a mod can produce a
        negative result. */
     /* X should change each iteration of the loop in the calling function, but y
        shouldn't. We have to wrap around in x if x >=
        firstStageBuffer.fSBXChunks. */
-    const yx lastUpdatedVPPos {firstStageBuffer.lastUpdatedRelVPPos +
-			       firstStageBuffer.lastPlayerPos},
-      currentVPPos {firstStageBuffer.relViewPortPos + playerPos};
-    yx targetChunk {(currentVPPos.y % fSBSize.y) /
+    yx targetChunk {(firstStageBuffer.viewPortPosition.y % fSBSize.y) /
 		    chunkSize.y, 0};
     // Account for negative coordinate
     targetChunk.y = targetChunk.y < 0 ?
       firstStageBuffer.fSBYChunks + targetChunk.y: targetChunk.y;
     /* Add offset in the y dimension based on the direction the view port has
        moved. */
-    targetChunk.y += currentVPPos.y >
-      lastUpdatedVPPos.y ?
+    targetChunk.y += firstStageBuffer.viewPortPosition.y >
+      firstStageBuffer.lastUpdatedPosition.y ?
       firstStageBuffer.fSBYUpdateOffset:
       - firstStageBuffer.fSBYUpdateOffset;
     /* Maybe wrap around in y... NOTE THAT THE PLAYER SHOULD NOT BE ABLE TO HAVE
@@ -273,7 +266,8 @@ private:
     targetChunk.y = targetChunk.y < 0 ?
       firstStageBuffer.fSBYChunks + targetChunk.y: targetChunk.y;
     // FirstStageBuffer.fSBYChunks & 1 returns 1 if fSBYChunks is even.
-    const int targetXPreWrap {((currentVPPos.x % fSBSize.x) / chunkSize.x +
+    const int targetXPreWrap {((firstStageBuffer.viewPortPosition.x %
+				fSBSize.x) / chunkSize.x +
 			       (firstStageBuffer.fSBXChunks / 2 +
 				(firstStageBuffer.fSBXChunks & 1)) +
 			       xChunkOffset)};
@@ -291,12 +285,8 @@ private:
      to true when the triggering change in view port position was in the x
      dimension. */
   std::string calculatePotentialChunkKeyForChunkToGoInFSB
-  (const yx playerPos, const bool horizontal,
-   const int chunkUpdateDimensionIter) const
+  (const bool horizontal, const int chunkUpdateDimensionIter) const
   {
-    const yx lastUpdatedVPPos {firstStageBuffer.lastUpdatedRelVPPos +
-			       firstStageBuffer.lastPlayerPos},
-      currentVPPos {firstStageBuffer.relViewPortPos + playerPos};
     /* Note here that we account for the direction of movement when calculating
        the y or x coordinate based on the value of horizontal. */
     yx chunkCoord {};
@@ -304,21 +294,25 @@ private:
     if(horizontal)
       {
 	chunkCoord =
-	  yx{currentVPPos.y + ((chunkUpdateDimensionIter -
+	  yx{firstStageBuffer.viewPortPosition.y +
+	     ((chunkUpdateDimensionIter -
 	       (firstStageBuffer.fSBYChunks / 2)) * chunkSize.y),
-	     currentVPPos.x +
-	     (currentVPPos.x > lastUpdatedVPPos.x ?
+	     firstStageBuffer.viewPortPosition.x +
+	     (firstStageBuffer.viewPortPosition.x >
+	      firstStageBuffer.lastUpdatedPosition.x ?
 	      firstStageBuffer.fSBXUpdateOffset:
 	      -firstStageBuffer.fSBXUpdateOffset) * chunkSize.x};
       }
     else 
       {
 	chunkCoord =
-	  yx{(currentVPPos.y +
-	      (currentVPPos.y > lastUpdatedVPPos.y ?
+	  yx{(firstStageBuffer.viewPortPosition.y +
+	      (firstStageBuffer.viewPortPosition.y >
+	       firstStageBuffer.lastUpdatedPosition.y ?
 	       firstStageBuffer.fSBYUpdateOffset:
 	       -firstStageBuffer.fSBYUpdateOffset) * chunkSize.y),
-	     currentVPPos.x + ((chunkUpdateDimensionIter -
+	     firstStageBuffer.viewPortPosition.x +
+	     ((chunkUpdateDimensionIter -
 	       (firstStageBuffer.fSBXChunks  / 2)) * chunkSize.x)};
       }
   
@@ -327,39 +321,38 @@ private:
   
 protected:
     /* Updates the first stage buffer if
-     firstStageBuffer.relViewPortPos + playerPos and
-     firstStageBuffer.lastUpdatedRelVPPos +
-     firstStageBuffer.lastPlayerPos
+     firstStageBuffer.viewPortPosition and firstStageBuffer.lastUpdatedPosition
      have diverged by a sufficient delta. If an update is performed
-     lastUpdatedRelVPPos is set to the same values as relViewPortPos. */
-  void updateFirstStageBuffer(const yx playerPos)
+     lastUpdatedPosition is set to the same values as viewPortPosition. */
+  void updateFirstStageBuffer()
   {
-    const yx lastUpdatedVPPos {firstStageBuffer.lastUpdatedRelVPPos +
-		       firstStageBuffer.lastPlayerPos},
-      currentVPPos {firstStageBuffer.relViewPortPos + playerPos};
-
     // x > y ? x - y : y - x. Get distance between two numbers on number line.
-    if((lastUpdatedVPPos.x > currentVPPos.x) ?
-       ((lastUpdatedVPPos.x - currentVPPos.x) > chunkSize.x -1) :
-       ((currentVPPos.x - lastUpdatedVPPos.x) > chunkSize.x -1))
+    if((firstStageBuffer.lastUpdatedPosition.x >
+	firstStageBuffer.viewPortPosition.x) ?
+       ((firstStageBuffer.lastUpdatedPosition.x -
+	 firstStageBuffer.viewPortPosition.x) > chunkSize.x -1) :
+       ((firstStageBuffer.viewPortPosition.x -
+	 firstStageBuffer.lastUpdatedPosition.x) > chunkSize.x -1))
       {
-	updateFirstStageBuffer(playerPos, true);
+	updateFirstStageBuffer(true);
       }
-    if((lastUpdatedVPPos.y > currentVPPos.y) ?
-	    ((lastUpdatedVPPos.y - currentVPPos.y) > chunkSize.y -1) :
-	    ((currentVPPos.y - lastUpdatedVPPos.y) > chunkSize.y -1))
+    else if((firstStageBuffer.lastUpdatedPosition.y >
+	     firstStageBuffer.viewPortPosition.y) ?
+	    ((firstStageBuffer.lastUpdatedPosition.y -
+	      firstStageBuffer.viewPortPosition.y) > chunkSize.y -1) :
+	    ((firstStageBuffer.viewPortPosition.y -
+	      firstStageBuffer.lastUpdatedPosition.y) > chunkSize.y -1))
       {
-	updateFirstStageBuffer(playerPos, false);
+	updateFirstStageBuffer(false);
       }
   }
 
   
-  /* Copies one chunk (relative to relViewPortPos) from firstStageBuffer
+    /* Copies one chunk (relative to viewPortPosition) from firstStageBuffer
      to secondStageBuffer. */
   void updateSecondStageBuffer
-  (const yx playerPos, chunkElementType *  secondStageBuffer)
-  {
-    const yx currentVPPos {firstStageBuffer.relViewPortPos + playerPos};
+  (chunkElementType *  secondStageBuffer)
+  { 
     // Size of the first stage buffer in characters.
     const yx fSBSize {chunkSize.y * firstStageBuffer.fSBYChunks,
 		      chunkSize.x * firstStageBuffer.fSBXChunks};  
@@ -367,7 +360,7 @@ protected:
     for(int yIter {}; yIter < chunkSize.y; ++yIter)
       {
 	yx yAndXComponents
-	  {((currentVPPos.y + yIter) % fSBSize.y), 0};
+	  {((firstStageBuffer.viewPortPosition.y + yIter) % fSBSize.y), 0};
 	// Maybe fix negative and wrap around in y...
 	yAndXComponents.y = yAndXComponents.y < 0 ?
 	  fSBSize.y + yAndXComponents.y:
@@ -378,7 +371,7 @@ protected:
 	for(int xIter {}; xIter < chunkSize.x; ++xIter)
 	  {
 	    yAndXComponents.x =
-	      ((currentVPPos.x + xIter) % fSBSize.x);
+	      ((firstStageBuffer.viewPortPosition.x + xIter) % fSBSize.x);
 	    // Maybe fix negative and wrap around in x...
 	    yAndXComponents.x = yAndXComponents.x < 0 ?
 	      fSBSize.x + yAndXComponents.x:
@@ -418,48 +411,43 @@ public:
   
   /* Should be called once initial player position is known, but before the main
      game loop. */
-  void initFirstStageBuffer(const yx playerPos, const yx initialViewPortPos)
+  void initFirstStageBuffer(const yx initialViewPortPos)
   {
     /* Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
        map. Then (y % (chunkSize.y * fSBYChunks)) * chunkSize.x + (x %
        (chunkSize.x * fSBXChunks)) can be used to index into the chunk returned
        from the map (as the stage 1 buffer will be fSBYChunks by fSBXChunks
        chunks.) */
-    firstStageBuffer.lastPlayerPos = playerPos;
-    const yx initialCenterPos {initialViewPortPos};
 
+    const yx initialCenterPos {initialViewPortPos};
+  
     const yx initialViewPortPosition
       {initialCenterPos.y, initialCenterPos.x + chunkSize.x * 4};
-    firstStageBuffer.lastUpdatedRelVPPos = initialViewPortPosition;
-    firstStageBuffer.relViewPortPos =
+    firstStageBuffer.lastUpdatedPosition = initialViewPortPosition;
+    firstStageBuffer.viewPortPosition =
       yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * 3};
   
-    updateFirstStageBuffer(playerPos);
+    updateFirstStageBuffer();
 
-    firstStageBuffer.relViewPortPos =
+    firstStageBuffer.viewPortPosition =
       yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * 2};
 
-    updateFirstStageBuffer(playerPos);
+    updateFirstStageBuffer();
 
-    /*
-      // THIS CODE IS USEFUL FOR DEBUGGING.
-      std::ofstream out("out.txt");
-    for(int i {};
-        i < (firstStageBufferType::fSBXChunks * chunkSize.x *
-	     firstStageBufferType::fSBYChunks * chunkSize.y);
-        ++i)
-      {
-        if(i % (firstStageBufferType::fSBXChunks * chunkSize.x) == 0)
-	  out<<'\n';
-        out<<(char)(firstStageBuffer.buffer[i] % 159);
-      }
-    out.close();
-    exit(-1);
-    */
+    //     std::ofstream out("out.txt");
+    // for(int i {};
+    //     i < (firstStageBufferType::fSBXChunks * chunkSize.x *
+    // 	   firstStageBufferType::fSBYChunks * chunkSize.y);
+    //     ++i)
+    //   {
+    //     if(i % (firstStageBufferType::fSBXChunks * chunkSize.x) == 0)
+    // 	out<<'\n';
+    //     out<<(char)(firstStageBuffer.buffer[i] % 159);
+    //   }
+    // out.close();
+    // exit(-1);
 
-    /* Note that we updated lastPlayerPos and the top of this func and it
-       shouldn't have changed since so we don't need to update it here. */
-    firstStageBuffer.relViewPortPos = initialCenterPos;
+    firstStageBuffer.viewPortPosition = initialCenterPos;
   }
 
 
@@ -467,11 +455,9 @@ public:
      view port position may not be updated if the play is still within certain
      bounds.*/
   bool updateViewPortPosition
-  (const yx playerPos, const yx playerMovementAreaPadding,
+  (const yx playerMovementAreaPadding, const yx playerPos,
    const yx playerMaxBottomRightOffset)
   {
-    const yx currentVPPos {firstStageBuffer.relViewPortPos + playerPos};
-    
     // Tests for if player is above or to the left of padding.
     std::function<bool(bool)> testPaddingDirectionInDimension =
       [&](bool yDimension)
@@ -479,13 +465,13 @@ public:
 	if(yDimension)
 	  {
 	    return playerPos.y <
-	      (currentVPPos.y +
+	      (firstStageBuffer.viewPortPosition.y +
 	       playerMovementAreaPadding.y);
 	  }
 	else
 	  {
 	    return (playerPos.x <
-		    (currentVPPos.x +
+		    (firstStageBuffer.viewPortPosition.x +
 		     playerMovementAreaPadding.x));
 	  }
       };
@@ -497,14 +483,14 @@ public:
 	{ 
 	  return (testPaddingDirectionInDimension(true) ||
 		  (playerMaxBottomRightOffset.y + 1 + playerPos.y) >
-		  (currentVPPos.y + chunkSize.y
+		  (firstStageBuffer.viewPortPosition.y + chunkSize.y
 		   - playerMovementAreaPadding.y));
 	}
       else
 	{
 	  return (testPaddingDirectionInDimension(false) ||
 		  (playerMaxBottomRightOffset.x + playerPos.x) >
-		  (currentVPPos.x + chunkSize.x
+		  (firstStageBuffer.viewPortPosition.x + chunkSize.x
 		   - playerMovementAreaPadding.x));
 	}
     };
@@ -521,19 +507,19 @@ public:
 	if(testPaddingDirectionInDimension(true))
 	  {
 	    // The player is in the top padding.
-	    // currentVPPos.y -=
-	    //   abs((currentVPPos.y +
-	    // 	   playerMovementAreaPadding.y) - playerPos.y);
+	    firstStageBuffer.viewPortPosition.y -=
+	      abs((firstStageBuffer.viewPortPosition.y +
+		   playerMovementAreaPadding.y) - playerPos.y);
 	    viewPortPosChanged = true;
 	  }
 	else
 	  {
 	    // exit(-1);
 	    // The player is in the bottom padding.
-	    // currentVPPos.y +=
-	    //   abs((currentVPPos.y + chunkSize.y
-	    // 	   - playerMovementAreaPadding.y) -
-	    // 	  (playerMaxBottomRightOffset.y + 1 + playerPos.y));
+	    firstStageBuffer.viewPortPosition.y +=
+	      abs((firstStageBuffer.viewPortPosition.y + chunkSize.y
+		   - playerMovementAreaPadding.y) -
+		  (playerMaxBottomRightOffset.y + 1 + playerPos.y));
 	    viewPortPosChanged = true;
 	  }
       }
@@ -548,24 +534,27 @@ public:
 	if(testPaddingDirectionInDimension(false))
 	  {
 	    // The player is in the left padding.
-	    // currentVPPos.x -=
-	    //   abs((currentVPPos.x +
-	    // 	   playerMovementAreaPadding.x) - playerPos.x);
+	    firstStageBuffer.viewPortPosition.x -=
+	      abs((firstStageBuffer.viewPortPosition.x +
+		   playerMovementAreaPadding.x) - playerPos.x);
 	    viewPortPosChanged = true;
 	  }
 	else
 	  {
 	    // The player is in the right padding.
-	    // currentVPPos.x +=
-	    //   abs((currentVPPos.x + chunkSize.x
-	    // 	   - playerMovementAreaPadding.x) -
-	    // 	  (playerMaxBottomRightOffset.x + 1 + playerPos.x));
+	    firstStageBuffer.viewPortPosition.x +=
+	      abs((firstStageBuffer.viewPortPosition.x + chunkSize.x
+		   - playerMovementAreaPadding.x) -
+		  (playerMaxBottomRightOffset.x + 1 + playerPos.x));
 	    viewPortPosChanged = true;
 	  }
       }
     
     return viewPortPosChanged;
   }
+
+
+  yx getViewPortPosition() const {return firstStageBuffer.viewPortPosition;}
 };
 
 

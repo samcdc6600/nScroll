@@ -54,9 +54,9 @@ void menu
     {viewPortSize, "assets/level1/level1.coordRules.lev",
      "assets/level1/level1.rules.lev", background};
   background.initFirstStageBuffer
-    (levelRules.gamePlayer->getPos(levelRules.getInitialViewPortPosition()));
+    (levelRules.getInitialViewPortPosition());
   levelRules.initFirstStageBuffer
-    (levelRules.gamePlayer->getPos(levelRules.getInitialViewPortPosition());
+    (levelRules.getInitialViewPortPosition());
   
   bool run = true;
   while(run)

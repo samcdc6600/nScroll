@@ -4,21 +4,14 @@
 player::player
 (const backgroundData &background, std::vector<std::string> spritePaths,
  // const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelViewPortPos,
- const yx initialPos, const sprite::directions dir, const int h,
+ const yx initialPosVPRel, const sprite::directions dir, const int h,
  const double g, const double v, const unsigned maxFallingJmpNum,
  const unsigned maxJmpNum)
-  : sprite(spritePaths, background.chunkSize, yx {0, 0}, dir, true),
-    //    initialViewPortPosition(initialViewPortPos),
+  : sprite(spritePaths, background.chunkSize, initialPosVPRel, dir, true),
     health(h),
     gravitationalConstant(g), maxVertVelocity(v),
     maxFallingJumpNum(maxFallingJmpNum), maxJumpNum(maxJmpNum)
 {
-  /* We give sprite() an initial dummy value above and reset the value here
-     because sprite() calculates maxBottomRightOffset, which calcInitialPos
-     needs. */
-  
-  // position = calcInitialPos(PLAYER_MOVEMENT_AREA_PADDING, initialPos);
-  positionVPRel = initialPos;
   if(gravitationalConstant > 0)
     {
       std::stringstream err {};
@@ -272,7 +265,7 @@ void player::draw
   for(size_t sliceLine{}; sliceLine <
 	spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
       ++sliceLine)
-    {      
+    {
       for(size_t sliceLineIter{}; sliceLineIter <
 	    spriteS[direction].spriteSlices[currentSliceNumber].
 	    slice[sliceLine].sliceLine.size();
@@ -285,10 +278,10 @@ void player::draw
 	  if(ch != DRAW_NO_OP)
 	    {
 	      background.secondStageDrawBuffer
-		[((abs(positionVPRel.y % (background.chunkSize.y)) + 22  + sliceLine) * viewPortSize.x) +
-		 abs(positionVPRel.x % (background.chunkSize.x)) + 79 + spriteS[direction].
-		 spriteSlices[currentSliceNumber].slice[sliceLine].offset +
-		 sliceLineIter] = ch;
+		[(positionVPRel.y + sliceLine) * viewPortSize.x +
+		 positionVPRel.x + sliceLineIter +
+		 spriteS[direction].
+		 spriteSlices[currentSliceNumber].slice[sliceLine].offset] = ch;
 	    }
 
 	  if(updateSlice)

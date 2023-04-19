@@ -75,7 +75,7 @@ public:
   player
   (const backgroundData &background, std::vector<std::string> spritePaths,
    // const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelViewPortPos,
-   const yx initialPos, const sprite::directions dir, const int h,
+   const yx initialPosVPRel, const sprite::directions dir, const int h,
    const double g, const double v, const unsigned maxFallingJmpNum,
    const unsigned maxJmpNum);
   
@@ -87,16 +87,15 @@ public:
 
 
   
-  /* Starts jump (by altering various variables) and moves the player up X
-     characters, where position is the absolute x position of the player and X
-     is dictated by (int)gravitationalConstant and only as long as the player
-     will not hit any boarder characters in coordRules or the top of the level.
+  /* Starts jump (by altering various variables) and moves the player up Z
+     characters, where Z is dictated by (int)gravitationalConstant and only as
+     long as the player will not hit any boarder characters in coordRules.
      Returns true if the the player started a new jump (this will only happen if
      maxJumpNum hasn't been reached.) If the player didn't start a new jump then
      keepJumping should be called (but only if the player can move down). */
   template<typename T>
   bool startJumping
-  (yx viewPortSize, const T * coordRules)
+  (const T * coordRules)
   {
     bool retVar {false};
     if(jumpNum < maxJumpNum)
@@ -119,7 +118,7 @@ public:
 		  }
 	      }
 	    // We don't want to hit the top of the level.
-	    if(position.y == 0)
+	    if(positionVPRel.y == 0)
 	      {
 		goto RETURN;
 	      }
@@ -132,7 +131,7 @@ public:
 	/* We must call this here because this function is called (INSTEAD OF HANDLEJUMPINGANDFALLING())  when
 	   sprite::DIR_UP is pressed and if we can't perform a new jump we must
 	   continue the current jump / fall. */
-	handleJumpingAndFalling(viewPortSize, coordRules);
+	handleJumpingAndFalling(coordRules);
       }
 
   RETURN:
@@ -147,15 +146,15 @@ public:
      character and isn't at the bottom of the level then start falling. */
   template<typename T>
   void handleJumpingAndFalling
-  (const yx & viewPortSize, const T * coordRules)
+  (const T * coordRules)
   {
     if(jumping == notJumping)
       {
-	handleFalling(viewPortSize, coordRules);
+	handleFalling(coordRules);
       }
     else
       {
-	handleJumping(viewPortSize, coordRules);
+	handleJumping(coordRules);
       }
 
     return;			// Required by RETURN label I guess.
@@ -166,11 +165,11 @@ public:
   
 private:
   template<typename T>
-  void handleFalling(const yx &viewPortSize, const T * coordRules)
+  void handleFalling(const T * coordRules)
   {
     using namespace boarderRuleChars;
   
-    if((position.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
+    if((positionVPRel.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
       {
 	// We're at the bottom of the level.
 	return;
@@ -195,12 +194,12 @@ private:
     jumping = jumpingDown;
 
     // We're jumping down.
-    handleFallingSimple(viewPortSize, coordRules);
+    handleFallingSimple(coordRules);
   }
 
 
   template<typename T>
-  void handleFallingSimple(const yx & viewPortSize, const T * coordRules)
+  void handleFallingSimple(const T * coordRules)
   {
     for(int jumps {(int)-vertVelocity}; jumps > 0; jumps--)
       {
@@ -218,7 +217,7 @@ private:
 	  }
 	/* This is a simpler check but probably much less common, so we put it
 	   second. */
-	if((position.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
+	if((positionVPRel.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
 	  {
 	    // We're going to hit the bottom of the level (stop jumping!)
 	    vertVelocity = 0;
@@ -234,7 +233,7 @@ private:
 
   template<typename T>
   void handleJumping
-  (const yx & viewPortSize, const T * coordRules)
+  (const T * coordRules)
   {
     if(jumping == jumpingUp)
       {
@@ -271,7 +270,7 @@ private:
 		    return;
 		  }
 	      }
-	    if(position.y == 0)
+	    if(positionVPRel.y == 0)
 	      {
 		return;
 	      }
@@ -281,7 +280,7 @@ private:
     else
       {
 	// We're jumping down.
-	handleFallingSimple(viewPortSize, coordRules);
+	handleFallingSimple(coordRules);
       }
   }
   
@@ -298,16 +297,17 @@ private:
 				     const bool directContact)
   {
     const int absLeftPos
-      {this->position.x + leftCollisionDirectOffset + position.x};
-    const int absRightPos {this->position.x + maxBottomRightOffset.x +
-      rightCollisionDirectOffset + position.x};
+      {this->positionVPRel.x + leftCollisionDirectOffset + positionVPRel.x};
+    const int absRightPos {this->positionVPRel.x + maxBottomRightOffset.x +
+      rightCollisionDirectOffset + positionVPRel.x};
 
     const int collisionOffset {bottomSide ?
       (directContact ? bottomCollisionDirectOffset: bottomCollisionOneOffOffset) :
       (directContact ? topCollisionDirectOffset: topCollisionOneOffOffset)};
     const int y
       {(bottomSide ?
-	this->maxBottomRightOffset.y: 0) + collisionOffset + this->position.y};
+	this->maxBottomRightOffset.y: 0) +
+       collisionOffset + this->positionVPRel.y};
 
     std::vector<yx> retCoords {};
     for(int pos {absLeftPos}; pos <= absRightPos; pos++)
@@ -325,8 +325,8 @@ private:
   std::vector<yx> getYAbsRangeAsStrs(const int position, const bool rightSide,
 				     const bool directContact)
   {
-    const int absTopPos {this->position.y + topCollisionDirectOffset};
-    const int absBottomPos {this->position.y + maxBottomRightOffset.y +
+    const int absTopPos {this->positionVPRel.y + topCollisionDirectOffset};
+    const int absBottomPos {this->positionVPRel.y + maxBottomRightOffset.y +
       bottomCollisionDirectOffset};
 
     const int collisionOffset {rightSide ?
@@ -334,7 +334,7 @@ private:
       (directContact ? leftCollisionDirectOffset: leftCollisionOneOffOffset)};
     const int x {(rightSide ?
 		  this->maxBottomRightOffset.x: 0) +
-    collisionOffset + position + this->position.x};
+    collisionOffset + position + this->positionVPRel.x};
 
     
     std::vector<yx> retCoords {};
