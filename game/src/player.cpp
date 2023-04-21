@@ -67,11 +67,43 @@ void player::updatePosRel(const sprite::directions dir)
      sprite and update's direction. */
   checkDirection(dir);
   yx p {getNewPos(dir)};	// GetNewPos will check if dir is valid!
-  positionVPRel = p;
-  if(direction != dir)
-    {				// Change direction.
-      resetCurrentSliceNum();
-      direction = spriteAnimationDirections[dir];
+
+  /* The player is allowed to move 1 character outside of the view port. This
+     then allows the chunk code to detect that the view port should be
+     moved. After the chunk code that handles this is run
+     player::moveIntoViewPort() should be called to move the player back into
+     the view port if the player has moved out of the view port (this of course
+     should be done before displaying 2nd stage the draw buffer. */
+  if(p.y > -2 && p.y < (viewPortSize.y + 1) &&
+     p.x > -2 && p.x < (viewPortSize.x + 1))
+    {
+      positionVPRel = p;
+      if(direction != dir)
+	{			// Change sprite direction animation.
+	  resetCurrentSliceNum();
+	  direction = spriteAnimationDirections[dir];
+	}
+    }
+}
+
+
+void player::moveIntoViewPort()
+{
+  if(positionVPRel.y < 0)
+    {
+      ++positionVPRel.y;
+    }
+  else if(positionVPRel.y > (viewPortSize.y -1))
+    {
+      --positionVPRel.y;
+    }
+  if(positionVPRel.x < 0)
+    {
+      ++positionVPRel.x;
+    }
+  else if(positionVPRel.x > (viewPortSize.x -1))
+    {
+      --positionVPRel.x;
     }
 }
 

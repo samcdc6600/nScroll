@@ -83,7 +83,16 @@ public:
   // Unlike sprite player needs to handle input direction characters.
   static directions convertDirectionCharsToDirections(const directionChars dir);
   static bool isDirectionCharInputValid(const int input);
+  /* Only updates the position in dir if the players relative position will not
+     move more than 1 character out of the view port. If the player moves 1
+     character out of the view port. The players position should be reset using
+     moveIntoViewPort() after the chunk positions have been updated, but before
+     displaying 2nd stage the draw buffer. */
   virtual void updatePosRel(const sprite::directions dir);
+  /* Moves the player back into the view port if it has moved out of the view
+     port. Move the player in so they are touching the edge they were closest
+     to. */
+  void moveIntoViewPort();
 
 
   
@@ -297,9 +306,9 @@ private:
 				     const bool directContact)
   {
     const int absLeftPos
-      {this->positionVPRel.x + leftCollisionDirectOffset + positionVPRel.x};
+      {this->positionVPRel.x + leftCollisionDirectOffset};
     const int absRightPos {this->positionVPRel.x + maxBottomRightOffset.x +
-      rightCollisionDirectOffset + positionVPRel.x};
+      rightCollisionDirectOffset};
 
     const int collisionOffset {bottomSide ?
       (directContact ? bottomCollisionDirectOffset: bottomCollisionOneOffOffset) :
@@ -319,10 +328,7 @@ private:
   }
 
 
-  /* Calculates all the points between the absolute position of the top right +
-     topCollisionOffset and the absolute position of the bottom right +
-     bottomCollisionOffset. Return value is a vector of strings of the pos's. */
-  std::vector<yx> getYAbsRangeAsStrs(const int position, const bool rightSide,
+  std::vector<yx> getYAbsRangeAsStrs(const bool rightSide,
 				     const bool directContact)
   {
     const int absTopPos {this->positionVPRel.y + topCollisionDirectOffset};
@@ -334,7 +340,7 @@ private:
       (directContact ? leftCollisionDirectOffset: leftCollisionOneOffOffset)};
     const int x {(rightSide ?
 		  this->maxBottomRightOffset.x: 0) +
-    collisionOffset + position + this->positionVPRel.x};
+    collisionOffset + positionVPRel.x};
 
     
     std::vector<yx> retCoords {};
@@ -357,16 +363,16 @@ public:
 
 
   std::vector<yx>
-  getRightYAbsRangeAsStrsForOneOffContact(const int position)
+  getRightYAbsRangeAsStrsForOneOffContact()
   {
-    return   getYAbsRangeAsStrs(position, true, false);
+    return   getYAbsRangeAsStrs(true, false);
   }
 
   
   std::vector<yx>
-  getLeftYAbsRangeAsStrsForOneOffContact(const int position)
+  getLeftYAbsRangeAsStrsForOneOffContact()
   {
-    return   getYAbsRangeAsStrs(position, false, false);
+    return   getYAbsRangeAsStrs(false, false);
   }
 
   

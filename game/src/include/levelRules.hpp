@@ -144,14 +144,11 @@ private:
   /* Handles collision with boarder characters when the player sprite is moving
      right. If there is only one character to the bottom right then the player
      will continue moving in the right direction but be moved up by one
-     character unless the player has a y position of 0, in which case the
-     player will be stopped. The player sprite will also be stopped if there is
-     more then one character directly to the right of it. */
-  sprite::directions handleRightCollision(const yx viewPortPosition,
-					  const int backgroundHeight);
-  // // Analogous to handleRightCollision but of course for leftward movement.
-  sprite::directions handleLeftCollision(const yx viewPortPosition,
-					 const int backgroundHeight);
+     character. The player sprite will be stopped if there is more then one
+     character directly to the right of it. */
+  sprite::directions handleRightCollision();
+  // Analogous to handleRightCollision but of course for leftward movement.
+  sprite::directions handleLeftCollision();
 
 #ifdef DEBUG
   void printRuleChars();
@@ -186,7 +183,8 @@ public:
     /* NOTE THAT WE HAVE HARD CODED THESE VALUES HERE FOR NOW, BUT WE INTEND TO
        HAVE AT LEAST SOME OF THEM LOADED FROM RULES.LEV FILES. */
     //gameTiming.movePlayer = chronological{22.2, gameTimingErrorInfo};
-    gameTiming.movePlayer = chronological{22.2, gameTimingErrorInfo};
+    // gameTiming.movePlayer = chronological{27.3, gameTimingErrorInfo};
+    gameTiming.movePlayer = chronological{95, gameTimingErrorInfo};
     // 8.3333 ~ 120 FPS
     gameTiming.drawTime = chronological{8.3333, gameTimingErrorInfo};
   }

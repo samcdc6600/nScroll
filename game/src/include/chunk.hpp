@@ -413,26 +413,24 @@ public:
      game loop. */
   void initFirstStageBuffer(const yx initialViewPortPos)
   {
-    /* Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
-       map. Then (y % (chunkSize.y * fSBYChunks)) * chunkSize.x + (x %
-       (chunkSize.x * fSBXChunks)) can be used to index into the chunk returned
-       from the map (as the stage 1 buffer will be fSBYChunks by fSBXChunks
-       chunks.) */
-
+    /* To avoid visual artefacts the whole 1st stage buffer needs to be
+       initialised. */
     const yx initialCenterPos {initialViewPortPos};
-  
-    const yx initialViewPortPosition
-      {initialCenterPos.y, initialCenterPos.x + chunkSize.x * 4};
-    firstStageBuffer.lastUpdatedPosition = initialViewPortPosition;
-    firstStageBuffer.viewPortPosition =
-      yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * 3};
-  
-    updateFirstStageBuffer();
 
-    firstStageBuffer.viewPortPosition =
-      yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * 2};
+    int chunkIter {-(firstStageBufferType::fSBXChunks / 2)};
+    firstStageBuffer.lastUpdatedPosition =
+      yx{initialCenterPos.y,
+	 initialCenterPos.x + chunkSize.x * (chunkIter -1)};
 
-    updateFirstStageBuffer();
+    /* Note that FSBXChunks should be odd. Fill columns (of height fSBYChunks)
+       of chunks from left to right. */
+    for( ; chunkIter <= (firstStageBufferType::fSBXChunks / 2);
+	++chunkIter)
+      {
+	firstStageBuffer.viewPortPosition =
+	  yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * chunkIter};
+	updateFirstStageBuffer();
+      }
 
     //     std::ofstream out("out.txt");
     // for(int i {};
@@ -457,96 +455,122 @@ public:
   (const yx playerMovementAreaPadding, const yx playerPos,
    const yx playerMaxBottomRightOffset)
   { 
-    // Tests for if player is above or to the left of padding.
-    std::function<bool(bool)> testPaddingDirectionInDimension =
-      [&](bool yDimension)
-      {
-	if(yDimension)
-	  {
-	    return playerPos.y - playerMovementAreaPadding.y < 0;
-	  }
-	else
-	  {
-	    return playerPos.x - playerMovementAreaPadding.x < 0;
-	  }
-      };
-    /* Test if player is if player is outisde of zone inside of padding in the y
-       or x dimension */
-    std::function<bool(bool)> testPaddingInDimension = [&](bool yDimension)
-    {
-      if(yDimension)
-	{ 
-	  return (testPaddingDirectionInDimension(true) ||
-		  (playerPos.y + playerMaxBottomRightOffset.y + 1) >
-		  (chunkSize.y - playerMovementAreaPadding.y));
-	}
-      else
-	{
-	  return (testPaddingDirectionInDimension(false) ||
-		  (playerPos.x + playerMaxBottomRightOffset.x + 1) >
-		  (chunkSize.x - playerMovementAreaPadding.x));
-	}
-    };
+    // // Tests for if player is above or to the left of padding.
+    // std::function<bool(bool)> testPaddingDirectionInDimension =
+    //   [&](bool yDimension)
+    //   {
+    // 	if(yDimension)
+    // 	  {
+    // 	    return playerPos.y - playerMovementAreaPadding.y < 0;
+    // 	  }
+    // 	else
+    // 	  {
+    // 	    return playerPos.x - playerMovementAreaPadding.x < 0;
+    // 	  }
+    //   };
+    // /* Test if player is if player is outisde of zone inside of padding in the y
+    //    or x dimension */
+    // std::function<bool(bool)> testPaddingInDimension = [&](bool yDimension)
+    // {
+    //   if(yDimension)
+    // 	{ 
+    // 	  return (testPaddingDirectionInDimension(true) ||
+    // 		  (playerPos.y + playerMaxBottomRightOffset.y + 1) >
+    // 		  (chunkSize.y - playerMovementAreaPadding.y));
+    // 	}
+    //   else
+    // 	{
+    // 	  return (testPaddingDirectionInDimension(false) ||
+    // 		  (playerPos.x + playerMaxBottomRightOffset.x + 1) >
+    // 		  (chunkSize.x - playerMovementAreaPadding.x));
+    // 	}
+    // };
 
-    bool viewPortPosChanged {false};
+    // bool viewPortPosChanged {false};
     
-    // Test in Y dimension.
-    if(testPaddingInDimension(true))
+    // // Test in Y dimension.
+    // if(testPaddingInDimension(true))
+    //   {
+    // 	/* The top of the player is in or above the top padding
+    // 	   or the bottom of the player player is in or below the bottom
+    // 	   padding.
+    // 	   UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
+    // 	if(testPaddingDirectionInDimension(true))
+    // 	  {
+    // 	    // The player is in or above the top padding.
+    // 	    /* Here if the playerPos is positive we want to subtract it from
+    // 	       the padding, but if it is negative we wan't to add it. Luckily
+    // 	       simply subtracting it from the padding will do the job. */
+    // 	    firstStageBuffer.viewPortPosition.y -=
+    // 	      playerMovementAreaPadding.y - playerPos.y;
+    // 	    viewPortPosChanged = true;
+    // 	  }
+    // 	else
+    // 	  {
+    // 	    // The player is in or below the bottom padding.
+    // 	    firstStageBuffer.viewPortPosition.y +=
+    // 	      abs(playerPos.y) - (chunkSize.y - playerMovementAreaPadding.y);
+    // 	    viewPortPosChanged = true;
+    // 	  }
+    //   }
+    // // Test in X dimension.
+    // if(testPaddingInDimension(false))
+    //   {
+    // 	// exit(-1);
+    // 	/* The left of the player is in or to the left of the left padding
+    // 	   or the right of the player is in or to the right of the right
+    // 	   padding.
+    // 	   UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
+    // 	if(testPaddingDirectionInDimension(false))
+    // 	  {
+    // 	    // The player is in the left padding.
+    // 	    // firstStageBuffer.viewPortPosition.x -=
+    // 	    //   abs((firstStageBuffer.viewPortPosition.x +
+    // 	    // 	   playerMovementAreaPadding.x) - playerPos.x);
+    // 	    firstStageBuffer.viewPortPosition.x -=
+    // 	      playerMovementAreaPadding.x - playerPos.x;
+    // 	    viewPortPosChanged = true;
+    // 	  }
+    // 	else
+    // 	  {
+    // 	    // The player is in the right padding.
+    // 	    // firstStageBuffer.viewPortPosition.x +=
+    // 	    //   abs((firstStageBuffer.viewPortPosition.x + chunkSize.x
+    // 	    // 	   - playerMovementAreaPadding.x) -
+    // 	    // 	  (playerMaxBottomRightOffset.x + 1 + playerPos.x));
+    // 	    firstStageBuffer.viewPortPosition.x +=
+    // 	      abs(playerPos.x) - (chunkSize.x - playerMovementAreaPadding.x);
+    // 	    viewPortPosChanged = true;
+    // 	  }
+    //   }
+
+    static int a {};
+    static bool incA {true};
+    
+    if(a > 432)
       {
-	/* The top of the player is in or above the top padding
-	   or the bottom of the player player is in or below the bottom
-	   padding.
-	   UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
-	if(testPaddingDirectionInDimension(true))
-	  {
-	    // The player is in or above the top padding.
-	    /* Here if the playerPos is positive we want to subtract it from
-	       the padding, but if it is negative we wan't to add it. Luckily
-	       simply subtracting it from the padding will do the job. */
-	    firstStageBuffer.viewPortPosition.y -=
-	      playerMovementAreaPadding.y - playerPos.y;
-	    viewPortPosChanged = true;
-	  }
-	else
-	  {
-	    // The player is in or below the bottom padding.
-	    firstStageBuffer.viewPortPosition.y +=
-	      abs(playerPos.y) - (chunkSize.y - playerMovementAreaPadding.y);
-	    viewPortPosChanged = true;
-	  }
+	incA = false;
       }
-    // Test in X dimension.
-    if(testPaddingInDimension(false))
+    if(a < 1)
       {
-	// exit(-1);
-	/* The left of the player is in or to the left of the left padding
-	   or the right of the player is in or to the right of the right
-	   padding.
-	   UPDATE X DIMENSION OF THE VIEW PORT POSITION. */
-	if(testPaddingDirectionInDimension(false))
-	  {
-	    // The player is in the left padding.
-	    // firstStageBuffer.viewPortPosition.x -=
-	    //   abs((firstStageBuffer.viewPortPosition.x +
-	    // 	   playerMovementAreaPadding.x) - playerPos.x);
-	    firstStageBuffer.viewPortPosition.x -=
-	      playerMovementAreaPadding.x - playerPos.x;
-	    viewPortPosChanged = true;
-	  }
-	else
-	  {
-	    // The player is in the right padding.
-	    // firstStageBuffer.viewPortPosition.x +=
-	    //   abs((firstStageBuffer.viewPortPosition.x + chunkSize.x
-	    // 	   - playerMovementAreaPadding.x) -
-	    // 	  (playerMaxBottomRightOffset.x + 1 + playerPos.x));
-	    firstStageBuffer.viewPortPosition.x +=
-	      abs(playerPos.x) - (chunkSize.x - playerMovementAreaPadding.x);
-	    viewPortPosChanged = true;
-	  }
+	incA = true;
+      }
+    if(incA)
+      {
+	a++;
+	firstStageBuffer.viewPortPosition.y++;
+      }
+    else
+      {
+	a--;
+	firstStageBuffer.viewPortPosition.y--;
       }
     
-    return viewPortPosChanged;
+    
+    firstStageBuffer.viewPortPosition.y;
+    
+    // return viewPortPosChanged;
+    return true;
   }
 
 

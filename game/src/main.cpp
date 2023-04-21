@@ -94,6 +94,15 @@ int gameLoop
       levelRules.physics
 	(background, player::convertDirectionCharsToDirections
 	 (static_cast<player::directionChars>(input)));
-      draw(background, levelRules.gamePlayer, levelRules.bgSprites);
+      if(levelRules.gameTiming.drawTime.startNextTick())
+	{
+	  draw(background, levelRules.gamePlayer, levelRules.bgSprites);
+	}
+
+      /* Sleep for 1ms to give the CPU a rest. This should not be noticible when
+	 playing the game, however it will mean that the game can potentially
+	 spend most of it's time sleeping (if the CPU is fast enough), as
+	 opposed to always usign 100% of it's quantum. */
+      sleep(1);
     }
 }
