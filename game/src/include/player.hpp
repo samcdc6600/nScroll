@@ -4,6 +4,8 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <chrono>
+#include <thread>
 #include "sprite.hpp"
 #include "utils.hpp"
 #include "background.hpp"

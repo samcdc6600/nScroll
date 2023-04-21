@@ -99,10 +99,11 @@ int gameLoop
 	  draw(background, levelRules.gamePlayer, levelRules.bgSprites);
 	}
 
-      /* Sleep for 1ms to give the CPU a rest. This should not be noticible when
-	 playing the game, however it will mean that the game can potentially
-	 spend most of it's time sleeping (if the CPU is fast enough), as
-	 opposed to always usign 100% of it's quantum. */
-      sleep(1);
+      /* Sleep for 800 micro seconds to give the CPU a rest. This should not be
+	 noticible when playing the game, however it will mean that the game can
+	 potentially spend most of it's time sleeping (if the CPU is fast
+	 enough), as opposed to always usign 100% of it's quantum. */
+      // sleep(1);
+      std::this_thread::sleep_for(std::chrono::microseconds(800));
     }
 }

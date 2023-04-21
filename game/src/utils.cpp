@@ -238,14 +238,27 @@ int readSingleNum
 	   ERROR_RULES_LEV_HEADER);
     }
 
+  int decPlacesIter {};
   --buffPos;
   if(targetFound == "-")
     {
       number<<*buffPos;
       ++buffPos;
+      // There must be at least 1 digit after a negative sign.
+      if(isNum(*buffPos))
+	{
+	  number<<*buffPos;
+	  decPlacesIter++;
+	  buffPos++;
+	}
+      else
+	{
+	  exit(concat("Error: expected integer number when ", eMsg,
+		      ". Encountered \"", *buffPos, "\".\n"),
+	       ERROR_RULES_LEV_HEADER);
+	}
     }
 
-  int decPlacesIter {};
   // Read in number.
   while(isNum(*buffPos))
     {

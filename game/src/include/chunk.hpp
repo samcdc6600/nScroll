@@ -5,7 +5,6 @@
 #include <map>
 #include "utils.hpp"
 
-#include <iostream>
 
 template <typename chunkElementType>
 class  chunk
@@ -136,7 +135,26 @@ private:
 	// Calculate index of potential chunk to be copied into FSB.
 	const std::string chunkKey
 	  {calculatePotentialChunkKeyForChunkToGoInFSB
-	   (horizontal, chunkUpdateDimensionIter)};      
+	   (horizontal, chunkUpdateDimensionIter)};
+
+
+	// if(chunkKey == "2,3")
+	//   {
+	//     chunkType * chunk {&chunkMap.at(chunkKey)};
+	// endwin();
+	// int i = 0;
+	// for(auto c: *chunk)
+	//   {
+	    
+	//     if(i % (firstStageBufferType::fSBXChunks * chunkSize.x) == 0)
+	//       std::cout<<'\n';
+	//     std::cout<<(char)(c % 159);
+	//     i++;
+	//   }
+	//     exit(-1);
+	//   }
+
+	  
 
 	// Try to get chunk and then perform the copy to the FSB.
 	try
@@ -247,8 +265,16 @@ private:
     /* X should change each iteration of the loop in the calling function, but y
        shouldn't. We have to wrap around in x if x >=
        firstStageBuffer.fSBXChunks. */
-    yx targetChunk {(firstStageBuffer.viewPortPosition.y % fSBSize.y) /
-		    chunkSize.y, 0};
+    /* Here if viewPortPosition.y < 0 we must sub the y view port dimension
+       (minus 1) from viewPortPosition.x before the modulous (maybe?) and
+       division operations because -50 / 170 and 50 / 170 are both 0. However we
+       need -50 / 170 to be -1, because otherwise we would have two chunks
+       mapping to one (actually more than that when taking into account the x
+       dimension.) */ 
+    yx targetChunk
+      {((firstStageBuffer.viewPortPosition.y -
+	 (firstStageBuffer.viewPortPosition.y < 0 ? yHeight -1: 0))
+	% fSBSize.y) / chunkSize.y, 0};
     // Account for negative coordinate
     targetChunk.y = targetChunk.y < 0 ?
       firstStageBuffer.fSBYChunks + targetChunk.y: targetChunk.y;
@@ -266,11 +292,13 @@ private:
     targetChunk.y = targetChunk.y < 0 ?
       firstStageBuffer.fSBYChunks + targetChunk.y: targetChunk.y;
     // FirstStageBuffer.fSBYChunks & 1 returns 1 if fSBYChunks is even.
-    const int targetXPreWrap {((firstStageBuffer.viewPortPosition.x %
-				fSBSize.x) / chunkSize.x +
-			       (firstStageBuffer.fSBXChunks / 2 +
-				(firstStageBuffer.fSBXChunks & 1)) +
-			       xChunkOffset)};
+    const int targetXPreWrap
+      {(((firstStageBuffer.viewPortPosition.x -
+	  (firstStageBuffer.viewPortPosition.x < 0 ? xWidth -1: 0)) %
+	 fSBSize.x) / chunkSize.x +
+	(firstStageBuffer.fSBXChunks / 2 +
+	 (firstStageBuffer.fSBXChunks & 1)) +
+	xChunkOffset)};
     targetChunk.x = targetXPreWrap % firstStageBuffer.fSBXChunks;
     /* Maybe fix negative and wrap around in x... */
     targetChunk.x = targetChunk.x < 0 ?
@@ -546,28 +574,56 @@ public:
 
     static int a {};
     static bool incA {true};
+        static int b {};
+    static bool incB {true};
     
-    if(a > 432)
+    static bool dimension {true};
+
+    if(dimension)
       {
-	incA = false;
+    // if(a > 680)
+    //   {
+    // 	incA = false;
+    //   }
+    // if(a < 1)
+    //   {
+    // 	incA = true;
+    //   }
+    // if(incA)
+    //   {
+    // 	a++;
+    // 	firstStageBuffer.viewPortPosition.x++;
+    //   }
+    // else
+    //   {
+    // 	a--;
+    // 	firstStageBuffer.viewPortPosition.x--;
+    //   }
       }
-    if(a < 1)
+    else{
+    if(b > 192)
       {
-	incA = true;
+	incB = false;
       }
-    if(incA)
+    if(b < 1)
       {
-	a++;
+	incB = true;
+      }
+    if(incB)
+      {
+	b++;
 	firstStageBuffer.viewPortPosition.y++;
       }
     else
       {
-	a--;
+	b--;
 	firstStageBuffer.viewPortPosition.y--;
       }
+    }
+    	dimension = !dimension;
     
     
-    firstStageBuffer.viewPortPosition.y;
+    // firstStageBuffer.viewPortPosition.y;
     
     // return viewPortPosChanged;
     return true;
