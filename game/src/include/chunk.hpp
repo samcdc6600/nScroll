@@ -579,8 +579,8 @@ public:
     
     static bool dimension {true};
 
-    if(dimension)
-      {
+    // if(dimension)
+    //   {
     // if(a > 680)
     //   {
     // 	incA = false;
@@ -599,27 +599,27 @@ public:
     // 	a--;
     // 	firstStageBuffer.viewPortPosition.x--;
     //   }
-      }
-    else{
-    if(b > 192)
-      {
-	incB = false;
-      }
-    if(b < 1)
-      {
-	incB = true;
-      }
-    if(incB)
-      {
-	b++;
-	firstStageBuffer.viewPortPosition.y++;
-      }
-    else
-      {
-	b--;
-	firstStageBuffer.viewPortPosition.y--;
-      }
-    }
+    // //   }
+    // // else{
+    // if(b > 192)
+    //   {
+    // 	incB = false;
+    //   }
+    // if(b < 1)
+    //   {
+    // 	incB = true;
+    //   }
+    // if(incB)
+    //   {
+    // 	b++;
+    // 	firstStageBuffer.viewPortPosition.y++;
+    //   }
+    // else
+    //   {
+    // 	b--;
+    // 	firstStageBuffer.viewPortPosition.y--;
+    //   }
+    // }
     	dimension = !dimension;
     
     

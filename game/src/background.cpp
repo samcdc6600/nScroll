@@ -138,7 +138,7 @@ void backgroundData::verifyCollapsedChunkSize
       exit(concat
 	   ("Error: chunk no. ", chunksReadIn, " is the wrong size (",
 	    rawChunk.size(), ")",
-	    (attemptedCompression ? " after being compressed.": "."),
+	    (attemptedCompression ? " after being decompressed. ": "."),
 	    "Expected size of ", chunkSize.y * chunkSize.x, " (",
 	    chunkSize.y, " * ", chunkSize.x, ")."),
 	   ERROR_BACKGROUND);
