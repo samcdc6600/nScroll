@@ -23,8 +23,6 @@ void draw
 (backgroundData & background,
  player * gamePlayer, std::vector<bgSprite *> & bgSprites)
 {
-  background.updateBuffers();
-
   /* NOTE THAT A FLAG THAT IS SETTABLE FROM A RULES.LEV FILE SHOULD BE ADDED TO
      THE SPRITE CLASS THAT SPECIFIES IF A SPRITE SHOULD BE DISPLAYED IN FRONT
      OF THE PLAY (AS OPPOSED TO BEHIND.) THEN THIS FLAG CAN BE CHECK FOR IN THE

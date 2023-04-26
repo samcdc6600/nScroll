@@ -1799,10 +1799,8 @@ void rules::startTimers()
 void rules::physics
 (backgroundData & background, const sprite::directions input)
 { 
-  this->updateBuffers();
-  
 #ifdef DEBUG
-  // printRuleChars();
+  printRuleChars();
 #endif
 
   if(gameTiming.movePlayer.startNextTick())
@@ -1825,5 +1823,9 @@ void rules::physics
       // 	 (PLAYER_MOVEMENT_AREA_PADDING,
       // 	  gamePlayer->getPos(background.getViewPortPosition()),
       // 	  gamePlayer->getMaxBottomRightOffset()));
+
+      // If the player has moved we must update the buffers.
+      this->updateBuffers();
+      background.updateBuffers();
     }
 }
