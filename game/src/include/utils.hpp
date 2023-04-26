@@ -46,7 +46,7 @@ struct yx
     return * this;
   }
 
-  bool operator==(const yx & rhs)
+  bool operator==(const yx & rhs) const
   {
     if(y != rhs.y || x != rhs.x)
       {
@@ -55,7 +55,7 @@ struct yx
     return true;
   }
 
-  bool operator!=(const yx & rhs)
+  bool operator!=(const yx & rhs) const
   {
     return !operator==(rhs);
   }

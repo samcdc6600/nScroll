@@ -1802,7 +1802,7 @@ void rules::physics
   this->updateBuffers();
   
 #ifdef DEBUG
-  printRuleChars();
+  // printRuleChars();
 #endif
 
   if(gameTiming.movePlayer.startNextTick())

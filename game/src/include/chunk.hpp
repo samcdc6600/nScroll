@@ -58,6 +58,34 @@ private:
 
   // ========================== MEMBER FUNCTIONS START =========================
   // ===========================================================================
+  /* Returns true if an update is needed in the x dimension as a result of
+     firstStageBuffer.viewPortPosition.x and
+     firstStageBuffer.lastUpdatedPosition.x having diverged by a sufficient
+     delta. */
+  bool updatedNeededInXDimension() const
+  {
+    // x > y ? x - y : y - x. Get distance between two numbers on number line.
+    return ((firstStageBuffer.lastUpdatedPosition.x >
+	     firstStageBuffer.viewPortPosition.x) ?
+	    ((firstStageBuffer.lastUpdatedPosition.x -
+	      firstStageBuffer.viewPortPosition.x) > chunkSize.x -1) :
+	    ((firstStageBuffer.viewPortPosition.x -
+	      firstStageBuffer.lastUpdatedPosition.x) > chunkSize.x -1));
+  }
+  /* Returns true if an update is needed in the y dimension as a result of
+     firstStageBuffer.viewPortPosition.y and
+     firstStageBuffer.lastUpdatedPosition.y having diverged by a sufficient
+     delta. */
+  bool updatedNeededInYDimension() const
+  {
+    // x > y ? x - y : y - x. Get distance between two numbers on number line.
+    return ((firstStageBuffer.lastUpdatedPosition.y >
+	     firstStageBuffer.viewPortPosition.y) ?
+	    ((firstStageBuffer.lastUpdatedPosition.y -
+	      firstStageBuffer.viewPortPosition.y) > chunkSize.y -1) :
+	    ((firstStageBuffer.viewPortPosition.y -
+	      firstStageBuffer.lastUpdatedPosition.y) > chunkSize.y -1));
+  }
   /* UpdateFirstStageBuffer() will call this overloaded function (to do the
      actuall update) If horizontal is true an update will be done assuming that
      the triggering change in view port position was in the x
@@ -138,14 +166,9 @@ private:
 	   (horizontal, chunkUpdateDimensionIter)};
 
 
-	// if(chunkKey == "2,3")
-	//   {
-	//     chunkType * chunk {&chunkMap.at(chunkKey)};
-	// endwin();
-	// int i = 0;
+        // int i = 0;
 	// for(auto c: *chunk)
 	//   {
-	    
 	//     if(i % (firstStageBufferType::fSBXChunks * chunkSize.x) == 0)
 	//       std::cout<<'\n';
 	//     std::cout<<(char)(c % 159);
@@ -196,8 +219,18 @@ private:
 	  }
       }
 
-    firstStageBuffer.lastUpdatedPosition =
-      firstStageBuffer.viewPortPosition;
+    /* We must update these separately otherwise we will forget the correct
+       last position for the axis not being updated. */
+    if(horizontal)
+      {
+	firstStageBuffer.lastUpdatedPosition.x =
+	  firstStageBuffer.viewPortPosition.x;
+      }
+    else
+      {
+	firstStageBuffer.lastUpdatedPosition.y =
+	  firstStageBuffer.viewPortPosition.y;
+      }
   }
 
   
@@ -291,7 +324,7 @@ private:
     targetChunk.y %= firstStageBuffer.fSBYChunks;
     targetChunk.y = targetChunk.y < 0 ?
       firstStageBuffer.fSBYChunks + targetChunk.y: targetChunk.y;
-    // FirstStageBuffer.fSBYChunks & 1 returns 1 if fSBYChunks is even.
+    // FirstStageBuffer.fSBXChunks & 1 returns 1 if fSBXChunks is even.
     const int targetXPreWrap
       {(((firstStageBuffer.viewPortPosition.x -
 	  (firstStageBuffer.viewPortPosition.x < 0 ? xWidth -1: 0)) %
@@ -355,21 +388,17 @@ protected:
   void updateFirstStageBuffer()
   {
     // x > y ? x - y : y - x. Get distance between two numbers on number line.
-    if((firstStageBuffer.lastUpdatedPosition.x >
-	firstStageBuffer.viewPortPosition.x) ?
-       ((firstStageBuffer.lastUpdatedPosition.x -
-	 firstStageBuffer.viewPortPosition.x) > chunkSize.x -1) :
-       ((firstStageBuffer.viewPortPosition.x -
-	 firstStageBuffer.lastUpdatedPosition.x) > chunkSize.x -1))
+    if(updatedNeededInXDimension() && updatedNeededInYDimension())
+      {
+	endwin();
+	std::cout<<"Double axis chunk update not implemented!\n";
+	exit(-1);
+      }
+    else if(updatedNeededInXDimension())
       {
 	updateFirstStageBuffer(true);
       }
-    else if((firstStageBuffer.lastUpdatedPosition.y >
-	     firstStageBuffer.viewPortPosition.y) ?
-	    ((firstStageBuffer.lastUpdatedPosition.y -
-	      firstStageBuffer.viewPortPosition.y) > chunkSize.y -1) :
-	    ((firstStageBuffer.viewPortPosition.y -
-	      firstStageBuffer.lastUpdatedPosition.y) > chunkSize.y -1))
+    else if(updatedNeededInYDimension())
       {
 	updateFirstStageBuffer(false);
       }
@@ -581,46 +610,47 @@ public:
 
     // if(dimension)
     //   {
-    // if(a > 680)
-    //   {
-    // 	incA = false;
-    //   }
-    // if(a < 1)
-    //   {
-    // 	incA = true;
-    //   }
-    // if(incA)
-    //   {
-    // 	a++;
-    // 	firstStageBuffer.viewPortPosition.x++;
-    //   }
-    // else
-    //   {
-    // 	a--;
-    // 	firstStageBuffer.viewPortPosition.x--;
-    //   }
-    // //   }
-    // // else{
-    // if(b > 192)
-    //   {
-    // 	incB = false;
-    //   }
-    // if(b < 1)
-    //   {
-    // 	incB = true;
-    //   }
-    // if(incB)
-    //   {
-    // 	b++;
-    // 	firstStageBuffer.viewPortPosition.y++;
+	if(a > 680)
+	  {
+	    incA = false;
+	  }
+	if(a < 1)
+	  {
+	    incA = true;
+	  }
+	if(incA)
+	  {
+	    a++;
+	    firstStageBuffer.viewPortPosition.x++;
+	  }
+	else
+	  {
+	    a--;
+	    firstStageBuffer.viewPortPosition.x--;
+	  }
     //   }
     // else
     //   {
-    // 	b--;
-    // 	firstStageBuffer.viewPortPosition.y--;
+	if(b > 192)
+	  {
+	    incB = false;
+	  }
+	if(b < 1)
+	  {
+	    incB = true;
+	  }
+	if(incB)
+	  {
+	    b++;
+	    firstStageBuffer.viewPortPosition.y++;
+	  }
+	else
+	  {
+	    b--;
+	    firstStageBuffer.viewPortPosition.y--;
+	  }
     //   }
-    // }
-    	dimension = !dimension;
+    // dimension = !dimension;
     
     
     // firstStageBuffer.viewPortPosition.y;
