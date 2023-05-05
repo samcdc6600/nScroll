@@ -54,7 +54,7 @@ private:
 
   /* This is used to fill target chunks in the FSB when no chunk is found for a
      given key. */
-  const short COLOR_BLACK_BLACK_NO {1};
+  const chunkElementType MISSING_CHUNK_FILLER;
 
   // ========================== MEMBER FUNCTIONS START =========================
   // ===========================================================================
@@ -88,7 +88,7 @@ private:
   }
 
 
-  std::string chunkKey;
+  // std::string chunkKey;
   
   /* UpdateFirstStageBuffer() will call this overloaded function (to do the
      actuall update) If horizontal is true an update will be done assuming that
@@ -159,8 +159,8 @@ private:
 	++chunkUpdateDimensionIter)
       {
 	//tmp
-	    chunkKey = calculatePotentialChunkKeyForChunkToGoInFSB
-      (horizontal, chunkUpdateDimensionIter);
+      // 	    chunkKey = calculatePotentialChunkKeyForChunkToGoInFSB
+      // (horizontal, chunkUpdateDimensionIter);
 	    // ^^ tmp ^^
 
 
@@ -222,9 +222,7 @@ private:
 		      [(fSBTargetChunk.y * fSBSize.x * chunkSize.y) +
 		       yIter * fSBSize.x +			     
 		       ((fSBTargetChunk.x * chunkSize.x)
-			+ xIter)] =
-		      // Fill with black spaces.
-		      (MONO_CH_MAX +1) * COLOR_BLACK_BLACK_NO + ' ';
+			+ xIter)] = MISSING_CHUNK_FILLER;;
 		  }
 	      }
 	  }
@@ -561,12 +559,14 @@ protected:
 public:
   const char * fileName;
   
-  chunk(const yx chunkSizeIn, const char fileName []):
+  chunk(const yx chunkSizeIn, const char fileName [],
+	const chunkElementType missingChunkFiller):
     chunkSize (chunkSizeIn.y, chunkSizeIn.x),
     firstStageBuffer
     (firstStageBufferType::fSBYChunks * chunkSizeIn.y *
      firstStageBufferType::fSBXChunks * chunkSizeIn.x),
-    fileName(fileName)
+    fileName(fileName),
+    MISSING_CHUNK_FILLER(missingChunkFiller)
   {
   }
   

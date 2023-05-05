@@ -51,7 +51,7 @@ void menu
   backgroundData background
     {viewPortSize, "assets/level1/level1.background.lev"};
   rules levelRules
-    {viewPortSize, "assets/level1/level1.coordRules.lev",
+    {viewPortSize, "assets/level1/level1.coordRules.lev", 'b',
      "assets/level1/level1.rules.lev", background};
   background.initFirstStageBuffer
     (levelRules.getInitialViewPortPosition());

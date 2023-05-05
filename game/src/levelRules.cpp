@@ -1800,7 +1800,7 @@ void rules::physics
 (backgroundData & background, const sprite::directions input)
 { 
 #ifdef DEBUG
-  // printRuleChars();
+  printRuleChars();
 #endif
 
   if(gameTiming.movePlayer.startNextTick())

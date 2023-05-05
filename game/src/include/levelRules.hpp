@@ -157,8 +157,9 @@ private:
 public:
   rules
   (const yx viewPortSize, const char coordRulesFileName [],
+   const chunk::chunkElementBaseType missingChunkFiller,
    const char rulesFileName [], const backgroundData & background):
-    chunk(viewPortSize, coordRulesFileName),
+    chunk(viewPortSize, coordRulesFileName, missingChunkFiller),
     secondStageRulesBuffer
     (new chunkElementBaseType [viewPortSize.y * viewPortSize.x])
   {

@@ -32,9 +32,10 @@ private:
 				const bool attemptedCompression) const;
   
 public:
-  
+
+  // Third argument to chunk is used to fill missing chunks with black spaces.
   backgroundData(const yx chunkSizeIn, const char bgFileName []):
-    chunk(chunkSizeIn, bgFileName),
+    chunk(chunkSizeIn, bgFileName, (MONO_CH_MAX +1) * 1 + ' '),
     secondStageDrawBuffer
     (new chunkElementBaseType [chunkSizeIn.y * chunkSizeIn.x])
   {
