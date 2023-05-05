@@ -103,10 +103,34 @@ private:
      actual update if it needs to be done in both dimensions at once.) */
   void updateFirstStageBuffer(const yx fSBSize)
   {
-    endwin();
-    std::cout<<"in updateFirstStageBuffer(const yx fSBSize), double axis not implemented!\n";
-      exit(-1);
-      
+    // Update chunks with a vertical offset.
+        // Iterate over chunks to be updated in the FSB.
+    for(int chunkUpdateDimensionIter {};
+	chunkUpdateDimensionIter < firstStageBuffer.fSBXChunks;
+	++chunkUpdateDimensionIter)
+      {
+	/* Here use use true as an argument to
+	   calculateFSBTargetChunkWithVerticalChange() because we want it to
+	   use the current view port position as the offset for the start of
+	   the chunks being iterated over (the thing we had to change to fix
+	   the code, not that we will have to update the
+	   calculateFSBTargetChunkWithVerticalChange() function to handle this
+	   extra argument. It should work as it currently does for the other
+	   version of updateFirstStageBuffer(). Note that we will also need to
+	   add an analogous option to the horizontal change version of the
+	   aforementioned function and also to the function to calculate the
+	   chunk key. */
+	const yx fSBTargetChunk
+	  {calculateFSBTargetChunkWithVerticalChange
+	   (true, fSBSize, chunkUpdateDimensionIter)};
+      }
+    
+    // Update chunks with a horizontal offset.
+    /* Used to control which chunk not to update (because it has already been
+       updated by the vertical updating code) when updating horizontally. */
+    const bool verticalUpdateDirectionUP
+      {firstStageBuffer.lastUpdatedPosition.y <
+       firstStageBuffer.viewPortPosition.y};
   }
 
 
