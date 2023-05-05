@@ -30,6 +30,11 @@ public:
   std::vector<bgSprite *> bgSprites;
   
 private:
+  /* The character rules first stage buffer should be larger than 5x5 so that
+     non player sprites can move a bit off of the screen without the worry that
+     they will move into a rules chunk that is invalid. This way the non player
+     sprites can move out of the view port and not mess up the game logic. */
+  static const int FIRST_STAGE_BUFFER_DIMENSIONS_SIZE {7};
   /* The player cannot pass widthin this many character's of the window
      boarder's (y, x). This variable shouldn't be changed once it is set. */
   yx PLAYER_MOVEMENT_AREA_PADDING {};
@@ -159,7 +164,8 @@ public:
   (const yx viewPortSize, const char coordRulesFileName [],
    const chunk::chunkElementBaseType missingChunkFiller,
    const char rulesFileName [], const backgroundData & background):
-    chunk(viewPortSize, coordRulesFileName, missingChunkFiller),
+    chunk(viewPortSize, FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
+	  missingChunkFiller, coordRulesFileName),
     secondStageRulesBuffer
     (new chunkElementBaseType [viewPortSize.y * viewPortSize.x])
   {

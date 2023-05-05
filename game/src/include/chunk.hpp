@@ -27,8 +27,7 @@ protected:
   public:
     /* Dimensions of first stage buffer in chunks and the offsets when updating
        the first stage buffer. */
-    static const int fSBYChunks {5}, fSBXChunks {5},
-      fSBYUpdateOffset {2}, fSBXUpdateOffset {2};
+    const int fSBYChunks, fSBXChunks, fSBYUpdateOffset, fSBXUpdateOffset;
     /* Holds the current position of the view port (Note that buffer may not yet
        be updated as a result this new position.) */
     yx viewPortPosition {};
@@ -38,9 +37,21 @@ protected:
        "close to visible" chunks. */
     chunkElementType * buffer;
     
-    firstStageBufferType(const ssize_t bufferSize) :
-      buffer(new chunkElementType [bufferSize])
+    firstStageBufferType(const yx chunkSizeIn, const int fSBSizeInChunks) :
+      fSBYChunks(fSBSizeInChunks), fSBXChunks(fSBSizeInChunks),
+      fSBYUpdateOffset(fSBSizeInChunks / 2),
+      fSBXUpdateOffset(fSBSizeInChunks / 2),
+      buffer(new chunkElementType [fSBYChunks * chunkSizeIn.y *
+				   fSBXChunks * chunkSizeIn.x])
     {
+      if(fSBSizeInChunks < 5 || fSBSizeInChunks % 2 != 1)
+	{
+	  exit(concat
+	       ("Error: first stage buffer size (", fSBSizeInChunks, ") (in "
+		"chunks) passed to firstStageBufferType constructor is invalid."
+		" It must be greater than 5 and odd.\n"),
+	       ERROR_GENERIC_RANGE_ERROR);
+	}
     }
 
     ~firstStageBufferType()
@@ -88,69 +99,30 @@ private:
   }
 
 
+  /* UpdateFirstStageBuffer() will call this overloaded function (to do the
+     actual update if it needs to be done in both dimensions at once.) */
+  void updateFirstStageBuffer(const yx fSBSize)
+  {
+    endwin();
+    std::cout<<"in updateFirstStageBuffer(const yx fSBSize), double axis not implemented!\n";
+      exit(-1);
+      
+  }
+
+
   // std::string chunkKey;
   
   /* UpdateFirstStageBuffer() will call this overloaded function (to do the
-     actuall update) If horizontal is true an update will be done assuming that
-     the triggering change in view port position was in the x
-     dimension. Otherwise it will be done assuming that the trigger change in
-     the view port position was in the y dimension. */
-  void updateFirstStageBuffer(const bool horizontal)
+     actual update if it only needs to be done in one dimension) If horizontal
+     is true an update will be done assuming that the triggering change in view
+     port position was in the x dimension. Otherwise it will be done assuming
+     that the trigger change in the view port position was in the y
+     dimension. */
+  void updateFirstStageBuffer(const yx fSBSize, const bool horizontal)
   {
-    /*
-      The first stage buffer is a 5 by 5 array of chunks. When the delta between
-      the last updated position and the new position (viewPortPosition) have
-      diverged by the dimension of one chunk (note that this differs depending
-      on the axis.) The chunks two chunks ahead of the viewPortPosition (in y or
-      x) are updated.
-      The diagram below shows the position of the last updated position and the
-      current position upon entering this function and the chunks that will be
-      updated because the current position is one chunk ahead of the last
-      updated position.
-      Where C is a chunk that will stay the same L is the last updated position,
-      N is the new position and X is a chunk that needs to be updated because
-      the delta between L and N is one chunks worth in terms of y or x (X in
-      this case.)
-    
-      +---+---+---+---+---+
-      | X | C | C | C | C |
-      +---+---+---+---+---+
-      | X | C | C | C | C |
-      +---+---+---+---+---+
-      | X | C | L | N | C |
-      +---+---+---+---+---+
-      | X | C | C | C | C |
-      +---+---+---+---+---+
-      | X | C | C | C | C |
-      +---+---+---+---+---+
-
-      This means that the view port can move up to y -1 or x -1 in the y or x
-      directions before an update needs to be done.
-      NOTE THAT WE ARE INITIALLY GOING TO IMPLEMENT THIS FUNCTION SO THAT IT
-      WILL BE RUN IN THE SAME THREAD AS THE REST OF THE GAME. HOWEVER WE PLAN TO
-      MOVE TO IT'S OWN THREAD. WHEN AN UPDATE NEEDS TO BE DONE IT CAN BE DONE IN
-      PARALLEL WITH THE REST OF THE GAME LOGIC. THE THREAD DOING TO UPDATING
-      WILL BE ABLE TO UPDATE FOR A FULL CHUNKS WORTH OF MOVEMENT IN THE MAIN
-      THREAD (BECAUSE THERE IS A COLUMN (OR ROW) OF CHUNKS IN BETWEEN THE
-      CURRENT POSITION AND THE COLUMN (OR ROW) BEING UPDATED. IF THERE IS MORE
-      MOVEMENT THAN THAT THEN THE MAIN THREAD WILL NEED TO BE PAUSED TO WAIT FOR
-      THE UPDATING THREAD. HOWEVER WE THINK THAT THIS SHOULD NOT HAPPEN UNDER
-      NORMAL CIRCUMSTANCES AS ONE CHUNKS WORTH OF MOVEMENT IN THE WORSE CASE (IN
-      THE Y AXIS) IS 40 CHUNKS WORTH OF FRAMES AND THE ENGINE SLEEPS FOR SOME
-      TIME BETWEEN EACH FRAME. CONSIDERING THAT 5 CHUNKS ARE UPDATED FOR EACH
-      UPDATE THIS MEANS THAT THE MAIN THREAD WILL BE COPYING 35 CHUNKS WORTH OF
-      DATA MORE THAN THE UPDATING THREAD. HOWEVER THE UPDATING THREAD WILL NEED
-      TO DO 5 LOOKUPS TO FIND THE THREADS AND THESE LOOKUPS WILL PROBABLY BE THE
-      SLOWEST OPERATIONS PERFORMED BY THE UPDATING THREAD. THIS DOESN'T TAKE
-      INTO ACCOUNT DIAGONAL MOVEMENT PATTERNS.
-    */
-  
     /* NOTE THAT THE CODE HERE WILL ONLY WORK CORRECTLY WHEN fSBYChunks AND
        fSBXChunks ARE UNEVEN. HOWEVER THEY SHOULD BE. SO THIS SHOULDN'T BE A
        PROBLEM. */
-    // Size of the first stage buffer in characters.
-    const yx fSBSize {chunkSize.y * firstStageBuffer.fSBYChunks,
-		      chunkSize.x * firstStageBuffer.fSBXChunks};
   
     // Iterate over chunks to be updated in the FSB.
     for(int chunkUpdateDimensionIter {};
@@ -468,6 +440,60 @@ protected:
      lastUpdatedPosition is set to the same values as viewPortPosition. */
   void updateFirstStageBuffer()
   {
+    /*
+      The first stage buffer may be a 5 by 5 array of chunks. When the delta
+      between the last updated position and the new position (viewPortPosition)
+      has diverged by the dimension of one chunk (note that this differs
+      depending on the axis.) The chunks two chunks ahead of the
+      viewPortPosition (in y or x or both) are updated depending on the
+      dimension/s in which there is a change in position of more than one chunk.
+      Note here that it is only two chunks ahead for the case when the array is
+      5x5. For the general case it will be half of the array size rounded down
+      and the array size should always be uneven.
+      The diagram below shows the position of the last updated position and the
+      current position upon entering this function and the chunks that will be
+      updated because the current position is one chunk ahead of the last
+      updated position (this is assuming an update is being done in the
+      horizontal dimension only and because of a rightward movement, as opposed
+      to a leftward one.)
+      Where C is a chunk that will stay the same L is the last updated position,
+      N is the new position and X is a chunk that needs to be updated because
+      the delta between L and N is one chunks worth in terms of y or x (X in
+      this case.)
+    
+      +---+---+---+---+---+
+      | X | C | C | C | C |
+      +---+---+---+---+---+
+      | X | C | C | C | C |
+      +---+---+---+---+---+
+      | X | C | L | N | C |
+      +---+---+---+---+---+
+      | X | C | C | C | C |
+      +---+---+---+---+---+
+      | X | C | C | C | C |
+      +---+---+---+---+---+
+
+      This means that the view port can move up to y -1 or x -1 in the y or x
+      directions before an update needs to be done.
+      NOTE THAT WE ARE INITIALLY GOING TO IMPLEMENT THIS FUNCTION SO THAT IT
+      WILL BE RUN IN THE SAME THREAD AS THE REST OF THE GAME. HOWEVER WE PLAN TO
+      MOVE TO IT'S OWN THREAD. WHEN AN UPDATE NEEDS TO BE DONE IT CAN BE DONE IN
+      PARALLEL WITH THE REST OF THE GAME LOGIC. THE THREAD DOING TO UPDATING
+      WILL BE ABLE TO UPDATE FOR A FULL CHUNKS WORTH OF MOVEMENT IN THE MAIN
+      THREAD (BECAUSE THERE IS A COLUMN (OR ROW) OF CHUNKS IN BETWEEN THE
+      CURRENT POSITION AND THE COLUMN (OR ROW) BEING UPDATED. IF THERE IS MORE
+      MOVEMENT THAN THAT THEN THE MAIN THREAD WILL NEED TO BE PAUSED TO WAIT FOR
+      THE UPDATING THREAD. HOWEVER WE THINK THAT THIS SHOULD NOT HAPPEN UNDER
+      NORMAL CIRCUMSTANCES AS ONE CHUNKS WORTH OF MOVEMENT IN THE WORSE CASE (IN
+      THE Y AXIS) IS 40 CHUNKS WORTH OF FRAMES AND THE ENGINE SLEEPS FOR SOME
+      TIME BETWEEN EACH FRAME. CONSIDERING THAT 5 CHUNKS ARE UPDATED FOR EACH
+      UPDATE (IF THE BUFFER IS 5 X 5) THIS MEANS THAT THE MAIN THREAD WILL BE
+      COPYING 35 CHUNKS WORTH OF DATA MORE THAN THE UPDATING THREAD. HOWEVER THE
+      UPDATING THREAD WILL NEED TO DO 5 LOOKUPS TO FIND THE THREADS AND THESE
+      LOOKUPS WILL PROBABLY BE THE SLOWEST OPERATIONS PERFORMED BY THE UPDATING
+      THREAD. THIS DOESN'T TAKE INTO ACCOUNT DIAGONAL MOVEMENT PATTERNS.
+    */
+    
     // static long a {};
     // a++;
   //   endwin();
@@ -477,13 +503,15 @@ protected:
     // x > y ? x - y : y - x. Get distance between two numbers on number line.
     if(updatedNeededInXDimension() && updatedNeededInYDimension())
       {
-	endwin();
-	std::cout<<"Double axis chunk update not implemented!\n";
-	exit(-1);
+	updateFirstStageBuffer
+	  (yx{chunkSize.y * firstStageBuffer.fSBYChunks,
+	      chunkSize.x * firstStageBuffer.fSBXChunks});
       }
     else if(updatedNeededInXDimension())
       {
-	updateFirstStageBuffer(true);
+	updateFirstStageBuffer
+	  (yx{chunkSize.y * firstStageBuffer.fSBYChunks,
+	      chunkSize.x * firstStageBuffer.fSBXChunks}, true);
 
  	// if(a > 8)
 	//   {
@@ -501,7 +529,9 @@ protected:
       }
     else if(updatedNeededInYDimension())
       {
-	updateFirstStageBuffer(false);
+	updateFirstStageBuffer
+	  (yx{chunkSize.y * firstStageBuffer.fSBYChunks,
+	      chunkSize.x * firstStageBuffer.fSBXChunks}, false);
 
 	// if(a > 8)
 	//   {
@@ -559,12 +589,10 @@ protected:
 public:
   const char * fileName;
   
-  chunk(const yx chunkSizeIn, const char fileName [],
-	const chunkElementType missingChunkFiller):
-    chunkSize (chunkSizeIn.y, chunkSizeIn.x),
-    firstStageBuffer
-    (firstStageBufferType::fSBYChunks * chunkSizeIn.y *
-     firstStageBufferType::fSBXChunks * chunkSizeIn.x),
+  chunk(const yx chunkSizeIn, const int fSBSizeInChunks,
+	const chunkElementType missingChunkFiller, const char fileName []):
+    chunkSize(chunkSizeIn.y, chunkSizeIn.x),
+    firstStageBuffer(chunkSizeIn, fSBSizeInChunks),
     fileName(fileName),
     MISSING_CHUNK_FILLER(missingChunkFiller)
   {
@@ -607,14 +635,14 @@ public:
     // 	     <<"initialCenterPos = "<<initialCenterPos<<'\n';
     // exit(-1);
 
-    int chunkIter {-(firstStageBufferType::fSBXChunks / 2)};
+    int chunkIter {-(firstStageBuffer.fSBXChunks / 2)};
     firstStageBuffer.lastUpdatedPosition =
       yx{initialCenterPos.y,
 	 initialCenterPos.x + chunkSize.x * (chunkIter -1)};
 
     /* Note that FSBXChunks should be odd. Fill columns (of height fSBYChunks)
        of chunks from left to right. */
-    for( ; chunkIter <= (firstStageBufferType::fSBXChunks / 2);
+    for( ; chunkIter <= (firstStageBuffer.fSBXChunks / 2);
 	++chunkIter)
       {
 	firstStageBuffer.viewPortPosition =

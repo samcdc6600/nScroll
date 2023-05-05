@@ -16,6 +16,7 @@ public:
   chunkElementBaseType * secondStageDrawBuffer;
   
 private:
+  static const int FIRST_STAGE_BUFFER_DIMENSIONS_SIZE {5};
 
   // ========================== MEMBER FUNCTIONS START =========================
   // ===========================================================================
@@ -35,7 +36,8 @@ public:
 
   // Third argument to chunk is used to fill missing chunks with black spaces.
   backgroundData(const yx chunkSizeIn, const char bgFileName []):
-    chunk(chunkSizeIn, bgFileName, (MONO_CH_MAX +1) * 1 + ' '),
+    chunk(chunkSizeIn, FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
+	  (MONO_CH_MAX +1) * 1 + ' ', bgFileName),
     secondStageDrawBuffer
     (new chunkElementBaseType [chunkSizeIn.y * chunkSizeIn.x])
   {
