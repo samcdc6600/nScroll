@@ -86,6 +86,10 @@ private:
 	    ((firstStageBuffer.viewPortPosition.y -
 	      firstStageBuffer.lastUpdatedPosition.y) > chunkSize.y -1));
   }
+
+
+  std::string chunkKey;
+  
   /* UpdateFirstStageBuffer() will call this overloaded function (to do the
      actuall update) If horizontal is true an update will be done assuming that
      the triggering change in view port position was in the x
@@ -153,7 +157,14 @@ private:
 	chunkUpdateDimensionIter < (horizontal ? firstStageBuffer.fSBYChunks:
 				    firstStageBuffer.fSBXChunks);
 	++chunkUpdateDimensionIter)
-      { 
+      {
+	//tmp
+	    chunkKey = calculatePotentialChunkKeyForChunkToGoInFSB
+      (horizontal, chunkUpdateDimensionIter);
+	    // ^^ tmp ^^
+
+
+	    
 	const yx fSBTargetChunk
 	  {horizontal ?
 	   calculateFSBTargetChunkWithHorizontalChange
@@ -219,18 +230,54 @@ private:
 	  }
       }
 
-    /* We must update these separately otherwise we will forget the correct
-       last position for the axis not being updated. */
+    // /* We must update these separately otherwise we will forget the correct
+    //    last position for the axis not being updated. */
+    // if(horizontal)
+    //   {
+    // 	firstStageBuffer.lastUpdatedPosition.x =
+    // 	  firstStageBuffer.viewPortPosition.x;
+    //   }
+    // else
+    //   {
+    // 	firstStageBuffer.lastUpdatedPosition.y =
+    // 	  firstStageBuffer.viewPortPosition.y;
+    //   }
+
+
+
     if(horizontal)
       {
-	firstStageBuffer.lastUpdatedPosition.x =
-	  firstStageBuffer.viewPortPosition.x;
+	firstStageBuffer.lastUpdatedPosition.x =	 
+	  ((firstStageBuffer.viewPortPosition.x < 0 ?
+	    (firstStageBuffer.viewPortPosition.x - chunkSize.x +1) :
+	    firstStageBuffer.viewPortPosition.x)
+	   / chunkSize.x) * chunkSize.x;
       }
     else
       {
 	firstStageBuffer.lastUpdatedPosition.y =
-	  firstStageBuffer.viewPortPosition.y;
+	  ((firstStageBuffer.viewPortPosition.y < 0 ?
+	    (firstStageBuffer.viewPortPosition.y - chunkSize.y +1) :
+	    firstStageBuffer.viewPortPosition.y)
+	   / chunkSize.y) * chunkSize.y;
       }
+
+    //     /* We must update these separately otherwise we will forget the correct
+    //    last position for the axis not being updated. */
+    // if(horizontal)
+    //   {
+    // 	/* We have to make sure the last position is chunk aligned so we can't
+    // 	   get out of sync. */
+    // 	firstStageBuffer.lastUpdatedPosition.x =
+    // 	  (firstStageBuffer.viewPortPosition.x % chunkSize.x) * chunkSize.x;
+    //   }
+    // else
+    //   {
+    // 	/* We have to make sure the last position is chunk aligned so we can't
+    // 	   get out of sync. */
+    // 	firstStageBuffer.lastUpdatedPosition.y =
+    // 	  (firstStageBuffer.viewPortPosition.y % chunkSize.y) * chunkSize.y;
+    //   }
   }
 
   
@@ -273,10 +320,13 @@ private:
     targetChunk.x %= firstStageBuffer.fSBXChunks;
     targetChunk.x = targetChunk.x < 0 ?
       firstStageBuffer.fSBXChunks + targetChunk.x: targetChunk.x;
-    // FirstStageBuffer.fSBYChunks & 1 returns 1 if fSBYChunks is even.
+    /* FirstStageBuffer.fSBYChunks & 1 returns 1 if fSBYChunks is even.
+       Y must be relative to the lastUpdatedPosition, because there will be a
+       chunk in the fSB that is updated with the wrong chunk if we use the
+       viewPortPosition.*/ 
     const int targetYPreWrap
-      {(((firstStageBuffer.viewPortPosition.y -
-	  (firstStageBuffer.viewPortPosition.y < 0 ? yHeight -1: 0)) %
+      {(((firstStageBuffer.lastUpdatedPosition.y -
+	  (firstStageBuffer.lastUpdatedPosition.y < 0 ? yHeight -1: 0)) %
 	 fSBSize.y) / chunkSize.y +
 	(firstStageBuffer.fSBYChunks / 2 +
 	 (firstStageBuffer.fSBYChunks & 1)) +
@@ -285,6 +335,17 @@ private:
     /* Maybe fix negative and wrap around in y... */
     targetChunk.y = targetChunk.y < 0 ?
       firstStageBuffer.fSBYChunks + targetChunk.y: targetChunk.y;
+
+    // if(targetChunk.y == 0)
+    //   {
+    // 	 nodelay(stdscr, FALSE);
+    // 		attron(COLOR_PAIR(56));
+    // 		mvprintw(47, 0, concat("H chunkKey = ", chunkKey, "\ttargetChunk = ", targetChunk).c_str());
+    // refresh();
+    // sleep(70);
+    // getch();
+    //  nodelay(stdscr, TRUE);
+    //   }
 
     return targetChunk;
   }
@@ -324,10 +385,13 @@ private:
     targetChunk.y %= firstStageBuffer.fSBYChunks;
     targetChunk.y = targetChunk.y < 0 ?
       firstStageBuffer.fSBYChunks + targetChunk.y: targetChunk.y;
-    // FirstStageBuffer.fSBXChunks & 1 returns 1 if fSBXChunks is even.
+    /* FirstStageBuffer.fSBXChunks & 1 returns 1 if fSBXChunks is even.
+       X must be relative to the lastUpdatedPosition, because there will be a
+       chunk in the fSB that is updated with the wrong chunk if we use the
+       viewPortPosition.*/ 
     const int targetXPreWrap
-      {(((firstStageBuffer.viewPortPosition.x -
-	  (firstStageBuffer.viewPortPosition.x < 0 ? xWidth -1: 0)) %
+      {(((firstStageBuffer.lastUpdatedPosition.x -
+	  (firstStageBuffer.lastUpdatedPosition.x < 0 ? xWidth -1: 0)) %
 	 fSBSize.x) / chunkSize.x +
 	(firstStageBuffer.fSBXChunks / 2 +
 	 (firstStageBuffer.fSBXChunks & 1)) +
@@ -336,6 +400,19 @@ private:
     /* Maybe fix negative and wrap around in x... */
     targetChunk.x = targetChunk.x < 0 ?
       firstStageBuffer.fSBXChunks + targetChunk.x: targetChunk.x;
+
+
+    // if(targetChunk.y == 0)
+    //   {
+    // 	nodelay(stdscr, FALSE);
+    // 		attron(COLOR_PAIR(20));
+    // mvprintw(47, 0, concat("V chunkKey = ", chunkKey, "\ttargetChunk = ", targetChunk).c_str());
+    //     refresh();
+    // sleep(70);
+    // getch();
+    // nodelay(stdscr, TRUE);
+    //   }
+    
 
     return targetChunk;
   }
@@ -354,8 +431,11 @@ private:
 
     if(horizontal)
       {
+	/* Here Y must be relative to the lastUpdatedPosition, bceause there
+	   will be a chunk in the fSB that is updated with the wrong chunk if
+	   we use the viewPortPosition.*/
 	chunkCoord =
-	  yx{firstStageBuffer.viewPortPosition.y +
+	  yx{firstStageBuffer.lastUpdatedPosition.y +
 	     ((chunkUpdateDimensionIter -
 	       (firstStageBuffer.fSBYChunks / 2)) * chunkSize.y),
 	     firstStageBuffer.viewPortPosition.x +
@@ -366,13 +446,16 @@ private:
       }
     else 
       {
+	/* Here X must be relative to the lastUpdatedPosition, bceause there
+	   will be a chunk in the fSB that is updated with the wrong chunk if
+	   we use the viewPortPosition.*/
 	chunkCoord =
 	  yx{(firstStageBuffer.viewPortPosition.y +
 	      (firstStageBuffer.viewPortPosition.y >
 	       firstStageBuffer.lastUpdatedPosition.y ?
 	       firstStageBuffer.fSBYUpdateOffset:
 	       -firstStageBuffer.fSBYUpdateOffset) * chunkSize.y),
-	     firstStageBuffer.viewPortPosition.x +
+	     firstStageBuffer.lastUpdatedPosition.x +
 	     ((chunkUpdateDimensionIter -
 	       (firstStageBuffer.fSBXChunks  / 2)) * chunkSize.x)};
       }
@@ -387,6 +470,12 @@ protected:
      lastUpdatedPosition is set to the same values as viewPortPosition. */
   void updateFirstStageBuffer()
   {
+    // static long a {};
+    // a++;
+  //   endwin();
+  // std::cout<<"updateFirstStageBuffer() called "<<a<<" times.!\n";
+
+    
     // x > y ? x - y : y - x. Get distance between two numbers on number line.
     if(updatedNeededInXDimension() && updatedNeededInYDimension())
       {
@@ -397,10 +486,38 @@ protected:
     else if(updatedNeededInXDimension())
       {
 	updateFirstStageBuffer(true);
+
+ 	// if(a > 8)
+	//   {
+	// attron(COLOR_PAIR(56));
+	// for(int y {}; y < (chunkSize.y /3); y++)
+	//   {
+	//     for(int x {}; x < (chunkSize.x / 3); x++)
+	//       {
+	// 	mvprintw(y, x, "U");
+	//       }
+	//   }
+	// sleep(2000);
+	// refresh();
+	  // }
       }
     else if(updatedNeededInYDimension())
       {
 	updateFirstStageBuffer(false);
+
+	// if(a > 8)
+	//   {
+	// attron(COLOR_PAIR(20));
+	// for(int y {}; y < (chunkSize.y / 3); y++)
+	//   {
+	//     for(int x {}; x < (chunkSize.x / 3); x++)
+	//       {
+	// 	mvprintw(y, x, "U");
+	//       }
+	//   }
+	// sleep(2000);
+	// refresh();
+	  // }
       }
   }
 
@@ -466,13 +583,29 @@ public:
   }
   
   
-  /* Should be called once initial player position is known, but before the main
+  /* To avoid visual artefacts the whole 1st stage buffer needs to be
+     initialised.
+     Should be called once initial player position is known, but before the main
      game loop. */
   void initFirstStageBuffer(const yx initialViewPortPos)
   {
-    /* To avoid visual artefacts the whole 1st stage buffer needs to be
-       initialised. */
-    const yx initialCenterPos {initialViewPortPos};
+    /* We need to align the position we start filling the chunks from to the
+       start of a chunk. Here a coordinate of -1 should snap to -48 (the start
+       of the first negative chunk) and -49 should snap to -96. But 1 should
+       snap to 0 and 48 should snap to 48 (the start of the second positive
+       chunk.) */
+    const yx initialCenterPos
+      {((initialViewPortPos.y < 0 ?
+	(initialViewPortPos.y - chunkSize.y +1) : initialViewPortPos.y)
+	/ chunkSize.y) * chunkSize.y,
+       ((initialViewPortPos.x < 0 ?
+	 (initialViewPortPos.x - chunkSize.x +1) : initialViewPortPos.x)
+	/ chunkSize.x) * chunkSize.x};
+
+    // endwin();
+    // std::cout<<"initialViewPortPos = "<<initialViewPortPos
+    // 	     <<"initialCenterPos = "<<initialCenterPos<<'\n';
+    // exit(-1);
 
     int chunkIter {-(firstStageBufferType::fSBXChunks / 2)};
     firstStageBuffer.lastUpdatedPosition =
@@ -502,7 +635,7 @@ public:
     // out.close();
     // exit(-1);
 
-    firstStageBuffer.viewPortPosition = initialCenterPos;
+    firstStageBuffer.viewPortPosition = initialViewPortPos;
   }
 
 
