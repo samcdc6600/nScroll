@@ -103,34 +103,61 @@ private:
      actual update if it needs to be done in both dimensions at once.) */
   void updateFirstStageBuffer(const yx fSBSize)
   {
-    // Update chunks with a vertical offset.
-        // Iterate over chunks to be updated in the FSB.
+    /* Update chunks with a vertical offset. Iterate over chunks to be updated
+       in the FSB. */
     for(int chunkUpdateDimensionIter {};
 	chunkUpdateDimensionIter < firstStageBuffer.fSBXChunks;
 	++chunkUpdateDimensionIter)
       {
-	/* Here use use true as an argument to
-	   calculateFSBTargetChunkWithVerticalChange() because we want it to
-	   use the current view port position as the offset for the start of
-	   the chunks being iterated over (the thing we had to change to fix
-	   the code, not that we will have to update the
-	   calculateFSBTargetChunkWithVerticalChange() function to handle this
-	   extra argument. It should work as it currently does for the other
-	   version of updateFirstStageBuffer(). Note that we will also need to
-	   add an analogous option to the horizontal change version of the
-	   aforementioned function and also to the function to calculate the
-	   chunk key. */
+	/* The first argument to calculateFSBTargetChunkWithVerticalChange()
+	   must be true to ensure that the current view port position is used
+	   as part of the x offset. */
 	const yx fSBTargetChunk
 	  {calculateFSBTargetChunkWithVerticalChange
 	   (true, fSBSize, chunkUpdateDimensionIter)};
+	/* Calculate index of potential chunk to be copied into FSB. Again we
+	   use true here to ensure that the current view port position is
+	   used. The second argument specifies that we want the calculation
+	   done with regards to the vertical dimension. */
+	const std::string chunkKey
+	  {calculatePotentialChunkKeyForChunkToGoInFSB
+	   (true, false, chunkUpdateDimensionIter)};
+	getChunkAndCopyIntoFSB(fSBSize, fSBTargetChunk, chunkKey);
       }
     
     // Update chunks with a horizontal offset.
     /* Used to control which chunk not to update (because it has already been
-       updated by the vertical updating code) when updating horizontally. */
+       updated by the vertical updating code). */
     const bool verticalUpdateDirectionUP
-      {firstStageBuffer.lastUpdatedPosition.y <
+      {firstStageBuffer.lastUpdatedPosition.y >
        firstStageBuffer.viewPortPosition.y};
+
+    /* Update chunks with a horizontal offset. Iterate over chunks to be updated
+       in the FSB. */
+    for(int chunkUpdateDimensionIter {verticalUpdateDirectionUP ? 1: 0};
+	chunkUpdateDimensionIter <
+	  firstStageBuffer.fSBYChunks - (verticalUpdateDirectionUP ? 0: 1);
+	++chunkUpdateDimensionIter)
+      {
+	/* The first argument to calculateFSBTargetChunkWithHorizontalChange()
+	   must be true to ensure that the current view port position is used
+	   as part of the x offset. */
+	const yx fSBTargetChunk
+	  {calculateFSBTargetChunkWithHorizontalChange
+	   (true, fSBSize, chunkUpdateDimensionIter)};
+	/* Calculate index of potential chunk to be copied into FSB. Again we
+	   use true here to ensure that the current view port position is
+	   used. The second argument specifies that we want the calculation
+	   done with regards to the horizontal dimension. */
+	const std::string chunkKey
+	  {calculatePotentialChunkKeyForChunkToGoInFSB
+	   (true, true, chunkUpdateDimensionIter)};
+	getChunkAndCopyIntoFSB(fSBSize, fSBTargetChunk, chunkKey);
+      }
+
+    // Update both axis of the last view port position.
+    updateLastViewPortPosition(false);
+    updateLastViewPortPosition(true);
   }
 
 
@@ -160,17 +187,22 @@ private:
 	    // ^^ tmp ^^
 
 
-	    
+
+	/* The first argument to calculateFSBTargetChunkWithVerticalChange()
+	   must be false to ensure that the previous view port position is used
+	   as part of the x offset. */
 	const yx fSBTargetChunk
 	  {horizontal ?
 	   calculateFSBTargetChunkWithHorizontalChange
-	   (fSBSize, chunkUpdateDimensionIter):
+	   (false, fSBSize, chunkUpdateDimensionIter):
 	   calculateFSBTargetChunkWithVerticalChange
-	   (fSBSize, chunkUpdateDimensionIter)};
-	// Calculate index of potential chunk to be copied into FSB.
+	   (false, fSBSize, chunkUpdateDimensionIter)};
+	/* Calculate index of potential chunk to be copied into FSB. Again we
+	   use false here to ensure that the previous view port position is
+	   used.*/
 	const std::string chunkKey
 	  {calculatePotentialChunkKeyForChunkToGoInFSB
-	   (horizontal, chunkUpdateDimensionIter)};
+	   (false, horizontal, chunkUpdateDimensionIter)};
 
 
         // int i = 0;
@@ -184,44 +216,7 @@ private:
 	//     exit(-1);
 	//   }
 
-	  
-
-	// Try to get chunk and then perform the copy to the FSB.
-	try
-	  {
-	    // At() will throw an exception if the key isn't found.
-	    const chunkType * chunk {&chunkMap.at(chunkKey)};
-	    // Iterate over lines of target chunk in the FSB.
-	    for(int yIter {}; yIter < chunkSize.y; ++yIter)
-	      {
-		for(int xIter {}; xIter < chunkSize.x; ++xIter)
-		  {
-		    firstStageBuffer.buffer
-		      [(fSBTargetChunk.y * fSBSize.x * chunkSize.y) +
-		       yIter * fSBSize.x +
-			     
-		       ((fSBTargetChunk.x * chunkSize.x)
-			+ xIter)] 
-		      = (*chunk)[(yIter * chunkSize.x) + xIter];
-		  }
-	      }
-	  }
-	catch(const std::out_of_range& err)
-	  {
-	    /* Key not found... Fill target chunk in first stage buffer with
-	       some stuff. */
-	    for(int yIter {}; yIter < chunkSize.y; ++yIter)
-	      {
-		for(int xIter {}; xIter < chunkSize.x; ++xIter)
-		  {
-		    firstStageBuffer.buffer
-		      [(fSBTargetChunk.y * fSBSize.x * chunkSize.y) +
-		       yIter * fSBSize.x +			     
-		       ((fSBTargetChunk.x * chunkSize.x)
-			+ xIter)] = MISSING_CHUNK_FILLER;;
-		  }
-	      }
-	  }
+	getChunkAndCopyIntoFSB(fSBSize, fSBTargetChunk, chunkKey);
       }
 
     // /* We must update these separately otherwise we will forget the correct
@@ -238,40 +233,7 @@ private:
     //   }
 
 
-
-    if(horizontal)
-      {
-	firstStageBuffer.lastUpdatedPosition.x =	 
-	  ((firstStageBuffer.viewPortPosition.x < 0 ?
-	    (firstStageBuffer.viewPortPosition.x - chunkSize.x +1) :
-	    firstStageBuffer.viewPortPosition.x)
-	   / chunkSize.x) * chunkSize.x;
-      }
-    else
-      {
-	firstStageBuffer.lastUpdatedPosition.y =
-	  ((firstStageBuffer.viewPortPosition.y < 0 ?
-	    (firstStageBuffer.viewPortPosition.y - chunkSize.y +1) :
-	    firstStageBuffer.viewPortPosition.y)
-	   / chunkSize.y) * chunkSize.y;
-      }
-
-    //     /* We must update these separately otherwise we will forget the correct
-    //    last position for the axis not being updated. */
-    // if(horizontal)
-    //   {
-    // 	/* We have to make sure the last position is chunk aligned so we can't
-    // 	   get out of sync. */
-    // 	firstStageBuffer.lastUpdatedPosition.x =
-    // 	  (firstStageBuffer.viewPortPosition.x % chunkSize.x) * chunkSize.x;
-    //   }
-    // else
-    //   {
-    // 	/* We have to make sure the last position is chunk aligned so we can't
-    // 	   get out of sync. */
-    // 	firstStageBuffer.lastUpdatedPosition.y =
-    // 	  (firstStageBuffer.viewPortPosition.y % chunkSize.y) * chunkSize.y;
-    //   }
+    updateLastViewPortPosition(horizontal);
   }
 
   
@@ -282,9 +244,13 @@ private:
      was (0, 170) (where 170 is the size of a chunk in the x dimension in this
      example) then the set of chunks to be updated given 5 calls with
      yChunkOffset being set to (0, 1, 2, 3, 4) for each respective call, should
-     be (3, 3), (4, 3), (0, 3), (1, 3), (2, 3). */
+     be (3, 3), (4, 3), (0, 3), (1, 3), (2, 3).
+     DoubleAxisUpdate should be set to true if an update needs to be done for
+     both axis.  It will ensure that the current view port position is used as
+     an offset (with regards to the x axis) as opposed to the last updated
+     position. */
   yx calculateFSBTargetChunkWithHorizontalChange
-  (const yx fSBSize, const int yChunkOffset) const
+  (const bool doubleAxisUpdate, const yx fSBSize, const int yChunkOffset) const
   {
     /* Note that the code in this function assumes that a mod can produce a
        negative result. */
@@ -319,8 +285,10 @@ private:
        chunk in the fSB that is updated with the wrong chunk if we use the
        viewPortPosition.*/ 
     const int targetYPreWrap
-      {(((firstStageBuffer.lastUpdatedPosition.y -
-	  (firstStageBuffer.lastUpdatedPosition.y < 0 ? yHeight -1: 0)) %
+      {((((doubleAxisUpdate ? firstStageBuffer.viewPortPosition.y :
+	   firstStageBuffer.lastUpdatedPosition.y) -
+	  ((doubleAxisUpdate ? firstStageBuffer.viewPortPosition.y :
+	    firstStageBuffer.lastUpdatedPosition.y) < 0 ? yHeight -1: 0)) %
 	 fSBSize.y) / chunkSize.y +
 	(firstStageBuffer.fSBYChunks / 2 +
 	 (firstStageBuffer.fSBYChunks & 1)) +
@@ -345,8 +313,12 @@ private:
   }
 
 
+  /* DoubleAxisUpdate should be set to true if an update needs to be done for
+     both axis.  It will ensure that the current view port position is used as
+     an offset (with regards to the x axis) as opposed to the last updated
+     position. */
   yx calculateFSBTargetChunkWithVerticalChange
-  (const yx fSBSize, const int xChunkOffset) const
+  (const bool doubleAxisUpdate, const yx fSBSize, const int xChunkOffset) const
   {
     /* Note that the code in this function assumes that a mod can produce a
        negative result. */
@@ -384,8 +356,10 @@ private:
        chunk in the fSB that is updated with the wrong chunk if we use the
        viewPortPosition.*/ 
     const int targetXPreWrap
-      {(((firstStageBuffer.lastUpdatedPosition.x -
-	  (firstStageBuffer.lastUpdatedPosition.x < 0 ? xWidth -1: 0)) %
+      {((((doubleAxisUpdate ? firstStageBuffer.viewPortPosition.x:
+	   firstStageBuffer.lastUpdatedPosition.x) -
+	  ((doubleAxisUpdate ? firstStageBuffer.viewPortPosition.x:
+	   firstStageBuffer.lastUpdatedPosition.x) < 0 ? xWidth -1: 0)) %
 	 fSBSize.x) / chunkSize.x +
 	(firstStageBuffer.fSBXChunks / 2 +
 	 (firstStageBuffer.fSBXChunks & 1)) +
@@ -412,12 +386,14 @@ private:
   }
 
   
-  /* Where horizontal determines whether or not to use chunkUpdateDimensionIter
-     as a component of y or x when creating the key. Horizontal should be set
-     to true when the triggering change in view port position was in the x
-     dimension. */
+  /* DoubleAxisUpdate should be set to true if an update needs to be done for
+     both axis. Where horizontal determines whether or not to use
+     chunkUpdateDimensionIter as a component of y or x when creating the
+     key. Horizontal should be set to true when the triggering change in view
+     port position was in the x dimension. */
   std::string calculatePotentialChunkKeyForChunkToGoInFSB
-  (const bool horizontal, const int chunkUpdateDimensionIter) const
+  (const bool doubleAxisUpdate, const bool horizontal,
+   const int chunkUpdateDimensionIter) const
   {
     /* Note here that we account for the direction of movement when calculating
        the y or x coordinate based on the value of horizontal. */
@@ -429,7 +405,8 @@ private:
 	   will be a chunk in the fSB that is updated with the wrong chunk if
 	   we use the viewPortPosition.*/
 	chunkCoord =
-	  yx{firstStageBuffer.lastUpdatedPosition.y +
+	  yx{(doubleAxisUpdate ? firstStageBuffer.viewPortPosition.y:
+	      firstStageBuffer.lastUpdatedPosition.y) +
 	     ((chunkUpdateDimensionIter -
 	       (firstStageBuffer.fSBYChunks / 2)) * chunkSize.y),
 	     firstStageBuffer.viewPortPosition.x +
@@ -438,7 +415,7 @@ private:
 	      firstStageBuffer.fSBXUpdateOffset:
 	      -firstStageBuffer.fSBXUpdateOffset) * chunkSize.x};
       }
-    else 
+    else
       {
 	/* Here X must be relative to the lastUpdatedPosition, bceause there
 	   will be a chunk in the fSB that is updated with the wrong chunk if
@@ -449,13 +426,86 @@ private:
 	       firstStageBuffer.lastUpdatedPosition.y ?
 	       firstStageBuffer.fSBYUpdateOffset:
 	       -firstStageBuffer.fSBYUpdateOffset) * chunkSize.y),
-	     firstStageBuffer.lastUpdatedPosition.x +
+	     (doubleAxisUpdate ? firstStageBuffer.viewPortPosition.x:
+	      firstStageBuffer.lastUpdatedPosition.x) +
 	     ((chunkUpdateDimensionIter -
 	       (firstStageBuffer.fSBXChunks  / 2)) * chunkSize.x)};
       }
   
     return createChunkCoordKeyFromCharCoord(chunkCoord);
   }
+
+
+  /* Tries to get chunk associated with chunkKey and copy it into
+     fSBTargetChunk in the first stage buffer. If no chunk is found to be
+     associated chunkKey then fills target chunk with MISSING_CHUNK_FILLER.
+     Where chunk key and fSBTargetchunk are in chunks and fSBSize is the size of
+     the first stage buffer. */
+  void getChunkAndCopyIntoFSB(const yx fSBSize, const yx fSBTargetChunk,
+			      const std::string chunkKey)
+  {
+    // Try to get chunk and then perform the copy to the FSB.
+    try
+      {
+	// At() will throw an exception if the key isn't found.
+	const chunkType * chunk {&chunkMap.at(chunkKey)};
+	// Iterate over lines of target chunk in the FSB.
+	for(int yIter {}; yIter < chunkSize.y; ++yIter)
+	  {
+	    for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	      {
+		firstStageBuffer.buffer
+		  [(fSBTargetChunk.y * fSBSize.x * chunkSize.y) +
+		   yIter * fSBSize.x +
+			     
+		   ((fSBTargetChunk.x * chunkSize.x)
+		    + xIter)] 
+		  = (*chunk)[(yIter * chunkSize.x) + xIter];
+	      }
+	  }
+      }
+    catch(const std::out_of_range& err)
+      {
+	/* Key not found... Fill target chunk in first stage buffer with
+	   some stuff. */
+	for(int yIter {}; yIter < chunkSize.y; ++yIter)
+	  {
+	    for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	      {
+		firstStageBuffer.buffer
+		  [(fSBTargetChunk.y * fSBSize.x * chunkSize.y) +
+		   yIter * fSBSize.x +			     
+		   ((fSBTargetChunk.x * chunkSize.x)
+		    + xIter)] = MISSING_CHUNK_FILLER;;
+	      }
+	  }
+      }
+  }
+
+
+  /* Updates the one coordinate of the last view port position to the
+     position chunk that was just updated. The chunk to be updated is based on
+     horizontal. */
+  void updateLastViewPortPosition(bool horizontal)
+  {
+    if(horizontal)
+      {
+	firstStageBuffer.lastUpdatedPosition.x =	 
+	  ((firstStageBuffer.viewPortPosition.x < 0 ?
+	    (firstStageBuffer.viewPortPosition.x - chunkSize.x +1) :
+	    firstStageBuffer.viewPortPosition.x)
+	   / chunkSize.x) * chunkSize.x;
+      }
+    else
+      {
+	firstStageBuffer.lastUpdatedPosition.y =
+	  ((firstStageBuffer.viewPortPosition.y < 0 ?
+	    (firstStageBuffer.viewPortPosition.y - chunkSize.y +1) :
+	    firstStageBuffer.viewPortPosition.y)
+	   / chunkSize.y) * chunkSize.y;
+      }
+  }
+  
   
 protected:
     /* Updates the first stage buffer if
@@ -527,9 +577,9 @@ protected:
     // x > y ? x - y : y - x. Get distance between two numbers on number line.
     if(updatedNeededInXDimension() && updatedNeededInYDimension())
       {
-	updateFirstStageBuffer
-	  (yx{chunkSize.y * firstStageBuffer.fSBYChunks,
-	      chunkSize.x * firstStageBuffer.fSBXChunks});
+	// updateFirstStageBuffer
+	//   (yx{chunkSize.y * firstStageBuffer.fSBYChunks,
+	//       chunkSize.x * firstStageBuffer.fSBXChunks});
       }
     else if(updatedNeededInXDimension())
       {
