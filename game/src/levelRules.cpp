@@ -1470,7 +1470,7 @@ void rules::movePlayer
       input = handleLeftCollision();
     }
 
-  //handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe(input);
+  // handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe(input);
   // handleFinalPlayerMovement(input);
 
   gamePlayer->updatePosRel(input);
@@ -1805,10 +1805,10 @@ void rules::physics
 
   if(gameTiming.movePlayer.startNextTick())
     {
-      movePlayer
-	(background, input);
+      // movePlayer
+      // 	(background, input);
       // Update position for rules chars.
-      updateViewPortPosition
+      this->updateViewPortPosition
 	(PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
 	 gamePlayer->getMaxBottomRightOffset());
       // Update background position with new rules chars pos.
@@ -1816,7 +1816,7 @@ void rules::physics
 	(getViewPortPosition());
       /* Move the player back into the view port if they have moved out of the
 	 view port. */
-      gamePlayer->moveIntoViewPort();
+      // gamePlayer->moveIntoViewPort();
       
       // gamePlayer->resetPositionWithPreviousPos
       // 	(updateViewPortPosition

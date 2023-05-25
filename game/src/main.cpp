@@ -78,6 +78,14 @@ int gameLoop
  backgroundData & background, rules & levelRules)
 {
   levelRules.startTimers();
+
+
+  draw(background, levelRules.gamePlayer, levelRules.bgSprites);
+  nodelay(stdscr, FALSE);
+  sleep(800);
+  getch();
+  nodelay(stdscr, TRUE);
+  
   
   while(true)
     {
@@ -94,10 +102,10 @@ int gameLoop
       levelRules.physics
 	(background, player::convertDirectionCharsToDirections
 	 (static_cast<player::directionChars>(input)));
-      if(levelRules.gameTiming.drawTime.startNextTick())
-	{
+      // if(levelRules.gameTiming.drawTime.startNextTick())
+      // 	{
 	  draw(background, levelRules.gamePlayer, levelRules.bgSprites);
-	}
+	// }
 
       /* Sleep for 800 micro seconds to give the CPU a rest. This should not be
 	 noticible when playing the game, however it will mean that the game can

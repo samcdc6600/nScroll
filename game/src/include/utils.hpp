@@ -11,6 +11,8 @@
    them but don't want to accidentally leave includes in a file. */
 #include <iostream>
 #include <curses.h>
+#include <random>
+#include <fstream>
 #endif
 
 
