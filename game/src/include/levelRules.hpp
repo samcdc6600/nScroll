@@ -191,7 +191,7 @@ public:
        HAVE AT LEAST SOME OF THEM LOADED FROM RULES.LEV FILES. */
     //gameTiming.movePlayer = chronological{22.2, gameTimingErrorInfo};
     // gameTiming.movePlayer = chronological{27.3, gameTimingErrorInfo};
-    gameTiming.movePlayer = chronological{25, gameTimingErrorInfo};
+    gameTiming.movePlayer = chronological{30, gameTimingErrorInfo};
     // 8.3333 ~ 120 FPS
     gameTiming.drawTime = chronological{8.3333, gameTimingErrorInfo};
   }
