@@ -13,8 +13,7 @@ public:
 
   
   bgSprite(std::vector<std::string> spriteFileNames, const yx viewPortSize,
-	   const yx pos, const directions dir,
-	   const bool dispInFg) :
+	   const yx pos, const directions dir, const bool dispInFg) :
     nonPlayerSprite(spriteFileNames, viewPortSize, pos, dir),
     displayInForground(dispInFg)
   {

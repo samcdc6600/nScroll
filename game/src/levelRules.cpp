@@ -865,7 +865,8 @@ void initPlayer
 	       // misc.viewPortPadding,
 	       // misc.initialViewPortCoordinates,
 	       playerInitData.initialCoordinatesVPRel,
-	       playerInitData.direction, playerInitData.health,
+	       playerInitData.direction,
+	       playerInitData.health,
 	       playerInitData.gravitationalConstant,
 	       playerInitData.maxVerticalVelocity,
 	       playerInitData.maxFallingJumpNumber,
@@ -1433,48 +1434,98 @@ char rules::nearPass(const std::vector<int> playerSpChoords,
 }
 
 
-void rules::movePlayer
-  (backgroundData & background, sprite::directions input)
-{
-  const int currDir {gamePlayer->getDirection()};
+// void rules::movePlayer
+// (backgroundData & background, sprite::directions input,
+//  const double timeElapsed)
+// {
+//   const int currDir {gamePlayer->getDirection()};
+//   // const yx potentialTravel {gamePlayer->getPotentialDistTravelled()};
   
-  if(input == sprite::DIR_UP // && !gamePlayer->isJumpNumMaxedOut()
-     )
-    {
-      // Start jump.
-      gamePlayer->startJumping(secondStageRulesBuffer);
-      // We wan't to keep moving in the direction we were moving in before.
-      input = (sprite::directions)currDir;
-    }
-  else
-    {
-      /* We are not jumping or we are past the start of a jump.
-	 If we can move down. */
-      gamePlayer->handleJumpingAndFalling(secondStageRulesBuffer);
-    }
+//   if(input == sprite::DIR_UP // && !gamePlayer->isJumpNumMaxedOut()
+//      )
+//     {
+//       // // Start jump.
+//       // gamePlayer->startJumping(secondStageRulesBuffer);
+//       // // We wan't to keep moving in the direction we were moving in before.
+//       // input = (sprite::directions)currDir;
+//     }
+//   else
+//     {
+//       /* We are not jumping or we are past the start of a jump.
+// 	 If we can move down. */
+//       gamePlayer->handleJumpingAndFalling(secondStageRulesBuffer);
+//     }
 
-  // Handle contact with boarder characters.
-  if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
-     input == sprite::DIR_DOWN)
-    {
-      input = handleGroundCollision();
-    }
-  else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
-	  input == sprite::DIR_RIGHT)
-    {
-      input = handleRightCollision();
-    }
-  else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
-	  input == sprite::DIR_LEFT)
-    {
-      input = handleLeftCollision();
-    }
+//   // Handle contact with boarder characters.
+//   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
+//      input == sprite::DIR_DOWN)
+//     {
+//       input = handleGroundCollision();
+//       if(input = sprite::DIR_NONE)
+// 	{
+// 	  gamePlayer->velComp.setVlctY(0);
+// 	}
+//     }
+//   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
+// 	  input == sprite::DIR_RIGHT)
+//     {
+//       // input = handleRightCollision(potentialTravel.y);
+//     }
+//   else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
+// 	  input == sprite::DIR_LEFT)
+//     {
+//       // input = handleLeftCollision(potentialTravel.y);
+//     }
 
-  // handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe(input);
-  // handleFinalPlayerMovement(input);
+//   // handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe(input);
+//   // handleFinalPlayerMovement(input);
 
-  gamePlayer->updatePosRel(input);
-}
+//   gamePlayer->updatePosRel(input);
+
+
+
+
+
+  
+//   // const int currDir {gamePlayer->getDirection()};
+  
+//   // if(input == sprite::DIR_UP // && !gamePlayer->isJumpNumMaxedOut()
+//   //    )
+//   //   {
+//   //     // Start jump.
+//   //     gamePlayer->startJumping(secondStageRulesBuffer);
+//   //     // We wan't to keep moving in the direction we were moving in before.
+//   //     input = (sprite::directions)currDir;
+//   //   }
+//   // else
+//   //   {
+//   //     /* We are not jumping or we are past the start of a jump.
+//   // 	 If we can move down. */
+//   //     gamePlayer->handleJumpingAndFalling(secondStageRulesBuffer);
+//   //   }
+
+//   // // Handle contact with boarder characters.
+//   // if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
+//   //    input == sprite::DIR_DOWN)
+//   //   {
+//   //     input = handleGroundCollision();
+//   //   }
+//   // else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
+//   // 	  input == sprite::DIR_RIGHT)
+//   //   {
+//   //     input = handleRightCollision();
+//   //   }
+//   // else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
+//   // 	  input == sprite::DIR_LEFT)
+//   //   {
+//   //     input = handleLeftCollision();
+//   //   }
+
+//   // // handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe(input);
+//   // // handleFinalPlayerMovement(input);
+
+//   // gamePlayer->updatePosRel(input);
+// }
 
 
 // void rules::handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe
@@ -1641,29 +1692,26 @@ void rules::movePlayer
 // }
 
 
-/* Checks for contact with boarder characters when moving down. Returns the
-   direction that the player should be moving in. */
-sprite::directions rules::handleGroundCollision()
-{
-  sprite::directions retDir {sprite::DIR_DOWN};
-  for(yx coord:
-	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact())
-    {
-       // mvprintw(coord.y, coord.x, "%");
-      // char rule {};
-      // if(getCoordRule(coord, chunkSize, secondStageRulesBuffer, rule) &&
-      // 	 (rule == boarderRuleChars::BOARDER_CHAR ||
-      // 	  rule == boarderRuleChars::PLATFORM_CHAR))
-      // 	{
-      // 	  retDir = sprite::DIR_NONE;
-      // 	  break;
-      // 	}
-      // exit(-1);
-    }
-  // refresh();
-  // sleep(1000);
-  return retDir;
-}
+
+// /* Checks for contact with boarder characters when moving down. Returns the
+//    direction that the player should be moving in. */
+// sprite::directions rules::handleGroundCollision()
+// {
+//   sprite::directions retDir {sprite::DIR_DOWN};
+//   for(yx coord:
+// 	gamePlayer->getBottomXAbsRangeAsStrsForOneOffContact())
+//     {
+//       char rule {};
+//       if(getCoordRule(coord, chunkSize, secondStageRulesBuffer, rule) &&
+// 	 (rule == boarderRuleChars::BOARDER_CHAR ||
+// 	  rule == boarderRuleChars::PLATFORM_CHAR))
+// 	{
+// 	  retDir = sprite::DIR_NONE;
+// 	  break;
+// 	}
+//     }
+//   return retDir;
+// }
 
 
 /* Checks for contact with boarder characters when moving right. Moves the
@@ -1800,23 +1848,23 @@ void rules::physics
 (backgroundData & background, const sprite::directions input)
 { 
 #ifdef DEBUG
-  // printRuleChars();
+  printRuleChars();
 #endif
 
-  if(gameTiming.movePlayer.startNextTick())
+  double timeElapsed {};
+  if(gameTiming.movePlayer.startNextTick(timeElapsed))
     {
-      // movePlayer
-      // 	(background, input);
-      // Update position for rules chars.
+      gamePlayer->movePlayer(secondStageRulesBuffer, input, timeElapsed);
+      // Update 2nd stage rules buffer position based on player position.
       this->updateViewPortPosition
 	(PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
 	 gamePlayer->getMaxBottomRightOffset());
-      // Update background position with new rules chars pos.
+      // Update 2nd stage background position based on rules buffer position.
       background.updateViewPortPosition
 	(getViewPortPosition());
       /* Move the player back into the view port if they have moved out of the
 	 view port. */
-      // gamePlayer->moveIntoViewPort();
+      gamePlayer->moveIntoViewPort();
       
       // gamePlayer->resetPositionWithPreviousPos
       // 	(updateViewPortPosition

@@ -3,9 +3,9 @@
 #include "include/sprite.hpp"
 #include "include/collapse.hpp"
 
-// FullyIn has a default argument of false.
+// NOTE HERE THAT FULLYIN HAS A DEFAULT ARGUMENT OF FALSE.
 sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
-	       const yx pos, const directions dir, const bool fullyIn)
+	       const yx pos, const directions dir, const bool)
   : viewPortSize(max), positionVPRel(pos), direction(checkDirection(dir)),
     currentSliceNumber(0),
     startTime(std::chrono::high_resolution_clock::now()),

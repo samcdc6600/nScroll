@@ -18,8 +18,8 @@
 
 struct yx
 {
-  int y;
-  int x;
+  int y {};
+  int x {};
 
   
   yx() {}

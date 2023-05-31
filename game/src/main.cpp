@@ -77,15 +77,7 @@ int gameLoop
 (std::__1::chrono::steady_clock::time_point lastTickTime,
  backgroundData & background, rules & levelRules)
 {
-  levelRules.startTimers();
-
-
-  draw(background, levelRules.gamePlayer, levelRules.bgSprites);
-  nodelay(stdscr, FALSE);
-  sleep(800);
-  getch();
-  nodelay(stdscr, TRUE);
-  
+  levelRules.startTimers();  
   
   while(true)
     {
@@ -102,16 +94,14 @@ int gameLoop
       levelRules.physics
 	(background, player::convertDirectionCharsToDirections
 	 (static_cast<player::directionChars>(input)));
-      // if(levelRules.gameTiming.drawTime.startNextTick())
-      // 	{
-	  draw(background, levelRules.gamePlayer, levelRules.bgSprites);
-	// }
+      draw(background, levelRules.gamePlayer, levelRules.bgSprites,
+	   levelRules.gameTiming.drawTime);
 
-      /* Sleep for 800 micro seconds to give the CPU a rest. This should not be
-	 noticible when playing the game, however it will mean that the game can
-	 potentially spend most of it's time sleeping (if the CPU is fast
-	 enough), as opposed to always usign 100% of it's quantum. */
-      // sleep(1);
+      /* Sleep for some time in  micro seconds to give the CPU a rest. This
+	 should not be noticible when playing the game, however it will mean
+	 that the game can potentially spend most of it's time sleeping (if the
+	 CPU is fast enough), as opposed to always usign 100% of it's
+	 quantum. */
       std::this_thread::sleep_for(std::chrono::microseconds(800));
     }
 }

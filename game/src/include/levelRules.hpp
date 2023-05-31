@@ -111,9 +111,11 @@ private:
   // check player against sprite
   char nearPass(const std::vector<int> playerSpChoords,
 		const std::vector<int> spChoords);
-  // Moves the player 
-  void movePlayer
-  (backgroundData & background, sprite::directions input);
+  // // Moves the player 
+  // void movePlayer
+  // (backgroundData & background, sprite::directions input,
+  //  const double timeElapsed);
+  
   // /* No functions that change the position of the player should be called after
   //    this one for a given frame. */
   // /* Calls handleFinalPlayerMovementAndWindowAndPaddingInteractions after
@@ -143,9 +145,9 @@ private:
   // /* Returns number of characters untill the player bits a boarder character
   //    (if moving up). Will return -1 if there are no boarder characters above */
   // int getClosestBoarderCharAbove(const int position, const bool directContact);
-  /* Handles collision with boarder characters when the player is moving down.
-     Returns updated direction. */
-  sprite::directions handleGroundCollision();
+  // /* Handles collision with boarder characters when the player is moving down.
+  //    Returns updated direction. */
+  // sprite::directions handleGroundCollision();
   /* Handles collision with boarder characters when the player sprite is moving
      right. If there is only one character to the bottom right then the player
      will continue moving in the right direction but be moved up by one
@@ -170,6 +172,7 @@ public:
     (new chunkElementBaseType [viewPortSize.y * viewPortSize.x])
   {
     std::string rulesBuffer {};
+    
     loadAndInitialiseCoordRules(viewPortSize, coordRulesFileName, background);
     loadFileIntoString
       (rulesFileName, rulesBuffer,
@@ -191,9 +194,16 @@ public:
        HAVE AT LEAST SOME OF THEM LOADED FROM RULES.LEV FILES. */
     //gameTiming.movePlayer = chronological{22.2, gameTimingErrorInfo};
     // gameTiming.movePlayer = chronological{27.3, gameTimingErrorInfo};
-    gameTiming.movePlayer = chronological{30, gameTimingErrorInfo};
-    // 8.3333 ~ 120 FPS
-    gameTiming.drawTime = chronological{8.3333, gameTimingErrorInfo};
+
+
+    gameTiming.movePlayer =
+      chronological{player::velocity::spriteMovementUpdatingTime,
+		    gameTimingErrorInfo};
+    /* Draw the scene twice for each potential player movement (this means
+       sprites can change slice at least twice as fast as the player can move */
+    gameTiming.drawTime =
+      chronological{player::velocity::spriteMovementUpdatingTime / 2,
+		    gameTimingErrorInfo};
   }
 
   

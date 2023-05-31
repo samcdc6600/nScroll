@@ -42,3 +42,30 @@ debug:
 clean:
 	$(RM) $(BIN_NAME) $(ODIR)/*.o *.core *~ $(SRC)/*~ $(IDIR)/*~ \#*\# $(SRC)/\#*\# $(IDIR)/\#*\#
 
+
+#### TODO: ADD SOMETHING LIKE THIS TO THIS MAKE FILE!
+# Yes, you can modify your makefile to check whether all compilations have succeeded and print a message if there were any errors. One way to achieve this is by using the special target .IGNORE, which allows you to specify a command to run after all other rules have been processed. You can use this target to check the return code of the compilation commands and take appropriate action.
+
+# Here's an example of how you can modify your makefile:
+
+# makefile
+
+# # Your existing rules and dependencies here
+
+# # Add a new target to check compilation success
+# check:
+#     @echo "Checking compilation status..."
+#     @if grep -n "error:" $(MAKEFILE) >/dev/null; then \
+#         echo "Compilation failed! Please check the errors."; \
+#         exit 1; \
+#     else \
+#         echo "Compilation successful!"; \
+#     fi
+
+# .IGNORE: check
+
+# In this example, the .IGNORE target is set to depend on the check target. The check target runs a command using grep to search for the string "error:" in the makefile (assuming the makefile is named $(MAKEFILE)). If any error messages are found, it prints a failure message and exits with a non-zero status. Otherwise, it prints a success message.
+
+# When you run gmake or gmake -j8, you can add check as a dependency to ensure that the check target is executed after all compilations are finished. If any errors were encountered during compilation, the failure message will be displayed.
+
+# Note that the specific implementation may vary depending on your makefile structure and requirements. Adjust the grep command or other parts of the check target as needed to fit your build process.

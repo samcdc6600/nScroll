@@ -1,10 +1,10 @@
 #ifndef DRAW_HPP_
 #define DRAW_HPP_
 #include <vector>
-//#include "utils.hpp"
 #include "sprite.hpp"
 #include "levelRules.hpp"
 #include "background.hpp"
+#include "chronological.hpp"
 
 
 #define DRAW_NO_OP 10176	/* This character should be skipped */
@@ -13,7 +13,7 @@ extern const int yHeight;
 
 void draw
 (backgroundData & background, player * playerSprite,
- std::vector<bgSprite *> & bgSprites);
+ std::vector<bgSprite *> & bgSprites, chronological & drawTime);
 // //Draws background at current position into secondStageDrawBuffer.
 void printDrawBuffer
 (backgroundData::chunkElementBaseType * secondStageDrawBuffer, const yx viewPortSize);

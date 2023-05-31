@@ -129,6 +129,29 @@ public:
       return false;
     }
   }
+
+  /* If it is time to start the next tick timeElapsed is set to the time that had
+     elapsed since that last time a tick was started (in milliseconds).  */
+  bool startNextTick(double & timeElapsed)
+  {
+    checkIfFullyInitialised("startNextTick()");
+
+    std::__1::chrono::steady_clock::time_point currentTime
+    {std::chrono::steady_clock::now()};
+  if((duration_cast<std::chrono::duration<long double>>
+      (currentTime - tLast)).count() >= (tickTime / scaleFactor))
+    {
+      timeElapsed =
+	(duration_cast<std::chrono::duration<long double>>
+	 (currentTime - tLast)).count() / scaleFactor;
+      tLast = currentTime;
+      return true;
+    }
+  else
+    {
+      return false;
+    }
+  }
 };
 
 

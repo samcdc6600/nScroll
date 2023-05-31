@@ -12,6 +12,167 @@ class sprite
 {
   //=========================== Member Variables ===============================
 public:
+  class velocity
+  {
+  public:
+    /* The sprites position should be updated by 1 character in any direction at
+       most this often. This is in milliseconds. */
+    static constexpr double spriteMovementUpdatingTime {10};
+    static constexpr double toSeconds {1000.0};
+    struct velocityComps
+    {
+      double y {};
+      double x {};
+    };
+    
+  private:
+    /* We obtained these numbers by measuring the width and height of a
+       character in our terminal emulator. */
+    static constexpr double yVelocitySailFactor {14 / 28};
+    /* Used to store distance travelled across calls to functions such as
+       getAndSetDistTravelled(). Note that this is not the total distance
+       travelled as member functions may alter distTravelled. For example
+       getAndSetDistTravelled() will subtract 1 from any component of
+       distTravelled that is calculated to be more than 1 when it is called. */
+    velocityComps distTravelled {};
+    velocityComps comps {};
+    
+  public:
+    /* The sprites x and y velocity components should not exceed this value at
+       any point (the sum of the x and y velocity components can be greater. */
+    const double maxVelocity {1 / (spriteMovementUpdatingTime / toSeconds)};
+
+    /*    velocity(const velocityComps comps)
+    {
+      
+
+      if(this->comps.y > maxVelocity || this->comps.y < -maxVelocity)
+	{
+	  exit
+	    (concat("Error: y velocity component (", comps.y, ") for sprite "
+		    "found to be greater than the maximum allowed "
+		    "value (", maxVelocity, "), or found to be less than the "
+		    "maximum allowed value (", -maxVelocity, ")."),
+	     ERROR_GENERIC_RANGE_ERROR);
+	}
+      else if(this->comps.x > maxVelocity || this->comps.x < -maxVelocity)
+	{
+	  exit
+	    (concat("Error: x velocity component (", comps.x, ") for sprite "
+		    "found to be greater than the maximum allowed "
+		    "value (", maxVelocity, "), or found to be less than the "
+		    "maximum allowed value (", -maxVelocity, ")."),
+	     ERROR_GENERIC_RANGE_ERROR);
+	}
+      else
+	{
+	  this->comps.y = comps.y, this->comps.x = comps.x;
+	}
+	}*/
+    
+    double getY() const {return comps.y * yVelocitySailFactor;}
+    double getX() const {return comps.x;}
+
+    
+    void setVlctY(const double newY)
+    {
+      if(newY > maxVelocity)
+	{
+	  comps.y = maxVelocity;
+	}
+      else if(newY < -maxVelocity)
+	{
+	  comps.y = -maxVelocity;
+	}
+      else
+	{
+	  comps.y = newY;
+	}
+    }
+
+    
+    void setVlctX(const double newX)
+    {
+      if(newX > maxVelocity)
+	{
+	  comps.x = maxVelocity;
+	}
+      else if(newX < -maxVelocity)
+	{
+	  comps.x = -maxVelocity;
+	}
+      else
+	{
+	  comps.x = newX;
+	}
+    };    
+
+    
+    void scailY(const double scailFactor)
+    {
+      endwin();
+      std::cout<<"scailY() not implemented.";
+      exit(-1);
+    }
+
+    
+    void scailX(const double scailFactor)
+    {
+      endwin();
+      std::cout<<"scailX() not implemented.";
+      exit(-1);
+    }
+
+    
+    /* Returns 1 or 0. Returns 1 if the distance travelled is more than
+       1. Otherwise returns 0. If 0 is returned the distance travelled is
+       remembered and added to the next distance. If 1 is returned, 1 is
+       subtracted for the distance and any remainder is added to the distance
+       travelled. This function assumes that the distance travelled can never
+       be greater than 2. */
+    yx getAndSetDistTravelled(const double timeElapsed)
+    {
+      yx ret {};
+      distTravelled.y += comps.y * (timeElapsed / toSeconds);
+      distTravelled.x += comps.x * (timeElapsed / toSeconds);
+      if(distTravelled.y > 1)
+	{
+	  ret.y = 1;
+	  distTravelled.y -= 1;
+	}
+      if(distTravelled.x > 1)
+	{
+	  ret.x = 1;
+	  distTravelled.x -= 1;
+	}
+
+      return ret;
+    }
+
+
+    /* This function is the same as the above but with the exception that it
+       does  not change the state of this class. */
+    yx getPotentialDistTravelled(const double timeElapsed) const
+    {
+      yx ret {};
+      velocityComps potentialDistTravelled {distTravelled.y, distTravelled.x};
+      potentialDistTravelled.y += comps.y * (timeElapsed / toSeconds);
+      potentialDistTravelled.x += comps.x * (timeElapsed / toSeconds);
+      if(potentialDistTravelled.y > 1)
+	{
+	  ret.y = 1;
+	}
+      if(potentialDistTravelled.x > 1)
+	{
+	  ret.x = 1;
+	}
+
+      return ret;
+    }
+  };
+  
+  velocity velComp;
+  
   enum directions
     {				// Direction a sprite can move in.
       /* Sprites should have either 1 set of slices (in which case they should
@@ -21,13 +182,6 @@ public:
       DIR_NONE,
       DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,
     };
-  
-private:
-  // enum sliceLineIndex
-  //   {				// Used as index into sliceLine vector.
-  //     SLICE_LINE_ONE,
-  //     SLICE_LINE_TWO
-  //   };
   
 protected:
     const yx viewPortSize;
@@ -181,7 +335,16 @@ public:
   /* Returns largest bottom right coordinates (relative to the start of the
    sprite.) Used for simple collision detection. */
   yx getMaxBottomRightOffset() const;
-  directions getDirection() {return direction;}
+  directions getDirection()
+  {
+    // if(abs(velocityComp.getY()) > abs(velocityComp.getX()))
+    //   {
+    //   }
+    // else if(abs(velocityComp.getX()) > abs(velocityComp.getY()))
+    //   {	
+    //   }
+    return DIR_NONE;
+  }
   void updateDirection(const directions dir)
   {
     checkDirection(dir);
