@@ -123,7 +123,8 @@ namespace levelFileKeywords
       const yx initialCoordinatesVPRel {yHeight / 2, xWidth / 2};
       const sprite::directions direction {sprite::DIR_NONE};
       const int health {16};
-      const double gravitationalConstant {-0.38};
+      const double gravitationalConstant {-0.38 / 10};
+      // const double gravitationalConstant {-0.38};
       const double maxVerticalVelocity {1.9};
       const unsigned maxFallingJumpNumber {1};
       const unsigned maxJumpNumber {3};

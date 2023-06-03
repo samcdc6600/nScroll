@@ -660,7 +660,7 @@ public:
       // The bottom of player is in or below the bottom padding region.
        firstStageBuffer.viewPortPosition.y +=
 	 (playerPosVPRel.y - (chunkSize.y -playerMovementAreaPadding.y
-			      -(playerMaxBottomRightOffset.x + 1)));
+			      -(playerMaxBottomRightOffset.y + 1)));
     }
   else if(testIntersectionWithPaddingInTopOrLeft
 	  (playerMovementAreaPadding, playerPosVPRel,
