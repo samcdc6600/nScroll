@@ -74,101 +74,20 @@ public:
     double getX() const {return comps.x;}
 
     
-    void setVlctY(const double newY)
-    {
-      if(newY > maxVelocity)
-	{
-	  comps.y = maxVelocity;
-	}
-      else if(newY < -maxVelocity)
-	{
-	  comps.y = -maxVelocity;
-	}
-      else
-	{
-	  comps.y = newY;
-	}
-    }
-
-    
-    void setVlctX(const double newX)
-    {
-      if(newX > maxVelocity)
-	{
-	  comps.x = maxVelocity;
-	}
-      else if(newX < -maxVelocity)
-	{
-	  comps.x = -maxVelocity;
-	}
-      else
-	{
-	  comps.x = newX;
-	}
-    };    
-
-    
-    void scailY(const double scailFactor)
-    {
-      endwin();
-      std::cout<<"scailY() not implemented.";
-      exit(-1);
-    }
-
-    
-    void scailX(const double scailFactor)
-    {
-      endwin();
-      std::cout<<"scailX() not implemented.";
-      exit(-1);
-    }
-
-    
+    void setVlctY(const double newY);
+    void setVlctX(const double newX);
+    void scailY(const double scailFactor);
+    void scailX(const double scailFactor);
     /* Returns 1 or 0. Returns 1 if the distance travelled is more than
        1. Otherwise returns 0. If 0 is returned the distance travelled is
        remembered and added to the next distance. If 1 is returned, 1 is
        subtracted for the distance and any remainder is added to the distance
        travelled. This function assumes that the distance travelled can never
        be greater than 2. */
-    yx getAndSetDistTravelled(const double timeElapsed)
-    {
-      yx ret {};
-      distTravelled.y += comps.y * (timeElapsed / toSeconds);
-      distTravelled.x += comps.x * (timeElapsed / toSeconds);
-      if(distTravelled.y > 1)
-	{
-	  ret.y = 1;
-	  distTravelled.y -= 1;
-	}
-      if(distTravelled.x > 1)
-	{
-	  ret.x = 1;
-	  distTravelled.x -= 1;
-	}
-
-      return ret;
-    }
-
-
+    yx getAndSetDistTravelled(const double timeElapsed);
     /* This function is the same as the above but with the exception that it
        does  not change the state of this class. */
-    yx getPotentialDistTravelled(const double timeElapsed) const
-    {
-      yx ret {};
-      velocityComps potentialDistTravelled {distTravelled.y, distTravelled.x};
-      potentialDistTravelled.y += comps.y * (timeElapsed / toSeconds);
-      potentialDistTravelled.x += comps.x * (timeElapsed / toSeconds);
-      if(potentialDistTravelled.y > 1)
-	{
-	  ret.y = 1;
-	}
-      if(potentialDistTravelled.x > 1)
-	{
-	  ret.x = 1;
-	}
-
-      return ret;
-    }
+    yx getPotentialDistTravelled(const double timeElapsed) const;
   };
   
   velocity velComp;

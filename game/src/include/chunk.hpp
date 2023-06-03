@@ -650,7 +650,7 @@ public:
 	true))
       {
       // The top of player is in or above the top padding region.
-       firstStageBuffer.viewPortPosition.y +=
+       firstStageBuffer.viewPortPosition.y -=
 	 playerMovementAreaPadding.y - playerPosVPRel.y;
     }
   else if(testIntersectionWithPaddingInBottomOrRight

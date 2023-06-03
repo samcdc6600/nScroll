@@ -129,7 +129,15 @@ private:
   /* Handles collision with boarder characters when the player is moving down.
      Returns updated direction. */
   template<typename T>
-  sprite::directions handleGroundCollision(const T coordRules);  
+  sprite::directions handleGroundCollision(const T coordRules);
+  /* Checks for contact with boarder characters when moving right. Moves the
+     player up one character if a "step" is encountered. Returns the direction
+     the player should move
+     in. */
+  template<typename T>
+  sprite::directions handleRightCollision(const T coordRules);
+  template<typename T>
+  sprite::directions handleLeftCollision(const T coordRules);
   /* Starts jump (by altering various variables) and moves the player up Z
      characters, where Z is dictated by (int)gravitationalConstant and only as
      long as the player will not hit any boarder characters in coordRules.
@@ -221,12 +229,20 @@ void player::movePlayer
   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
     {
-      // input = handleRightCollision(potentialTravel.y);
+      input = handleRightCollision(coordRules);
+      if(input = sprite::DIR_RIGHT)
+	{
+	  // velComp.setVlctX(650);
+	}
     }
   else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_LEFT)
     {
-      // input = handleLeftCollision(potentialTravel.y);
+      input = handleLeftCollision(coordRules);
+      if(input = sprite::DIR_RIGHT)
+	{
+	  // velComp.setVlctX(-650);
+	}
     }
 
   // handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe(input);
@@ -254,6 +270,103 @@ sprite::directions player::handleGroundCollision(const T coordRules)
 	  break;
 	}
     }
+  return retDir;
+}
+
+
+/* Checks for contact with boarder characters when moving right. Moves the
+   player up one character if a "step" is encountered (as long as the player
+   will not go out of bounds.) Returns the direction the player should move in.
+*/
+template<typename T>
+sprite::directions player::handleRightCollision(const T coordRules)
+{
+  using namespace boarderRuleChars;
+  sprite::directions retDir {sprite::DIR_RIGHT};
+  const std::vector<yx> playerCoords
+    {getRightYAbsRangeAsStrsForOneOffContact()};
+  const yx bottomRightPlayerCoord
+    {playerCoords[playerCoords.size() -1]};
+  bool stoppingContact {false};
+
+  char rule {};
+  for(yx playerCoord: playerCoords)
+    {
+      // If there is near contact and it's not with the bottom right coord.
+      if(playerCoord != bottomRightPlayerCoord &&
+	 getCoordRule(playerCoord, viewPortSize, coordRules, rule) &&
+	 rule == BOARDER_CHAR)
+	{
+	  stoppingContact = true;
+	  retDir = sprite::DIR_NONE;
+	  break;
+	}
+    }
+  
+  if(!stoppingContact && getCoordRule
+     (bottomRightPlayerCoord, viewPortSize, coordRules, rule) &&
+     (rule == BOARDER_CHAR || rule == PLATFORM_CHAR))
+    {
+      if(getPos().y > 0)
+	{
+	  /* If we've hit a "step" (as in the things that constitute staircases)
+	     and we are not at the minimum (top of window) y position, then
+	     "step up" :). */
+	  updatePosRel(sprite::DIR_UP);
+	}
+      else
+	{
+	  // We've hit the top of the window.
+	  retDir = sprite::DIR_NONE;
+	}
+    }
+  
+  return retDir;
+}
+
+
+template<typename T>
+sprite::directions player::handleLeftCollision(const T coordRules)
+{
+  using namespace boarderRuleChars;
+  sprite::directions retDir {sprite::DIR_LEFT};
+  const std::vector<yx> playerCoords
+    {getLeftYAbsRangeAsStrsForOneOffContact()};
+  const yx bottomLeftPlayerCoord
+    {playerCoords[playerCoords.size() -1]};
+  bool stoppingContact {false};
+
+  char rule {};
+  for(yx playerCoord: playerCoords)
+    {
+      // If there is near contact and it's not with the bottom right coord.
+      if(playerCoord != bottomLeftPlayerCoord &&
+	 getCoordRule(playerCoord, viewPortSize, coordRules, rule) &&
+	 rule == BOARDER_CHAR)
+	{
+	  stoppingContact = true;
+	  retDir = sprite::DIR_NONE;
+	  break;
+	}
+    }
+
+  if(!stoppingContact && getCoordRule
+     (bottomLeftPlayerCoord, viewPortSize, coordRules, rule) &&
+     (rule == BOARDER_CHAR || rule == PLATFORM_CHAR))
+    {
+      if(getPos().y > 0)
+	{
+	  /* If we've hit a "step" and we are not at the minimum (top of window)
+	     y position, then "step up" :) */
+	  updatePosRel(sprite::DIR_UP);
+	}
+      else
+	{
+	  // We've hit the top of the window.
+	  retDir = sprite::DIR_NONE;
+	}
+    }
+
   return retDir;
 }
 
