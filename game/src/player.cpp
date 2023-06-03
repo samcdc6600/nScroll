@@ -68,87 +68,117 @@ void player::updatePosRel(const sprite::directions dir)
   checkDirection(dir);
   yx p {getNewPos(dir)};	// GetNewPos will check if dir is valid!
 
-  /* The player is allowed to move 1 character outside of the view port. This
-     then allows the chunk code to detect that the view port should be
-     moved. After the chunk code that handles this is run
-     player::moveIntoViewPort() should be called to move the player back into
-     the view port if the player has moved out of the view port (this of course
-     should be done before displaying 2nd stage the draw buffer. */
-  if(p.y > -2 && p.y < (viewPortSize.y + 1) &&
-     p.x > -2 && p.x < (viewPortSize.x + 1))
-    {
+  // /* The player is allowed to move 1 character outside of the view port. This
+  //    then allows the chunk code to detect that the view port should be
+  //    moved. After the chunk code that handles this is run
+  //    player::moveIntoViewPort() should be called to move the player back into
+  //    the view port if the player has moved out of the view port (this of course
+  //    should be done before displaying 2nd stage the draw buffer. */
+  // if(p.y > -2 && p.y < (viewPortSize.y + 1) &&
+  //    p.x > -2 && p.x < (viewPortSize.x + 1))
+  //   {
       positionVPRel = p;
       if(direction != dir)
 	{			// Change sprite direction animation.
 	  resetCurrentSliceNum();
 	  direction = spriteAnimationDirections[dir];
 	}
-    }
+    // }
 }
 
 
-// Tests if the player is above or to the left of the padding.
-bool player::testPaddingDirectionInDimension
-(const yx playerMovementAreaPadding, const yx playerPos,
+// This function is a static member function.
+bool player::testIntersectionWithPaddingInTopOrLeft
+(const yx playerMovementAreaPadding, const yx playerPosVPRel,
  const yx playerMaxBottomRightOffset, bool yDimension)
 {
   if(yDimension)
     {
-      return playerPos.y - playerMovementAreaPadding.y < 0;
+      return playerPosVPRel.y - playerMovementAreaPadding.y < 0;
     }
   else
     {
-      return playerPos.x - playerMovementAreaPadding.x < 0;
+      return playerPosVPRel.x - playerMovementAreaPadding.x < 0;
     }
 };
 
 
-/* Test if the player is outisde of the zone inside of the padding in the y
-   or x dimension */  
-bool player::testPaddingInDimension
-(const yx playerMovementAreaPadding, const yx playerPos,
- const yx playerMaxBottomRightOffset, bool yDimension)
- {
-   if(yDimension)
-     { 
-       return (testPaddingDirectionInDimension
-	       (playerMovementAreaPadding, playerPos,
-		playerMaxBottomRightOffset, true) ||
-	       (playerPos.y + playerMaxBottomRightOffset.y + 1) >
-	       (viewPortSize.y - playerMovementAreaPadding.y));
-     }
-   else
-     {
-       return (testPaddingDirectionInDimension
-	       (playerMovementAreaPadding, playerPos,
-		playerMaxBottomRightOffset, false) ||
-	       (playerPos.x + playerMaxBottomRightOffset.x + 1) >
-	       (viewPortSize.x - playerMovementAreaPadding.x));
-     }
- };
-
-
-void player::moveIntoViewPort()
+// This function is a static member function.
+bool player::testIntersectionWithPaddingInBottomOrRight
+(const yx playerMovementAreaPadding, const yx playerPosVPRel,
+ const yx playerMaxBottomRightOffset, bool yDimension, const yx viewPortSize)
 {
-  testPaddingDirectionInDimension()
+  if(yDimension)
+    {
+      return (playerPosVPRel.y + playerMaxBottomRightOffset.y) >=
+	(viewPortSize.y - playerMovementAreaPadding.y);
+    }
+  else
+    {
+      return (playerPosVPRel.x + playerMaxBottomRightOffset.x) >=
+	(viewPortSize.x - playerMovementAreaPadding.x);
+    }
+};
 
 
-  
-  if(positionVPRel.y < 0)
+// /* Test if the player is outisde of the zone inside of the padding in the y
+//    or x dimension */  
+// bool player::testPaddingInDimension
+// (const yx playerMovementAreaPadding, const yx playerPos,
+//  const yx playerMaxBottomRightOffset, bool yDimension)
+// {
+//   if(yDimension)
+//     { 
+//       return (testIntersectionWithPaddingInTopOrLeft
+// 	      (playerMovementAreaPadding, playerPos,
+// 	       playerMaxBottomRightOffset, true) ||
+// 	      testIntersectionWithPaddingInBottomOrRight
+// 	      (playerMovementAreaPadding, playerPos,
+// 	       playerMaxBottomRightOffset, true));
+//     }
+//   else
+//     {
+//       return (testIntersectionWithPaddingInTopOrLeft
+// 	      (playerMovementAreaPadding, playerPos,
+// 	       playerMaxBottomRightOffset, false) ||
+// 	      testIntersectionWithPaddingInBottomOrRight
+// 	      (playerMovementAreaPadding, playerPos,
+// 	       playerMaxBottomRightOffset, false));
+//     }
+// };
+
+
+void player::moveIntoViewPort(const yx playerMovementAreaPadding)
+{
+  if(testIntersectionWithPaddingInTopOrLeft
+     (playerMovementAreaPadding, positionVPRel, maxBottomRightOffset, true))
     {
-      positionVPRel.y = 0;
+      // The top of player is in or above the top padding region.
+      positionVPRel.y = playerMovementAreaPadding.y;
     }
-  else if(positionVPRel.y > (viewPortSize.y -1))
+  else if(testIntersectionWithPaddingInBottomOrRight
+	  (playerMovementAreaPadding, positionVPRel, maxBottomRightOffset,
+	   true, viewPortSize))
     {
-      positionVPRel.y = (viewPortSize.y -1);
+      // The bottom of player is in or below the bottom padding region.
+      positionVPRel.y = (viewPortSize.y -playerMovementAreaPadding.y
+			 -(maxBottomRightOffset.y + 1));
     }
-  if(positionVPRel.x < 0)
+  else if(testIntersectionWithPaddingInTopOrLeft
+	  (playerMovementAreaPadding, positionVPRel, maxBottomRightOffset,
+	   false))
     {
-      positionVPRel.x = 0;
+      // The left of the player is in or to the left of the left padding region.
+      positionVPRel.x = playerMovementAreaPadding.x;
     }
-  else if(positionVPRel.x > (viewPortSize.x -1))
+  else if(testIntersectionWithPaddingInBottomOrRight
+	  (playerMovementAreaPadding, positionVPRel, maxBottomRightOffset,
+	   false, viewPortSize))
     {
-      positionVPRel.x = (viewPortSize.x -1);
+      /* The right of the player is in or to the right of the right padding
+         region. */
+      positionVPRel.x = (viewPortSize.x -playerMovementAreaPadding.x
+			 -(maxBottomRightOffset.x +1));
     }
 }
 

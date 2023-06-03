@@ -86,25 +86,35 @@ public:
   // Unlike sprite player needs to handle input direction characters.
   static directions convertDirectionCharsToDirections(const directionChars dir);
   static bool isDirectionCharInputValid(const int input);
-  /* Only updates the position in dir if the players relative position will not
-     move more than 1 character out of the view port. If the player moves 1
-     character out of the view port. The players position should be reset using
-     moveIntoViewPort() after the chunk positions have been updated, but before
-     displaying 2nd stage the draw buffer. */
+  //  /* Only updates the position in dir if the players relative position will not
+  //     move more than 1 character out of the view port. If the player moves 1
+  //     character out of the view port. The players position should be reset using
+  //     moveIntoViewPort() after the chunk positions have been updated, but before
+  //     displaying 2nd stage the draw buffer. */
   virtual void updatePosRel(const sprite::directions dir);
-  // Tests if the player is above or to the left of the padding.
-  bool testPaddingDirectionInDimension
-  (const yx playerMovementAreaPadding, const yx playerPos,
+  /* Tests if the top of the player is in (or above) the top padding region or
+     if the left of the player is in (or to the left of) the left padding
+     region. The former test is performed if yDimension is true and the later is
+     performed if yDimension is false. */
+  static bool testIntersectionWithPaddingInTopOrLeft
+  (const yx playerMovementAreaPadding, const yx playerPosVPRel,
    const yx playerMaxBottomRightOffset, bool yDimension);
-  /* Test if the player is outisde of the zone inside of the padding in the y
-     or x dimension */  
-  bool testPaddingInDimension
-  (const yx playerMovementAreaPadding, const yx playerPos,
-   const yx playerMaxBottomRightOffset, bool yDimension);
+  /* Tests if the bottom of the player is in (or below) the bottom padding
+     region or if the right of the player is in (or to the right of) the right
+     padding region. The former test is performed if yDimension is true and the
+     later is performed if yDimension is false. */
+  static bool testIntersectionWithPaddingInBottomOrRight
+  (const yx playerMovementAreaPadding, const yx playerPosVPRel,
+   const yx playerMaxBottomRightOffset, bool yDimension, const yx viewPortSize);
+  // /* Test if the player is outisde of the zone inside of the padding in the y
+  //    or x dimension */  
+  // bool testPaddingInDimension
+  // (const yx playerMovementAreaPadding, const yx playerPos,
+  //  const yx playerMaxBottomRightOffset, bool yDimension);
   /* Moves the player back into the view port if it has moved out of the view
      port. Move the player in so they are touching the edge they were closest
      to. */
-  void moveIntoViewPort();
+  void moveIntoViewPort(const yx playerMovementAreaPadding);
   /* Potentially moves the player. The player will be moved (or not moved)
      based on the values of coordRules, input and timeElapsed. Where coordRules
      controls where the player can move, input controls the desired direction

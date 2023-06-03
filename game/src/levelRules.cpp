@@ -1858,13 +1858,15 @@ void rules::physics
       // Update 2nd stage rules buffer position based on player position.
       this->updateViewPortPosition
 	(PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
-	 gamePlayer->getMaxBottomRightOffset());
+	 gamePlayer->getMaxBottomRightOffset(),
+	 gamePlayer->testIntersectionWithPaddingInTopOrLeft,
+	 gamePlayer->testIntersectionWithPaddingInBottomOrRight);
       // Update 2nd stage background position based on rules buffer position.
       background.updateViewPortPosition
 	(getViewPortPosition());
       /* Move the player back into the view port if they have moved out of the
 	 view port. */
-      gamePlayer->moveIntoViewPort();
+      gamePlayer->moveIntoViewPort(PLAYER_MOVEMENT_AREA_PADDING);
       
       // gamePlayer->resetPositionWithPreviousPos
       // 	(updateViewPortPosition
