@@ -6,6 +6,7 @@
 #include <sstream>
 #include "background.hpp"
 #include "utils.hpp"
+#include "chronological.hpp"
 
 
 class sprite
@@ -26,6 +27,7 @@ public:
     };
     
   private:
+    chronological lastYUpdate {}, lastXUpdate {};
     /* We obtained these numbers by measuring the width and height of a
        character in our terminal emulator. */
     static constexpr double yVelocitySailFactor {14 / 28};

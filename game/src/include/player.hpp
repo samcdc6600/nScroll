@@ -221,7 +221,7 @@ void player::movePlayer
      input == sprite::DIR_DOWN)
     {
       input = handleGroundCollision(coordRules);
-      if(input = sprite::DIR_NONE)
+      if(input == sprite::DIR_NONE)
 	{
 	  velComp.setVlctY(0);
 	}
@@ -230,25 +230,28 @@ void player::movePlayer
 	  input == sprite::DIR_RIGHT)
     {
       input = handleRightCollision(coordRules);
-      if(input = sprite::DIR_RIGHT)
+      if(input == sprite::DIR_RIGHT)
 	{
-	  // velComp.setVlctX(650);
+	  velComp.setVlctX(650);
 	}
     }
   else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_LEFT)
     {
       input = handleLeftCollision(coordRules);
-      if(input = sprite::DIR_RIGHT)
+      if(input == sprite::DIR_LEFT)
 	{
-	  // velComp.setVlctX(-650);
+	  velComp.setVlctX(-650);
 	}
     }
 
-  // handleFinalPlayerMovementAndWindowAndPaddingInteractionsSafe(input);
-  // handleFinalPlayerMovement(input);
-
-  updatePosRel(input);
+  if(input != sprite::DIR_NONE)
+    {
+      std::cout<<"input  = "<<input<<"\n";
+      const yx travel {velComp.getAndSetDistTravelled(timeElapsed)};
+      positionVPRel.y += travel.y;
+      positionVPRel.x += travel.x;
+    }
 }
 
 
@@ -307,18 +310,9 @@ sprite::directions player::handleRightCollision(const T coordRules)
      (bottomRightPlayerCoord, viewPortSize, coordRules, rule) &&
      (rule == BOARDER_CHAR || rule == PLATFORM_CHAR))
     {
-      if(getPos().y > 0)
-	{
-	  /* If we've hit a "step" (as in the things that constitute staircases)
-	     and we are not at the minimum (top of window) y position, then
-	     "step up" :). */
+	  /* If we've hit a "step" (as in the things that constitute
+	     staircases), then "step up" :). */
 	  updatePosRel(sprite::DIR_UP);
-	}
-      else
-	{
-	  // We've hit the top of the window.
-	  retDir = sprite::DIR_NONE;
-	}
     }
   
   return retDir;
@@ -354,17 +348,7 @@ sprite::directions player::handleLeftCollision(const T coordRules)
      (bottomLeftPlayerCoord, viewPortSize, coordRules, rule) &&
      (rule == BOARDER_CHAR || rule == PLATFORM_CHAR))
     {
-      if(getPos().y > 0)
-	{
-	  /* If we've hit a "step" and we are not at the minimum (top of window)
-	     y position, then "step up" :) */
-	  updatePosRel(sprite::DIR_UP);
-	}
-      else
-	{
-	  // We've hit the top of the window.
-	  retDir = sprite::DIR_NONE;
-	}
+      updatePosRel(sprite::DIR_UP);
     }
 
   return retDir;

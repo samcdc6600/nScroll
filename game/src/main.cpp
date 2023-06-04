@@ -23,8 +23,7 @@ void menu
 /* Where the horror happens
    (returns a game menu switch option.) :) */
 int gameLoop
-(std::__1::chrono::steady_clock::time_point lastTickTime,
- backgroundData & background, rules & levelRules);
+(backgroundData & background, rules & levelRules);
 
 
 int main()
@@ -44,10 +43,7 @@ int main()
 
 void menu
 (const yx viewPortSize)
-{
-  std::__1::chrono::steady_clock::time_point startTick
-    {std::chrono::high_resolution_clock::now()};
-  
+{ 
   backgroundData background
     {viewPortSize, "assets/level1/level1.background.lev"};
   rules levelRules
@@ -61,7 +57,7 @@ void menu
   bool run = true;
   while(run)
     {
-      switch(gameLoop(startTick, background, levelRules))
+      switch(gameLoop(background, levelRules))
 	{
 	case M_QUIT_GAME:
 	  run = false;
@@ -74,8 +70,7 @@ void menu
 
 
 int gameLoop
-(std::__1::chrono::steady_clock::time_point lastTickTime,
- backgroundData & background, rules & levelRules)
+(backgroundData & background, rules & levelRules)
 {
   levelRules.startTimers();  
   
@@ -97,11 +92,11 @@ int gameLoop
       draw(background, levelRules.gamePlayer, levelRules.bgSprites,
 	   levelRules.gameTiming.drawTime);
 
-      /* Sleep for some time in  micro seconds to give the CPU a rest. This
+      /* Sleep for some time in micro seconds to give the CPU a rest. This
 	 should not be noticible when playing the game, however it will mean
 	 that the game can potentially spend most of it's time sleeping (if the
 	 CPU is fast enough), as opposed to always usign 100% of it's
 	 quantum. */
-      std::this_thread::sleep_for(std::chrono::microseconds(800));
+      std::this_thread::sleep_for(std::chrono::microseconds(900));
     }
 }

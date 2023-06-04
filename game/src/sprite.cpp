@@ -55,6 +55,9 @@ void sprite::velocity::scailX(const double scailFactor)
 
 yx sprite::velocity::getAndSetDistTravelled(const double timeElapsed)
 {
+  std::cout<<"distTravelled.x = "<<distTravelled.x<<'\n';
+  std::cout<<"toSeconds = "<<toSeconds<<'\n';
+  std::cout<<"timeElapsed = "<<timeElapsed<<'\n';
   yx ret {};
   distTravelled.y += comps.y * (timeElapsed / toSeconds);
   distTravelled.x += comps.x * (timeElapsed / toSeconds);
