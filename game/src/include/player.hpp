@@ -200,6 +200,7 @@ void player::movePlayer
 {
   const int currDir {getDirection()};
   // const yx potentialTravel {gamePlayer->getPotentialDistTravelled()};
+  yx distTravelled {};
   
   if(input == sprite::DIR_UP // && !gamePlayer->isJumpNumMaxedOut()
      )
@@ -215,6 +216,11 @@ void player::movePlayer
 	 If we can move down. */
       handleJumpingAndFalling(coordRules);
     }
+  if(currDir == sprite::DIR_NONE && input == sprite::DIR_NONE)
+    {
+      // slow down sprite until it stops.. or something like this. All this
+      // code needs to be cleaned up and refined since it's very ugly right now!
+    }
 
   // Handle contact with boarder characters.
   if((currDir == sprite::DIR_DOWN && input == sprite::DIR_NONE) ||
@@ -223,7 +229,7 @@ void player::movePlayer
       input = handleGroundCollision(coordRules);
       if(input == sprite::DIR_NONE)
 	{
-	  velComp.setVlctY(0);
+	  // velComp.setVlctY(0);
 	}
     }
   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
@@ -232,7 +238,8 @@ void player::movePlayer
       input = handleRightCollision(coordRules);
       if(input == sprite::DIR_RIGHT)
 	{
-	  velComp.setVlctX(650);
+	  distTravelled = velComp.getAndSetDistTravelled();
+	  velComp.addToXComp(0.1);
 	}
     }
   else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
@@ -241,17 +248,15 @@ void player::movePlayer
       input = handleLeftCollision(coordRules);
       if(input == sprite::DIR_LEFT)
 	{
-	  velComp.setVlctX(-650);
+	  distTravelled = velComp.getAndSetDistTravelled();
+	  velComp.addToXComp(-0.1);
 	}
     }
 
-  if(input != sprite::DIR_NONE)
-    {
-      std::cout<<"input  = "<<input<<"\n";
-      const yx travel {velComp.getAndSetDistTravelled(timeElapsed)};
-      positionVPRel.y += travel.y;
-      positionVPRel.x += travel.x;
-    }
+  // std::cout<<"distTravelled = "<<distTravelled<<'\n';
+
+  positionVPRel += distTravelled;
+  updateDirection(input);
 }
 
 

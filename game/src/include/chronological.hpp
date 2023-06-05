@@ -8,6 +8,12 @@
 
 class chronological
 {
+  /* NOTE THAT THIS OBJECT IS INTENDED TO BE USED IN TWO WAYS. With the first
+     way tick time should be set and functions such as getDeltaSinceLastReset()
+     and resetTimer() should not be called. This way is intended for timing
+     things that should have regular intervals. With the second way tick
+     related function should not be called and the object is intended for use
+     in timing things that don't necessarily have to be regular.  */
   /* NOTE THAT CONST VARIABLES APPARENTLY CANNOT BE CHANGED WITHIN THE BODY OF
      AN ASSIGNMENT OPERACTOR DEFINED BY AN OBJECT. AS SUCH WE HAVE COMMENTED OUT
      THE CONST QUALIFIER ON A NUMBER OF VARIABLES WE WOULD LIKE TO BE
@@ -22,8 +28,9 @@ private:
   const long double scaleFactor {1000};
 
 
-  /* Most if not every public function belonging to this object (apart from any
-     constructor and start() must call this function as their first action. */
+  /* Many public functions belonging to this object (apart from any constructor
+     and start() must call this function as their first action. If the public
+     member function uses tickTime then it must call this function. */
   void checkIfFullyInitialised(std::string funcName) const
   {
     if(!tickTimeSet)
@@ -39,7 +46,17 @@ private:
 		    " a constructor that takes arguments."),
 	     ERROR_BAD_LOGIC);
       }
-    else if(!started)
+    else
+      {
+	checkIfPartiallyInitialised(funcName);
+      }
+  }
+
+
+  /* Public member functions that  */
+  void checkIfPartiallyInitialised(std::string funcName) const
+  {
+    if(!started)
       {
 	exit(concat("Error (game logic) ", funcName, " called on a "
 		    "chronological object without calling start() on that "
@@ -110,6 +127,28 @@ public:
     
     return tLast;
   }
+
+
+  /* Returns the delta between the current time and the last time
+     tLast was reset (in seconds). */
+  double getDeltaSinceLastReset() const
+  {
+    checkIfPartiallyInitialised("getDeltaSinceLastReset()");
+    
+    std::__1::chrono::steady_clock::time_point currentTime
+    {std::chrono::steady_clock::now()};
+    return (duration_cast<std::chrono::duration<long double>>
+	    (currentTime - tLast)).count();
+  }
+
+  /* Used when updating can be done at any time and is not based on a specific
+     tick time. I.e. don't mix with startNextTick()! */
+  void resetTimer()
+  {
+    checkIfPartiallyInitialised("resetTimer()");
+    
+    tLast = {std::chrono::steady_clock::now()};
+  }
   
   
   bool startNextTick()
@@ -134,7 +173,7 @@ public:
      elapsed since that last time a tick was started (in milliseconds).  */
   bool startNextTick(double & timeElapsed)
   {
-    checkIfFullyInitialised("startNextTick()");
+    checkIfFullyInitialised("startNextTick(double & timeElapsed)");
 
     std::__1::chrono::steady_clock::time_point currentTime
     {std::chrono::steady_clock::now()};
@@ -155,8 +194,8 @@ public:
 };
 
 
-/* This struct contains all timers for the game (note that timers should not be
-   nested.) */
+/* This struct contains some main timers for the game (note that timers should
+   probably not be nested.) */
 struct timers
 {
   chronological movePlayer {};

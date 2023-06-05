@@ -3,92 +3,154 @@
 #include "include/sprite.hpp"
 #include "include/collapse.hpp"
 
-void sprite::velocity::setVlctY(const double newY)
+// void sprite::velocity::setVlctY(const double newY)
+// {
+//   if(newY > maxVelocity)
+//     {
+//       comps.y = maxVelocity;
+//     }
+//   else if(newY < -maxVelocity)
+//     {
+//       comps.y = -maxVelocity;
+//     }
+//   else
+//     {
+//       comps.y = newY;
+//     }
+// }
+
+// void sprite::velocity::setVlctX(const double newX)
+// {
+//   if(newX > maxVelocity)
+//     {
+//       comps.x = maxVelocity;
+//     }
+//   else if(newX < -maxVelocity)
+//     {
+//       comps.x = -maxVelocity;
+//     }
+//   else
+//     {
+//       comps.x = newX;
+//     }
+// }
+
+
+void sprite::velocity::addToYComp(const double a)
 {
-  if(newY > maxVelocity)
+    if(comps.y + a > maxVelocity)
     {
       comps.y = maxVelocity;
     }
-  else if(newY < -maxVelocity)
+  else if(comps.y + a < -maxVelocity)
     {
       comps.y = -maxVelocity;
     }
   else
     {
-      comps.y = newY;
+      comps.y += a;
     }
 }
 
 
-void sprite::velocity::setVlctX(const double newX)
+void sprite::velocity::addToXComp(const double a)
 {
-  if(newX > maxVelocity)
+  if(comps.x + a > maxVelocity)
     {
       comps.x = maxVelocity;
     }
-  else if(newX < -maxVelocity)
+  else if(comps.x + a < -maxVelocity)
     {
       comps.x = -maxVelocity;
     }
   else
     {
-      comps.x = newX;
+      comps.x += a;
     }
 }
 
 
-void sprite::velocity::scailY(const double scailFactor)
+// void sprite::velocity::scailY(const double scailFactor)
+// {
+//   endwin();
+//   std::cout<<"scailY() not implemented.";
+//   exit(-1);
+// }
+
+
+// void sprite::velocity::scailX(const double scailFactor)
+// {
+//   endwin();
+//   std::cout<<"scailX() not implemented.";
+//   exit(-1);
+// }
+
+
+yx sprite::velocity::getAndSetDistTravelled()
 {
-  endwin();
-  std::cout<<"scailY() not implemented.";
-  exit(-1);
-}
-
-
-void sprite::velocity::scailX(const double scailFactor)
-{
-  endwin();
-  std::cout<<"scailX() not implemented.";
-  exit(-1);
-}
-
-
-yx sprite::velocity::getAndSetDistTravelled(const double timeElapsed)
-{
-  std::cout<<"distTravelled.x = "<<distTravelled.x<<'\n';
-  std::cout<<"toSeconds = "<<toSeconds<<'\n';
-  std::cout<<"timeElapsed = "<<timeElapsed<<'\n';
+  // std::cout<<"distTravelled.x = "<<distTravelled.x<<'\n';
+  // // std::cout<<"toSeconds = "<<toSeconds<<'\n';
+  // std::cout<<"timeElapsed = "<<lastXUpdate.getDeltaSinceLastReset()<<'\n';
   yx ret {};
-  distTravelled.y += comps.y * (timeElapsed / toSeconds);
-  distTravelled.x += comps.x * (timeElapsed / toSeconds);
+  // Get distance travelled since this func was last called.
+  distTravelled.y += comps.y *
+    (lastYUpdate.getDeltaSinceLastReset());
+  distTravelled.x += comps.x *
+    (lastXUpdate.getDeltaSinceLastReset());
+  // Reset distance timers.
+  lastYUpdate.resetTimer();
+  lastXUpdate.resetTimer();
+  
   if(distTravelled.y > 1)
     {
       ret.y = 1;
       distTravelled.y -= 1;
+    }
+  else if(distTravelled.y < -1)
+    {
+      ret.y = -1;
+      distTravelled.y += 1;
     }
   if(distTravelled.x > 1)
     {
       ret.x = 1;
       distTravelled.x -= 1;
     }
+  else if(distTravelled.x < -1)
+    {
+      ret.x = -1;
+      distTravelled.x += 1;
+    }
 
   return ret;
 }
 
 
-yx sprite::velocity::getPotentialDistTravelled(const double timeElapsed) const
+yx sprite::velocity::getPotentialDistTravelled() const
 {
   yx ret {};
+  // Get distance travelled since this func was last called.
   velocityComps potentialDistTravelled {distTravelled.y, distTravelled.x};
-  potentialDistTravelled.y += comps.y * (timeElapsed / toSeconds);
-  potentialDistTravelled.x += comps.x * (timeElapsed / toSeconds);
+  potentialDistTravelled.y += comps.y *
+    (lastYUpdate.getDeltaSinceLastReset());
+  potentialDistTravelled.x += comps.x *
+    (lastXUpdate.getDeltaSinceLastReset());
+  
   if(potentialDistTravelled.y > 1)
     {
       ret.y = 1;
     }
+  else if(potentialDistTravelled.y < -1)
+    {
+      ret.y = -1;
+    }
   if(potentialDistTravelled.x > 1)
     {
       ret.x = 1;
+    }
+  else if(potentialDistTravelled.x < -1)
+    {
+      ret.x = -1;
     }
 
   return ret;

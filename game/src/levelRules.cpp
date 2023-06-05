@@ -1842,6 +1842,7 @@ void rules::startTimers()
 {
   gameTiming.movePlayer.start();
   gameTiming.drawTime.start();
+  gamePlayer->velComp.startTimers();
 }
 
 

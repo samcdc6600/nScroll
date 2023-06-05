@@ -16,7 +16,7 @@ public:
   /* Used to provide a nicer error message if the members of gameTiming aren't
      initialised properly. */
   const std::string gameTimingErrorInfo {"rules::startTimers()"};
-  // Used to handle all timing for the game.
+  // Used to handle timings for the main loop of the game.
   timers gameTiming {};
   //For sprites (holds sprite data (slices) and the rule for the sprite.)
   struct spriteInfo
@@ -202,7 +202,7 @@ public:
     /* Draw the scene twice for each potential player movement (this means
        sprites can change slice at least twice as fast as the player can move */
     gameTiming.drawTime =
-      chronological{player::velocity::spriteMovementUpdatingTime / 2,
+      chronological{player::velocity::spriteMovementUpdatingTime,
 		    gameTimingErrorInfo};
   }
 

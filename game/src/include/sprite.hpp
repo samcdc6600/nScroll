@@ -13,13 +13,26 @@ class sprite
 {
   //=========================== Member Variables ===============================
 public:
+  enum directions
+    {				// Direction a sprite can move in.
+      /* Sprites should have either 1 set of slices (in which case they should
+	 only index into spriteS with DIR_NONE) or 5 sets of slices (in which case
+	 they should only index into spriteS with DIR_NONE, DIR_UP, DIR_RIGHT,
+	 DIR_DOWN and DIR_LEFT) */
+      DIR_NONE,
+      DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,
+    };
+  
+protected:
+    directions direction {DIR_NONE};
+  
+public:
   class velocity
   {
   public:
     /* The sprites position should be updated by 1 character in any direction at
-       most this often. This is in milliseconds. */
-    static constexpr double spriteMovementUpdatingTime {10};
-    static constexpr double toSeconds {1000.0};
+       most this often. This is in seconds. */
+    static constexpr double spriteMovementUpdatingTime {10 / 1000.0};
     struct velocityComps
     {
       double y {};
@@ -42,7 +55,15 @@ public:
   public:
     /* The sprites x and y velocity components should not exceed this value at
        any point (the sum of the x and y velocity components can be greater. */
-    const double maxVelocity {1 / (spriteMovementUpdatingTime / toSeconds)};
+    const double maxVelocity {5};
+
+
+    void startTimers()
+    {
+      
+      lastYUpdate.start();
+      lastXUpdate.start();
+    }
 
     /*    velocity(const velocityComps comps)
     {
@@ -75,34 +96,26 @@ public:
     double getY() const {return comps.y * yVelocitySailFactor;}
     double getX() const {return comps.x;}
 
-    
-    void setVlctY(const double newY);
-    void setVlctX(const double newX);
-    void scailY(const double scailFactor);
-    void scailX(const double scailFactor);
+
+    void addToYComp(const double a);
+    void addToXComp(const double a);
+    // void setVlctY(const double newY);
+    // void setVlctX(const double newX);
+    // void scailY(const double scailFactor);
+    // void scailX(const double scailFactor);
     /* Returns 1 or 0. Returns 1 if the distance travelled is more than
        1. Otherwise returns 0. If 0 is returned the distance travelled is
        remembered and added to the next distance. If 1 is returned, 1 is
        subtracted for the distance and any remainder is added to the distance
        travelled. This function assumes that the distance travelled can never
        be greater than 2. */
-    yx getAndSetDistTravelled(const double timeElapsed);
+    yx getAndSetDistTravelled();
     /* This function is the same as the above but with the exception that it
        does  not change the state of this class. */
-    yx getPotentialDistTravelled(const double timeElapsed) const;
+    yx getPotentialDistTravelled() const;
   };
   
   velocity velComp;
-  
-  enum directions
-    {				// Direction a sprite can move in.
-      /* Sprites should have either 1 set of slices (in which case they should
-	 only index into spriteS with DIR_NONE) or 5 sets of slices (in which case
-	 they should only index into spriteS with DIR_NONE, DIR_UP, DIR_RIGHT,
-	 DIR_DOWN and DIR_LEFT) */
-      DIR_NONE,
-      DIR_UP, DIR_RIGHT, DIR_DOWN, DIR_LEFT,
-    };
   
 protected:
     const yx viewPortSize;
@@ -117,7 +130,6 @@ protected:
   /* Holds the maximum bottom right offset. Calculated from all slices. Used
      (along with position) for inital collision detection and bounds checking */
   yx maxBottomRightOffset {};
-  directions direction {DIR_NONE};
     /* Holds the sprite animation (slice) that we are upto in the sequences.
      Should not go above spriteSlices.size(); and should wrape back around to
      zero. */
@@ -239,39 +251,46 @@ public:
   /* Returns the of position of the sprite after moving one character (including
      diagonal movement) in the direction dir */
   yx peekAtPos(const directions dir);
+
+  
   // Returns the relative sprite position.
   yx getPos() const {return positionVPRel;}
+
+  
   std::string getXPosAsStr() const
   {
     std::stringstream ss {};
     ss<<positionVPRel.x;
     return ss.str();
   }
+
+  
   std::string getYPosAsStr() const
   {
     std::stringstream ss {};
     ss<<positionVPRel.y;
     return ss.str();
   }
+  
   /* Returns largest bottom right coordinates (relative to the start of the
    sprite.) Used for simple collision detection. */
   yx getMaxBottomRightOffset() const;
-  directions getDirection()
+
+  
+  directions getDirection() const
   {
-    // if(abs(velocityComp.getY()) > abs(velocityComp.getX()))
-    //   {
-    //   }
-    // else if(abs(velocityComp.getX()) > abs(velocityComp.getY()))
-    //   {	
-    //   }
-    return DIR_NONE;
+    return direction;
   }
+
+  
   void updateDirection(const directions dir)
   {
     checkDirection(dir);
     resetCurrentSliceNum();
     direction = spriteAnimationDirections[dir];
   }
+
+  
   /* Sets relative position to newRelPos */
   virtual void updatePos(const yx newRelPos);
   /* Adds to relative position based on the value of dir. */
