@@ -32,11 +32,26 @@ public:
   public:
     /* The sprites position should be updated by 1 character in any direction at
        most this often. This is in seconds. */
-    static constexpr double spriteMovementUpdatingTime {10 / 1000.0};
+    static constexpr double spriteMovementUpdatingTime {1 / 100.0};
     struct velocityComps
     {
       double y {};
       double x {};
+
+      
+      velocityComps() {}
+
+
+      velocityComps(const double y, const double x)
+      {
+	this->y = y, this->x = x;
+      }
+      
+      
+      velocityComps(yx comps)
+      {
+	y = comps.y, x = comps.x;
+      }
     };
     
   private:
@@ -55,7 +70,7 @@ public:
   public:
     /* The sprites x and y velocity components should not exceed this value at
        any point (the sum of the x and y velocity components can be greater. */
-    const double maxVelocity {5};
+    const double maxVelocity {36};
 
 
     void startTimers()
@@ -64,39 +79,18 @@ public:
       lastYUpdate.start();
       lastXUpdate.start();
     }
-
-    /*    velocity(const velocityComps comps)
-    {
-      
-
-      if(this->comps.y > maxVelocity || this->comps.y < -maxVelocity)
-	{
-	  exit
-	    (concat("Error: y velocity component (", comps.y, ") for sprite "
-		    "found to be greater than the maximum allowed "
-		    "value (", maxVelocity, "), or found to be less than the "
-		    "maximum allowed value (", -maxVelocity, ")."),
-	     ERROR_GENERIC_RANGE_ERROR);
-	}
-      else if(this->comps.x > maxVelocity || this->comps.x < -maxVelocity)
-	{
-	  exit
-	    (concat("Error: x velocity component (", comps.x, ") for sprite "
-		    "found to be greater than the maximum allowed "
-		    "value (", maxVelocity, "), or found to be less than the "
-		    "maximum allowed value (", -maxVelocity, ")."),
-	     ERROR_GENERIC_RANGE_ERROR);
-	}
-      else
-	{
-	  this->comps.y = comps.y, this->comps.x = comps.x;
-	}
-	}*/
     
-    double getY() const {return comps.y * yVelocitySailFactor;}
-    double getX() const {return comps.x;}
+    // double getY() const {return comps.y * yVelocitySailFactor;}
+    // double getX() const {return comps.x;}
 
 
+    /* This function should be used when the sprite needs to be compleatly
+       stopposed. For example when the sprite hits a boarder character. */
+    void setComponentsToZero();
+    /* Used when the sprite is told to stop, but still has momentum. Where a
+       will be added or subtracted from the x velocity component until the
+       component changes sign. When this happens it will be set to zero. */
+    void velocityTowardsZeroInX(const double a);
     void addToYComp(const double a);
     void addToXComp(const double a);
     // void setVlctY(const double newY);

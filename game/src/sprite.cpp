@@ -36,9 +36,36 @@
 // }
 
 
+void sprite::velocity::setComponentsToZero()
+{
+  distTravelled.x = 0, distTravelled.y = 0;
+  comps.x = 0, comps.y = 0;
+}
+
+
+void sprite::velocity::velocityTowardsZeroInX(const double a)
+{
+  if(comps.x > 0)
+    {
+      comps.x -= a;
+      comps.x = comps.x < 0 ? 0: comps.x;
+
+      mvprintw(0, 0, concat("a = ", a).c_str());
+      mvprintw(1, 0, concat("comps.x = ", comps.x).c_str());
+      refresh();
+      sleep(2);
+    }
+  else
+    {
+      comps.x += a;
+      comps.x = comps.x > 0 ? 0: comps.x;
+    }
+}
+
+
 void sprite::velocity::addToYComp(const double a)
 {
-    if(comps.y + a > maxVelocity)
+  if(comps.y + a > maxVelocity)
     {
       comps.y = maxVelocity;
     }

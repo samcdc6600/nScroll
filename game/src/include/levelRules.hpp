@@ -199,8 +199,6 @@ public:
     gameTiming.movePlayer =
       chronological{player::velocity::spriteMovementUpdatingTime,
 		    gameTimingErrorInfo};
-    /* Draw the scene twice for each potential player movement (this means
-       sprites can change slice at least twice as fast as the player can move */
     gameTiming.drawTime =
       chronological{player::velocity::spriteMovementUpdatingTime,
 		    gameTimingErrorInfo};
