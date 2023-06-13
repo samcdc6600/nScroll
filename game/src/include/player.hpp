@@ -154,6 +154,21 @@ private:
   sprite::directions handleRightCollision(const T coordRules);
   template<typename T>
   sprite::directions handleLeftCollision(const T coordRules);
+  /* If the player is moving left and turns right right before they would be
+   stopped by a boarder character they will still have leftward velocity and
+   direction components. We must check for this and set these components to
+   zero in the event that this would happen. This function checks for this
+   case. It returns true if the components should be set to zero. */
+  template <typename T>
+  bool checkForLeftCollisionWhenInputRight(const T coordRules);
+  template <typename T>
+  bool checkForRightCollisionWhenInputLeft(const T coordRules);
+  /* There is at least one special case in which we need to look ahead 2
+     characters to make sure an edge case where the player can move into a
+     boarder character region does not happen. This function is used to detect
+     when this edge case could occur. */
+  template <typename T>
+  bool checkForRightCollisionInAdvance(const T coordRules);
   /* Starts jump (by altering various variables) and moves the player up Z
      characters, where Z is dictated by (int)gravitationalConstant and only as
      long as the player will not hit any boarder characters in coordRules.
@@ -242,7 +257,7 @@ void player::movePlayer
   else if(input == sprite::DIR_DOWN)
     {
       // The player is falling and their is no input or the player inputs down.
-      input = handleGroundCollision(coordRules);
+      input = handleGroundCollision(coordRules);      
       /* If we still have left / right momentum we need to check for horizontal
 	 collisions. */
       distTravelled = handleHorizontalMovementsWhenStopping(coordRules);
@@ -287,7 +302,7 @@ yx player::handleHorizontalMovementsWhenStopping(const T coordRules)
       if(input == sprite::DIR_RIGHT)
 	{
 	  distTravelled = velComp.getAndSetDistTravelled();
-	  velComp.velocityTowardsZeroInX(5.8);
+	  velComp.velocityTowardsZeroInX(8.5);
 	}
       else
 	{
@@ -302,7 +317,7 @@ yx player::handleHorizontalMovementsWhenStopping(const T coordRules)
       if(input == sprite::DIR_LEFT)
 	{
 	  distTravelled = velComp.getAndSetDistTravelled();
-	  velComp.velocityTowardsZeroInX(7.8);
+	  velComp.velocityTowardsZeroInX(8.5);
 	}
       else
 	{
@@ -346,6 +361,13 @@ yx player::handleLeftOrRightCollision
     handleRightCollision(coordRules): handleLeftCollision(coordRules);
   if(input == (checkRight ? sprite::DIR_RIGHT: sprite::DIR_LEFT))
     {
+      if(checkRight ? checkForLeftCollisionWhenInputRight(coordRules):
+	 checkForRightCollisionWhenInputLeft(coordRules))
+	{
+	  /* Detected that player would move into a boarder character in the
+	     opposite direction of the desired moment. */
+	  velComp.setComponentsToZero();
+	}
       distTravelled = velComp.getAndSetDistTravelled();
       velComp.addToXComp(checkRight ? 2.9: - 2.9);
     }
@@ -441,6 +463,70 @@ sprite::directions player::handleLeftCollision(const T coordRules)
     }
 
   return retDir;
+}
+
+
+template <typename T>
+bool player::checkForLeftCollisionWhenInputRight(const T coordRules)
+{
+  using namespace boarderRuleChars;
+  bool ret {false};		// Return false if no collision detected.
+
+  // Only check if there can be a leftward collision when moving right.
+  if(velComp.getPotentialDistTravelled().x <= -1)
+    {
+      const std::vector<yx> playerCoords
+	{getLeftYAbsRangeAsStrsForOneOffContact()};
+      const yx bottomLeftPlayerCoord
+	{playerCoords[playerCoords.size() -1]};
+
+      char rule {};
+      for(yx playerCoord: playerCoords)
+	{
+	  // If there is near contact and it's not with the bottom left coord.
+	  if(playerCoord != bottomLeftPlayerCoord &&
+	     getCoordRule(playerCoord, viewPortSize, coordRules, rule) &&
+	     rule == BOARDER_CHAR)
+	    {
+	      ret = true;
+	      break;
+	    }
+	}
+    }
+
+  return ret;
+}
+
+
+template <typename T>
+bool player::checkForRightCollisionWhenInputLeft(const T coordRules)
+{
+  using namespace boarderRuleChars;
+  bool ret {false};		// Return false if no collision detected.
+
+  // Only check if there can be a rightward collision when moving left.
+  if(velComp.getPotentialDistTravelled().x >= 1)
+    {
+      const std::vector<yx> playerCoords
+	{getRightYAbsRangeAsStrsForOneOffContact()};
+      const yx bottomRightPlayerCoord
+	{playerCoords[playerCoords.size() -1]};
+
+      char rule {};
+      for(yx playerCoord: playerCoords)
+	{
+	  // If there is near contact and it's not with the bottom right coord.
+	  if(playerCoord != bottomRightPlayerCoord &&
+	     getCoordRule(playerCoord, viewPortSize, coordRules, rule) &&
+	     rule == BOARDER_CHAR)
+	    {
+	      ret = true;
+	      break;
+	    }
+	}
+    }
+
+  return ret;
 }
 
 

@@ -45,20 +45,18 @@ void sprite::velocity::setComponentsToZero()
 
 void sprite::velocity::velocityTowardsZeroInX(const double a)
 {
-  if(comps.x > 0)
+  if(comps.x != 0)
     {
-      comps.x -= a;
-      comps.x = comps.x < 0 ? 0: comps.x;
-
-      mvprintw(0, 0, concat("a = ", a).c_str());
-      mvprintw(1, 0, concat("comps.x = ", comps.x).c_str());
-      refresh();
-      sleep(2);
-    }
-  else
-    {
-      comps.x += a;
-      comps.x = comps.x > 0 ? 0: comps.x;
+      if(comps.x > 0)
+	{
+	  comps.x -= a;
+	  comps.x = comps.x < 0 ? 0: comps.x;
+	}
+      else
+	{
+	  comps.x += a;
+	  comps.x = comps.x > 0 ? 0: comps.x;
+	}
     }
 }
 
