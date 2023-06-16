@@ -1,9 +1,9 @@
 #ifndef BACKGROUND_SPRITE_HPP_
 #define BACKGROUND_SPRITE_HPP_
-#include "nonPlayerSprite.hpp"
+#include "sprite.hpp"
 
 
-class bgSprite : public nonPlayerSprite
+class bgSprite : public sprite
 {
 public:
   /* Draw sprite after player sprite? Note that this doesn't effect the sprite
@@ -14,11 +14,13 @@ public:
   
   bgSprite(std::vector<std::string> spriteFileNames, const yx viewPortSize,
 	   const yx pos, const directions dir, const bool dispInFg) :
-    nonPlayerSprite(spriteFileNames, viewPortSize, pos, dir),
+    sprite(spriteFileNames, viewPortSize, pos, dir),
     displayInForground(dispInFg)
-  {
-    
-  }  
+  {}
+
+
+  void draw(unsigned short * secondStageDrawBuffer, const bool updateSlice,
+	    const yx viewPortPos);
 };
 
 #endif

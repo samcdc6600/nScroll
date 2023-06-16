@@ -4,13 +4,11 @@
 player::player
 (const backgroundData &background, std::vector<std::string> spritePaths,
  // const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelViewPortPos,
- const yx initialPosVPRel, const sprite::directions dir, const int h,
+ const yx initialPosVPRel, const sprite::directions dir,
  const double g, const double v, const unsigned maxFallingJmpNum,
  const unsigned maxJmpNum)
-  : sprite(spritePaths, background.chunkSize, initialPosVPRel, dir, true),
-    health(h),
-    gravitationalConstant(g), maxVertVelocity(v),
-    maxFallingJumpNum(maxFallingJmpNum), maxJumpNum(maxJmpNum)
+  : animateSprite(spritePaths, background.chunkSize, initialPosVPRel, dir, g, v,
+		  maxFallingJmpNum, maxJmpNum)
 {
   if(gravitationalConstant > 0)
     {
@@ -59,22 +57,6 @@ sprite::directions player::convertDirectionCharsToDirections
       break;
     }
   return ret;
-}
-
-
-void player::updatePosRel(const sprite::directions dir)
-{ /* Update's position of sprite in a relative fashion with reference to the
-     sprite and update's direction. */
-  checkDirection(dir);
-  yx p {getNewPos(dir)};	// GetNewPos will check if dir is valid!
-
-
-  positionVPRel = p;
-  if(direction != dir)
-    {			// Change sprite direction animation.
-      resetCurrentSliceNum();
-      direction = spriteAnimationDirections[dir];
-    }
 }
 
 

@@ -9,6 +9,9 @@
 #include "chronological.hpp"
 
 
+/* This class (sprite) is the top level class for all sprites and should
+   contain only (as a general rule) things that are common to all child
+   classes (such bgSprite sprites and animateSprite. */
 class sprite
 {
   //=========================== Member Variables ===============================
@@ -25,93 +28,6 @@ public:
   
 protected:
     directions direction {DIR_NONE};
-  
-public:
-  class velocity
-  {
-  public:
-    /* The sprites position should be updated by 1 character in any direction at
-       most this often. This is in seconds. */
-    static constexpr double spriteMovementUpdatingTime {1 / 100.0};
-    struct velocityComps
-    {
-      double y {};
-      double x {};
-
-      
-      velocityComps() {}
-
-
-      velocityComps(const double y, const double x)
-      {
-	this->y = y, this->x = x;
-      }
-      
-      
-      velocityComps(yx comps)
-      {
-	y = comps.y, x = comps.x;
-      }
-    };
-    
-  private:
-    chronological lastYUpdate {}, lastXUpdate {};
-    /* We obtained these numbers by measuring the width and height of a
-       character in our terminal emulator. */
-    static constexpr double yVelocitySailFactor {14 / 28};
-    /* Used to store distance travelled across calls to functions such as
-       getAndSetDistTravelled(). Note that this is not the total distance
-       travelled as member functions may alter distTravelled. For example
-       getAndSetDistTravelled() will subtract 1 from any component of
-       distTravelled that is calculated to be more than 1 when it is called. */
-    velocityComps distTravelled {};
-    velocityComps comps {};
-    
-  public:
-    /* The sprites x and y velocity components should not exceed this value at
-       any point (the sum of the x and y velocity components can be greater. */
-    const double maxVelocity {36};
-
-
-    void startTimers()
-    {
-      
-      lastYUpdate.start();
-      lastXUpdate.start();
-    }
-    
-    // double getY() const {return comps.y * yVelocitySailFactor;}
-    // double getX() const {return comps.x;}
-
-
-    /* This function should be used when the sprite needs to be compleatly
-       stopposed. For example when the sprite hits a boarder character. */
-    void setComponentsToZero();
-    /* Used when the sprite is told to stop, but still has momentum. Where a
-       will be added or subtracted from the x velocity component until the
-       component changes sign. When this happens it will be set to zero. */
-    void velocityTowardsZeroInX(const double a);
-    void addToYComp(const double a);
-    void addToXComp(const double a);
-    // void setVlctY(const double newY);
-    // void setVlctX(const double newX);
-    // void scailY(const double scailFactor);
-    // void scailX(const double scailFactor);
-    /* Returns 1 or 0. Returns 1 if the distance travelled is more than
-       1. Otherwise returns 0. If 0 is returned the distance travelled is
-       remembered and added to the next distance. If 1 is returned, 1 is
-       subtracted for the distance and any remainder is added to the distance
-       travelled. This function assumes that the distance travelled can never
-       be greater than 2. */
-    yx getAndSetDistTravelled();
-    /* This function is the same as the above but with the exception that it
-       does  not change the state of this class. */
-    yx getPotentialDistTravelled() const;
-  };
-  
-  velocity velComp;
-  
-protected:
     const yx viewPortSize;
   /* Sprites should only have these numbers of sets of slices. 5
      and not 4 because we must account for DIR_NONE. */
@@ -174,8 +90,8 @@ public:
   /* This constructor reads the sprite file/s located at spritePaths[x] and
      converts it's/their contents to the internal data structure needed by the
      sprite. */
-  sprite(std::vector<std::string> & spritePaths, const yx max,
-	 const yx pos, const directions dir, const bool fullyIn = false);
+  sprite(std::vector<std::string> & spritePaths, const yx max, const yx pos,
+	 const directions dir);
   ~sprite();
 private:
   // Split up file into cycleSpeed and unprocessesd representation of sprite.

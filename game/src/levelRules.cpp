@@ -867,7 +867,7 @@ void initPlayer
 	       // misc.initialViewPortCoordinates,
 	       playerInitData.initialCoordinatesVPRel,
 	       playerInitData.direction,
-	       playerInitData.health,
+	       // playerInitData.health,
 	       playerInitData.gravitationalConstant,
 	       playerInitData.maxVerticalVelocity,
 	       playerInitData.maxFallingJumpNumber,

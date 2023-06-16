@@ -58,20 +58,21 @@ void draw
     {
       // std::vector<bgSprite *> drawInForground;
 
-      // for(auto bgS: bgSprites)
-      //   {
-      //     if(!bgS->displayInForground)
-      // 	{
-      // 	  bgS->draw(secondStageDrawBuffer, true, viewPortPosition);
-      // 	}
-      //     else
-      // 	{
-      // 	  /* We think this will probably be faster than searching the whole list
-      // 	     again if the list is of a large size (and taking into consideration
-      // 	     that most sprites will probably be behind the player). */
-      // 	  drawInForground.push_back(bgS);
-      // 	}
-      //   }  
+      for(auto bgS: bgSprites)
+        {
+          if(!bgS->displayInForground)
+	    {
+	      bgS->draw(background.secondStageDrawBuffer, true,
+			background.getViewPortPosition());
+	    }
+          // else
+	  //   {
+	  //     /* We think this will probably be faster than searching the whole list
+	  // 	 again if the list is of a large size (and taking into consideration
+	  // 	 that most sprites will probably be behind the player). */
+	  //     drawInForground.push_back(bgS);
+	  //   }
+        }  
       gamePlayer->draw(background, true);
       // for(auto bgSF: drawInForground)
       //   {
