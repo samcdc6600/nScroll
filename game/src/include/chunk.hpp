@@ -60,9 +60,11 @@ protected:
     }
   };
   firstStageBufferType firstStageBuffer;
+
+public:
+  const char * fileName;
   
 private:
-
   /* This is used to fill target chunks in the FSB when no chunk is found for a
      given key. */
   const chunkElementType MISSING_CHUNK_FILLER;
@@ -566,8 +568,6 @@ protected:
        
   
 public:
-  const char * fileName;
-  
   chunk(const yx chunkSizeIn, const int fSBSizeInChunks,
 	const chunkElementType missingChunkFiller, const char fileName []):
     chunkSize(chunkSizeIn.y, chunkSizeIn.x),

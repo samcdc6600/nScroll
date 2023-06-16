@@ -20,10 +20,15 @@ class chronological
      CONST. THESE VARIABLES OF COURSE SHOULD NOT BE CHANGE ANYWHERE THEY
      WOULDN'T BE ALLOWED TO BE CHANGED IF THEY WERE CONST, OF COURSE WITH THE
      EXCEPTION OF THE BODY OF THE ASSIGNMENT OPERATOR. */
+public:
+  /* TickTime holds the time delta (in milliseconds) at which an event should
+     take place. */
+  /* const */ long double tickTime;
+  
 private:
   bool started {false};
-  /* const */ bool tickTimeSet {false};
   /* const */ std::string toSeeIfError;
+  /* const */ bool tickTimeSet {false};
   std::__1::chrono::steady_clock::time_point tLast;
   const long double scaleFactor {1000};
 
@@ -68,19 +73,14 @@ private:
 
   
 public:
-  /* TickTime holds the time delta (in milliseconds) at which an event should
-     take place. */
-  /* const */ long double tickTime;
-
-
   chronological():
-    toSeeIfError(""), tickTime(0)
+    tickTime(0), toSeeIfError("")
   {
   }
   
   
   chronological(const long double tTime, const std::string & ifError):
-    toSeeIfError(ifError), tickTime(tTime), tickTimeSet(true)
+    tickTime(tTime), toSeeIfError(ifError), tickTimeSet(true)
   {
   }
 

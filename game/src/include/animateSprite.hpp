@@ -38,19 +38,21 @@ class animateSprite: public sprite
     chronological lastYUpdate {}, lastXUpdate {};
     /* We obtained these numbers by measuring the width and height of a
        character in our terminal emulator. */
-    static constexpr double yVelocitySailFactor {14 / 28};
+    static constexpr double yVelocitySailFactor {14 / (double)28};
     /* Used to store distance travelled across calls to functions such as
-       getAndSetDistTravelled(). Note that this is not the total distance
+       getAndSetDistTravelledInX/InY(). Note that this is not the total distance
        travelled as member functions may alter distTravelled. For example
-       getAndSetDistTravelled() will subtract 1 from any component of
+       getAndSetDistTravelledInX/InY() will subtract 1 from a component of
        distTravelled that is calculated to be more than 1 when it is called. */
     velocityComps distTravelled {};
     velocityComps comps {};
     
   public:
-    /* The sprites x and y velocity components should not exceed this value at
+    /* The sprites x velocity component should not exceed this value at
        any point (the sum of the x and y velocity components can be greater. */
-    const double maxVelocity {36};
+    const double maxXVelocity {36};
+    const double maxYVelocity {maxXVelocity * yVelocitySailFactor * 2.7};
+    const double maxYVelocityFalling {150};
 
 
     void startTimers()
@@ -60,18 +62,22 @@ class animateSprite: public sprite
       lastXUpdate.start();
     }
     
-    // double getY() const {return comps.y * yVelocitySailFactor;}
+    double getY() const {return comps.y;}
     // double getX() const {return comps.x;}
 
-
     /* This function should be used when the sprite needs to be compleatly
-       stopposed. For example when the sprite hits a boarder character. */
-    void setComponentsToZero();
+       stopposed in the Y dimension. For example when the sprite will hit a
+       boarder character if it moves in some direction in the Y dimension. */
+    void setYComponentsToZero();
+    void setXComponentsToZero();
     /* Used when the sprite is told to stop, but still has momentum. Where a
        will be added or subtracted from the x velocity component until the
        component changes sign. When this happens it will be set to zero. */
     void velocityTowardsZeroInX(const double a);
-    void addToYComp(const double a);
+    /* Add a to the y velocity component as long as it will not exceed the
+       maximum velocity in either direction of the y axis. If falling is set to
+       true the maximum velocity will be a larger number. */
+    void addToYComp(const double a, const bool falling = false);
     void addToXComp(const double a);
     // void setVlctY(const double newY);
     // void setVlctX(const double newX);
@@ -83,7 +89,8 @@ class animateSprite: public sprite
        subtracted for the distance and any remainder is added to the distance
        travelled. This function assumes that the distance travelled can never
        be greater than 2. */
-    yx getAndSetDistTravelled();
+    int getAndSetDistTravelledInY();
+    int getAndSetDistTravelledInX();
     /* This function is the same as the above but with the exception that it
        does  not change the state of this class. */
     yx getPotentialDistTravelled() const;
@@ -91,17 +98,21 @@ class animateSprite: public sprite
   
   velocity velComp;
   const double gravitationalConstant;
-  // /* Negated for negative velocities (1 = 1 character per frame.). */
-  const double maxVertVelocity;	// Should be a minimum of 1.
-  double vertVelocity;	// Used for jumping.
+  // // /* Negated for negative velocities (1 = 1 character per frame.). */
+  // const double maxVertVelocity;	// Should be a minimum of 1.
+  // double vertVelocity;	// Used for jumping.
+  /* The sprites vertical velocity is changed to this value at the start of a
+     jump. */
+  const double jumpingPower {20};
+  
   enum jumpingStates
     {
-      notJumping,
-      jumpingUp,
-      jumpingDown		// AKA falling.
+      notJumpingState,
+      jumpingState,
+      fallingState
     };
   // Should hold only take on values from jumpingStates.
-  int jumping {notJumping};
+  int jumping {notJumpingState};
   /* Used to count current jump number (e.g., triple jump.) Where 0 is not
      jumping. */
   unsigned jumpNum {};
@@ -124,11 +135,10 @@ class animateSprite: public sprite
 
   animateSprite(std::vector<std::string> & spritePaths, const yx max,
 		const yx pos, const directions dir, const double g,
-		const double v, const unsigned maxFallingJmpNum,
-		const unsigned maxJmpNum):
+		const unsigned maxFallingJmpNum, const unsigned maxJmpNum):
     sprite(spritePaths, max, pos, dir),
-    gravitationalConstant(g), maxVertVelocity(v),
-    maxFallingJumpNum(maxFallingJmpNum), maxJumpNum(maxJmpNum)
+    gravitationalConstant(g), maxFallingJumpNum(maxFallingJmpNum),
+    maxJumpNum(maxJmpNum)
   {}
 
 
@@ -147,7 +157,7 @@ protected:
      collisions that may result from it while the player is slowing down needs
      to be handled. */
   template<typename T>
-  yx handleHorizontalMovementsWhenStopping(const T coordRules);
+  int handleHorizontalMovementsWhenStopping(const T coordRules);
   /* Checks for contact with boarder characters when moving down. Returns the
    direction that the player should be moving in. */
   template<typename T>
@@ -160,7 +170,7 @@ protected:
      distance components) are set to 0. Where checkRight controls which movement
      direction is checked. */
   template<typename T>
-  yx handleLeftOrRightCollision
+  int handleLeftOrRightCollision
   (const T coordRules, sprite::directions & input, const bool checkRight);
   /* Checks for contact with boarder characters when moving right. Moves the
      player up one character if a "step" is encountered. Returns the direction
@@ -185,31 +195,25 @@ protected:
      when this edge case could occur. */
   template <typename T>
   bool checkForRightCollisionInAdvance(const T coordRules);
-  /* Starts jump (by altering various variables) and moves the player up Z
-     characters, where Z is dictated by (int)gravitationalConstant and only as
-     long as the player will not hit any boarder characters in coordRules.
-     Returns true if the the player started a new jump (this will only happen if
-     maxJumpNum hasn't been reached.) If the player didn't start a new jump then
-     keepJumping should be called (but only if the player can move down). */
+  /* Starts a jump if the sprite is not already maxed out on jumps. Calls
+     handleJumpingandfalling() if if it is maxed out on jumps */
   template<typename T>
-  bool startJumping(const T coordRules);  
+  int startJumping(const T coordRules);  
   /* Keeps jumping if the sprite is jumping. That is as long as the sprite will
    not collide with any boarder characters. If the sprite is falling keeps the
    sprite falling unless the sprite is above a boarder character. If the sprite
    isn't above any boarder character then start falling if the sprite is not
    currently jumping or falling. */
   template<typename T>
-  void handleJumpingAndFalling(const T coordRules);
+  int handleJumpingAndFalling(const T coordRules);
 
   
-  bool isJumping() {return jumping != notJumping;}
+  bool isJumping() {return jumping != notJumpingState;}
 
   template<typename T>
-  void handleFalling(const T coordRules);
+  int  handleFalling(const T coordRules);
   template<typename T>
-  void handleFallingSimple(const T coordRules);
-  template<typename T>
-  void handleJumping(const T coordRules);
+  int handleJumping(const T coordRules);
     /* Calculates all the points between the absolute position of the left +
      leftCollisionOffset and the absolute position of the right +
      rightCollisionOffset. Return value is a vector of strings of the pos's.
@@ -221,6 +225,7 @@ protected:
 					    const bool directContact) const;
   inline std::vector<yx> getYAbsRangeAsStrs(const bool rightSide,
 					    const bool directContact) const;
+  inline std::vector<yx> getTopXAbsRangeAsStrsForOneOffContact() const;
   inline std::vector<yx> getBottomXAbsRangeAsStrsForOneOffContact() const;
   inline std::vector<yx> getRightYAbsRangeAsStrsForOneOffContact() const;
   inline std::vector<yx> getLeftYAbsRangeAsStrsForOneOffContact() const;
@@ -228,40 +233,40 @@ protected:
 
 
 template<typename T>
-yx animateSprite::handleHorizontalMovementsWhenStopping(const T coordRules)
+int animateSprite::handleHorizontalMovementsWhenStopping(const T coordRules)
 {
-  yx distTravelled {};
+  int distTravelled {};
   animateSprite::velocity::velocityComps potentialDist
     {velComp.getPotentialDistTravelled()};
       
-  if(potentialDist.x > 0)
+  if(potentialDist.x >= 1)
     {
       const sprite::directions input = handleRightCollision(coordRules);
       if(input == sprite::DIR_RIGHT)
 	{
-	  distTravelled = velComp.getAndSetDistTravelled();
+	  distTravelled = velComp.getAndSetDistTravelledInX();
 	  velComp.velocityTowardsZeroInX(8.5);
 	}
       else
 	{
 	  /* We were blocked by something. Reset velocity and distance
 	     components */
-	  velComp.setComponentsToZero();
+	  velComp.setXComponentsToZero();
 	}
     }
-  else if(potentialDist.x < 0)
+  else if(potentialDist.x <= -1)
     {
       const sprite::directions input = handleLeftCollision(coordRules);
       if(input == sprite::DIR_LEFT)
 	{
-	  distTravelled = velComp.getAndSetDistTravelled();
+	  distTravelled = velComp.getAndSetDistTravelledInX();
 	  velComp.velocityTowardsZeroInX(8.5);
 	}
       else
 	{
 	  /* We were blocked by something. Reset velocity and distance
 	     components */
-	  velComp.setComponentsToZero();
+	  velComp.setXComponentsToZero();
 	}
     }
 
@@ -290,10 +295,10 @@ sprite::directions animateSprite::handleGroundCollision(const T coordRules)
 
 
 template<typename T>
-yx animateSprite::handleLeftOrRightCollision
+int animateSprite::handleLeftOrRightCollision
 (const T coordRules, sprite::directions & input, const bool checkRight)
 {
-  yx distTravelled {};
+  int distTravelled {};
 
   input = checkRight ?
     handleRightCollision(coordRules): handleLeftCollision(coordRules);
@@ -304,16 +309,16 @@ yx animateSprite::handleLeftOrRightCollision
 	{
 	  /* Detected that sprite would move into a boarder character in the
 	     opposite direction of the desired moment. */
-	  velComp.setComponentsToZero();
+	  velComp.setXComponentsToZero();
 	}
-      distTravelled = velComp.getAndSetDistTravelled();
+      distTravelled = velComp.getAndSetDistTravelledInX();
       velComp.addToXComp(checkRight ? 2.9: - 2.9);
     }
   else
     {
       /* We were blocked by something. Reset velocity and distance
 	 components */
-      velComp.setComponentsToZero();
+      velComp.setXComponentsToZero();
     }
 
   return distTravelled;
@@ -469,214 +474,171 @@ bool animateSprite::checkForRightCollisionWhenInputLeft(const T coordRules)
 
 
 template<typename T>
-bool animateSprite::startJumping(const T coordRules)
+int animateSprite::startJumping(const T coordRules)
 {
-  bool retVar {false};
+  int distTravelled {};
+  
   if(jumpNum < maxJumpNum)
     {
       jumpNum++;
-      vertVelocity = -gravitationalConstant;
-      jumping = jumpingUp;
-      retVar = true;
+      velComp.setYComponentsToZero();
+      velComp.addToYComp(-jumpingPower);
+      jumping = jumpingState;
 
-      for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
-	{
-	  for(auto coord: this->getXAbsRangeAsStrs(false, false))
-	    {
-	      char rule {};
-	      if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
-		 rule == boarderRuleChars::BOARDER_CHAR)
-		{
-		  // We're going to hit something.
-		  goto RETURN;
-		}
-	    }
-	  // We don't want to hit the top of the level.
-	  if(positionVPRel.y == 0)
-	    {
-	      goto RETURN;
-	    }
-	  // We're not going to hit anything, so jump!
-	  updatePosRel(sprite::DIR_UP);
-	}
+      // mvprintw(0, 0, concat("startJumping called. jumpNum = ", jumpNum,
+      // 			    ", velComp.getklsadf = getY()", velComp.getY()).c_str());
+      // refresh();
+      // sleep(1000);
     }
   else
     {
       /* We must call this here because this function is called (INSTEAD OF HANDLEJUMPINGANDFALLING())  when
 	 sprite::DIR_UP is pressed and if we can't perform a new jump we must
 	 continue the current jump / fall. */
-      handleJumpingAndFalling(coordRules);
+      // mvprintw(0, 0, concat("startJumping called, but jumpNum maxed out").c_str());
+      // refresh();
+      // sleep(5000);
+      
+      distTravelled = handleJumpingAndFalling(coordRules);
     }
-
- RETURN:
-  return retVar;
   
-  
- //  bool retVar {false};
- //  if(jumpNum < maxJumpNum)
- //    {
- //      jumpNum++;
- //      vertVelocity = -gravitationalConstant;
- //      jumping = jumpingUp;
- //      retVar = true;
-
- //      for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
- // 	{
- // 	  for(auto coord: this->getXAbsRangeAsStrs(false, false))
- // 	    {
- // 	      char rule {};
- // 	      if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
- // 		 rule == boarderRuleChars::BOARDER_CHAR)
- // 		{
- // 		  // We're going to hit something.
- // 		  goto RETURN;
- // 		}
- // 	    }
- // 	  // We don't want to hit the top of the level.
- // 	  if(positionVPRel.y == 0)
- // 	    {
- // 	      goto RETURN;
- // 	    }
- // 	  // We're not going to hit anything, so jump!
- // 	  updatePosRel(sprite::DIR_UP);
- // 	}
- //    }
- //  else
- //    {
- //      /* We must call this here because this function is called (INSTEAD OF HANDLEJUMPINGANDFALLING())  when
- // 	 sprite::DIR_UP is pressed and if we can't perform a new jump we must
- // 	 continue the current jump / fall. */
- //      handleJumpingAndFalling(coordRules);
- //    }
-
- // RETURN:
- //  return retVar;
+  return distTravelled;
 }
 
 
 template<typename T>
-void animateSprite::handleJumpingAndFalling
+int animateSprite::handleJumpingAndFalling
 (const T coordRules)
 {
-  if(jumping == notJumping)
-    {
-      handleFalling(coordRules);
-    }
-  else
-    {
-      handleJumping(coordRules);
-    }
-}
+  int distTravelled {};
 
-
-template<typename T>
-void animateSprite::handleFalling(const T coordRules)
-{
-  using namespace boarderRuleChars;
-
-  for(auto coord: this->getXAbsRangeAsStrs(true, false))
+  switch(jumping)
     {
-      char rule {};
-      if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
-	 (rule == BOARDER_CHAR ||
-	  rule == PLATFORM_CHAR))
-	{
-	  // There's a rule character below stopping us from falling.
-	  return;
-	}
+    case notJumpingState:
+      // mvprintw(0, 0, "not jumping");
+      // refresh();
+      // sleep(100);
+
+      {
+        using namespace boarderRuleChars;
+	bool standing {false};
+      
+	for(auto coord: getBottomXAbsRangeAsStrsForOneOffContact())
+	  {
+	    char rule {};
+	    if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
+	       (rule == BOARDER_CHAR ||
+		rule == PLATFORM_CHAR))
+	      {
+		// There's a rule character below stopping us from falling.
+		standing = true;
+	      }
+	  }
+	if(!standing)
+	  {
+	    velComp.addToYComp(-gravitationalConstant, true);
+	    jumping = jumpingState;
+	  }
+      }
+      
+      break;
+    case jumpingState:
+      // mvprintw(0, 0, "jumping");
+      // refresh();
+      // sleep(100);
+      
+      distTravelled = handleJumping(coordRules);
+      break;
+    case fallingState:
+      // mvprintw(0, 0, "falling");
+      // refresh();
+      // sleep(100);
+      
+      distTravelled = handleFalling(coordRules);
+      break;
     }
   
-  jumpNum = maxJumpNum -maxFallingJumpNum;
-  vertVelocity = gravitationalConstant;
-  jumping = jumpingDown;
-
-  // We're jumping down.
-  handleFallingSimple(coordRules);
+  return distTravelled;
 }
 
 
 template<typename T>
-void animateSprite::handleFallingSimple(const T coordRules)
+int animateSprite::handleFalling(const T coordRules)
 {
-  for(int jumps {(int)-vertVelocity}; jumps > 0; jumps--)
+  using namespace boarderRuleChars;
+  int distTravelled {};
+
+  // Only check for a downward collision when moving down.
+  if(velComp.getPotentialDistTravelled().y >= 1)
     {
-      for(auto coord: this->getXAbsRangeAsStrs(true, false))
+      for(auto coord: getBottomXAbsRangeAsStrsForOneOffContact())
 	{
 	  char rule {};
-	  if(getCoordRule(coord, viewPortSize, coordRules, rule))
+	  if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
+	     (rule == BOARDER_CHAR ||
+	      rule == PLATFORM_CHAR))
 	    {
-	      // We're going to hit something (stop jumping!)
-	      vertVelocity = 0;
-	      jumping = notJumping;
+	      // There's a rule character below stopping us from falling.
+	      velComp.setYComponentsToZero();
+	      jumping = notJumpingState;
 	      jumpNum = 0;
-	      return;
+	      break;
 	    }
 	}
-      /* This is a simpler check but probably much less common, so we put it
-	 second. */
-      if((positionVPRel.y + maxBottomRightOffset.y) == (viewPortSize.y -1))
-	{
-	  // We're going to hit the bottom of the level (stop jumping!)
-	  vertVelocity = 0;
-	  jumping = notJumping;
-	  jumpNum = 0;
-	  return;
-	}
-      updatePosRel(sprite::DIR_DOWN);
+
+      distTravelled = velComp.getAndSetDistTravelledInY();
     }
+  // mvprintw(0, 0, concat("==== ", velComp.getY()).c_str());
+  // refresh();
+  // sleep(10);
+  velComp.addToYComp(-gravitationalConstant, true);
+
+  return distTravelled;
 }
 
 
 template<typename T>
-void animateSprite::handleJumping(const T coordRules)
+int animateSprite::handleJumping(const T coordRules)
 {
-  if(jumping == jumpingUp)
+  int distTravelled {};
+  
+  if(velComp.getPotentialDistTravelled().y <= -1)
     {
-      if(vertVelocity <= maxVertVelocity)
+      bool hit {false};
+      /* Check for possible collision with boarder characters above the
+	 sprite. */
+      for(auto coord: getTopXAbsRangeAsStrsForOneOffContact())
 	{
-	  vertVelocity -= gravitationalConstant;
+	  char rule {};
+	  if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
+	     rule == boarderRuleChars::BOARDER_CHAR)
+	    {
+	      // We're going to hit something.
+	      hit = true;
+	      break;
+	    }
 	}
-      else
+
+      if(!hit)
 	{
-	  jumping = jumpingDown;
-	  vertVelocity += gravitationalConstant;
-	}
-    }
-  else if(jumping == jumpingDown)
-    {
-      if(vertVelocity > -maxVertVelocity)
-	{
-	  vertVelocity += gravitationalConstant;
+	  // mvprintw(0, 0 ,"hello");
+	  // refresh();
+	  // sleep(1);
+	  distTravelled = velComp.getAndSetDistTravelledInY();
 	}
     }
 
-  if(vertVelocity > 0)
+  if(velComp.getY() >= 0)
     {
-      // We are jumping up.
-      for(int jumps {(int)vertVelocity}; jumps > 0; jumps--)
-	{
-	  for(auto coord: this->getXAbsRangeAsStrs(false, false))
-	    {
-	      char rule {};
-	      if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
-		 rule == boarderRuleChars::BOARDER_CHAR)
-		{
-		  // We're going to hit something.
-		  return;
-		}
-	    }
-	  if(positionVPRel.y == 0)
-	    {
-	      return;
-	    }
-	  updatePosRel(sprite::DIR_UP);
-	}
+      // mvprintw(0, 0, concat("velComp.getY() = ", velComp.getY()).c_str());
+      // refresh();
+      // sleep(1000);
+      jumping = fallingState;
     }
-  else
-    {
-      // We're jumping down.
-      handleFallingSimple(coordRules);
-    }
+  velComp.addToYComp(-gravitationalConstant / 10);
+
+
+  return distTravelled;
 }
 
 
@@ -731,19 +693,29 @@ std::vector<yx> animateSprite::getYAbsRangeAsStrs(const bool rightSide,
 }
 
 
-inline std::vector<yx> animateSprite::getBottomXAbsRangeAsStrsForOneOffContact() const
+inline std::vector<yx>
+animateSprite::getTopXAbsRangeAsStrsForOneOffContact() const
+{
+  return getXAbsRangeAsStrs(false, false);
+}
+
+
+inline std::vector<yx>
+animateSprite::getBottomXAbsRangeAsStrsForOneOffContact() const
 {
   return getXAbsRangeAsStrs(true, false);
 }
 
 
-inline std::vector<yx> animateSprite::getRightYAbsRangeAsStrsForOneOffContact() const
+inline std::vector<yx>
+animateSprite::getRightYAbsRangeAsStrsForOneOffContact() const
 {
   return getYAbsRangeAsStrs(true, false);
 }
 
-  
-inline std::vector<yx> animateSprite::getLeftYAbsRangeAsStrsForOneOffContact() const
+
+inline std::vector<yx>
+animateSprite::getLeftYAbsRangeAsStrsForOneOffContact() const
 {
   return getYAbsRangeAsStrs(false, false);
 }

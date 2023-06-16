@@ -1,7 +1,7 @@
 CXX	= clang++
 #CXX	= g++
 # fpermissive requred for compilation with g++.
-CXXFLAGS	= -std=c++14 -Wall -Wpedantic -Wextra -O2 #-D_XOPEN_SOURCE_EXTENDED
+CXXFLAGS	= -std=c++20 -Wall -Wpedantic -Wextra -O2 #-D_XOPEN_SOURCE_EXTENDED
 LIBS	= -lncurses
 BIN_NAME	= nscrl
 SRC	= ./src

@@ -43,8 +43,8 @@ public:
   player
   (const backgroundData &background, std::vector<std::string> spritePaths,
    // const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelViewPortPos,
-   const yx initialPosVPRel, const sprite::directions dir,
-   const double g, const double v, const unsigned maxFallingJmpNum,
+   const yx initialPosVPRel, const sprite::directions dir, const int health,
+   const double g, const unsigned maxFallingJmpNum,
    const unsigned maxJmpNum);
   
   virtual ~player() {};
@@ -75,15 +75,13 @@ public:
      to. */
   void moveIntoViewPort(const yx playerMovementAreaPadding);
   /* Potentially moves the player. The player will be moved (or not moved)
-     based on the values of coordRules, input and timeElapsed. Where coordRules
-     controls where the player can move, input controls the desired direction
-     and timeElapsed is used to calculate how much the player should be moved
-     relative to the last frame (coordRules and input also factor into this of
-     course.) */
+     based on the values of coordRules and input (as well as an internal "time
+     elapsed" member variable of a parent class.) Where coordRules controls
+     where the player can move and input controls the desired
+     direction. */
   template<typename T>
   void movePlayer
-  (const T coordRules, sprite::directions input,
-   const double timeElapsed);
+  (const T coordRules, sprite::directions input);
   
 public:
   /* Since the player sprite can never go off screen we declare a simpler draw
@@ -100,18 +98,15 @@ public:
    PUTTING THESE FUNCTION DEFINITIONS HERE. */
 template<typename T>
 void player::movePlayer
-(const T coordRules, sprite::directions input,
- const double timeElapsed)
+(const T coordRules, sprite::directions input)
 {
   const int currDir {getDirection()};
   // const yx potentialTravel {gamePlayer->getPotentialDistTravelled()};
   yx distTravelled {};
   
-  if(input == sprite::DIR_UP // && !gamePlayer->isJumpNumMaxedOut()
-     )
+  if(input == sprite::DIR_UP)
     {
-      // // Start jump.
-      startJumping(coordRules);
+      distTravelled.y = startJumping(coordRules);
       // We wan't to keep moving in the direction we were moving in before.
       input = (sprite::directions)currDir;
     }
@@ -119,14 +114,14 @@ void player::movePlayer
     {
       /* We are not jumping or we are past the start of a jump.
 	 If we can move down. */
-      // handleJumpingAndFalling(coordRules);
+       distTravelled.y = handleJumpingAndFalling(coordRules);
     }
 
   if(currDir == sprite::DIR_NONE && input == sprite::DIR_NONE)
     {
       /* If we still have left / right momentum we need to check for horizontal
 	 collisions. */
-      distTravelled = handleHorizontalMovementsWhenStopping(coordRules);
+      distTravelled.x = handleHorizontalMovementsWhenStopping(coordRules);
     }
   else if(input == sprite::DIR_DOWN)
     {
@@ -134,17 +129,17 @@ void player::movePlayer
       input = handleGroundCollision(coordRules);      
       /* If we still have left / right momentum we need to check for horizontal
 	 collisions. */
-      distTravelled = handleHorizontalMovementsWhenStopping(coordRules);
+      distTravelled.x = handleHorizontalMovementsWhenStopping(coordRules);
     }
   else if((currDir == sprite::DIR_RIGHT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_RIGHT)
     {
-      distTravelled = handleLeftOrRightCollision(coordRules, input, true);
+      distTravelled.x = handleLeftOrRightCollision(coordRules, input, true);
     }
   else if((currDir == sprite::DIR_LEFT && input == sprite::DIR_NONE) ||
 	  input == sprite::DIR_LEFT)
     {
-      distTravelled = handleLeftOrRightCollision(coordRules, input, false);
+      distTravelled.x = handleLeftOrRightCollision(coordRules, input, false);
     }
 
 #ifdef DEBUG

@@ -27,6 +27,9 @@ public:
     };
   
 protected:
+  /* Position of the top left corner of the sprite object relative to the
+     window. */
+  yx positionVPRel;
     directions direction {DIR_NONE};
     const yx viewPortSize;
   /* Sprites should only have these numbers of sets of slices. 5
@@ -34,9 +37,6 @@ protected:
   static constexpr int spriteNums1 {1}, spriteNums2 {5};
   // Stores the animation directions a sprite instance can use.
   std::vector<directions> spriteAnimationDirections {};
-  /* Position of the top left corner of the sprite object relative to the
-     window. */
-  yx positionVPRel;
   /* Holds the maximum bottom right offset. Calculated from all slices. Used
      (along with position) for inital collision detection and bounds checking */
   yx maxBottomRightOffset {};

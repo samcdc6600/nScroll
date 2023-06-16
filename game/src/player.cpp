@@ -4,10 +4,10 @@
 player::player
 (const backgroundData &background, std::vector<std::string> spritePaths,
  // const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelViewPortPos,
- const yx initialPosVPRel, const sprite::directions dir,
- const double g, const double v, const unsigned maxFallingJmpNum,
+ const yx initialPosVPRel, const sprite::directions dir, const int health,
+ const double g, const unsigned maxFallingJmpNum,
  const unsigned maxJmpNum)
-  : animateSprite(spritePaths, background.chunkSize, initialPosVPRel, dir, g, v,
+  : animateSprite(spritePaths, background.chunkSize, initialPosVPRel, dir, g,
 		  maxFallingJmpNum, maxJmpNum)
 {
   if(gravitationalConstant > 0)
@@ -15,14 +15,6 @@ player::player
       std::stringstream err {};
       err<<"Error: the gravitational g constant can't be positive, where g was "
 	"found to be set to "<<gravitationalConstant<<".";
-      exit(err.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
-    }
-  else if(maxVertVelocity < 1)
-    {
-      std::stringstream err {};
-      err<<"Error: the maximum vertical velocity for the player must be at "
-	"least than 1 (the unit is in characters (position) per second.) "<<v
-	 <<" was provided.";
       exit(err.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
     }
   else if(maxFallingJmpNum > maxJmpNum)

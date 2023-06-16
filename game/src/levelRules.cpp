@@ -123,9 +123,9 @@ namespace levelFileKeywords
       const yx initialCoordinatesVPRel {yHeight / 2, xWidth / 2};
       const sprite::directions direction {sprite::DIR_NONE};
       const int health {16};
-      const double gravitationalConstant {-0.38 / 10};
+      const double gravitationalConstant {-1.8};
       // const double gravitationalConstant {-0.38};
-      const double maxVerticalVelocity {1.9};
+      // const double maxVerticalVelocity {1.9};
       const unsigned maxFallingJumpNumber {1};
       const unsigned maxJumpNumber {3};
     }
@@ -151,7 +151,7 @@ namespace levelFileKeywords
     sprite::directions direction {};
     int health {};
     double gravitationalConstant {};
-    double maxVerticalVelocity {};
+    // double maxVerticalVelocity {};
     unsigned maxFallingJumpNumber {};
     unsigned maxJumpNumber {};
   };
@@ -176,13 +176,13 @@ namespace levelFileKeywords
   constexpr char STRING_SEPARATION		{','};
   constexpr char STRING_ESC			{'\\'};
   constexpr char COORD_SEPARATION		{','};
-  constexpr char DIR_START_ABS			{'/'};
-  constexpr char DIR_START_REL			{'.'};
+  // constexpr char DIR_START_ABS			{'/'};
+  // constexpr char DIR_START_REL			{'.'};
   /* The character used for escape sequences (within a string) in
      RULES_CONFIG_FILE_EXTENSION files. */
-  constexpr char ESCAPE_CHAR {'\\'};
-  constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
-  constexpr char NULL_BYTE {'\0'};
+  // constexpr char ESCAPE_CHAR {'\\'};
+  // constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
+  // constexpr char NULL_BYTE {'\0'};
   /* If this character is encountered in the main section of a
      RULES_CONFIG_FILE_EXTENSION file the character 2 places after it should be
      an ASCII number. After this number there can be a string of contiguous
@@ -447,7 +447,7 @@ void rules::decompressChunk
 
   const ssize_t expectedChunkSizeLinear
     {expectedChunkSize.y * expectedChunkSize.x};
-  if(rawChunk.size() != expectedChunkSizeLinear)
+  if(rawChunk.size() != (unsigned long)expectedChunkSizeLinear)
     {
       exit(concat
 	   ("Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \"",
@@ -484,7 +484,7 @@ void rules::checkRuleChar
 void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
 (const chunkMapType & coordRules, const backgroundData & background) const
 {
-  if(coordRules.size() != background.numberOfChunks())
+  if(coordRules.size() != (unsigned long)background.numberOfChunks())
     {
       exit
 	(concat("Error: number (", background.numberOfChunks(), ") of chunks "
@@ -867,9 +867,9 @@ void initPlayer
 	       // misc.initialViewPortCoordinates,
 	       playerInitData.initialCoordinatesVPRel,
 	       playerInitData.direction,
-	       // playerInitData.health,
+	       playerInitData.health,
 	       playerInitData.gravitationalConstant,
-	       playerInitData.maxVerticalVelocity,
+	       // playerInitData.maxVerticalVelocity,
 	       playerInitData.maxFallingJumpNumber,
 	       playerInitData.maxJumpNumber);
 }
@@ -1313,8 +1313,8 @@ void checkForDefaultPlayerValues
 	defaultValues::player::gravitationalConstant;
       break;
     case 6:
-      playerInitData.maxVerticalVelocity =
-	defaultValues::player::maxVerticalVelocity;
+      // playerInitData.maxVerticalVelocity =
+      // 	defaultValues::player::maxVerticalVelocity;
       break;
     case 7:
       playerInitData.maxFallingJumpNumber =
@@ -1392,47 +1392,47 @@ void checkForDefaultBgSpriteValues
 }
 
 
-//test level agains sprite's
-char rules::intersection(const std::string & boundsInteraction,
-			 const std::vector<int> spChoords)
-{
-  /* if any value in spChoords matches any character other then space in
-     boundsInteration return that charater */
-  return 'n';
-}
+// //test level agains sprite's
+// char rules::intersection(const std::string & boundsInteraction,
+// 			 const std::vector<int> spChoords)
+// {
+//   /* if any value in spChoords matches any character other then space in
+//      boundsInteration return that charater */
+//   return 'n';
+// }
 
 
-//test player sprite against sprite's
-char rules::intersection(const std::vector<int> playerSpChoords,
-			 const std::vector<int> spChoords)
-{
-  /* if any value in spChoords matches any value in playerSpChoords
-     return characte code or something */
-  return 'n';
-}
+// //test player sprite against sprite's
+// char rules::intersection(const std::vector<int> playerSpChoords,
+// 			 const std::vector<int> spChoords)
+// {
+//   /* if any value in spChoords matches any value in playerSpChoords
+//      return characte code or something */
+//   return 'n';
+// }
 
 
-//test level agains sprite's
-char rules::nearPass(const std::string & boundsInteraction,
-		     const std::vector<int> spChoords)
-{
-  /* if any value in spChoords is next to any character other then space in
-     boundsInteration return that charater */
-  return 'n';
-}
+// //test level agains sprite's
+// char rules::nearPass(const std::string & boundsInteraction,
+// 		     const std::vector<int> spChoords)
+// {
+//   /* if any value in spChoords is next to any character other then space in
+//      boundsInteration return that charater */
+//   return 'n';
+// }
 
 
-//test player sprite against sprite's
-char rules::nearPass(const std::vector<int> playerSpChoords,
-		     const std::vector<int> spChoords)
-{
-  /* if any value in spChoords matches any value in playerSpChoords
-     return a character code that corispondest to the side that was matched
-     relative to spChoords for example 't' for top. (this might be used to
-     detect that the player has "touched" the top of the sprite and if it is an
-     enemy sprite then appropriate action can be taken. */
-  return 'n';
-}
+// //test player sprite against sprite's
+// char rules::nearPass(const std::vector<int> playerSpChoords,
+// 		     const std::vector<int> spChoords)
+// {
+//   /* if any value in spChoords matches any value in playerSpChoords
+//      return a character code that corispondest to the side that was matched
+//      relative to spChoords for example 't' for top. (this might be used to
+//      detect that the player has "touched" the top of the sprite and if it is an
+//      enemy sprite then appropriate action can be taken. */
+//   return 'n';
+// }
 
 
 // void rules::movePlayer
@@ -1853,10 +1853,9 @@ void rules::physics
   printRuleChars();
 #endif
 
-  double timeElapsed {};
-  if(gameTiming.movePlayer.startNextTick(timeElapsed))
+  if(gameTiming.movePlayer.startNextTick())
     {
-      gamePlayer->movePlayer(secondStageRulesBuffer, input, timeElapsed);
+      gamePlayer->movePlayer(secondStageRulesBuffer, input);
       // Update 2nd stage rules buffer position based on player position.
       this->updateViewPortPosition
 	(PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),
