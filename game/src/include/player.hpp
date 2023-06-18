@@ -41,11 +41,10 @@ public:
     };
 
   player
-  (const backgroundData &background, std::vector<std::string> spritePaths,
-   // const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelViewPortPos,
-   const yx initialPosVPRel, const sprite::directions dir, const int health,
-   const double g, const unsigned maxFallingJmpNum,
-   const unsigned maxJmpNum);
+  (const double fixedTimeStep, const backgroundData &background,
+   std::vector<std::string> spritePaths, const yx initialPosVPRel,
+   const sprite::directions dir, const int health,
+   const double g, const unsigned maxFallingJmpNum, const unsigned maxJmpNum);
   
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.
@@ -100,8 +99,10 @@ template<typename T>
 void player::movePlayer
 (const T coordRules, sprite::directions input)
 {
+  timers.updateYTimer();
+  timers.updateXTimer();
+  
   const int currDir {getDirection()};
-  // const yx potentialTravel {gamePlayer->getPotentialDistTravelled()};
   yx distTravelled {};
   
   if(input == sprite::DIR_UP)

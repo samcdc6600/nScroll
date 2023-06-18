@@ -2,62 +2,33 @@
 #include <curses.h>
 #include "include/sprite.hpp"
 #include "include/collapse.hpp"
-
-// void sprite::velocity::setVlctY(const double newY)
-// {
-//   if(newY > maxVelocity)
-//     {
-//       comps.y = maxVelocity;
-//     }
-//   else if(newY < -maxVelocity)
-//     {
-//       comps.y = -maxVelocity;
-//     }
-//   else
-//     {
-//       comps.y = newY;
-//     }
-// }
-
-// void sprite::velocity::setVlctX(const double newX)
-// {
-//   if(newX > maxVelocity)
-//     {
-//       comps.x = maxVelocity;
-//     }
-//   else if(newX < -maxVelocity)
-//     {
-//       comps.x = -maxVelocity;
-//     }
-//   else
-//     {
-//       comps.x = newX;
-//     }
-// }
+#include "include/chronological.hpp"
 
 
-// void sprite::velocity::scailY(const double scailFactor)
-// {
-//   endwin();
-//   std::cout<<"scailY() not implemented.";
-//   exit(-1);
-// }
+void sprite::spriteTimers::updateSliceTimer()
+{
+  timeSinceLastSliceUpdate += fixedTimeStep;
+}
 
 
-// void sprite::velocity::scailX(const double scailFactor)
-// {
-//   endwin();
-//   std::cout<<"scailX() not implemented.";
-//   exit(-1);
-// }
+double sprite::spriteTimers::getTimeSinceLastSliceUpdate() const 
+{
+  return timeSinceLastSliceUpdate;
+}
 
 
-sprite::sprite(std::vector<std::string> & spritePaths, const yx max,
-	       const yx pos, const directions dir)
-  : viewPortSize(max), positionVPRel(pos), direction(checkDirection(dir)),
-    currentSliceNumber(0),
-    startTime(std::chrono::high_resolution_clock::now()),
-    currentTime(std::chrono::high_resolution_clock::now())
+
+void sprite::spriteTimers::resetTimeSinceLastSliceUpdate()
+{
+  timeSinceLastSliceUpdate = 0;
+}
+
+
+sprite::sprite
+(const double fixedTimeStep, std::vector<std::string> & spritePaths,
+ const yx max, const yx pos, const directions dir)
+  : timers(fixedTimeStep), viewPortSize(max), positionVPRel(pos),
+  direction(checkDirection(dir)), currentSliceNumber(0)
 {
   for(auto spriteFileName {spritePaths.begin()};
       spriteFileName != spritePaths.end(); spriteFileName++)
@@ -143,7 +114,9 @@ sprite::parserPhaseOne(const std::string & spriteFile, spriteData & sD)
 		      }
 		    /* Set sD.sliceLine to ASCII representation of cycle speed
 		       from sprite file. */
-		    cS>>sD.cycleSpeed; 
+		    cS>>sD.cycleSpeed;
+		    // Cycle speed is in ms, so we must convert it to seconds.
+		    sD.cycleSpeed = chronological::milliSecToSec(sD.cycleSpeed);
 		    runGetCs = false;
 		    iter++; // Move to next positon for next phase of parsing.
 		    continue;

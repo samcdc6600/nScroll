@@ -2,28 +2,13 @@
 
 
 player::player
-(const backgroundData &background, std::vector<std::string> spritePaths,
- // const yx PLAYER_MOVEMENT_AREA_PADDING, const yx initialRelViewPortPos,
- const yx initialPosVPRel, const sprite::directions dir, const int health,
- const double g, const unsigned maxFallingJmpNum,
- const unsigned maxJmpNum)
-  : animateSprite(spritePaths, background.chunkSize, initialPosVPRel, dir, g,
-		  maxFallingJmpNum, maxJmpNum)
+(const double fixedTimeStep, const backgroundData &background,
+ std::vector<std::string> spritePaths, const yx initialPosVPRel,
+ const sprite::directions dir, const int health, const double g,
+ const unsigned maxFallingJmpNum, const unsigned maxJmpNum)
+  : animateSprite(fixedTimeStep, spritePaths, background.chunkSize,
+		  initialPosVPRel, dir, g, maxFallingJmpNum, maxJmpNum)
 {
-  if(gravitationalConstant > 0)
-    {
-      std::stringstream err {};
-      err<<"Error: the gravitational g constant can't be positive, where g was "
-	"found to be set to "<<gravitationalConstant<<".";
-      exit(err.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
-    }
-  else if(maxFallingJmpNum > maxJmpNum)
-    {
-      std::stringstream err {};
-      err<<"Error: maxFallingJmpNum ("<<maxFallingJmpNum<<") can't be more then"
-	" maxJmpNum. ("<<maxJmpNum<<").";
-      exit(err.str().c_str(), ERROR_GENERIC_RANGE_ERROR);
-    }
 }
 
 
@@ -151,6 +136,8 @@ void player::moveIntoViewPort(const yx playerMovementAreaPadding)
 void player::draw
 (const backgroundData &background, const bool updateSlice)
 {
+  timers.updateSliceTimer();
+    
   for(size_t sliceLine{}; sliceLine <
 	spriteS[direction].spriteSlices[currentSliceNumber].slice.size();
       ++sliceLine)
@@ -175,12 +162,10 @@ void player::draw
 
 	  if(updateSlice)
 	    {
-	      currentTime = std::chrono::high_resolution_clock::now();
-	      if(std::chrono::duration_cast<std::chrono::milliseconds>
-		 (currentTime - startTime).count() >
+	      if(timers.getTimeSinceLastSliceUpdate() >
 		 spriteS[direction].cycleSpeed)
 		{
-		  startTime = std::chrono::high_resolution_clock::now();
+		  timers.resetTimeSinceLastSliceUpdate();
 		  currentSliceNumber++; // Move to next slice.
 		  /* -1 because indexing from 0, so currentSliceNumber shouldn't
 		     be bigger then size() -1. */

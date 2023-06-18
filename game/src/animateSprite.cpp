@@ -33,16 +33,17 @@ void animateSprite::velocity::velocityTowardsZeroInX(const double a)
 }
 
 
-// Note that falling has a default value of false.
-void animateSprite::velocity::addToYComp(const double a, const bool falling)
+/* Note that falling has a default value of false. */
+void animateSprite::velocity::addToYComp
+(const double a, const bool falling)
 {
-  if(comps.y + a > (falling? maxYVelocityFalling: maxYVelocity))
+  if(comps.y + a > (falling? maxYVelocityFalling: maxVelocity))
     {
-      comps.y = (falling? maxYVelocityFalling: maxYVelocity);
+      comps.y = (falling? maxYVelocityFalling: maxVelocity);
     }
-  else if(comps.y + a < (falling? -maxYVelocityFalling: -maxYVelocity))
+  else if(comps.y + a < (falling? -maxYVelocityFalling: -maxVelocity))
     {
-      comps.y = (falling? -maxYVelocityFalling: -maxYVelocity);
+      comps.y = (falling? -maxYVelocityFalling: -maxVelocity);
     }
   else
     {
@@ -51,15 +52,16 @@ void animateSprite::velocity::addToYComp(const double a, const bool falling)
 }
 
 
-void animateSprite::velocity::addToXComp(const double a)
+void animateSprite::velocity::addToXComp
+(const double a)
 {
-  if(comps.x + a > maxXVelocity)
+  if(comps.x + a > maxVelocity)
     {
-      comps.x = maxXVelocity;
+      comps.x = maxVelocity;
     }
-  else if(comps.x + a < -maxXVelocity)
+  else if(comps.x + a < -maxVelocity)
     {
-      comps.x = -maxXVelocity;
+      comps.x = -maxVelocity;
     }
   else
     {
@@ -68,14 +70,38 @@ void animateSprite::velocity::addToXComp(const double a)
 }
 
 
+/* Note that maximumVelocity has a default value of maxVelocity and falling has
+   a default value of false. */
+void animateSprite::velocity::addToYCompUnconstrained(const double a)
+{
+  comps.y += a;
+}
+
+
 int animateSprite::velocity::getAndSetDistTravelledInY()
 {
+
+    //   static double timer {};
+    // timer += timers.getTimeSinceLastYUpdate();
+
+  
+
+  
   int ret {};
   // Get distance travelled since this func was last called.
-  distTravelled.y += comps.y *
-    lastYUpdate.getDeltaSinceLastReset() * yVelocitySailFactor;
-  // Reset distance timers.
-  lastYUpdate.resetTimer();
+  distTravelled.y +=
+    comps.y * timers.getTimeSinceLastYUpdate() * yVelocitySailFactor;
+  timers.resetTimeSinceLastYUpdate();
+
+
+
+//   if(distTravelled.y > 2)
+//     {
+//       endwin();
+// std::cout<<"too bad!  "<<timer<<'\n';
+//     exit(-1);
+//     }
+    
   
   if(distTravelled.y > 1)
     {
@@ -96,10 +122,8 @@ int animateSprite::velocity::getAndSetDistTravelledInX()
 {
   int ret {};
   // Get distance travelled since this func was last called.
-  distTravelled.x += comps.x *
-    (lastXUpdate.getDeltaSinceLastReset());
-  // Reset distance timers.
-  lastXUpdate.resetTimer();
+  distTravelled.x += comps.x * timers.getTimeSinceLastXUpdate();
+  timers.resetTimeSinceLastXUpdate();
   
   if(distTravelled.x > 1)
     {
@@ -121,10 +145,8 @@ yx animateSprite::velocity::getPotentialDistTravelled() const
   yx ret {};
   // Get distance travelled since this func was last called.
   velocityComps potentialDistTravelled {distTravelled.y, distTravelled.x};
-  potentialDistTravelled.y += comps.y *
-    lastYUpdate.getDeltaSinceLastReset() * yVelocitySailFactor;;
-  potentialDistTravelled.x += comps.x *
-    lastXUpdate.getDeltaSinceLastReset();
+  potentialDistTravelled.y += comps.y * timers.getTimeSinceLastYUpdate() * yVelocitySailFactor;
+  potentialDistTravelled.x += comps.x * timers.getTimeSinceLastYUpdate();
   
   if(potentialDistTravelled.y > 1)
     {

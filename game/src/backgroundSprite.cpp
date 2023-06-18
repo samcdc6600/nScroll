@@ -6,19 +6,20 @@ void bgSprite::draw
 (unsigned short * secondStageDrawBuffer, const bool updateSlice,
  const yx viewPortPos)
 {
+  timers.updateSliceTimer();
+  
   // Only display sprite if part of it is in the visible region.
-  if((positionVPRel.x + maxBottomRightOffset.x) >= viewPortPos.x && positionVPRel.x <=
-     (viewPortPos.x + viewPortSize.x -1) && (positionVPRel.y + maxBottomRightOffset.y) >= 0
-     && (positionVPRel.y < viewPortSize.y))
+  if((positionVPRel.x + maxBottomRightOffset.x) >= viewPortPos.x &&
+     positionVPRel.x <= (viewPortPos.x + viewPortSize.x -1) &&
+     (positionVPRel.y + maxBottomRightOffset.y) >= viewPortPos.y &&
+     positionVPRel.y < (viewPortPos.y + viewPortSize.y -1))
     {
       if(updateSlice)
 	{
-	  currentTime = std::chrono::high_resolution_clock::now();
-	  if(std::chrono::duration_cast
-	     <std::chrono::milliseconds>(currentTime - startTime).count() >
+	  if(timers.getTimeSinceLastSliceUpdate() >
 	     spriteS[direction].cycleSpeed)
 	    {
-	      startTime = std::chrono::high_resolution_clock::now();
+	      timers.resetTimeSinceLastSliceUpdate();
 	      currentSliceNumber++; // Move to next slice
 	      /* -1 because indexing from 0, so currentSliceNumber shouldn't
 		 be bigger then size() -1 */

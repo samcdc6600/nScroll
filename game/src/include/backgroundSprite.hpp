@@ -12,9 +12,10 @@ public:
   const bool displayInForground; 
 
   
-  bgSprite(std::vector<std::string> spriteFileNames, const yx viewPortSize,
-	   const yx pos, const directions dir, const bool dispInFg) :
-    sprite(spriteFileNames, viewPortSize, pos, dir),
+  bgSprite(const double fixedTimeStep, std::vector<std::string> spriteFileNames,
+	   const yx viewPortSize, const yx pos, const directions dir,
+	   const bool dispInFg) :
+    sprite(fixedTimeStep, spriteFileNames, viewPortSize, pos, dir),
     displayInForground(dispInFg)
   {}
 

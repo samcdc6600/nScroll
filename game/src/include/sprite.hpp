@@ -6,7 +6,6 @@
 #include <sstream>
 #include "background.hpp"
 #include "utils.hpp"
-#include "chronological.hpp"
 
 
 /* This class (sprite) is the top level class for all sprites and should
@@ -30,8 +29,52 @@ protected:
   /* Position of the top left corner of the sprite object relative to the
      window. */
   yx positionVPRel;
-    directions direction {DIR_NONE};
-    const yx viewPortSize;
+  directions direction {DIR_NONE};
+
+  class spriteTimers
+  {
+    /* This class is used to store fixedTimeStep timing for sprites. Classes
+       that inherit from sprite will probably need to add things to this class
+       (this can be done using the following syntax, which of course technically
+       is inheriting from spriteTimers):
+	    "
+	    class childClass : public sprite
+	    {
+	    	...
+		class spriteTimers: public sprite::spriteTimers
+		{
+		...
+		};
+		...
+	    }
+	    "
+       The timers variable should also be masked with a variable of the new
+       classes type. */
+    double timeSinceLastSliceUpdate {};
+  protected:
+    /* Time between invocations of time related operations on sprite (assuming
+       the computer system is fast enough.) */
+    const double fixedTimeStep;
+    
+  public:    
+    spriteTimers(const double fTS):
+      fixedTimeStep(fTS)
+    {}
+
+
+    /* This func should be called each draw tick to update the time since the
+       last slice change. */
+    void updateSliceTimer();
+    /* This func should be called each draw tick to see if it is time to update
+       the slice number again. */
+    double getTimeSinceLastSliceUpdate() const;
+    /* This func should be called each time the slice number is updated. */
+    void resetTimeSinceLastSliceUpdate();
+  };
+
+  spriteTimers timers;
+  
+  const yx viewPortSize;
   /* Sprites should only have these numbers of sets of slices. 5
      and not 4 because we must account for DIR_NONE. */
   static constexpr int spriteNums1 {1}, spriteNums2 {5};
@@ -44,12 +87,6 @@ protected:
      Should not go above spriteSlices.size(); and should wrape back around to
      zero. */
   int currentSliceNumber;
-  /* StartTime and currentTime keep track of when sprite animations can be
-     updated. */
-  std::chrono::high_resolution_clock::time_point startTime =
-    std::chrono::high_resolution_clock::now();
-  std::chrono::high_resolution_clock::time_point currentTime =
-    std::chrono::high_resolution_clock::now();  
     
 private:
   struct sliceLine
@@ -73,8 +110,9 @@ protected:
   /* Hold's a single sprite instance that will be setup by this ABC in it's
      constructor */
   struct spriteData
-  { /* Speed of sprite animation. */
-    int cycleSpeed;
+  {
+    /* Speed of sprite animation in ms. */
+    double cycleSpeed;
     /* Outer vector holds inner vectors that hold sliceLine objects
        that make up the horizontal lines of slices.
        This object holds the slices that make up the sprite. */
@@ -90,8 +128,8 @@ public:
   /* This constructor reads the sprite file/s located at spritePaths[x] and
      converts it's/their contents to the internal data structure needed by the
      sprite. */
-  sprite(std::vector<std::string> & spritePaths, const yx max, const yx pos,
-	 const directions dir);
+  sprite(const double fixedTimeStep, std::vector<std::string> & spritePaths,
+	 const yx max, const yx pos, const directions dir);
   ~sprite();
 private:
   // Split up file into cycleSpeed and unprocessesd representation of sprite.

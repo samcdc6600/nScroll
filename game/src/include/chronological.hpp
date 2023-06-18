@@ -8,12 +8,6 @@
 
 class chronological
 {
-  /* NOTE THAT THIS OBJECT IS INTENDED TO BE USED IN TWO WAYS. With the first
-     way tick time should be set and functions such as getDeltaSinceLastReset()
-     and resetTimer() should not be called. This way is intended for timing
-     things that should have regular intervals. With the second way tick
-     related function should not be called and the object is intended for use
-     in timing things that don't necessarily have to be regular.  */
   /* NOTE THAT CONST VARIABLES APPARENTLY CANNOT BE CHANGED WITHIN THE BODY OF
      AN ASSIGNMENT OPERACTOR DEFINED BY AN OBJECT. AS SUCH WE HAVE COMMENTED OUT
      THE CONST QUALIFIER ON A NUMBER OF VARIABLES WE WOULD LIKE TO BE
@@ -29,8 +23,12 @@ private:
   bool started {false};
   /* const */ std::string toSeeIfError;
   /* const */ bool tickTimeSet {false};
-  std::__1::chrono::steady_clock::time_point tLast;
-  const long double scaleFactor {1000};
+  /* NOTE THAT USING steady_clock WILL RESULT IN THE PROGRAM TIME BEING USED.
+     WHERE AS USING system_clock WILL RESULT IN SYSTEM TIME BEING USED. We
+     wan't to use the system_time this is because it will always be closer to
+     the real time. */
+  std::__1::chrono::system_clock::time_point tLast;
+  const long double scaleFactor {1};
 
 
   /* Many public functions belonging to this object (apart from any constructor
@@ -107,11 +105,11 @@ public:
   void start()
   {
     started = true;
-    tLast = std::chrono::steady_clock::now();
+    tLast = std::chrono::system_clock::now();
   }
 
   
-  void start(std::__1::chrono::steady_clock::time_point startTime)
+  void start(std::__1::chrono::system_clock::time_point startTime)
   {
     started = true;
     tLast = startTime;
@@ -121,45 +119,33 @@ public:
   /* Can be used to get the last time of a master chronological object so
      that other chronological object may be fully initialised with the same
      start time (using start()). */
-  std::__1::chrono::steady_clock::time_point getLastTime() const
+  std::__1::chrono::system_clock::time_point getLastTime() const
   {
     checkIfFullyInitialised("getCurrentTime()");
     
     return tLast;
   }
-
-
-  /* Returns the delta between the current time and the last time
-     tLast was reset (in seconds). */
-  double getDeltaSinceLastReset() const
-  {
-    checkIfPartiallyInitialised("getDeltaSinceLastReset()");
-    
-    std::__1::chrono::steady_clock::time_point currentTime
-    {std::chrono::steady_clock::now()};
-    return (duration_cast<std::chrono::duration<long double>>
-	    (currentTime - tLast)).count();
-  }
-
-  /* Used when updating can be done at any time and is not based on a specific
-     tick time. I.e. don't mix with startNextTick()! */
-  void resetTimer()
-  {
-    checkIfPartiallyInitialised("resetTimer()");
-    
-    tLast = {std::chrono::steady_clock::now()};
-  }
   
   
   bool startNextTick()
-  {
+  {    
     checkIfFullyInitialised("startNextTick()");
 
-    std::__1::chrono::steady_clock::time_point currentTime
-    {std::chrono::steady_clock::now()};
+    std::__1::chrono::system_clock::time_point currentTime
+    {std::chrono::system_clock::now()};
+    
   if((duration_cast<std::chrono::duration<long double>>
       (currentTime - tLast)).count() >= (tickTime / scaleFactor))
     {
+      static long callCount {};
+      callCount++;
+      if(callCount > 7000)
+	std::cout<<"callCount = "<<callCount<<'\n';
+
+      std::cout<<(duration_cast<std::chrono::duration<long double>>
+		  (currentTime - tLast)).count()<<'\t'<<(tickTime / scaleFactor)<<'\n';
+
+    
       tLast = currentTime;
       return true;
     }
@@ -169,14 +155,15 @@ public:
     }
   }
 
+  
   /* If it is time to start the next tick timeElapsed is set to the time that had
      elapsed since that last time a tick was started (in milliseconds).  */
   bool startNextTick(double & timeElapsed)
   {
     checkIfFullyInitialised("startNextTick(double & timeElapsed)");
 
-    std::__1::chrono::steady_clock::time_point currentTime
-    {std::chrono::steady_clock::now()};
+    std::__1::chrono::system_clock::time_point currentTime
+    {std::chrono::system_clock::now()};
   if((duration_cast<std::chrono::duration<long double>>
       (currentTime - tLast)).count() >= (tickTime / scaleFactor))
     {
@@ -191,6 +178,9 @@ public:
       return false;
     }
   }
+
+
+  static constexpr double milliSecToSec(const double a) {return a / 1000;}
 };
 
 
@@ -198,7 +188,8 @@ public:
    probably not be nested.) */
 struct timers
 {
-  chronological movePlayer {};
+  /* physics should always be the same as draw time or some multiple slower. */
+  chronological physics {};
   chronological drawTime {};
 };
 

@@ -30,6 +30,16 @@ public:
   std::vector<bgSprite *> bgSprites;
   
 private:
+  /* THE PHYSICS ENGINE SHOULD BE RUN THIS OFTEN (IN REAL SYSTEM TIME.) The
+     sprites position should be updated by 1 character in any direction at
+     most this often. This is in seconds. */
+  const double masterPhysicsTime {1 / 100.0};
+  /* ANYTHING TIMING DONE WITHIN THE PHYSICS ENGINE SHOULD USE THIS TIME (THIS
+     IS BECAUSE THE PHYSICS ENGINE MAY BE UPDATED AT A SIGNIFICANTLY SLOWER RATE
+     THAN MASTERPHYSICSTIME IF THE COMPUTER SYSTEM IS NOT FAST ENOUGH, BECAUSE
+     OF THIS WE MUST USE A FIXED VALUE SO THE PHYSICS ENGINE'S CALCULATIONS
+     AREN'T EFFECTED. LOOK INTO FIXED TIME STEP FOR MORE INFO. */
+  const double fixedTimeStep {masterPhysicsTime};
   /* The character rules first stage buffer should be larger than 5x5 so that
      non player sprites can move a bit off of the screen without the worry that
      they will move into a rules chunk that is invalid. This way the non player
@@ -181,27 +191,11 @@ public:
       (rulesFileName, rulesBuffer, background);
     checkInitPlayerPosAndPadding();
 
-
-    // endwin();
-    // std::cout<<"\nINITIAL_REL_VIEW_PORT_COORDINATES = "<<INITIAL_REL_VIEW_PORT_COORDINATES
-    //   <<"\nPLAYER_MOVEMENT_AREA_PADDING = "<<PLAYER_MOVEMENT_AREA_PADDING
-    // 	     <<"\ngamePlayer->getPos() = "<<gamePlayer->getPos()<<'\n';
-    // exit(-1);
-
-  
-    // Initialise game timers.
-    /* NOTE THAT WE HAVE HARD CODED THESE VALUES HERE FOR NOW, BUT WE INTEND TO
-       HAVE AT LEAST SOME OF THEM LOADED FROM RULES.LEV FILES. */
-    //gameTiming.movePlayer = chronological{22.2, gameTimingErrorInfo};
-    // gameTiming.movePlayer = chronological{27.3, gameTimingErrorInfo};
-
-
-    gameTiming.movePlayer =
-      chronological{player::velocity::spriteMovementUpdatingTime,
-		    gameTimingErrorInfo};
+    /* physics should always be the same as draw time or some multiple slower. */
+    gameTiming.physics =
+      chronological{masterPhysicsTime, gameTimingErrorInfo};
     gameTiming.drawTime =
-      chronological{player::velocity::spriteMovementUpdatingTime,
-		    gameTimingErrorInfo};
+      chronological{masterPhysicsTime, gameTimingErrorInfo};
   }
 
   

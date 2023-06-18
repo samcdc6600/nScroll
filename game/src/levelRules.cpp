@@ -16,9 +16,9 @@ namespace levelFileKeywords
        (const std::string & buff, std::string::const_iterator & buffPos,
 	const std::string & eMsg, void * retObj),
        void (*hA)
-       (const yx viewPortSize, const char rulesFileName[],
-	rules & levelRules, const backgroundData & background,
-	const std::string & rawRules,
+       (const double fixedTimeStep, const yx viewPortSize,
+	const char rulesFileName[], rules & levelRules,
+	const backgroundData & background, const std::string & rawRules,
 	std::string::const_iterator & buffPos) = nullptr,
        const bool fMO = false)
 	: keyword(kword), foundMultipleOptional(fMO), action(a),
@@ -41,10 +41,11 @@ namespace levelFileKeywords
 		     const std::string & eMsg, void * retObj);
       /* This function should be used as the action instead of the above if we
 	 are at the top level of the header (in terms of sections). */
-      void (* headerAction)(const yx viewPortSize, const char rulesFileName[],
-			   rules &levelRules, const backgroundData & background,
-			   const std::string & rawRules,
-			   std::string::const_iterator & buffPos);
+      void (* headerAction)(const double fixedTimeStep, const yx viewPortSize,
+			    const char rulesFileName[], rules &levelRules,
+			    const backgroundData & background,
+			    const std::string & rawRules,
+			    std::string::const_iterator & buffPos);
     };
   };
   // Each new section should start with a header char followed by this char.
@@ -196,15 +197,15 @@ namespace levelFileKeywords
 // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files START ====
 // =============================================================================
 void initPlayer
-(const yx viewPortSize, const char rulesFileName [], rules & levelRules,
- const backgroundData & background, const std::string & rawRules,
- std::string::const_iterator & buffPos);
+(const double fixedTimeStep, const yx viewPortSize, const char rulesFileName [],
+ rules & levelRules, const backgroundData & background,
+ const std::string & rawRules, std::string::const_iterator & buffPos);
 /* This function should be called for each background sprite section that's
    encountered. */
 void initBgSprites
-(const yx viewPortSize, const char rulesFileName[], rules & levelRules,
- const backgroundData & background, const std::string & rawRules,
- std::string::const_iterator & buffPos);
+(const double fixedTimeStep, const yx viewPortSize, const char rulesFileName[],
+ rules & levelRules, const backgroundData & background,
+ const std::string & rawRules, std::string::const_iterator & buffPos);
 void readSectionOpeningBracket
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const std::string & section,
@@ -580,15 +581,15 @@ void rules::parseRulesConfigFileAndInitialiseVariables
 		 case 0:
 		   headerKeywordActions[foundIter].found = true;
 		   headerKeywordActions[foundIter].headerAction
-		     (chunkSize, rulesFileName, *this, background,
-		      rulesBuffer, buffPos);
+		     (this->fixedTimeStep, chunkSize, rulesFileName,
+		      *this, background, rulesBuffer, buffPos);
 		   break;
 		 case 1:
 		   /* We don't set found here because this keyword should have
 		      headerKeywordAction.foundMultipleOptional set to true. */
 		   headerKeywordActions[foundIter].headerAction
-		     (chunkSize, rulesFileName, *this, background,
-		      rulesBuffer, buffPos);
+		     (this->fixedTimeStep, chunkSize, rulesFileName,
+		      *this, background, rulesBuffer, buffPos);
 		   break;
 		 }
 
@@ -692,9 +693,9 @@ void rules::checkInitPlayerPosAndPadding()
 
 
 void initPlayer
-(const yx viewPortSize, const char rulesFileName[], rules & levelRules,
- const backgroundData & background, const std::string & rawRules,
- std::string::const_iterator & buffPos)
+(const double fixedTimeStep, const yx viewPortSize, const char rulesFileName[],
+ rules & levelRules, const backgroundData & background,
+ const std::string & rawRules, std::string::const_iterator & buffPos)
 {
   using namespace levelFileKeywords;
 
@@ -861,14 +862,11 @@ void initPlayer
     }
 
   levelRules.gamePlayer =
-    new player(background,
-	       playerInitData.spritePaths,
+    new player(fixedTimeStep, background, playerInitData.spritePaths,
 	       // misc.viewPortPadding,
 	       // misc.initialViewPortCoordinates,
-	       playerInitData.initialCoordinatesVPRel,
-	       playerInitData.direction,
-	       playerInitData.health,
-	       playerInitData.gravitationalConstant,
+	       playerInitData.initialCoordinatesVPRel, playerInitData.direction,
+	       playerInitData.health, playerInitData.gravitationalConstant,
 	       // playerInitData.maxVerticalVelocity,
 	       playerInitData.maxFallingJumpNumber,
 	       playerInitData.maxJumpNumber);
@@ -876,9 +874,9 @@ void initPlayer
 
 
 void initBgSprites
-(const yx viewPortSize, const char rulesFileName[], rules & levelRules,
- const backgroundData & background, const std::string & rawRules,
- std::string::const_iterator & buffPos)
+(const double fixedTimeStep, const yx viewPortSize, const char rulesFileName[],
+ rules & levelRules, const backgroundData & background,
+ const std::string & rawRules, std::string::const_iterator & buffPos)
 {
   using namespace levelFileKeywords;
   /* Setup keyword actions associations for background sprite section. This
@@ -1009,7 +1007,7 @@ void initBgSprites
     }
 
   levelRules.bgSprites.push_back
-    (new bgSprite(bgSpriteInitData.spritePaths, viewPortSize,
+    (new bgSprite(fixedTimeStep, bgSpriteInitData.spritePaths, viewPortSize,
 		  bgSpriteInitData.coordinate, bgSpriteInitData.direction,
 		  bgSpriteInitData.displayInForground));
 }
@@ -1840,9 +1838,8 @@ void rules::printRuleChars()
 
 void rules::startTimers()
 {
-  gameTiming.movePlayer.start();
+  gameTiming.physics.start();
   gameTiming.drawTime.start();
-  gamePlayer->velComp.startTimers();
 }
 
 
@@ -1853,8 +1850,21 @@ void rules::physics
   printRuleChars();
 #endif
 
-  if(gameTiming.movePlayer.startNextTick())
+  if(gameTiming.physics.startNextTick())
     {
+      static long counter {};
+            static double timer {};
+	    timer += fixedTimeStep;
+	    counter++;
+    if(timer > 10)
+      {
+	endwin();
+	std::cout<<"timer = "<<timer<<", counter = "<<counter<<'\n';
+	exit(-1);
+      }
+
+
+      
       gamePlayer->movePlayer(secondStageRulesBuffer, input);
       // Update 2nd stage rules buffer position based on player position.
       this->updateViewPortPosition
