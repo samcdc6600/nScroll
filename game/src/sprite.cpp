@@ -116,7 +116,7 @@ sprite::parserPhaseOne(const std::string & spriteFile, spriteData & sD)
 		       from sprite file. */
 		    cS>>sD.cycleSpeed;
 		    // Cycle speed is in ms, so we must convert it to seconds.
-		    sD.cycleSpeed = chronological::milliSecToSec(sD.cycleSpeed);
+		    sD.cycleSpeed = chronological::millisecToSec(sD.cycleSpeed);
 		    runGetCs = false;
 		    iter++; // Move to next positon for next phase of parsing.
 		    continue;

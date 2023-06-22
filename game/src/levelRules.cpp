@@ -124,7 +124,7 @@ namespace levelFileKeywords
       const yx initialCoordinatesVPRel {yHeight / 2, xWidth / 2};
       const sprite::directions direction {sprite::DIR_NONE};
       const int health {16};
-      const double gravitationalConstant {-1.8};
+      const double gravitationalConstant {-1.5};
       // const double gravitationalConstant {-0.38};
       // const double maxVerticalVelocity {1.9};
       const unsigned maxFallingJumpNumber {1};
@@ -1839,7 +1839,6 @@ void rules::printRuleChars()
 void rules::startTimers()
 {
   gameTiming.physics.start();
-  gameTiming.drawTime.start();
 }
 
 
@@ -1849,21 +1848,6 @@ void rules::physics
 #ifdef DEBUG
   printRuleChars();
 #endif
-
-  if(gameTiming.physics.startNextTick())
-    {
-      static long counter {};
-            static double timer {};
-	    timer += fixedTimeStep;
-	    counter++;
-    if(timer > 10)
-      {
-	endwin();
-	std::cout<<"timer = "<<timer<<", counter = "<<counter<<'\n';
-	exit(-1);
-      }
-
-
       
       gamePlayer->movePlayer(secondStageRulesBuffer, input);
       // Update 2nd stage rules buffer position based on player position.
@@ -1888,5 +1872,4 @@ void rules::physics
       // If the player has moved we must update the buffers.
       this->updateBuffers();
       background.updateBuffers();
-    }
 }

@@ -2,6 +2,8 @@
 #define TIME_HPP_
 
 
+#include <chrono>
+#include <thread>
 #include <ctime>
 #include "utils.hpp"
 
@@ -20,6 +22,8 @@ public:
   /* const */ long double tickTime;
   
 private:
+  static constexpr long double millisecondsPerSecond {1000};
+  static constexpr long double nanosecondsPerSecond {1000000000};
   bool started {false};
   /* const */ std::string toSeeIfError;
   /* const */ bool tickTimeSet {false};
@@ -29,8 +33,6 @@ private:
      the real time. */
   std::__1::chrono::system_clock::time_point tLast;
   const long double scaleFactor {1};
-
-
   /* Many public functions belonging to this object (apart from any constructor
      and start() must call this function as their first action. If the public
      member function uses tickTime then it must call this function. */
@@ -125,9 +127,30 @@ public:
     
     return tLast;
   }
+
+
+  /* If the time since the last call is less than tickTime sleep for the
+     difference */
+  void sleepForRemainingTickTime()
+  {
+    checkIfFullyInitialised("sleepForRemainingTickTime()");
+
+    
+    const long double timeElapsed
+      {(duration_cast<std::chrono::duration<long double>>
+	(std::chrono::system_clock::now() - tLast)).count()};
+    const long double remainingTickTime {tickTime - timeElapsed};
+
+    if(remainingTickTime > 0)
+      {
+	std::this_thread::sleep_for(std::chrono::nanoseconds((long long)secToNanoseconds(remainingTickTime)));
+      }
+
+      tLast = std::chrono::system_clock::now();
+  }
+
   
-  
-  bool startNextTick()
+  /*  bool startNextTick()
   {    
     checkIfFullyInitialised("startNextTick()");
 
@@ -137,15 +160,6 @@ public:
   if((duration_cast<std::chrono::duration<long double>>
       (currentTime - tLast)).count() >= (tickTime / scaleFactor))
     {
-      static long callCount {};
-      callCount++;
-      if(callCount > 7000)
-	std::cout<<"callCount = "<<callCount<<'\n';
-
-      std::cout<<(duration_cast<std::chrono::duration<long double>>
-		  (currentTime - tLast)).count()<<'\t'<<(tickTime / scaleFactor)<<'\n';
-
-    
       tLast = currentTime;
       return true;
     }
@@ -153,12 +167,12 @@ public:
     {
       return false;
     }
-  }
+    }*/
 
   
   /* If it is time to start the next tick timeElapsed is set to the time that had
      elapsed since that last time a tick was started (in milliseconds).  */
-  bool startNextTick(double & timeElapsed)
+  /*  bool startNextTick(double & timeElapsed)
   {
     checkIfFullyInitialised("startNextTick(double & timeElapsed)");
 
@@ -177,10 +191,19 @@ public:
     {
       return false;
     }
+    }*/
+
+
+  static constexpr long double millisecToSec(const long double a)
+  {
+    return a / millisecondsPerSecond;
   }
 
-
-  static constexpr double milliSecToSec(const double a) {return a / 1000;}
+  
+  static constexpr long double secToNanoseconds(const long double a)
+  {
+    return a * nanosecondsPerSecond;
+  }
 };
 
 
@@ -188,9 +211,7 @@ public:
    probably not be nested.) */
 struct timers
 {
-  /* physics should always be the same as draw time or some multiple slower. */
   chronological physics {};
-  chronological drawTime {};
 };
 
 

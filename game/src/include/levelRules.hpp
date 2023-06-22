@@ -33,13 +33,13 @@ private:
   /* THE PHYSICS ENGINE SHOULD BE RUN THIS OFTEN (IN REAL SYSTEM TIME.) The
      sprites position should be updated by 1 character in any direction at
      most this often. This is in seconds. */
-  const double masterPhysicsTime {1 / 100.0};
+  const long double physicsTickInterval {1 / 100.0};
   /* ANYTHING TIMING DONE WITHIN THE PHYSICS ENGINE SHOULD USE THIS TIME (THIS
      IS BECAUSE THE PHYSICS ENGINE MAY BE UPDATED AT A SIGNIFICANTLY SLOWER RATE
      THAN MASTERPHYSICSTIME IF THE COMPUTER SYSTEM IS NOT FAST ENOUGH, BECAUSE
      OF THIS WE MUST USE A FIXED VALUE SO THE PHYSICS ENGINE'S CALCULATIONS
      AREN'T EFFECTED. LOOK INTO FIXED TIME STEP FOR MORE INFO. */
-  const double fixedTimeStep {masterPhysicsTime};
+  const long double fixedTimeStep {physicsTickInterval};
   /* The character rules first stage buffer should be larger than 5x5 so that
      non player sprites can move a bit off of the screen without the worry that
      they will move into a rules chunk that is invalid. This way the non player
@@ -191,11 +191,8 @@ public:
       (rulesFileName, rulesBuffer, background);
     checkInitPlayerPosAndPadding();
 
-    /* physics should always be the same as draw time or some multiple slower. */
     gameTiming.physics =
-      chronological{masterPhysicsTime, gameTimingErrorInfo};
-    gameTiming.drawTime =
-      chronological{masterPhysicsTime, gameTimingErrorInfo};
+      chronological{physicsTickInterval, gameTimingErrorInfo};
   }
 
   

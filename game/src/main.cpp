@@ -89,14 +89,10 @@ int gameLoop
       levelRules.physics
 	(background, player::convertDirectionCharsToDirections
 	 (static_cast<player::directionChars>(input)));
-      draw(background, levelRules.gamePlayer, levelRules.bgSprites,
-	   levelRules.gameTiming.drawTime);
+      draw(background, levelRules.gamePlayer, levelRules.bgSprites);
 
-      /* Sleep for some time in micro seconds to give the CPU a rest. This
-	 should not be noticible when playing the game, however it will mean
-	 that the game can potentially spend most of it's time sleeping (if the
-	 CPU is fast enough), as opposed to always usign 100% of it's
-	 quantum. */
-      std::this_thread::sleep_for(std::chrono::microseconds(900));
+      /* Sleep for the rest of the tick time (if we haven't already exceeded
+	 it! */
+      levelRules.gameTiming.physics.sleepForRemainingTickTime();
     }
 }

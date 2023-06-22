@@ -21,8 +21,7 @@ setColorMode colorMode{56};
 
 void draw
 (backgroundData & background,
- player * gamePlayer, std::vector<bgSprite *> & bgSprites,
- chronological & drawTime)
+ player * gamePlayer, std::vector<bgSprite *> & bgSprites)
 {
   /* NOTE THAT A FLAG THAT IS SETTABLE FROM A RULES.LEV FILE SHOULD BE ADDED TO
      THE SPRITE CLASS THAT SPECIFIES IF A SPRITE SHOULD BE DISPLAYED IN FRONT
@@ -54,34 +53,31 @@ void draw
      WOULDN'T HAVE TO ADD ANY EXTRA COMPLEXITY TO SPRITE FILES (THE CODE FOR
      WHICH DEFINITELY NEEDS SOME ATTENTION HAHA.) */
 
-  if(drawTime.startNextTick())
-    {
-      // std::vector<bgSprite *> drawInForground;
+  // std::vector<bgSprite *> drawInForground;
 
-      for(auto bgS: bgSprites)
-        {
-          if(!bgS->displayInForground)
-	    {
-	      bgS->draw(background.secondStageDrawBuffer, true,
-			background.getViewPortPosition());
-	    }
-          // else
-	  //   {
-	  //     /* We think this will probably be faster than searching the whole list
-	  // 	 again if the list is of a large size (and taking into consideration
-	  // 	 that most sprites will probably be behind the player). */
-	  //     drawInForground.push_back(bgS);
-	  //   }
-        }  
-      gamePlayer->draw(background, true);
-      // for(auto bgSF: drawInForground)
+  for(auto bgS: bgSprites)
+    {
+      if(!bgS->displayInForground)
+	{
+	  bgS->draw(background.secondStageDrawBuffer, true,
+		    background.getViewPortPosition());
+	}
+      // else
       //   {
-      //     bgSF->draw(secondStageDrawBuffer, true, viewPortPosition);
+      //     /* We think this will probably be faster than searching the whole list
+      // 	 again if the list is of a large size (and taking into consideration
+      // 	 that most sprites will probably be behind the player). */
+      //     drawInForground.push_back(bgS);
       //   }
+    }  
+  gamePlayer->draw(background, true);
+  // for(auto bgSF: drawInForground)
+  //   {
+  //     bgSF->draw(secondStageDrawBuffer, true, viewPortPosition);
+  //   }
  
-      printDrawBuffer(background.secondStageDrawBuffer, background.chunkSize);
-      refresh();
-    }
+  printDrawBuffer(background.secondStageDrawBuffer, background.chunkSize);
+  refresh();
 }
 
 

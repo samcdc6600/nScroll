@@ -13,7 +13,7 @@ extern const int yHeight;
 
 void draw
 (backgroundData & background, player * playerSprite,
- std::vector<bgSprite *> & bgSprites, chronological & drawTime);
+ std::vector<bgSprite *> & bgSprites);
 // //Draws background at current position into secondStageDrawBuffer.
 void printDrawBuffer
 (backgroundData::chunkElementBaseType * secondStageDrawBuffer, const yx viewPortSize);

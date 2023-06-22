@@ -100,8 +100,8 @@ class animateSprite: public sprite
   public:
     /* The sprites velocity components should not exceed this value at
        any point the sum of the components can be greater however. */
-    const double maxVelocity {36};
-    const double maxYVelocityFalling {86};
+    const double maxVelocity {45};
+    const double maxYVelocityFalling {70};
 
 
     velocity(spriteTimers & t):
@@ -224,7 +224,7 @@ public:
 		const unsigned maxFallingJmpNum, const unsigned maxJmpNum):
     sprite(fixedTimeStep, spritePaths, max, pos, dir),
     timers(fixedTimeStep),
-    jumping(g, 135, maxFallingJmpNum, maxJmpNum),
+    jumping(g, 70, maxFallingJmpNum, maxJmpNum),
     velComp(this->timers)
   {}
 
@@ -325,7 +325,7 @@ int animateSprite::handleHorizontalMovementsWhenStopping(const T coordRules)
       if(input == sprite::DIR_RIGHT)
 	{
 	  distTravelled = velComp.getAndSetDistTravelledInX();
-	  velComp.velocityTowardsZeroInX(8.5);
+	  velComp.velocityTowardsZeroInX(2.5);
 	}
       else
 	{
@@ -340,7 +340,7 @@ int animateSprite::handleHorizontalMovementsWhenStopping(const T coordRules)
       if(input == sprite::DIR_LEFT)
 	{
 	  distTravelled = velComp.getAndSetDistTravelledInX();
-	  velComp.velocityTowardsZeroInX(8.5);
+	  velComp.velocityTowardsZeroInX(2.5);
 	}
       else
 	{
@@ -392,7 +392,7 @@ int animateSprite::handleLeftOrRightCollision
 	  velComp.setXComponentsToZero();
 	}
       distTravelled = velComp.getAndSetDistTravelledInX();
-      velComp.addToXComp(checkRight ? 2.9: - 2.9);
+      velComp.addToXComp(checkRight ? 3.9: - 3.9);
     }
   else
     {

@@ -5,7 +5,6 @@
 #include <string>
 #include <map>
 #include <chrono>
-#include <thread>
 #include "animateSprite.hpp"
 
 
