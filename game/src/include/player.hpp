@@ -43,7 +43,10 @@ public:
   (const double fixedTimeStep, const backgroundData &background,
    std::vector<std::string> spritePaths, const yx initialPosVPRel,
    const sprite::directions dir, const int health,
-   const double g, const unsigned maxFallingJmpNum, const unsigned maxJmpNum);
+   const double g, const double jumpingPower, const unsigned maxFallingJmpNum,
+   const unsigned maxJmpNum, const double maxVelocity,
+   const double maxYVelocityFalling, const double leftAcceleration,
+   const double rightAcceleration);
   
   virtual ~player() {};
   // Unlike sprite player needs to handle input direction characters.

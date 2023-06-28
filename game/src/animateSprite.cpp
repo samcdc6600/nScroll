@@ -79,30 +79,13 @@ void animateSprite::velocity::addToYCompUnconstrained(const double a)
 
 
 int animateSprite::velocity::getAndSetDistTravelledInY()
-{
-
-    //   static double timer {};
-    // timer += timers.getTimeSinceLastYUpdate();
-
-  
-
-  
+{  
   int ret {};
   // Get distance travelled since this func was last called.
   distTravelled.y +=
     comps.y * timers.getTimeSinceLastYUpdate() * yVelocitySailFactor;
   timers.resetTimeSinceLastYUpdate();
 
-
-
-//   if(distTravelled.y > 2)
-//     {
-//       endwin();
-// std::cout<<"too bad!  "<<timer<<'\n';
-//     exit(-1);
-//     }
-    
-  
   if(distTravelled.y > 1)
     {
       ret = 1;
@@ -123,6 +106,8 @@ int animateSprite::velocity::getAndSetDistTravelledInX()
   int ret {};
   // Get distance travelled since this func was last called.
   distTravelled.x += comps.x * timers.getTimeSinceLastXUpdate();
+  /* TODO: resetTimeSinceLastXUpdate should not be called here! (see other note
+     in handleHorizontalMovementsWhenStopping()! */
   timers.resetTimeSinceLastXUpdate();
   
   if(distTravelled.x > 1)

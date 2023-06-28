@@ -33,7 +33,7 @@ private:
   /* THE PHYSICS ENGINE SHOULD BE RUN THIS OFTEN (IN REAL SYSTEM TIME.) The
      sprites position should be updated by 1 character in any direction at
      most this often. This is in seconds. */
-  const long double physicsTickInterval {1 / 100.0};
+  const long double physicsTickInterval {1 / 120.0};
   /* ANYTHING TIMING DONE WITHIN THE PHYSICS ENGINE SHOULD USE THIS TIME (THIS
      IS BECAUSE THE PHYSICS ENGINE MAY BE UPDATED AT A SIGNIFICANTLY SLOWER RATE
      THAN MASTERPHYSICSTIME IF THE COMPUTER SYSTEM IS NOT FAST ENOUGH, BECAUSE
@@ -89,8 +89,15 @@ private:
   
   // ==== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files START ===
   // ===========================================================================
-  // Where rulesBuffer holds the contents of a RULES_CONFIG_FILE_EXTENSION file.
-  void parseRulesConfigFileAndInitialiseVariables
+  /* Removes comments from rulesBuffer and calls
+     parseRulesConfigFileAndInitialiseVariablesStageTwo(). Where rulesBuffer
+     holds the contents of a RULES_CONFIG_FILE_EXTENSION file. */
+  void parseRulesConfigFileAndInitialiseVariablesStageOne
+  (const char rulesFileName [], std::string & rulesBuffer,
+   const backgroundData & background);
+  /* Where rulesBuffer holds the contents of a RULES_CONFIG_FILE_EXTENSION file
+     that has no comments. */
+  void parseRulesConfigFileAndInitialiseVariablesStageTwo
   (const char rulesFileName [], const std::string & rulesBuffer,
    const backgroundData & background);
   /* Checks the validity of the initial values for the relative player position
@@ -187,8 +194,8 @@ public:
     loadFileIntoString
       (rulesFileName, rulesBuffer,
        concat("trying to read ", RULES_CONFIG_FILE_EXTENSION, " file"));
-    parseRulesConfigFileAndInitialiseVariables
-      (rulesFileName, rulesBuffer, background);
+    parseRulesConfigFileAndInitialiseVariablesStageOne
+      (rulesFileName, Comments(rulesBuffer), background);
     checkInitPlayerPosAndPadding();
 
     gameTiming.physics =

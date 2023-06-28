@@ -34,8 +34,8 @@ namespace levelFileKeywords
       /* If action needs to return anything the address of a variable of the
 	 appropriate type should be passed to the function via retObj. If the
 	 function doesn't encounter any error (in which case it should print a
-	 message and exit) *retObj should be populated with what is essential the
-	 return value of the function. */
+	 message and exit) *retObj should be populated with what is essential
+	 the return value of the function. */
       void (* action)(const std::string & buff,
 		     std::string::const_iterator & buffPos,
 		     const std::string & eMsg, void * retObj);
@@ -48,34 +48,74 @@ namespace levelFileKeywords
 			    std::string::const_iterator & buffPos);
     };
   };
-  // Each new section should start with a header char followed by this char.
-  constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
-  constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
-  // constexpr char RULES_HEADER_END_DENOTATION [] {"\n#"};
-  // Header section header. ====================================================
-  const std::string PLAYER_HEADER_SECTION_SPECIFIER {"player"};
-  const std::string BG_SPRITE_HEADER_SECTION_SPECIFIER {"backgroundSprite"};
-  const std::string SPRITE_FILE_SECTION_HEADER		{"sprites"};
-  // Header sub section headers. ===============================================
-  // Sub section headers for general sprite stuff and player. ==================
-  const std::string SPRITE_INIT_COORD_SECTION_HEADER	{"initialCoordinate"};
-  // Sub section headers for player sprite. ====================================
-  /* Initial position of the view port. */
-  const std::string PLAYER_VIEW_PORT_INIT_COORD_SECTION_HEADER
-    {"initialViewPortCoordinate"};
-  const std::string PLAYER_INIT_COORD_VP_REL_SECTION_HEADER
-    {"initialCoordinateViewPortRelative"};
-  /* The player sprite cannot be within this many characters of any edge of the
-     view port. */
-  const std::string VIEW_PORT_PADDING			 {"viewPortPadding"};
-  const std::string SPRITE_INIT_DIR_SECTION_HEADER	{"initialDirection"};
-  const std::string SPRITE_HEALTH_SECTION_HEADER	{"initialHealth"};
-  const std::string SPRITE_GRAV_CONST_SECTION_HEADER	{"gravConst"};
-  const std::string SPRITE_MAX_VERT_V_SECTION_HEADER	{"maxVelocity"};
-  const std::string SPRITE_MAX_FALL_JMP_SECTION_HEADER	{"maxJumpsAfterFall"};
-  const std::string SPRITE_MAX_JMP_NUM_SECTION_HEADER	{"maxJumps"};
-  // Sub section headers for background sprite.
-  const std::string SPRITE_DISPLAY_IN_FORGROUND         {"displayInForground"};
+
+  namespace alphabet
+  {
+    namespace alphMisc
+    {
+      const std::string COMMENT_START_DELIMITER {"/*"};
+      const std::string COMMENT_END_DELIMITER   {"*/"};
+      // Each new section should start with a header char followed by this char.
+      constexpr char RULES_HEADER_SECTION_START_DENOTATION  {'('};
+      constexpr char RULES_HEADER_SECTION_END_DENOTATION    {')'};
+      constexpr char STRING_DENOTATION		{'\"'};
+      constexpr char STRING_SEPARATION		{','};
+      constexpr char ESC_CHAR			{'\\'};
+      constexpr char COORD_SEPARATION		{','};
+      /* If this character is encountered in the main section of a
+	 RULES_CONFIG_FILE_EXTENSION file the character 2 places after it should
+	 be an ASCII number. After this number there can be a string of
+	 contiguous ASCII numbers (up to some maximum) that together represent
+	 some larger number. This number is the number of times the ASCII
+	 character before the number should be repeated. */
+      constexpr char RULES_MAIN_RUNLENGTH_BEGIN_CHAR {'R'};
+    };
+    
+    namespace mainHeaders
+    {
+      /* Headers that can appear in the top level of a rules.lev file (they may
+	 also appear in inner levels.) */
+      const std::string PLAYER_HEADER_SECTION_SPECIFIER   {"player"};
+      const std::string BG_SPRITE_HEADER_SECTION_SPECIFIER{"backgroundSprite"};
+    };
+
+    namespace sprites
+    {
+      // Header denoting a file directory/s section for sprite file/s.
+      const std::string FILE_SECTION_HEADER	{"sprites"};
+      
+      namespace player
+      {
+	const std::string VIEW_PORT_INIT_COORD	{"initialViewPortCoordinate"};
+	// Initial coordinate of the player relative to the view port.
+	const std::string INIT_COORD_VP_REL
+	  				  {"initialCoordinateViewPortRelative"};
+	/* The player sprite cannot be within this many characters of any edge
+	   of the view port. */
+	const std::string VIEW_PORT_PADDING	{"viewPortPadding"};
+      };
+      
+      const std::string INIT_COORD		{"initialCoordinate"};
+      const std::string INIT_DIR 		{"initialDirection"};
+      const std::string HEALTH      		{"initialHealth"};
+      const std::string GRAV_CONST  		{"gravConst"};  
+      /* The added to the y component of a sprites velocity when it jumps. This
+         is also the maximum y velocity in the up direction. */
+      const std::string JUMPING_POWER              {"jumpingPower"};
+      /* How many jumps can a sprite do after it falls (without jumping off the
+	 ground first) */
+      const std::string MAX_FALL_JMP		{"maxJumpsAfterFall"};
+      const std::string MAX_JMP_NUM 		{"maxJumps"};
+      const std::string MAX_X_VELOCITY             {"maxXVelocity"};
+      const std::string MAX_FALLING_VELOCITY	   {"maxFallingVelocity"};
+      const std::string LEFT_ACCELERATION          {"leftAcceleration"};
+      const std::string RIGHT_ACCELERATION         {"rightAcceleration"};
+      /* Display sprite in front of or behind the player sprite. */
+      const std::string DISPLAY_IN_FORGROUND	{"displayInForground"};
+    };
+  };
+
+  
   // Used to store the order of a keyword and whether it has a default value.
   struct orderAndDefaultVal
   {
@@ -83,36 +123,44 @@ namespace levelFileKeywords
     bool defaultVal;
   };
   /* Used to map keywords to unique int values so appropriate action can be
-     taken for those keywords when parsing specific section section. KEY ORDER
+     taken for those keywords when parsing specific sections. KEY ORDER
      (first value of orderAndDefaultVal) OF THESE OBJECTS SHOULD MATCH switches
      that use these objects.! */
   const std::map<std::string, orderAndDefaultVal> headerSectionKeywordToId
     {
-      {PLAYER_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {0, false}},
-      {BG_SPRITE_HEADER_SECTION_SPECIFIER,	orderAndDefaultVal {1, false}}
+      {alphabet::mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+       						orderAndDefaultVal {0, false}},
+      {alphabet::mainHeaders::BG_SPRITE_HEADER_SECTION_SPECIFIER,
+       						orderAndDefaultVal {1, false}}
     };
   const std::map<std::string, orderAndDefaultVal> playerSectionKeywordToId
     {
-      {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
-      {PLAYER_VIEW_PORT_INIT_COORD_SECTION_HEADER, orderAndDefaultVal
-       {1, false}},
-      {PLAYER_INIT_COORD_VP_REL_SECTION_HEADER,
-       orderAndDefaultVal {2, false}},
-      {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {3, true}},
-      {SPRITE_HEALTH_SECTION_HEADER,	orderAndDefaultVal {4, true}},
-      {SPRITE_GRAV_CONST_SECTION_HEADER,	orderAndDefaultVal {5, true}},
-      {SPRITE_MAX_VERT_V_SECTION_HEADER,	orderAndDefaultVal {6, true}},
-      {SPRITE_MAX_FALL_JMP_SECTION_HEADER, orderAndDefaultVal {7, true}},
-      {SPRITE_MAX_JMP_NUM_SECTION_HEADER,	orderAndDefaultVal {8, true}},
-      {VIEW_PORT_PADDING, orderAndDefaultVal {9, true}}
+      {alphabet::sprites::FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
+      {alphabet::sprites::player::VIEW_PORT_INIT_COORD,
+       						orderAndDefaultVal {1, false}},
+      {alphabet::sprites::player::INIT_COORD_VP_REL,
+       						orderAndDefaultVal {2, false}},
+      {alphabet::sprites::INIT_DIR,	       	orderAndDefaultVal {3, true}},
+      {alphabet::sprites::HEALTH,	       	orderAndDefaultVal {4, true}},
+      {alphabet::sprites::GRAV_CONST,	       	orderAndDefaultVal {5, true}},
+      {alphabet::sprites::JUMPING_POWER,	orderAndDefaultVal {6, true}},
+      {alphabet::sprites::MAX_FALL_JMP,		orderAndDefaultVal {7, true}},
+      {alphabet::sprites::MAX_JMP_NUM,	       	orderAndDefaultVal {8, true}},
+      {alphabet::sprites::player::VIEW_PORT_PADDING,
+					        orderAndDefaultVal {9, true}},
+      {alphabet::sprites::MAX_X_VELOCITY,	orderAndDefaultVal {10, true}},
+      {alphabet::sprites::MAX_FALLING_VELOCITY, orderAndDefaultVal {11, true}},
+      {alphabet::sprites::LEFT_ACCELERATION, 	orderAndDefaultVal {12, true}},
+      {alphabet::sprites::RIGHT_ACCELERATION,	orderAndDefaultVal {13, true}}
     };
   const std::map<std::string, orderAndDefaultVal> bgSpriteSectionKeywordToId
     {
-      {SPRITE_FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
-      {SPRITE_INIT_COORD_SECTION_HEADER,	orderAndDefaultVal {1, false}},
-      {SPRITE_INIT_DIR_SECTION_HEADER,	orderAndDefaultVal {2, true}},
-      {SPRITE_DISPLAY_IN_FORGROUND,       orderAndDefaultVal {3, true}}
+      {alphabet::sprites::FILE_SECTION_HEADER,	orderAndDefaultVal {0, false}},
+      {alphabet::sprites::INIT_COORD,		orderAndDefaultVal {1, false}},
+      {alphabet::sprites::INIT_DIR,     	orderAndDefaultVal {2, true}},
+      {alphabet::sprites::DISPLAY_IN_FORGROUND,	orderAndDefaultVal {3, true}}
     };
+  
   namespace defaultValues
   {
     /* These default values can only be used if defaultVal is set to true in
@@ -121,14 +169,17 @@ namespace levelFileKeywords
     namespace player
     {
       const std::vector<std::string> spritePaths {{""}};
-      const yx initialCoordinatesVPRel {yHeight / 2, xWidth / 2};
-      const sprite::directions direction {sprite::DIR_NONE};
-      const int health {16};
-      const double gravitationalConstant {-1.5};
-      // const double gravitationalConstant {-0.38};
-      // const double maxVerticalVelocity {1.9};
-      const unsigned maxFallingJumpNumber {1};
-      const unsigned maxJumpNumber {3};
+      const yx initialCoordinatesVPRel		 {yHeight / 2, xWidth / 2};
+      const sprite::directions direction	 {sprite::DIR_NONE};
+      const int health				 {16};
+      const double gravitationalConstant	 {-1.5};
+      const double jumpingPower			 {80};
+      const unsigned maxFallingJumpNumber	 {1};
+      const unsigned maxJumpNumber		 {3};
+      const double maxXVelocity			 {44};
+      const double maxFallingVelocity		 {jumpingPower};
+      const double leftAcceleration		 {2.5};
+      const double rightAcceleration		 {2.5};
     }
     namespace bgSprites
     {
@@ -147,14 +198,18 @@ namespace levelFileKeywords
      eventually be initialised with. */
   struct playerInitialData
   {
-    std::vector<std::string> spritePaths {};
-    yx initialCoordinatesVPRel {};
-    sprite::directions direction {};
-    int health {};
-    double gravitationalConstant {};
-    // double maxVerticalVelocity {};
-    unsigned maxFallingJumpNumber {};
-    unsigned maxJumpNumber {};
+    std::vector<std::string> spritePaths       	{};
+    yx initialCoordinatesVPRel 		       	{};
+    sprite::directions direction 		{};
+    int health 					{};
+    double gravitationalConstant 		{};
+    double jumpingPower 			{};
+    unsigned maxFallingJumpNumber 		{};
+    unsigned maxJumpNumber 			{};
+    double maxXVelocity 			{};
+    double maxFallingVelocity 			{};
+    double leftAcceleration			{};
+    double rightAcceleration			{};
   };
   /* This struct should be populated with the values read in for use with the
      constructor of the next background sprite to be created. */
@@ -172,30 +227,17 @@ namespace levelFileKeywords
     yx initialViewPortCoordinates;
     yx viewPortPadding;
   } misc;
-  // Misc.
-  constexpr char STRING_DENOTATION		{'\"'};
-  constexpr char STRING_SEPARATION		{','};
-  constexpr char STRING_ESC			{'\\'};
-  constexpr char COORD_SEPARATION		{','};
-  // constexpr char DIR_START_ABS			{'/'};
-  // constexpr char DIR_START_REL			{'.'};
-  /* The character used for escape sequences (within a string) in
-     RULES_CONFIG_FILE_EXTENSION files. */
-  // constexpr char ESCAPE_CHAR {'\\'};
-  // constexpr char COORD_SEPERATION {','}; // Separating character between coordinates.
-  // constexpr char NULL_BYTE {'\0'};
-  /* If this character is encountered in the main section of a
-     RULES_CONFIG_FILE_EXTENSION file the character 2 places after it should be
-     an ASCII number. After this number there can be a string of contiguous
-     ASCII numbers (up to some maximum) that together represent some larger
-     number. This number is the number of times the ASCII character before the
-     number should be repeated. */
-  constexpr char RULES_MAIN_RUNLENGTH_BEGIN_CHAR {'R'};
-} // namespace levelFileKeywords
+}
 
 
 // ===== Headers Related To Loading RULES_CONFIG_FILE_EXTENSION Files START ====
 // =============================================================================
+/* removes any comments of the form from
+   COMMENT_START_DELIMITER...COMMENT_END_DELIMITER
+   Where ... is some string of zero or more length. Everything
+   in between and including the comment delimiters is removed in place. If a
+   malformed comment is found then eMsg is printed and the program is exited. */
+void removeComments(std::string & buffer, const std::string & eMsg);
 void initPlayer
 (const double fixedTimeStep, const yx viewPortSize, const char rulesFileName [],
  rules & levelRules, const backgroundData & background,
@@ -252,6 +294,15 @@ void readSingleCoordSection
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const bool useIntegers,
  void * coord, const std::string typeOfNumber, const bool skipSpace = true);
+/* Reads a section with one real number. */
+void readSingleRealNumSection
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, void * real);
+/* Same as readSingleRealNumSection with the exception that it will print an
+   error message (that includes eMsg) if the number read is less than 0. */
+void readSinglePositiveRealNumSection
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, void * real);
 /* Attempts to read a boolean for a section in buff starting at buffPos. Emsg
    will be embedded in any error message/s the function spits out and should
    START say something about the context in which the function was called. Returns
@@ -369,7 +420,7 @@ void rules::decompressChunk
  const char coordRulesFileName[]) const
 {
   const char runLenBeginChar
-    {levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR};
+    {levelFileKeywords::alphabet::alphMisc::RULES_MAIN_RUNLENGTH_BEGIN_CHAR};
   std::string::const_iterator buffPos {std::begin(chunkIn)};
   int lineNumber {};
   int lineLength {};
@@ -471,8 +522,9 @@ void rules::checkRuleChar
     }
   std::stringstream e {};
   e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
-    "line, \""<<levelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR<<"\" or in "
-    "the set of rule characters (";
+    "line, \""
+   <<levelFileKeywords::alphabet::alphMisc::RULES_MAIN_RUNLENGTH_BEGIN_CHAR
+   <<"\" or in the set of rule characters (";
   for(char rule: boarderRuleChars::CHARS)
     {
       e<<rule<<", ";
@@ -512,12 +564,22 @@ void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
 }
 
 
+void rules::parseRulesConfigFileAndInitialiseVariablesStageOne
+(const char rulesFileName [], std::string & rulesBuffer,
+ const backgroundData & background)
+{
+  removeComments(rulesBuffer);
+  parseRulesConfigFileAndInitialiseVariablesStageTwo
+    (rulesFileName, rulesBuffer, background);
+}
 
-void rules::parseRulesConfigFileAndInitialiseVariables
+
+void rules::parseRulesConfigFileAndInitialiseVariablesStageTwo
 (const char rulesFileName [], const std::string & rulesBuffer,
  const backgroundData & background)
 {
   using namespace levelFileKeywords;
+  using namespace alphabet;
 
   std::string::const_iterator buffPos {std::begin(rulesBuffer)};
 
@@ -534,9 +596,10 @@ void rules::parseRulesConfigFileAndInitialiseVariables
      function should be set nullptr. */
   std::vector<keywordAction::headerKeywordAction> headerKeywordActions
     {keywordAction::headerKeywordAction
-     {PLAYER_HEADER_SECTION_SPECIFIER, nullptr, initPlayer, false},
+     {mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER, nullptr, initPlayer, false},
      keywordAction::headerKeywordAction
-     {BG_SPRITE_HEADER_SECTION_SPECIFIER, nullptr, initBgSprites, true}};
+     {mainHeaders::BG_SPRITE_HEADER_SECTION_SPECIFIER, nullptr, initBgSprites,
+      true}};
 
   std::vector<std::string> targets {};
   std::string targetFound {};
@@ -667,9 +730,9 @@ void rules::checkInitPlayerPosAndPadding()
      (chunkSize.x / 2))
     {
       // Padding is too large.
-      exit(concat("Error: ", levelFileKeywords::VIEW_PORT_PADDING, " + ",
-		  maxBR + yx{1}, " (player height and width) / 2 ",
-		  PLAYER_MOVEMENT_AREA_PADDING + yx{1} +
+      exit(concat("Error: ", levelFileKeywords::alphabet::sprites::player::
+		  VIEW_PORT_PADDING, " + ", maxBR + yx{1}, " (player height and"
+		  " width) / 2 ", PLAYER_MOVEMENT_AREA_PADDING + yx{1} +
 		  yx{maxBR.y / 2, maxBR.x / 2}, " is more than chunk size / 2 ",
 		  yx{chunkSize.y / 2, chunkSize.x / 2}, " and shouldn't be."),
 	   ERROR_PLAYER_PADDING_RANGE);
@@ -692,12 +755,58 @@ void rules::checkInitPlayerPosAndPadding()
 }
 
 
+void removeComments(std::string & buffer, const std::string & eMsg)
+{
+  //COMMENT_START_DELIMITER
+  //COMMENT_END_DELIMITER
+  using namespace levelFileKeywords::alphabet::alphMisc;
+
+  bool inComment {false};
+  bool inString {false};
+  ssize_t commentStartsAt {};
+  
+  for(ssize_t iter {}; iter < buffer.size() - COMMENT_END_DELIMITER.size() &&
+	iter < buffer.size() - COMMENT_START_DELIMITER.size(); ++iter)
+    {
+      // If not in string...
+      // If comment started...
+
+      if(!inComment)
+	{
+	  if(checkForStringInBufferAtPos
+	 (buffer, iter, concat(), ESC_CHAR + STRING_DENOTATION))
+	    {
+	      if(!inString)
+		{
+		}
+	      else
+		{
+		}
+	    }
+	}
+      
+      if(!inComment && !inString && checkForStringInBufferAtPos
+	 (buffer, iter, concat(), COMMENT_START_DELIMITER))
+	{
+	  inComment = true;
+	  commentStartsAt = iter;
+	}
+      if(inComment && checkForStringInBufferAtPos
+	 (buffer, iter, concat(), COMMENT_END_DELIMITER)
+	{
+	  inComment = false;
+	  buffer.erase(commentStartsAt, iter + COMMENT_END_DELIMITER.size() -1);
+	}
+    }
+}
+
+
 void initPlayer
 (const double fixedTimeStep, const yx viewPortSize, const char rulesFileName[],
  rules & levelRules, const backgroundData & background,
  const std::string & rawRules, std::string::const_iterator & buffPos)
 {
-  using namespace levelFileKeywords;
+  using namespace levelFileKeywords::alphabet;
 
   /* Setup keyword actions associations for player section. This should contain
      an entry for each thing that the player constructor takes. If there is a
@@ -706,36 +815,43 @@ void initPlayer
      value and the action function should be set nullptr. */
   std::vector<keywordAction::headerKeywordAction> playerHeaderKeywordActions
     {keywordAction::headerKeywordAction
-     {SPRITE_FILE_SECTION_HEADER, readStringsSection},
+     {sprites::FILE_SECTION_HEADER,	     readStringsSection},
      keywordAction::headerKeywordAction
-     {PLAYER_VIEW_PORT_INIT_COORD_SECTION_HEADER,
-      readSingleCoordSectionInZNumbers},
+     {sprites::player::VIEW_PORT_INIT_COORD, readSingleCoordSectionInZNumbers},
      keywordAction::headerKeywordAction
-     {PLAYER_INIT_COORD_VP_REL_SECTION_HEADER,
-      readSingleCoordSectionInNNumbers},
+     {sprites::player::INIT_COORD_VP_REL,    readSingleCoordSectionInNNumbers},
      keywordAction::headerKeywordAction
-     {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
+     {sprites::INIT_DIR,		     nullptr},
      keywordAction::headerKeywordAction
-     {SPRITE_HEALTH_SECTION_HEADER, nullptr},
+     {sprites::HEALTH,	 		     nullptr},
      keywordAction::headerKeywordAction
-     {SPRITE_GRAV_CONST_SECTION_HEADER, nullptr},
+     {sprites::GRAV_CONST, 		     nullptr},
      keywordAction::headerKeywordAction
-     {SPRITE_MAX_VERT_V_SECTION_HEADER, nullptr},
+     {sprites::JUMPING_POWER,		     readSinglePositiveRealNumSection},
      keywordAction::headerKeywordAction
-     {SPRITE_MAX_FALL_JMP_SECTION_HEADER, nullptr},
+     {sprites::MAX_FALL_JMP, 		     nullptr},
      keywordAction::headerKeywordAction
-     {SPRITE_MAX_JMP_NUM_SECTION_HEADER, nullptr},
+     {sprites::MAX_JMP_NUM, 		     nullptr},
      keywordAction::headerKeywordAction
-     {VIEW_PORT_PADDING, readSingleCoordSectionInNNumbers}};
+     {sprites::player::VIEW_PORT_PADDING,    readSingleCoordSectionInNNumbers},
+     keywordAction::headerKeywordAction
+     {sprites::MAX_X_VELOCITY,		     readSinglePositiveRealNumSection},
+     keywordAction::headerKeywordAction
+     {sprites::MAX_FALLING_VELOCITY,	     readSinglePositiveRealNumSection},
+     keywordAction::headerKeywordAction
+     {sprites::LEFT_ACCELERATION,	     readSinglePositiveRealNumSection},
+     keywordAction::headerKeywordAction
+     {sprites::RIGHT_ACCELERATION,	     readSinglePositiveRealNumSection}};
 
   std::vector<std::string> targets {};
   std::string targetFound {};
 
   readSectionOpeningBracket
     (rawRules, buffPos,
-     concat("reading header sub section ", PLAYER_HEADER_SECTION_SPECIFIER,
-	    " from \"", rulesFileName, "\""),
-     concat("a ", PLAYER_HEADER_SECTION_SPECIFIER, " section"));
+     concat("reading header sub section ",
+	    mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER, " from \"",
+	    rulesFileName, "\""),
+     concat("a ", mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER, " section"));
   
   for(auto keywordAction: playerHeaderKeywordActions)
     {
@@ -763,14 +879,14 @@ void initPlayer
 	    {
 	      if(playerHeaderKeywordActions[foundIter].found)
 		{
-		  std::stringstream e {};
-		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
-		   <<" header file \""<<rulesFileName
-		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
-		    "reading header sub section "
-		   <<PLAYER_HEADER_SECTION_SPECIFIER<<", however this keyword "
-		    "is only expected once in this section.\n";
-		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		  exit(concat
+		       ("Error: reading ", RULES_CONFIG_FILE_EXTENSION,
+			" header file \"", rulesFileName, "\". Encountered "
+			"keyword \"", targetFound, "\" twice when reading "
+			"header sub section ",
+			mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+			", however this keyword is only expected once in this "
+			"section.\n").c_str(), ERROR_RULES_LEV_HEADER);
 		}
 	      switch(playerSectionKeywordToId.at(targetFound).order)
 		{
@@ -778,9 +894,10 @@ void initPlayer
 		  playerHeaderKeywordActions[foundIter].found = true;
 		  playerHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
-		     concat("reading sprite dir strings from ",
-			    RULES_CONFIG_FILE_EXTENSION, " header "
-			    "file \"", rulesFileName, "\""),
+		     concat("reading sprite dir strings form ",
+			    mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+			    " section of ", RULES_CONFIG_FILE_EXTENSION,
+			    " header file \"", rulesFileName, "\""),
 		     &playerInitData.spritePaths);
 		  break;
 		case 1:
@@ -788,20 +905,21 @@ void initPlayer
 		  playerHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
 		     concat("reading coord section (from ",
-			    RULES_CONFIG_FILE_EXTENSION, " header file "
-			    "\"", rulesFileName, "\") for the initial view port"
-			    " position"),
+			    mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+			    " section of ", RULES_CONFIG_FILE_EXTENSION,
+			    " header file \"", rulesFileName, "\") for the "
+			    "initial view port position"),
 		     &misc.initialViewPortCoordinates);
-		     //&playerInitData.initialViewPortCoordinates);
 		  break;
 		case 2:
 		  playerHeaderKeywordActions[foundIter].found = true;
 		  playerHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
 		     concat("reading coord section (from ",
-			    RULES_CONFIG_FILE_EXTENSION, " header file "
-			    "\"", rulesFileName, "\") for the initial relative"
-			    " player coordinate"),
+			    mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+			    " section of ", RULES_CONFIG_FILE_EXTENSION,
+			    " header file \"", rulesFileName, "\") for the "
+			    "initial relative player coordinate"),
 		     &playerInitData.initialCoordinatesVPRel);
 		  break;
 		case 3:
@@ -811,7 +929,16 @@ void initPlayer
 		case 5:
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
 		case 6:
-		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
+		  playerHeaderKeywordActions[foundIter].found = true;
+		  playerHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat
+		     ("reading positive real number section (from ",
+		      mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+		      " section of ", RULES_CONFIG_FILE_EXTENSION, " header "
+		      "file \"", rulesFileName, "\") for the initial players "
+		      "jumping power"), &playerInitData.jumpingPower);
+		  break;
                 case 7:
 		  goto ENCOUNTERED_FORBIDDEN_KEYWORD;
 		case 8:
@@ -820,24 +947,70 @@ void initPlayer
 		  playerHeaderKeywordActions[foundIter].found = true;
 		  playerHeaderKeywordActions[foundIter].action
 		    (rawRules, buffPos,
-		     concat("reading \"coord section\" (from",
-			    RULES_CONFIG_FILE_EXTENSION, " header file "
-			    "\"", rulesFileName, "\") for the view port "
-			    "padding values"),
+		     concat("reading \"coord section\" (from ",
+			    mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+			    " section of ", RULES_CONFIG_FILE_EXTENSION,
+			    " header file \"", rulesFileName, "\") for the view"
+			    "port padding values"),
 		     &misc.viewPortPadding);
+		  break;
+		case 10:
+		  playerHeaderKeywordActions[foundIter].found = true;
+		  playerHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat("reading positive real number section (from ",
+			    mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+			    " section of ", RULES_CONFIG_FILE_EXTENSION,
+			    " header file \"", rulesFileName, "\") for the "
+			    "maximum x velocity"),
+		     &playerInitData.maxXVelocity);
+		  break;
+		case 11:
+		  playerHeaderKeywordActions[foundIter].found = true;
+		  playerHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat("reading positive real number section (from ",
+			    mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+			    " section of ", RULES_CONFIG_FILE_EXTENSION,
+			    " header file \"", rulesFileName, "\") for the "
+			    "maximum falling velocity"),
+		     &playerInitData.maxFallingVelocity);
+		  break;
+		case 12:
+		  playerHeaderKeywordActions[foundIter].found = true;
+		  playerHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat("reading positive real number section (from ",
+			    mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+			    " section of ", RULES_CONFIG_FILE_EXTENSION,
+			    " header file \"", rulesFileName, "\") for the left"
+			    " acceleration"),
+		     &playerInitData.leftAcceleration);
+		  break;
+		case 13:
+		  playerHeaderKeywordActions[foundIter].found = true;
+		  playerHeaderKeywordActions[foundIter].action
+		    (rawRules, buffPos,
+		     concat("reading positive real number section (from ",
+			    mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+			    " section of ", RULES_CONFIG_FILE_EXTENSION,
+			    " header file \"", rulesFileName, "\") for the "
+			    "right acceleration"),
+		     &playerInitData.rightAcceleration);
+		  break;
 		}
 
 	      if(false)
 		{
 		ENCOUNTERED_FORBIDDEN_KEYWORD:
-		  std::stringstream e {};
-		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
-		   <<" header file \""<<rulesFileName
-		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
-		    "reading header sub section "
-		   <<PLAYER_HEADER_SECTION_SPECIFIER<<", however this keyword "
-		    "is forbidden.\n";
-		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		  exit(concat
+		       ("Error: reading ", RULES_CONFIG_FILE_EXTENSION,
+			" header file \"", rulesFileName, "\". Encountered "
+			"keyword \"", targetFound, "\" when reading header sub "
+			"section ",
+			mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER,
+			", however this keyword is forbidden.\n").c_str(),
+		       ERROR_RULES_LEV_HEADER);
 		}
 	    }
 	}
@@ -845,9 +1018,10 @@ void initPlayer
 
   readSectionEndingBracket
     (rawRules, buffPos,
-     concat("reading header sub section ", PLAYER_HEADER_SECTION_SPECIFIER,
-	    " from \"", rulesFileName, "\""),
-     concat(PLAYER_HEADER_SECTION_SPECIFIER, " section"));
+     concat("reading header sub section ",
+	    mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER, " from \"",
+	    rulesFileName, "\""),
+     concat(mainHeaders::PLAYER_HEADER_SECTION_SPECIFIER, " section"));
   
   // Check that we've encountered all keywords that were searched for.
   for(auto keywordAction: playerHeaderKeywordActions)
@@ -860,16 +1034,22 @@ void initPlayer
 	     buffPos, rulesFileName);
 	}
     }
-
+  
   levelRules.gamePlayer =
-    new player(fixedTimeStep, background, playerInitData.spritePaths,
-	       // misc.viewPortPadding,
-	       // misc.initialViewPortCoordinates,
-	       playerInitData.initialCoordinatesVPRel, playerInitData.direction,
-	       playerInitData.health, playerInitData.gravitationalConstant,
-	       // playerInitData.maxVerticalVelocity,
+    new player(fixedTimeStep,
+	       background,
+	       playerInitData.spritePaths,
+	       playerInitData.initialCoordinatesVPRel,
+	       playerInitData.direction,
+	       playerInitData.health,
+	       playerInitData.gravitationalConstant,
+	       playerInitData.jumpingPower,
 	       playerInitData.maxFallingJumpNumber,
-	       playerInitData.maxJumpNumber);
+	       playerInitData.maxJumpNumber,
+	       playerInitData.maxXVelocity,
+	       playerInitData.maxFallingVelocity,
+	       playerInitData.leftAcceleration,
+	       playerInitData.rightAcceleration);
 }
 
 
@@ -879,6 +1059,7 @@ void initBgSprites
  const std::string & rawRules, std::string::const_iterator & buffPos)
 {
   using namespace levelFileKeywords;
+  using namespace alphabet;
   /* Setup keyword actions associations for background sprite section. This
      should contain an entry for each thing that the bgSprite constructor takes.
      If there is a variable that the bgSprite constructor needs but we don't
@@ -886,22 +1067,23 @@ void initBgSprites
      a default value and the action function should be set nullptr. */
   std::vector<keywordAction::headerKeywordAction> bgSpriteHeaderKeywordActions
     {keywordAction::headerKeywordAction
-     {SPRITE_FILE_SECTION_HEADER, readStringsSection},
+     {alphabet::sprites::FILE_SECTION_HEADER, readStringsSection},
      keywordAction::headerKeywordAction
-     {SPRITE_INIT_COORD_SECTION_HEADER, readSingleCoordSectionInZNumbers},
+     {sprites::INIT_COORD,		      readSingleCoordSectionInZNumbers},
      keywordAction::headerKeywordAction
-     {SPRITE_INIT_DIR_SECTION_HEADER, nullptr},
+     {sprites::INIT_DIR,		      nullptr},
      keywordAction::headerKeywordAction
-     {SPRITE_DISPLAY_IN_FORGROUND, readBoolSection}};
+     {sprites::DISPLAY_IN_FORGROUND,	      readBoolSection}};
 
   std::vector<std::string> targets {};
   std::string targetFound {};
 
     readSectionOpeningBracket
     (rawRules, buffPos,
-     concat("reading header sub section ", BG_SPRITE_HEADER_SECTION_SPECIFIER,
-	    " from \"", rulesFileName, "\""),
-     concat("a ", BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
+     concat("reading header sub section ",
+	    mainHeaders::BG_SPRITE_HEADER_SECTION_SPECIFIER, " from \"",
+	    rulesFileName, "\""),
+     concat("a ", mainHeaders::BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
   
   for(auto keywordAction: bgSpriteHeaderKeywordActions)
     {
@@ -929,15 +1111,15 @@ void initBgSprites
 	  if(targetFound == bgSpriteHeaderKeywordActions[foundIter].keyword)
 	    {
 	      if(bgSpriteHeaderKeywordActions[foundIter].found)
-		{
-		  std::stringstream e {};
-		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
-		   <<" header file \""<<rulesFileName
-		   <<"\". Encountered keyword \""<<targetFound<<"\" twice when "
-		    "reading header sub section "
-		   <<BG_SPRITE_HEADER_SECTION_SPECIFIER<<" section, however "
-		    "this keyword is only expected once in this section.\n";
-		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		{		  
+		  exit(concat
+		       ("Error: reading ", RULES_CONFIG_FILE_EXTENSION,
+			" header file \"", rulesFileName, "\". Encountered "
+			"keyword \"", targetFound, "\" twice when reading "
+			"header sub section ",
+			mainHeaders::BG_SPRITE_HEADER_SECTION_SPECIFIER,
+			" section, however this keyword is only expected once "
+			"in this section.\n").c_str(), ERROR_RULES_LEV_HEADER);
 		}
 	      switch(bgSpriteSectionKeywordToId.at(targetFound).order)
 		{
@@ -975,14 +1157,14 @@ void initBgSprites
 	      if(false)
 		{
 		ENCOUNTERED_FORBIDDEN_KEYWORD:
-		  std::stringstream e {};
-		  e<<"Error: reading "<<RULES_CONFIG_FILE_EXTENSION
-		   <<" header file \""<<rulesFileName
-		   <<"\". Encountered keyword \""<<targetFound<<"\" when "
-		    "reading header sub section "
-		   <<BG_SPRITE_HEADER_SECTION_SPECIFIER<<" section, however "
-		    "this keyword is forbidden.\n";
-		  exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+		  exit(concat
+		       ("Error: reading ", RULES_CONFIG_FILE_EXTENSION,
+			" header file \"", rulesFileName, "\". Encountered "
+			"keyword \"", targetFound, "\" when reading header sub"
+			"section ",
+			mainHeaders::BG_SPRITE_HEADER_SECTION_SPECIFIER,
+			" section, however this keyword is forbidden.\n"
+			).c_str(), ERROR_RULES_LEV_HEADER);
 		}
 	    }
 	}
@@ -990,9 +1172,10 @@ void initBgSprites
 
     readSectionEndingBracket
     (rawRules, buffPos,
-     concat("reading header sub section ", BG_SPRITE_HEADER_SECTION_SPECIFIER,
-	    " from \"", rulesFileName, "\""),
-     concat("a ", BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
+     concat("reading header sub section ",
+	    mainHeaders::BG_SPRITE_HEADER_SECTION_SPECIFIER, " from \"",
+	    rulesFileName, "\""),
+     concat("a ", mainHeaders::BG_SPRITE_HEADER_SECTION_SPECIFIER, " section"));
 
     // Check that we've encountered all keywords that were searched for.
   for(auto keywordAction: bgSpriteHeaderKeywordActions)
@@ -1019,7 +1202,7 @@ void readSectionOpeningBracket
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const std::string & section, const bool skipSpace)
 {
-  using namespace levelFileKeywords;
+  using namespace levelFileKeywords::alphabet::alphMisc;
     
   std::vector<std::string> targets {};
   std::string targetFound {};
@@ -1040,7 +1223,7 @@ void readSectionEndingBracket
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg,  const std::string & section)
 {
-  using namespace levelFileKeywords;
+  using namespace levelFileKeywords::alphabet::alphMisc;
     
   std::vector<std::string> targets {};
   std::string targetFound {};
@@ -1061,7 +1244,7 @@ void readStringsSection
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, void * strings)
 {
-  using namespace levelFileKeywords;
+  using namespace levelFileKeywords::alphabet::alphMisc;
   
   std::vector<std::string> targets {};
   std::string targetFound {};
@@ -1100,16 +1283,16 @@ void readStringsSection
 		       ("Error: file ended unexpectedly when ", eMsg, ".\n"),
 		       ERROR_RULES_LEV_HEADER);
 		}
-	      else if(*buffPos == STRING_ESC)
+	      else if(*buffPos == ESC_CHAR)
 		{
 		  if(*peekBuffPos != STRING_DENOTATION &&
-		     *peekBuffPos != STRING_ESC)
+		     *peekBuffPos != ESC_CHAR)
 		    {
 		      exit(concat
 			   ("Error: encountered character (\"", *peekBuffPos,
-			    "\") other then \"", STRING_ESC, "\" or \"",
+			    "\") other then \"", ESC_CHAR, "\" or \"",
 			    STRING_DENOTATION, "\" after escape character \"",
-			    STRING_ESC, "\" when ", eMsg, ".\n"),
+			    ESC_CHAR, "\" when ", eMsg, ".\n"),
 			   ERROR_RULES_LEV_HEADER);
 		    }
 		  else
@@ -1133,7 +1316,7 @@ void readStringsSection
 		      // We've finished reading the string.
 		      break;
 		    }
-		  // BuffPos isn't pointing at a STRING_ESC char.
+		  // BuffPos isn't pointing at a ESC_CHAR char.
 		  newString.push_back(*buffPos);
 		}
 		  
@@ -1197,14 +1380,13 @@ void readSingleCoordSectionInZNumbers
 }
 
 
-// // SkipSpace has a default value.
+// SkipSpace has a default value.
 void readSingleCoordSection
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const bool useIntegers,
  void * coord, const std::string typeOfNumber, const bool skipSpace)
 {
-  using namespace levelFileKeywords;
-
+  using namespace levelFileKeywords::alphabet::alphMisc;
   std::vector<std::string> targets {};
   std::string targetFound {};
   readSectionOpeningBracket
@@ -1231,6 +1413,42 @@ void readSingleCoordSection
   readSectionEndingBracket
     (buff, buffPos, eMsg,
      concat("single coordinate section (with ", typeOfNumber, ")"));
+}
+
+
+void readSingleRealNumSection
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, void * real)
+{
+  using namespace levelFileKeywords::alphabet::alphMisc;
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+  readSectionOpeningBracket
+    (buff, buffPos, eMsg, concat("single real number section"));
+  *((double *)real) = readSingleRNum(buff, buffPos, eMsg);
+  readSectionEndingBracket
+    (buff, buffPos, eMsg, concat("single real number section"));		    
+}
+
+
+void readSinglePositiveRealNumSection
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg, void * real)
+{
+  using namespace levelFileKeywords::alphabet::alphMisc;
+  std::vector<std::string> targets {};
+  std::string targetFound {};
+  readSectionOpeningBracket
+    (buff, buffPos, eMsg, concat("single real number section"));
+  *((double *)real) = readSingleRNum(buff, buffPos, eMsg);
+  if(*((double *)real) < 0)
+    {
+      exit(concat
+	   ("Error: expected positive real number when ", eMsg, ". Encountered "
+	    "number (", *((double *)real), ").\n" ), ERROR_RULES_LEV_HEADER);
+    }
+  readSectionEndingBracket
+    (buff, buffPos, eMsg, concat("single real number section"));			    
 }
 
 
@@ -1311,8 +1529,7 @@ void checkForDefaultPlayerValues
 	defaultValues::player::gravitationalConstant;
       break;
     case 6:
-      // playerInitData.maxVerticalVelocity =
-      // 	defaultValues::player::maxVerticalVelocity;
+      playerInitData.jumpingPower = defaultValues::player::jumpingPower;
       break;
     case 7:
       playerInitData.maxFallingJumpNumber =
@@ -1323,6 +1540,20 @@ void checkForDefaultPlayerValues
       break;
     case 9:
       misc.viewPortPadding = defaultValues::misc::viewPortPadding;
+      break;
+    case 10:
+      playerInitData.maxXVelocity = defaultValues::player::maxXVelocity;
+      break;
+    case 11:
+      playerInitData.maxFallingVelocity =
+	defaultValues::player::maxFallingVelocity;
+      break;
+    case 12:
+      playerInitData.leftAcceleration = defaultValues::player::leftAcceleration;
+      break;
+    case 13:
+      playerInitData.rightAcceleration =
+	defaultValues::player::rightAcceleration;
       break;
     default:
     DEFAULT:

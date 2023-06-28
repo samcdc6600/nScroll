@@ -86,8 +86,8 @@ class animateSprite: public sprite
        travelled as member functions may alter distTravelled. For example
        getAndSetDistTravelledInX/InY() will subtract 1 from a component of
        distTravelled that is calculated to be more than 1 when it is called. */
-    velocityComps distTravelled {};
-    velocityComps comps {};
+    velocityComps distTravelled			{};
+    velocityComps comps				{};
     /* For some reason we have to pass this in from spriteTimers and use it like
        this otherwise we get a compilation error:
        "
@@ -100,12 +100,16 @@ class animateSprite: public sprite
   public:
     /* The sprites velocity components should not exceed this value at
        any point the sum of the components can be greater however. */
-    const double maxVelocity {45};
-    const double maxYVelocityFalling {70};
+    const double maxVelocity			{};
+    const double maxYVelocityFalling		{};
+    const double leftAcceleration		{};
+    const double rightAcceleration		{};
 
 
-    velocity(spriteTimers & t):
-      timers(t)
+    velocity(spriteTimers & t, const double maxXYVel, const double maxFallingV,
+	     const double lAccel, const double rAccel):
+      timers(t), maxVelocity(maxXYVel), maxYVelocityFalling(maxFallingV),
+      leftAcceleration(lAccel), rightAcceleration(rAccel)
     {}
     
     
@@ -218,14 +222,18 @@ public:
   const int leftCollisionOneOffOffset {leftCollisionDirectOffset -1};
 
 
-  animateSprite(const double fixedTimeStep,
-		std::vector<std::string> & spritePaths, const yx max,
-		const yx pos, const directions dir, const double g,
-		const unsigned maxFallingJmpNum, const unsigned maxJmpNum):
+  animateSprite
+  (const double fixedTimeStep,  std::vector<std::string> & spritePaths,
+   const yx max, const yx pos, const directions dir, const double g,
+   const double jumpingPower, const unsigned maxFallingJmpNum,
+   const unsigned maxJmpNum, const double maxVelocity,
+   const double maxYVelocityFalling, const double leftAcceleration,
+   const double rightAcceleration):
     sprite(fixedTimeStep, spritePaths, max, pos, dir),
     timers(fixedTimeStep),
-    jumping(g, 70, maxFallingJmpNum, maxJmpNum),
-    velComp(this->timers)
+    jumping(g, jumpingPower, maxFallingJmpNum, maxJmpNum),
+    velComp(this->timers, maxVelocity, maxYVelocityFalling,
+	    leftAcceleration, rightAcceleration)
   {}
 
 
@@ -325,7 +333,12 @@ int animateSprite::handleHorizontalMovementsWhenStopping(const T coordRules)
       if(input == sprite::DIR_RIGHT)
 	{
 	  distTravelled = velComp.getAndSetDistTravelledInX();
-	  velComp.velocityTowardsZeroInX(2.5);
+	  /* TODO: here we need to use the fixtime point value to add the
+	     correct velocity number. See "timers.getTimeSinceLastXUpdate".
+	     note that getAndSetDistTravelledInX and
+	     getAndSetDistTravelledInY call resetTimeSinceLastXUpdate and should
+	     not!  */
+	  velComp.velocityTowardsZeroInX(velComp.rightAcceleration);
 	}
       else
 	{
@@ -340,7 +353,7 @@ int animateSprite::handleHorizontalMovementsWhenStopping(const T coordRules)
       if(input == sprite::DIR_LEFT)
 	{
 	  distTravelled = velComp.getAndSetDistTravelledInX();
-	  velComp.velocityTowardsZeroInX(2.5);
+	  velComp.velocityTowardsZeroInX(velComp.leftAcceleration);
 	}
       else
 	{
@@ -392,7 +405,8 @@ int animateSprite::handleLeftOrRightCollision
 	  velComp.setXComponentsToZero();
 	}
       distTravelled = velComp.getAndSetDistTravelledInX();
-      velComp.addToXComp(checkRight ? 3.9: - 3.9);
+      velComp.addToXComp(checkRight ? velComp.leftAcceleration:
+			 - velComp.rightAcceleration);
     }
   else
     {

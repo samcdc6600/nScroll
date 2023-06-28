@@ -165,6 +165,11 @@ bool getChunkCoordinate
 int readSingleNum
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const bool useIntegers);
+/* Similar to readSingleNum except can read real numbers and can always read
+   negative numbers. */
+double readSingleRNum
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg);
 void getChunk
 (const std::string & data, std::string::const_iterator & buffPos,
  const std::string & eMsg, std::string & chunk, const yx expectedChunkSize);
@@ -172,6 +177,10 @@ void getChunk
    already be a chunk coordinate and not a character coordinate. */
 std::string createChunkCoordKey(const yx coord);
 std::string createChunkCoordKeyFromCharCoord(const yx charCoord);
+/* Returns true if str is in buff at buffPos. */
+bool checkForStringInBufferAtPos(const std::string & buff, int buffPos,
+				 const std::stirng & eMsg,
+				 const std::string str);
 /* Advances buffPos (past white space) until it reads one past a sequence of
    characters that matches a string in targets, where buffPos points to
    somewhere in buff and the strings in targets will be checked in order of the

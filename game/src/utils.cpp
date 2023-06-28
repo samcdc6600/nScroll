@@ -218,8 +218,6 @@ int readSingleNum
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const bool useIntegers)
 {
-  // using namespace levelFileKeywords;
-
   std::vector<std::string> targets
     {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
   if(useIntegers)
@@ -270,16 +268,99 @@ int readSingleNum
   // Check if number was too long.
   if(decPlacesIter > MAX_COORD_LEN)
     {
-      std::stringstream e {};
-      e<<"Error: number \""<<number.str()<<"\" too long (longer than \""
-       <<MAX_COORD_LEN<<"\") when "<<eMsg
-       <<". Encountered \""<<*buffPos<<"\".\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
+      exit(concat
+	   ("Error: number \"", number.str(), "\" too long (longer than \"",
+	    MAX_COORD_LEN, "\") when ", eMsg,
+	    ". Encountered \"", *buffPos, "\".\n").c_str(),
+	   ERROR_RULES_LEV_HEADER);
     }
 
-  int numberRet;
-  number>>numberRet;
-  return numberRet;
+  int ret;
+  number>>ret;
+  return ret;
+}
+
+
+double readSingleRNum
+(const std::string & buff, std::string::const_iterator & buffPos,
+ const std::string & eMsg)
+{
+  std::vector<std::string> targets
+    {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "."};
+  std::string targetFound {};
+  std::stringstream number {};
+
+  // Skip space up until the start of the number.
+  targetFound = skipSpaceUpTo(buff, buffPos, targets);
+  if(targetFound == "")
+    {
+      exit(concat("Error: expected real number when ", eMsg, ". Encountered "
+		  "\"", *buffPos, "\".\n"), ERROR_RULES_LEV_HEADER);
+    }
+
+  int decPlacesIter {};
+  bool foundDigit {false};
+  --buffPos;
+  if(targetFound == "-")
+    {
+      number<<*buffPos;
+      ++buffPos;
+      // Can't have a negative sign after a negative sign.
+      targets.erase(std::remove(targets.begin(), targets.end(), "-"),
+		    targets.end());
+    }
+  else if(targetFound == ".")
+    {
+      number<<*buffPos;
+      ++buffPos;
+      // Can't have a negative sign after the decimal or another decimal.
+      targets.erase(std::remove(targets.begin(), targets.end(), "."),
+		    targets.end());
+      targets.erase(std::remove(targets.begin(), targets.end(), "-"),
+		    targets.end());
+    }
+
+  // Read in number.
+  while(isNum(*buffPos) || *buffPos == '.')
+    {
+      if(*buffPos == '.')
+	{
+	  if(std::find(targets.begin(), targets.end(), ".") == targets.end())
+	    {
+	      // We've encountered a second '.'!
+	      break;
+	    }
+	  targets.erase(std::remove(targets.begin(), targets.end(), "."),
+			targets.end());
+	}
+      else
+	{
+	  foundDigit = true;
+	  decPlacesIter++;
+	}
+      number<<*buffPos;
+      buffPos++;
+    }
+
+  if(!foundDigit)
+    {
+      exit(concat("Error: expected real number when ", eMsg, ". Encountered \"",
+		  *buffPos, "\".\n"),
+	   ERROR_RULES_LEV_HEADER);
+    }
+  // Check if number was too long.
+  if(decPlacesIter > MAX_COORD_LEN)
+    {
+      exit(concat
+	   ("Error: number \"", number.str(), "\" too long (longer than \"",
+	    MAX_COORD_LEN, "\") when ", eMsg,
+	    ". Encountered \"", *buffPos, "\".\n").c_str(),
+	   ERROR_RULES_LEV_HEADER);
+    }
+
+  double ret;
+  number>>ret;
+  return ret;
 }
 
 
@@ -349,6 +430,28 @@ std::string createChunkCoordKeyFromCharCoord(const yx chunkCoord)
   return createChunkCoordKey(chunkCoordKey);
 }
 
+
+bool checkForStringInBufferAtPos(const std::string & buff, int buffPos,
+				 const std::stirng & eMsg,
+				 const std::string str)
+{
+  bool found {false};
+
+  for(int strIter {}; buffPos < buff.size(); ++buffPos, ++strIter)
+    {
+      if((unsigned long)strIter == str.size())
+	{
+	  found = true;
+	  break;
+	}
+      if(buff[buffPos] != str[strIter])
+	{
+	  break;
+	}
+    }
+
+  return found;
+}
 
 
 // SkipSpace has a default value.

@@ -5,9 +5,14 @@ player::player
 (const double fixedTimeStep, const backgroundData &background,
  std::vector<std::string> spritePaths, const yx initialPosVPRel,
  const sprite::directions dir, const int health, const double g,
- const unsigned maxFallingJmpNum, const unsigned maxJmpNum)
-  : animateSprite(fixedTimeStep, spritePaths, background.chunkSize,
-		  initialPosVPRel, dir, g, maxFallingJmpNum, maxJmpNum)
+ const double jumpingPower, const unsigned maxFallingJmpNum,
+ const unsigned maxJmpNum, const double maxVelocity,
+ const double maxYVelocityFalling, const double leftAcceleration,
+ const double rightAcceleration)
+  : animateSprite
+    (fixedTimeStep, spritePaths, background.chunkSize, initialPosVPRel, dir, g,
+     jumpingPower,  maxFallingJmpNum, maxJmpNum, maxVelocity,
+     maxYVelocityFalling, leftAcceleration, rightAcceleration)
 {
 }
 
