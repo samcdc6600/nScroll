@@ -129,7 +129,8 @@ enum errorsCodes {                     /* Error codes. */
                                                           // a coordinate
                                                           // character field
                                                           // that is malformed.
-                   ERROR_BAD_LOGIC // There was an error in the code.
+                   ERROR_BAD_LOGIC, // There was an error in the code.
+		   ERROR_BAD_COMMENT	// Comment not closed.
 };
 
 
@@ -179,7 +180,6 @@ std::string createChunkCoordKey(const yx coord);
 std::string createChunkCoordKeyFromCharCoord(const yx charCoord);
 /* Returns true if str is in buff at buffPos. */
 bool checkForStringInBufferAtPos(const std::string & buff, int buffPos,
-				 const std::stirng & eMsg,
 				 const std::string str);
 /* Advances buffPos (past white space) until it reads one past a sequence of
    characters that matches a string in targets, where buffPos points to

@@ -10,7 +10,6 @@
 #include "include/sprite.hpp"
 #include "include/player.hpp"
 
-
 // Values returned by branchOnInput
 enum gameFuncRetCodes
   {
@@ -90,7 +89,6 @@ int gameLoop
 	(background, player::convertDirectionCharsToDirections
 	 (static_cast<player::directionChars>(input)));
       draw(background, levelRules.gamePlayer, levelRules.bgSprites);
-
       /* Sleep for the rest of the tick time (if we haven't already exceeded
 	 it! */
       levelRules.gameTiming.physics.sleepForRemainingTickTime();

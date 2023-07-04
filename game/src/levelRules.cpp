@@ -60,7 +60,7 @@ namespace levelFileKeywords
       constexpr char RULES_HEADER_SECTION_END_DENOTATION    {')'};
       constexpr char STRING_DENOTATION		{'\"'};
       constexpr char STRING_SEPARATION		{','};
-      constexpr char ESC_CHAR			{'\\'};
+      constexpr char ALPHA_ESC_CHAR			{'\\'};
       constexpr char COORD_SEPARATION		{','};
       /* If this character is encountered in the main section of a
 	 RULES_CONFIG_FILE_EXTENSION file the character 2 places after it should
@@ -236,8 +236,11 @@ namespace levelFileKeywords
    COMMENT_START_DELIMITER...COMMENT_END_DELIMITER
    Where ... is some string of zero or more length. Everything
    in between and including the comment delimiters is removed in place. If a
-   malformed comment is found then eMsg is printed and the program is exited. */
-void removeComments(std::string & buffer, const std::string & eMsg);
+   malformed comment is found then eMsg is printed and the program is
+   exited. Note that a comment can be placed anywhere except it cannot start in
+   a string. Where fileType is the file type that buffer was read from. */
+void removeComments(std::string & buffer, const std::string & eMsg,
+		    const std::string fileType);
 void initPlayer
 (const double fixedTimeStep, const yx viewPortSize, const char rulesFileName [],
  rules & levelRules, const backgroundData & background,
@@ -568,7 +571,10 @@ void rules::parseRulesConfigFileAndInitialiseVariablesStageOne
 (const char rulesFileName [], std::string & rulesBuffer,
  const backgroundData & background)
 {
-  removeComments(rulesBuffer);
+  removeComments(rulesBuffer, concat
+		 ("attempting to remove comments from ",
+		  COORD_RULES_FILE_EXTENSION, " file (", rulesFileName, ")"),
+		 COORD_RULES_FILE_EXTENSION);
   parseRulesConfigFileAndInitialiseVariablesStageTwo
     (rulesFileName, rulesBuffer, background);
 }
@@ -755,7 +761,8 @@ void rules::checkInitPlayerPosAndPadding()
 }
 
 
-void removeComments(std::string & buffer, const std::string & eMsg)
+void removeComments(std::string & buffer, const std::string & eMsg,
+		    const std::string fileType)
 {
   //COMMENT_START_DELIMITER
   //COMMENT_END_DELIMITER
@@ -764,39 +771,86 @@ void removeComments(std::string & buffer, const std::string & eMsg)
   bool inComment {false};
   bool inString {false};
   ssize_t commentStartsAt {};
-  
-  for(ssize_t iter {}; iter < buffer.size() - COMMENT_END_DELIMITER.size() &&
-	iter < buffer.size() - COMMENT_START_DELIMITER.size(); ++iter)
-    {
-      // If not in string...
-      // If comment started...
 
+  endwin();
+  
+  for(ssize_t iter {};
+      iter < buffer.size() - (COMMENT_END_DELIMITER.size() -1) &&
+	iter < buffer.size() - (COMMENT_START_DELIMITER.size() -1); ++iter)
+    {
       if(!inComment)
 	{
-	  if(checkForStringInBufferAtPos
-	 (buffer, iter, concat(), ESC_CHAR + STRING_DENOTATION))
+	  if(!checkForStringInBufferAtPos
+	     (buffer, iter, concat("", ALPHA_ESC_CHAR, STRING_DENOTATION)) &&
+	     checkForStringInBufferAtPos
+	     (buffer, iter +1, concat("", STRING_DENOTATION)))
 	    {
 	      if(!inString)
 		{
+		  /* We've encountered an un-escaped STRING_DENOTATION character
+		     when not in a comment or string. This means that we are now
+		     in a string. */
+		  inString = true;
 		}
 	      else
 		{
+		  /* We've encountered an un-escaped STRING_DENOTATION character
+		     when not in a comment but in a string. This means that we
+		     are no longer in a string. */
+		  inString = false;
 		}
 	    }
+	  else if(checkForStringInBufferAtPos
+	      (buffer, iter, COMMENT_START_DELIMITER))
+	    {
+	      /* NOTE THAT A COMMENT START CANNOT BE ESCAPED. */
+	      inComment = true;
+	      commentStartsAt = iter;
+	      iter += COMMENT_START_DELIMITER.size() -1;
+
+	      std::cout<<"iter = "<<iter<<"\n";
+	      std::cout<<"COMMENT_START_DELIMITER.size() -1 = "
+		       <<COMMENT_START_DELIMITER.size() -1<<"\n\n";
+	    }
 	}
-      
-      if(!inComment && !inString && checkForStringInBufferAtPos
-	 (buffer, iter, concat(), COMMENT_START_DELIMITER))
+      else if(checkForStringInBufferAtPos
+	      (buffer, iter, COMMENT_END_DELIMITER))
 	{
-	  inComment = true;
-	  commentStartsAt = iter;
-	}
-      if(inComment && checkForStringInBufferAtPos
-	 (buffer, iter, concat(), COMMENT_END_DELIMITER)
-	{
+	  /* NOTE THAT A COMMENT END CANNOT BE ESCAPED. */
+
+	  // std::cout<<"commentStartsAt = "<<commentStartsAt
+	  // 	   <<"\niter = "<<iter<<'\n';
+	  // std::cout<<"Erasing! "<<buffer[commentStartsAt]
+	  // 	   <<"\t"<<buffer[iter]<<'\n';
+
+	  
 	  inComment = false;
-	  buffer.erase(commentStartsAt, iter + COMMENT_END_DELIMITER.size() -1);
+	  buffer.erase(commentStartsAt, iter + COMMENT_END_DELIMITER.size() - commentStartsAt);
+	  iter = commentStartsAt;
+
+	  // std::cout<<"After erase: "<<buffer[iter]<<buffer[iter +1]<<"\n\n";
 	}
+
+      // std::cout<<"iter = "<<iter<<"\n";
+      // static int cats;
+      // cats++;
+      // if(cats > 5)
+      // 	exit(-1);
+    }
+
+  endwin();
+  std::cout<<buffer<<'\n';
+  exit(-1);
+
+  if(inComment)
+    {
+      exit(concat("Error: found un-closed comment when ", eMsg, ". Note that "
+		  "comments can be placed anywhere in a ", fileType, " file, "
+		  "with the exception that a comment cannot start inside a "
+		  "string (that is after an uneven number of (",
+		  STRING_DENOTATION, ")'s that are not in comments and are not "
+		  "escaped.)"),
+	   ERROR_BAD_COMMENT);
     }
 }
 
@@ -806,7 +860,8 @@ void initPlayer
  rules & levelRules, const backgroundData & background,
  const std::string & rawRules, std::string::const_iterator & buffPos)
 {
-  using namespace levelFileKeywords::alphabet;
+  using namespace levelFileKeywords;
+  using namespace alphabet;
 
   /* Setup keyword actions associations for player section. This should contain
      an entry for each thing that the player constructor takes. If there is a
@@ -1283,16 +1338,16 @@ void readStringsSection
 		       ("Error: file ended unexpectedly when ", eMsg, ".\n"),
 		       ERROR_RULES_LEV_HEADER);
 		}
-	      else if(*buffPos == ESC_CHAR)
+	      else if(*buffPos == ALPHA_ESC_CHAR)
 		{
 		  if(*peekBuffPos != STRING_DENOTATION &&
-		     *peekBuffPos != ESC_CHAR)
+		     *peekBuffPos != ALPHA_ESC_CHAR)
 		    {
 		      exit(concat
 			   ("Error: encountered character (\"", *peekBuffPos,
-			    "\") other then \"", ESC_CHAR, "\" or \"",
+			    "\") other then \"", ALPHA_ESC_CHAR, "\" or \"",
 			    STRING_DENOTATION, "\" after escape character \"",
-			    ESC_CHAR, "\" when ", eMsg, ".\n"),
+			    ALPHA_ESC_CHAR, "\" when ", eMsg, ".\n"),
 			   ERROR_RULES_LEV_HEADER);
 		    }
 		  else
@@ -1316,7 +1371,7 @@ void readStringsSection
 		      // We've finished reading the string.
 		      break;
 		    }
-		  // BuffPos isn't pointing at a ESC_CHAR char.
+		  // BuffPos isn't pointing at a ALPHA_ESC_CHAR char.
 		  newString.push_back(*buffPos);
 		}
 		  

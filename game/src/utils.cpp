@@ -432,21 +432,25 @@ std::string createChunkCoordKeyFromCharCoord(const yx chunkCoord)
 
 
 bool checkForStringInBufferAtPos(const std::string & buff, int buffPos,
-				 const std::stirng & eMsg,
 				 const std::string str)
 {
   bool found {false};
 
-  for(int strIter {}; buffPos < buff.size(); ++buffPos, ++strIter)
+  if((unsigned long)buffPos < buff.size() &&
+     buff.size() - buffPos >= str.size())
     {
+      int strIter {};
+      for( ; buffPos < buff.size(); ++buffPos, ++strIter)
+	{
+	  if(buff[buffPos] != str[strIter])
+	    {
+	      break;
+	    }	  
+	}
       if((unsigned long)strIter == str.size())
 	{
+
 	  found = true;
-	  break;
-	}
-      if(buff[buffPos] != str[strIter])
-	{
-	  break;
 	}
     }
 

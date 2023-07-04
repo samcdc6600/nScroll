@@ -195,7 +195,7 @@ public:
       (rulesFileName, rulesBuffer,
        concat("trying to read ", RULES_CONFIG_FILE_EXTENSION, " file"));
     parseRulesConfigFileAndInitialiseVariablesStageOne
-      (rulesFileName, Comments(rulesBuffer), background);
+      (rulesFileName, rulesBuffer, background);
     checkInitPlayerPosAndPadding();
 
     gameTiming.physics =
