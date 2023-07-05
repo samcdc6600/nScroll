@@ -26,9 +26,9 @@ void sprite::spriteTimers::resetTimeSinceLastSliceUpdate()
 
 sprite::sprite
 (const double fixedTimeStep, std::vector<std::string> & spritePaths,
- const yx max, const yx pos, const directions dir)
-  : timers(fixedTimeStep), viewPortSize(max), positionVPRel(pos),
-  direction(checkDirection(dir)), currentSliceNumber(0)
+ const yx vPS, const yx pos, const directions dir)
+  : timers(fixedTimeStep), viewPortSize(vPS), positionVPRel(pos),
+    direction(checkDirection(dir)), currentSliceNumber(0)
 {
   for(auto spriteFileName {spritePaths.begin()};
       spriteFileName != spritePaths.end(); spriteFileName++)

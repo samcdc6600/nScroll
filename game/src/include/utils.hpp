@@ -130,7 +130,9 @@ enum errorsCodes {                     /* Error codes. */
                                                           // character field
                                                           // that is malformed.
                    ERROR_BAD_LOGIC, // There was an error in the code.
-		   ERROR_BAD_COMMENT	// Comment not closed.
+		   ERROR_BAD_COMMENT,	// C style comment not closed.
+		   ERROR_BAD_INTERNAL_VALUE	// Used when a bad hard coded
+						// value is encountered.
 };
 
 
@@ -255,12 +257,12 @@ getAdvancedIter(T_A i, const T_B iEnd, const size_t n, const std::string & eMsg)
 
 
 template<typename T>
-bool getCoordRule(const yx pos, const yx viewPortSize, const T * rules,
+bool getCoordRule(const yx pos, const yx coordRulesBufferSize, const T * rules,
 		  T & coordRulesRet)
 {
   bool ret {false};
-  int linearAddress = {pos.y * viewPortSize.x + pos.x};
-  if(linearAddress < (viewPortSize.y * viewPortSize.x))
+  int linearAddress = {pos.y * coordRulesBufferSize.x + pos.x};
+  if(linearAddress < (coordRulesBufferSize.y * coordRulesBufferSize.x))
     {
       coordRulesRet = rules[linearAddress];
       for(auto rule: boarderRuleChars::CHARS)

@@ -8,7 +8,7 @@
 (
   player(
     initialViewPortCoordinate(0,0)
-    viewPortPadding(18, 36)
+    viewPortPadding(0, 36)
     initialCoordinateViewPortRelative(21, 80)
     sprites("./assets/sprites/sprite(0).sprite",
     "./assets/sprites/sprite(1).sprite",
@@ -20,7 +20,7 @@
                      /* maxFallingVelocity has default argument jumpingPower. */
     maxFallingVelocity(90)
                      /* leftAcceleration has default argument 2.5. */
-    leftAcceleration(0.1)
+    leftAcceleration(2.8)
                      /* rightAcceleration has default argument 2.5. */
     rightAcceleration(2.8)
   )

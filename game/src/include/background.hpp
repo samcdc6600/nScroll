@@ -39,7 +39,12 @@ public:
     chunk(chunkSizeIn, FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
 	  (MONO_CH_MAX +1) * 1 + ' ', bgFileName),
     secondStageDrawBuffer
-    (new chunkElementBaseType [chunkSizeIn.y * chunkSizeIn.x])
+    (new chunkElementBaseType [chunk::getSecondStageBufferSizeInChunks
+      (FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
+       "creating second stage background buffer") * chunkSizeIn.y *
+      chunk::getSecondStageBufferSizeInChunks
+      (FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
+       "creating second stage background buffer") * chunkSizeIn.x])
   {
     loadAndInitialiseBackground();
   }

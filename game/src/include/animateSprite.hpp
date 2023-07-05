@@ -197,6 +197,7 @@ private:
   };
 
 protected:
+  const yx coordRulesBufferSize;
   /* This masks the timers in the parent class and uses the spriteTimers class
      defined in this class (that inherits from the spriteTimers class from the
      parent class NOTE THAT THIS MUST BE INITIALISED BEFORE velComp! */
@@ -224,12 +225,13 @@ public:
 
   animateSprite
   (const double fixedTimeStep,  std::vector<std::string> & spritePaths,
-   const yx max, const yx pos, const directions dir, const double g,
-   const double jumpingPower, const unsigned maxFallingJmpNum,
-   const unsigned maxJmpNum, const double maxVelocity,
-   const double maxYVelocityFalling, const double leftAcceleration,
-   const double rightAcceleration):
-    sprite(fixedTimeStep, spritePaths, max, pos, dir),
+   const yx vPS, const yx pos, const directions dir, const yx cRBS,
+   const double g, const double jumpingPower,
+   const unsigned maxFallingJmpNum, const unsigned maxJmpNum,
+   const double maxVelocity, const double maxYVelocityFalling,
+   const double leftAcceleration, const double rightAcceleration):
+    sprite(fixedTimeStep, spritePaths, vPS, pos, dir),
+    coordRulesBufferSize(cRBS),
     timers(fixedTimeStep),
     jumping(g, jumpingPower, maxFallingJmpNum, maxJmpNum),
     velComp(this->timers, maxVelocity, maxYVelocityFalling,

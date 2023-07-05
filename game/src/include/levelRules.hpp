@@ -186,7 +186,13 @@ public:
     chunk(viewPortSize, FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
 	  missingChunkFiller, coordRulesFileName),
     secondStageRulesBuffer
-    (new chunkElementBaseType [viewPortSize.y * viewPortSize.x])
+    (new chunkElementBaseType
+     [chunk::getSecondStageBufferSizeInChunks
+      (FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
+       "creating second stage rules buffer") * viewPortSize.y *
+      chunk::getSecondStageBufferSizeInChunks
+      (FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
+       "creating second stage rules buffer") * viewPortSize.x])
   {
     std::string rulesBuffer {};
     

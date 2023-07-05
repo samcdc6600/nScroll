@@ -127,9 +127,9 @@ protected:
 public:
   /* This constructor reads the sprite file/s located at spritePaths[x] and
      converts it's/their contents to the internal data structure needed by the
-     sprite. */
+     sprite. Where vPS is the view port size. */
   sprite(const double fixedTimeStep, std::vector<std::string> & spritePaths,
-	 const yx max, const yx pos, const directions dir);
+	 const yx vPS, const yx pos, const directions dir);
   ~sprite();
 private:
   // Split up file into cycleSpeed and unprocessesd representation of sprite.

@@ -1073,6 +1073,8 @@ void initPlayer
 	       playerInitData.spritePaths,
 	       playerInitData.initialCoordinatesVPRel,
 	       playerInitData.direction,
+
+	       chunk::getSecondStageBufferSizeInChunks(5, ""),
 	       playerInitData.health,
 	       playerInitData.gravitationalConstant,
 	       playerInitData.jumpingPower,
@@ -2112,7 +2114,7 @@ void rules::physics
   printRuleChars();
 #endif
       
-      gamePlayer->movePlayer(secondStageRulesBuffer, input);
+      gamePlayer->move(secondStageRulesBuffer, input);
       // Update 2nd stage rules buffer position based on player position.
       this->updateViewPortPosition
 	(PLAYER_MOVEMENT_AREA_PADDING, gamePlayer->getPos(),

@@ -42,8 +42,8 @@ public:
   player
   (const double fixedTimeStep, const backgroundData &background,
    std::vector<std::string> spritePaths, const yx initialPosVPRel,
-   const sprite::directions dir, const int health,
-   const double g, const double jumpingPower, const unsigned maxFallingJmpNum,
+   const sprite::directions dir, const yx cRBS, const int health, const double g,
+   const double jumpingPower, const unsigned maxFallingJmpNum,
    const unsigned maxJmpNum, const double maxVelocity,
    const double maxYVelocityFalling, const double leftAcceleration,
    const double rightAcceleration);
@@ -81,8 +81,7 @@ public:
      where the player can move and input controls the desired
      direction. */
   template<typename T>
-  void movePlayer
-  (const T coordRules, sprite::directions input);
+  void move(const T coordRules, sprite::directions input);
   
 public:
   /* Since the player sprite can never go off screen we declare a simpler draw
@@ -98,7 +97,7 @@ public:
    .CPP FILE. WE DO NOT WANT TO CLUTTER THE CLASS DEFINITION HOWEVER. SO WE ARE
    PUTTING THESE FUNCTION DEFINITIONS HERE. */
 template<typename T>
-void player::movePlayer
+void player::move
 (const T coordRules, sprite::directions input)
 {
   timers.updateYTimer();

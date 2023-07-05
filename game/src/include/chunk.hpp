@@ -7,7 +7,7 @@
 
 
 template <typename chunkElementType>
-class  chunk
+class chunk
 {
 public:
   // ========================== MEMBER VARIABLES START =========================
@@ -18,6 +18,7 @@ public:
   const yx chunkSize;
   
 protected:
+  static const int minFSBSizeInChunks {5};
   /* Concatenate (y / chunkSize.y) and (x / chunkSize.x) and use as index into
      map. */
   typedef std::map<std::string, chunkType> chunkMapType;
@@ -37,19 +38,20 @@ protected:
        "close to visible" chunks. */
     chunkElementType * buffer;
     
-    firstStageBufferType(const yx chunkSizeIn, const int fSBSizeInChunks) :
+    firstStageBufferType(const yx chunkSizeIn, const int fSBSizeInChunks,
+			 const int minFSBSizeInChunks) :
       fSBYChunks(fSBSizeInChunks), fSBXChunks(fSBSizeInChunks),
       fSBYUpdateOffset(fSBSizeInChunks / 2),
       fSBXUpdateOffset(fSBSizeInChunks / 2),
       buffer(new chunkElementType [fSBYChunks * chunkSizeIn.y *
 				   fSBXChunks * chunkSizeIn.x])
     {
-      if(fSBSizeInChunks < 5 || fSBSizeInChunks % 2 != 1)
+      if(fSBSizeInChunks < minFSBSizeInChunks || fSBSizeInChunks % 2 != 1)
 	{
 	  exit(concat
 	       ("Error: first stage buffer size (", fSBSizeInChunks, ") (in "
 		"chunks) passed to firstStageBufferType constructor is invalid."
-		" It must be greater than 5 and odd.\n"),
+		" It must be greater than ", minFSBSizeInChunks, " and odd.\n"),
 	       ERROR_GENERIC_RANGE_ERROR);
 	}
     }
@@ -571,10 +573,35 @@ public:
   chunk(const yx chunkSizeIn, const int fSBSizeInChunks,
 	const chunkElementType missingChunkFiller, const char fileName []):
     chunkSize(chunkSizeIn.y, chunkSizeIn.x),
-    firstStageBuffer(chunkSizeIn, fSBSizeInChunks),
+    firstStageBuffer(chunkSizeIn, fSBSizeInChunks, minFSBSizeInChunks),
     fileName(fileName),
     MISSING_CHUNK_FILLER(missingChunkFiller)
   {
+  }
+
+
+  /* This function should be called by any code that allocates memory for a
+     second stage buffer. Where firstStageBufferSizeInChunks is the size of the
+     first stage buffer (in chunks) that will be used by the object the second
+     stage buffer in question will be used with. For example a first stage
+     buffer for the game background might be 5x5, it's second stage buffer
+     should then be 1x1  or 5 - (minFSBSizeInChunks -1) (assuming
+     minFSBSizeInChunks is 5), but a first stage buffer for character rules
+     may be 7x7 and in this case it's second stage buffer should be 3x3 or 7 -
+     (minFSBSizeInChunks -1) (assuming minFSBSizeInChunks is 5). This would
+     mean that physics could be calculated outside of the view port (to some
+     extent.) */
+  static ssize_t getSecondStageBufferSizeInChunks
+  (const ssize_t firstStageBufferSizeInChunks, const std::string eMsg)
+  {
+    if(firstStageBufferSizeInChunks < minFSBSizeInChunks ||
+       firstStageBufferSizeInChunks % 2 != 1)
+      {
+	exit(concat("Error calculating second stage buffer dimension size in "
+		    "chunks when ", eMsg, "."), ERROR_BAD_INTERNAL_VALUE);
+      }
+    
+    return (firstStageBufferSizeInChunks - (minFSBSizeInChunks -1));
   }
   
   
