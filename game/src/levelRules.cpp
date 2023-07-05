@@ -771,12 +771,12 @@ void removeComments(std::string & buffer, const std::string & eMsg,
   bool inComment {false};
   bool inString {false};
   ssize_t commentStartsAt {};
-
-  endwin();
   
   for(ssize_t iter {};
-      iter < buffer.size() - (COMMENT_END_DELIMITER.size() -1) &&
-	iter < buffer.size() - (COMMENT_START_DELIMITER.size() -1); ++iter)
+      iter < (ssize_t)buffer.size() -
+	((ssize_t)COMMENT_END_DELIMITER.size() -1) &&
+	iter < (ssize_t)buffer.size() -
+	((ssize_t)COMMENT_START_DELIMITER.size() -1); ++iter)
     {
       if(!inComment)
 	{
@@ -801,46 +801,23 @@ void removeComments(std::string & buffer, const std::string & eMsg,
 		}
 	    }
 	  else if(checkForStringInBufferAtPos
-	      (buffer, iter, COMMENT_START_DELIMITER))
+	      (buffer, iter, COMMENT_START_DELIMITER) && !inString)
 	    {
 	      /* NOTE THAT A COMMENT START CANNOT BE ESCAPED. */
 	      inComment = true;
 	      commentStartsAt = iter;
 	      iter += COMMENT_START_DELIMITER.size() -1;
-
-	      std::cout<<"iter = "<<iter<<"\n";
-	      std::cout<<"COMMENT_START_DELIMITER.size() -1 = "
-		       <<COMMENT_START_DELIMITER.size() -1<<"\n\n";
 	    }
 	}
       else if(checkForStringInBufferAtPos
 	      (buffer, iter, COMMENT_END_DELIMITER))
 	{
 	  /* NOTE THAT A COMMENT END CANNOT BE ESCAPED. */
-
-	  // std::cout<<"commentStartsAt = "<<commentStartsAt
-	  // 	   <<"\niter = "<<iter<<'\n';
-	  // std::cout<<"Erasing! "<<buffer[commentStartsAt]
-	  // 	   <<"\t"<<buffer[iter]<<'\n';
-
-	  
 	  inComment = false;
 	  buffer.erase(commentStartsAt, iter + COMMENT_END_DELIMITER.size() - commentStartsAt);
 	  iter = commentStartsAt;
-
-	  // std::cout<<"After erase: "<<buffer[iter]<<buffer[iter +1]<<"\n\n";
 	}
-
-      // std::cout<<"iter = "<<iter<<"\n";
-      // static int cats;
-      // cats++;
-      // if(cats > 5)
-      // 	exit(-1);
     }
-
-  endwin();
-  std::cout<<buffer<<'\n';
-  exit(-1);
 
   if(inComment)
     {
