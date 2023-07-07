@@ -73,6 +73,48 @@ private:
 
   // ========================== MEMBER FUNCTIONS START =========================
   // ===========================================================================
+    /* To avoid visual artefacts the whole 1st stage buffer needs to be
+     initialised.
+     Should be called once initial player position is known, but before the main
+     game loop. */
+  void initFirstStageBuffer(const yx initialViewPortPos)
+  {
+    /* We need an initial position that is negative two chunks in the x
+       dimension to ensure updating the chunk that initialViewPortPos maps to
+       (this is assuming that lastUpdatedPosition is set to one chunk less than
+       this.) We do this because if the view port position is two
+       chunks to the left of the chunk mapped to by initialViewPortPos and
+       the lastUpdatedPosition indicates a rightward movement the chunk
+       two chunks ahead of initialCenterPos (view port position) will be updated
+       (the chunk initialViewPortPos maps to in x.) However in the loop below
+       we add a further offset of chunkIter chunks as we want to map from -|chunkIter|
+       to |chunkIter|  with respect to initialViewPortPos. We also align the
+       initialCenterPos to the closest chunk as this resolves some issues. */
+    const yx initialCenterPos
+      {initialViewPortPos.y - (initialViewPortPos.y % chunkSize.y),
+       initialViewPortPos.x - (initialViewPortPos.x % chunkSize.x)
+       - chunkSize.x * 2};
+    int chunkIter {-(firstStageBuffer.fSBXChunks / 2)};
+    /* We add -1 to chunkIter here because lastUpdatedPosition.x should be one
+       chunk to the left of viewPortPosition. */
+    firstStageBuffer.lastUpdatedPosition =
+      yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * (chunkIter - 1)};
+
+    /* Note that FSBXChunks should be odd. Fill columns (of height fSBYChunks)
+       of chunks from left to right. */
+    for( ; chunkIter <= (firstStageBuffer.fSBXChunks / 2);
+	++chunkIter)
+      {
+	firstStageBuffer.viewPortPosition =
+	  yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * chunkIter};	
+	updateFirstStageBuffer();
+      }
+    
+    firstStageBuffer.lastUpdatedPosition = initialViewPortPos;
+    firstStageBuffer.viewPortPosition = initialViewPortPos;
+  }
+
+  
   /* UpdateFirstStageBuffer() will call this overloaded function (to do the
      actual update if it needs to be done in both dimensions at once.) */
   void updateFirstStageBuffer(const yx fSBSize)
@@ -421,6 +463,15 @@ private:
   
   
 protected:
+  /* This must be called to properly initialise the buffers before use. */
+  void initBuffers(const yx initialViewPortPos,
+		   chunkElementType *  secondStageBuffer)
+  {
+    initFirstStageBuffer(initialViewPortPos);
+    updateSecondStageBuffer(secondStageBuffer);
+  }
+
+  
     /* Updates the first stage buffer if
      firstStageBuffer.viewPortPosition and firstStageBuffer.lastUpdatedPosition
      have diverged by a sufficient delta. If an update is performed
@@ -614,48 +665,6 @@ public:
   bool keyExists(const std::string & key) const
   {
     return !(chunkMap.find(key) == chunkMap.end());
-  }
-  
-  
-  /* To avoid visual artefacts the whole 1st stage buffer needs to be
-     initialised.
-     Should be called once initial player position is known, but before the main
-     game loop. */
-  void initFirstStageBuffer(const yx initialViewPortPos)
-  {
-    /* We need an initial position that is negative two chunks in the x
-       dimension to ensure updating the chunk that initialViewPortPos maps to
-       (this is assuming that lastUpdatedPosition is set to one chunk less than
-       this.) We do this because if the view port position is two
-       chunks to the left of the chunk mapped to by initialViewPortPos and
-       the lastUpdatedPosition indicates a rightward movement the chunk
-       two chunks ahead of initialCenterPos (view port position) will be updated
-       (the chunk initialViewPortPos maps to in x.) However in the loop below
-       we add a further offset of chunkIter chunks as we want to map from -|chunkIter|
-       to |chunkIter|  with respect to initialViewPortPos. We also align the
-       initialCenterPos to the closest chunk as this resolves some issues. */
-    const yx initialCenterPos
-      {initialViewPortPos.y - (initialViewPortPos.y % chunkSize.y),
-       initialViewPortPos.x - (initialViewPortPos.x % chunkSize.x)
-       - chunkSize.x * 2};
-    int chunkIter {-(firstStageBuffer.fSBXChunks / 2)};
-    /* We add -1 to chunkIter here because lastUpdatedPosition.x should be one
-       chunk to the left of viewPortPosition. */
-    firstStageBuffer.lastUpdatedPosition =
-      yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * (chunkIter - 1)};
-
-    /* Note that FSBXChunks should be odd. Fill columns (of height fSBYChunks)
-       of chunks from left to right. */
-    for( ; chunkIter <= (firstStageBuffer.fSBXChunks / 2);
-	++chunkIter)
-      {
-	firstStageBuffer.viewPortPosition =
-	  yx{initialCenterPos.y, initialCenterPos.x + chunkSize.x * chunkIter};	
-	updateFirstStageBuffer();
-      }
-    
-    firstStageBuffer.lastUpdatedPosition = initialViewPortPos;
-    firstStageBuffer.viewPortPosition = initialViewPortPos;
   }
 
 

@@ -302,6 +302,11 @@ protected:
   int  handleFalling(const T coordRules);
   template<typename T>
   int handleJumping(const T coordRules);
+  /*  */
+  template <typename T>
+  bool getCoordRule
+  (const yx pos, const yx viewPortSize, const yx coordRulesBufferSize,
+   const T * coordRules, T & coordRulesRet);
   /* Calculates all the points between the absolute position of the left +
      leftCollisionOffset and the absolute position of the right +
      rightCollisionOffset. Return value is a vector of strings of the pos's.
@@ -371,13 +376,14 @@ int animateSprite::handleHorizontalMovementsWhenStopping(const T coordRules)
 
 template<typename T>
 sprite::directions animateSprite::handleGroundCollision(const T coordRules)
-{
+{  
   sprite::directions retDir {sprite::DIR_DOWN};
   for(yx coord:
 	getBottomXAbsRangeAsStrsForOneOffContact())
     {
       char rule {};
-      if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
+      if(getCoordRule
+	 (coord, viewPortSize, coordRulesBufferSize, coordRules, rule) &&
 	 (rule == boarderRuleChars::BOARDER_CHAR ||
 	  rule == boarderRuleChars::PLATFORM_CHAR))
 	{
@@ -441,7 +447,9 @@ sprite::directions animateSprite::handleRightCollision(const T coordRules)
 	{
 	  // If there is near contact and it's not with the bottom right coord.
 	  if(spriteCoord != bottomRightSpriteCoord &&
-	     getCoordRule(spriteCoord, viewPortSize, coordRules, rule) &&
+	     getCoordRule
+	     (spriteCoord, viewPortSize, coordRulesBufferSize, coordRules,
+	      rule) &&
 	     rule == BOARDER_CHAR)
 	    {
 	      stoppingContact = true;
@@ -451,7 +459,8 @@ sprite::directions animateSprite::handleRightCollision(const T coordRules)
 	}
   
       if(!stoppingContact && getCoordRule
-	 (bottomRightSpriteCoord, viewPortSize, coordRules, rule) &&
+	 (bottomRightSpriteCoord, viewPortSize, coordRulesBufferSize,
+	  coordRules, rule) &&
 	 (rule == BOARDER_CHAR || rule == PLATFORM_CHAR))
 	{
 	  /* If we've hit a "step" (as in the things that constitute
@@ -484,7 +493,9 @@ sprite::directions animateSprite::handleLeftCollision(const T coordRules)
 	{
 	  // If there is near contact and it's not with the bottom right coord.
 	  if(spriteCoord != bottomLeftSpriteCoord &&
-	     getCoordRule(spriteCoord, viewPortSize, coordRules, rule) &&
+	     getCoordRule
+	     (spriteCoord, viewPortSize, coordRulesBufferSize, coordRules,
+	      rule) &&
 	     rule == BOARDER_CHAR)
 	    {
 	      stoppingContact = true;
@@ -494,7 +505,8 @@ sprite::directions animateSprite::handleLeftCollision(const T coordRules)
 	}
 
       if(!stoppingContact && getCoordRule
-	 (bottomLeftSpriteCoord, viewPortSize, coordRules, rule) &&
+	 (bottomLeftSpriteCoord, viewPortSize, coordRulesBufferSize, coordRules,
+	  rule) &&
 	 (rule == BOARDER_CHAR || rule == PLATFORM_CHAR))
 	{
 	  updatePosRel(sprite::DIR_UP);
@@ -524,7 +536,9 @@ bool animateSprite::checkForLeftCollisionWhenInputRight(const T coordRules)
 	{
 	  // If there is near contact and it's not with the bottom left coord.
 	  if(spriteCoord != bottomLeftSpriteCoord &&
-	     getCoordRule(spriteCoord, viewPortSize, coordRules, rule) &&
+	     getCoordRule
+	     (spriteCoord, viewPortSize, coordRulesBufferSize, coordRules,
+	      rule) &&
 	     rule == BOARDER_CHAR)
 	    {
 	      ret = true;
@@ -556,7 +570,9 @@ bool animateSprite::checkForRightCollisionWhenInputLeft(const T coordRules)
 	{
 	  // If there is near contact and it's not with the bottom right coord.
 	  if(spriteCoord != bottomRightSpriteCoord &&
-	     getCoordRule(spriteCoord, viewPortSize, coordRules, rule) &&
+	     getCoordRule
+	     (spriteCoord, viewPortSize, coordRulesBufferSize, coordRules,
+	      rule) &&
 	     rule == BOARDER_CHAR)
 	    {
 	      ret = true;
@@ -609,7 +625,8 @@ int animateSprite::handleJumpingAndFalling
 	for(auto coord: getBottomXAbsRangeAsStrsForOneOffContact())
 	  {
 	    char rule {};
-	    if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
+	    if(getCoordRule
+	       (coord, viewPortSize, coordRulesBufferSize, coordRules, rule) &&
 	       (rule == BOARDER_CHAR ||
 		rule == PLATFORM_CHAR))
 	      {
@@ -651,7 +668,8 @@ int animateSprite::handleFalling(const T coordRules)
       for(auto coord: getBottomXAbsRangeAsStrsForOneOffContact())
 	{
 	  char rule {};
-	  if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
+	  if(getCoordRule
+	     (coord, viewPortSize, coordRulesBufferSize, coordRules, rule) &&
 	     (rule == BOARDER_CHAR ||
 	      rule == PLATFORM_CHAR))
 	    {
@@ -691,9 +709,10 @@ int animateSprite::handleJumping(const T coordRules)
       for(auto coord: getTopXAbsRangeAsStrsForOneOffContact())
 	{
 	  char rule {};
-	  if(getCoordRule(coord, viewPortSize, coordRules, rule) &&
+	  if(getCoordRule
+	     (coord, viewPortSize, coordRulesBufferSize, coordRules, rule) &&
 	     rule == boarderRuleChars::BOARDER_CHAR)
-	    {
+	    { 
 	      // We're going to hit something.
 	      hit = true;
 	      break;
@@ -714,6 +733,79 @@ int animateSprite::handleJumping(const T coordRules)
   velComp.addToYCompUnconstrained(-jumping.gravitationalConstant);
 
   return distTravelled;
+}
+
+
+template <typename T>
+bool animateSprite::getCoordRule
+    (const yx pos, const yx viewPortSize, const yx coordRulesBufferSize,
+     const T * coordRules, T & coordRulesRet)
+{
+  bool ret {false};
+  /* CoordRulesBufferSize should be some odd multiple of viewPortSize. */
+  // (coordRulesBufferSize.y - viewPortSize.y) / 2
+  const int linearAddressOffset
+    {((coordRulesBufferSize.y - viewPortSize.y) / 2) * coordRulesBufferSize.x +
+     (coordRulesBufferSize.x - viewPortSize.x) / 2};
+  /* linearAddress - linearAddressOffset is view port relative. Where as
+     linearAddress is 2nd stage coordRules buffer relative. */
+  const int linearAddress
+    {pos.y * viewPortSize.x + pos.x + linearAddressOffset};
+
+
+  //  std::ofstream outputFile {"test.tmp"};
+  
+  if(linearAddress < (coordRulesBufferSize.y * coordRulesBufferSize.x))
+    {
+      coordRulesRet = coordRules[linearAddress];
+
+      
+      // for(int y {}; y < viewPortSize.y; ++y)
+      // 	{
+      // 	  for(int x {}; x < viewPortSize.x; ++x)
+      // 	    {
+      // 	      outputFile<<rules[linearAddress + y * coordRulesBufferSize.x + x + (coordRulesBufferSize.x - viewPortSize.x) / 2];
+      // 	    }
+      // 	}
+
+      
+      for(auto rule: boarderRuleChars::CHARS)
+	{
+	  if(coordRulesRet == rule)
+	    {
+	      ret = true;
+	      break;
+	    }
+	}
+    }
+
+
+
+  //       std::ofstream outputFile {"test.tmp"};
+  // for(int y {}; y < coordRulesBufferSize.y; ++y)
+  //   {
+  //     for(int x {}; x < coordRulesBufferSize.x; ++x)
+  // 	{
+  // 	  outputFile<<coordRules[y * coordRulesBufferSize.x + x];
+  // 	}
+  //   }
+
+  // outputFile.close();
+  // exit(-1);
+
+  
+  // endwin();
+  // std::cout<<"linearAddressOffset = "<<linearAddressOffset
+  // 	   <<"\nlinearAddress = "<<linearAddress
+  // 	   <<"\nlinearAddress - linearAddressOffset = "
+  // 	   <<linearAddress - linearAddressOffset
+  // 	   <<"\npos.y = "<<pos.y
+  // 	   <<"\nviewPortSize.x = "<<viewPortSize.x
+  // 	   <<"\npos.x = "<<pos.x<<"\n\n";
+  // exit(-1);
+
+  
+  return ret;
 }
 
 

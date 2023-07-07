@@ -256,36 +256,6 @@ getAdvancedIter(T_A i, const T_B iEnd, const size_t n, const std::string & eMsg)
 }
 
 
-template<typename T>
-bool getCoordRule(const yx pos, const yx coordRulesBufferSize, const T * rules,
-		  T & coordRulesRet)
-{
-  bool ret {false};
-  int linearAddress = {pos.y * coordRulesBufferSize.x + pos.x};
-  if(linearAddress < (coordRulesBufferSize.y * coordRulesBufferSize.x))
-    {
-      coordRulesRet = rules[linearAddress];
-      for(auto rule: boarderRuleChars::CHARS)
-	{
-	  if(coordRulesRet == rule)
-	    {
-	      ret = true;
-	      break;
-	    }
-	}
-    }
-  return ret;
-}
-
-
-template<typename T>
-bool getCoordRule(const yx & pos, const std::vector<T> & rules, int bgHeight,
-		  T & coordRulesRet)
-{
-  return getCoordRule(pos.y, pos.x, rules, bgHeight, coordRulesRet);
-}
-
-
 template<typename T1, typename T2>
 void insertChunk
 (const yx coord, const T1 & chunk, const ssize_t chunksReadIn,

@@ -28,6 +28,11 @@ public:
   // std::map<std::string, std::vector<spriteInfo>> spriteCoords {};
   player * gamePlayer; /* Info about user controlled sprite (AKA player.) */
   std::vector<bgSprite *> bgSprites;
+  /* This var is used in the initialisation of the player and other sprites in
+     the rules.lev file parsing code in levelRules.cpp. It is also used to
+     calculate how much memory to allocate for the second stage rules
+     buffer. */
+  const yx firstStageBufferSizeInChars;
   
 private:
   /* THE PHYSICS ENGINE SHOULD BE RUN THIS OFTEN (IN REAL SYSTEM TIME.) The
@@ -185,17 +190,18 @@ public:
    const char rulesFileName [], const backgroundData & background):
     chunk(viewPortSize, FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
 	  missingChunkFiller, coordRulesFileName),
-    secondStageRulesBuffer
-    (new chunkElementBaseType
-     [chunk::getSecondStageBufferSizeInChunks
+    firstStageBufferSizeInChars(chunk::getSecondStageBufferSizeInChunks
       (FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
-       "creating second stage rules buffer") * viewPortSize.y *
+       "creating second stage rules buffer") * viewPortSize.y,
       chunk::getSecondStageBufferSizeInChunks
       (FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
-       "creating second stage rules buffer") * viewPortSize.x])
+       "creating second stage rules buffer") * viewPortSize.x),
+    secondStageRulesBuffer
+    (new chunkElementBaseType
+     [firstStageBufferSizeInChars.y * firstStageBufferSizeInChars.x])
   {
     std::string rulesBuffer {};
-    
+
     loadAndInitialiseCoordRules(viewPortSize, coordRulesFileName, background);
     loadFileIntoString
       (rulesFileName, rulesBuffer,
@@ -213,6 +219,12 @@ public:
   {
     delete [] secondStageRulesBuffer;
     delete gamePlayer;
+  }
+
+
+  void initBuffers(const yx initialViewPortPos)
+  {
+    chunk::initBuffers(initialViewPortPos, secondStageRulesBuffer);
   }
 
 

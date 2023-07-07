@@ -49,10 +49,18 @@ public:
     loadAndInitialiseBackground();
   }
 
+  
   ~backgroundData()
   {
     delete [] secondStageDrawBuffer;
   }
+
+
+  void initBuffers(const yx initialViewPortPos)
+  {
+    chunk::initBuffers(initialViewPortPos, secondStageDrawBuffer);
+  }
+  
 
   void updateBuffers()
   {

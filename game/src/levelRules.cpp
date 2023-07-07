@@ -1073,8 +1073,7 @@ void initPlayer
 	       playerInitData.spritePaths,
 	       playerInitData.initialCoordinatesVPRel,
 	       playerInitData.direction,
-
-	       chunk::getSecondStageBufferSizeInChunks(5, ""),
+	       levelRules.firstStageBufferSizeInChars,
 	       playerInitData.health,
 	       playerInitData.gravitationalConstant,
 	       playerInitData.jumpingPower,
@@ -2113,7 +2112,24 @@ void rules::physics
 #ifdef DEBUG
   printRuleChars();
 #endif
-      
+
+
+
+  // yx coordRulesBufferSize {(48*3), (170*3)};
+  //         std::ofstream outputFile {"test.tmp"};
+  // for(int y {}; y < chunkSize.y; ++y)
+  //   {
+  //     for(int x {}; x < chunkSize.x; ++x)
+  // 	{
+  // 	  outputFile<<secondStageRulesBuffer[y * chunkSize.x + x];
+  // 	}
+  //   }
+
+  // outputFile.close();
+  // exit(-1);
+
+
+  
       gamePlayer->move(secondStageRulesBuffer, input);
       // Update 2nd stage rules buffer position based on player position.
       this->updateViewPortPosition

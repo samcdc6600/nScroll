@@ -48,10 +48,8 @@ void menu
   rules levelRules
     {viewPortSize, "assets/level1/level1.coordRules.lev", 'b',
      "assets/level1/level1.rules.lev", background};
-  background.initFirstStageBuffer
-    (levelRules.getInitialViewPortPosition());
-  levelRules.initFirstStageBuffer
-    (levelRules.getInitialViewPortPosition());
+  background.initBuffers(levelRules.getInitialViewPortPosition());
+  levelRules.initBuffers(levelRules.getInitialViewPortPosition());
   
   bool run = true;
   while(run)
