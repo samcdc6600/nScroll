@@ -189,13 +189,11 @@ public:
    const chunk::chunkElementBaseType missingChunkFiller,
    const char rulesFileName [], const backgroundData & background):
     chunk(viewPortSize, FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
-	  missingChunkFiller, coordRulesFileName),
-    firstStageBufferSizeInChars(chunk::getSecondStageBufferSizeInChunks
-      (FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
-       "creating second stage rules buffer") * viewPortSize.y,
-      chunk::getSecondStageBufferSizeInChunks
-      (FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
-       "creating second stage rules buffer") * viewPortSize.x),
+	  missingChunkFiller, coordRulesFileName, "calling chunk constructor "
+	  "before rules constructor body"),
+    firstStageBufferSizeInChars
+    (chunk::secondStageBufferSizeInChunks * viewPortSize.y,
+     chunk::secondStageBufferSizeInChunks * viewPortSize.x),
     secondStageRulesBuffer
     (new chunkElementBaseType
      [firstStageBufferSizeInChars.y * firstStageBufferSizeInChars.x])

@@ -2085,7 +2085,27 @@ void rules::printRuleChars()
     {
       for(int xIter {}; xIter < chunkSize.x; ++xIter)
 	{
-	  int sSRBIndex {yIter * chunkSize.x + xIter};
+	  /* For a 3x3 buffer with a chunkSize of (48, 170) this should
+	     calculate:
+	     	((3 / 2) * 48 *
+		3 * 170) +
+		(3 * 170) * 0 +
+		((3 / 2) * 170) + 0
+		=
+		(170 * 3 * 48) + 170
+		=
+		24650 */
+	  int sSRBIndex
+	    {(secondStageBufferSizeInChunks < 3) ?
+	     yIter * chunkSize.x + xIter:
+	     // Initial y offset to middle chunk in sSRB.
+	     ((secondStageBufferSizeInChunks / 2) * chunkSize.y *
+	      secondStageBufferSizeInChunks * chunkSize.x) +
+	     // Add yIter y offset.
+	     (secondStageBufferSizeInChunks * chunkSize.x) * yIter +
+	     // Add x offset to left middle chunk in sSRB and add x offset.
+	     ((secondStageBufferSizeInChunks / 2) * chunkSize.x)  + xIter};
+	    
 	  if(secondStageRulesBuffer[sSRBIndex] != ' ')
 	    {
 	      setCuMode.setColor((sSRBIndex * rand()) % cuMap.colorPairs.size());
@@ -2112,23 +2132,6 @@ void rules::physics
 #ifdef DEBUG
   printRuleChars();
 #endif
-
-
-
-  // yx coordRulesBufferSize {(48*3), (170*3)};
-  //         std::ofstream outputFile {"test.tmp"};
-  // for(int y {}; y < chunkSize.y; ++y)
-  //   {
-  //     for(int x {}; x < chunkSize.x; ++x)
-  // 	{
-  // 	  outputFile<<secondStageRulesBuffer[y * chunkSize.x + x];
-  // 	}
-  //   }
-
-  // outputFile.close();
-  // exit(-1);
-
-
   
       gamePlayer->move(secondStageRulesBuffer, input);
       // Update 2nd stage rules buffer position based on player position.

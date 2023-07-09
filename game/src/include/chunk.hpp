@@ -9,6 +9,12 @@
 template <typename chunkElementType>
 class chunk
 {
+protected:
+  /* This has to be declared above secondStageBufferSizeInChunks because for
+     some reason it's value will be incorrect if it is referenced while
+     initialising secondStageBufferSizeInChunks. */
+  const int minFSBSizeInChunks {5};
+  
 public:
   // ========================== MEMBER VARIABLES START =========================
   // ===========================================================================
@@ -18,7 +24,8 @@ public:
   const yx chunkSize;
   
 protected:
-  static const int minFSBSizeInChunks {5};
+  /* Size of the second stage buffer in chunks. */
+  const int secondStageBufferSizeInChunks;
   /* Concatenate (y / chunkSize.y) and (x / chunkSize.x) and use as index into
      map. */
   typedef std::map<std::string, chunkType> chunkMapType;
@@ -39,7 +46,7 @@ protected:
     chunkElementType * buffer;
     
     firstStageBufferType(const yx chunkSizeIn, const int fSBSizeInChunks,
-			 const int minFSBSizeInChunks) :
+			 const int minFSBSizeInChunks, const std::string eMsg) :
       fSBYChunks(fSBSizeInChunks), fSBXChunks(fSBSizeInChunks),
       fSBYUpdateOffset(fSBSizeInChunks / 2),
       fSBXUpdateOffset(fSBSizeInChunks / 2),
@@ -50,8 +57,9 @@ protected:
 	{
 	  exit(concat
 	       ("Error: first stage buffer size (", fSBSizeInChunks, ") (in "
-		"chunks) passed to firstStageBufferType constructor is invalid."
-		" It must be greater than ", minFSBSizeInChunks, " and odd.\n"),
+		"chunks) passed to firstStageBufferType() constructor when ",
+		eMsg, " is invalid. It must be greater than ",
+		minFSBSizeInChunks, " and odd.\n"),
 	       ERROR_GENERIC_RANGE_ERROR);
 	}
     }
@@ -73,7 +81,26 @@ private:
 
   // ========================== MEMBER FUNCTIONS START =========================
   // ===========================================================================
-    /* To avoid visual artefacts the whole 1st stage buffer needs to be
+  /* This function returns the size that the second stage buffer should (in
+     chunks) be given the size of the first stage buffer. */
+  int getSecondStageBufferSizeInChunks
+  (const int firstStageBufferSizeInChunks, const int minFSBSizeInChunks, const std::string eMsg) const
+  {
+    if(firstStageBufferSizeInChunks < minFSBSizeInChunks ||
+       firstStageBufferSizeInChunks % 2 != 1)
+      {
+	exit(concat
+	     ("Error: first stage buffer size (", firstStageBufferSizeInChunks,
+	      ") (in chunks) passed to getSecondStageBufferSizeInChunks() is "
+	      "invalid when ", eMsg, ". It must be greater than ",
+	      minFSBSizeInChunks,
+	      " and odd.\n"), ERROR_GENERIC_RANGE_ERROR);
+      }
+    return (firstStageBufferSizeInChunks - (minFSBSizeInChunks -1));
+  }
+
+  
+  /* To avoid visual artefacts the whole 1st stage buffer needs to be
      initialised.
      Should be called once initial player position is known, but before the main
      game loop. */
@@ -87,9 +114,10 @@ private:
        the lastUpdatedPosition indicates a rightward movement the chunk
        two chunks ahead of initialCenterPos (view port position) will be updated
        (the chunk initialViewPortPos maps to in x.) However in the loop below
-       we add a further offset of chunkIter chunks as we want to map from -|chunkIter|
-       to |chunkIter|  with respect to initialViewPortPos. We also align the
-       initialCenterPos to the closest chunk as this resolves some issues. */
+       we add a further offset of chunkIter chunks as we want to map from
+       -|chunkIter| to |chunkIter|  with respect to initialViewPortPos. We also
+       align the initialCenterPos to the closest chunk as this resolves some
+       issues. */
     const yx initialCenterPos
       {initialViewPortPos.y - (initialViewPortPos.y % chunkSize.y),
        initialViewPortPos.x - (initialViewPortPos.x % chunkSize.x)
@@ -468,6 +496,21 @@ protected:
 		   chunkElementType *  secondStageBuffer)
   {
     initFirstStageBuffer(initialViewPortPos);
+    // UN-COMMENT FOR DEBUGGING START ==========================================
+    /* std::ofstream out("out.txt");
+    for(int i {};
+        i < (firstStageBuffer.fSBXChunks * chunkSize.x *
+	     firstStageBuffer.fSBYChunks * chunkSize.y);
+        ++i)
+      {
+        if(i % (firstStageBuffer.fSBXChunks * chunkSize.x) == 0)
+	  out<<'\n';
+        // out<<(char)(firstStageBuffer.buffer[i] % 159);
+	out<<(char)(firstStageBuffer.buffer[i]);
+      }
+    out.close();
+    exit(-1); */
+    // UN-COMMENT FOR DEBUGGING END ============================================
     updateSecondStageBuffer(secondStageBuffer);
   }
 
@@ -591,68 +634,76 @@ protected:
   { 
     // Size of the first stage buffer in characters.
     const yx fSBSize {chunkSize.y * firstStageBuffer.fSBYChunks,
-		      chunkSize.x * firstStageBuffer.fSBXChunks};  
-  
-    for(int yIter {}; yIter < chunkSize.y; ++yIter)
+		      chunkSize.x * firstStageBuffer.fSBXChunks};
+
+    for(int yIter {}; yIter < (secondStageBufferSizeInChunks * chunkSize.y);
+	++yIter)
       {
+	/* The middle of the second stage buffer should reflect the
+	   viewPortPosition. This is because when this class is being used for
+	   rules characters the second stage buffer should contain rules
+	   characters outside of the view port in all directions for the
+	   purpose of simulating some amount of level physics that the player
+	   cannot see. Because of this we add offsets to the calculations here
+	   that refer to using firstStageBuffer.viewPortPosition */
 	yx yAndXComponents
-	  {((firstStageBuffer.viewPortPosition.y + yIter) % fSBSize.y), 0};
+	  {(firstStageBuffer.viewPortPosition.y + yIter -
+	    /* Add offset to centre centre of second stage buffer around the
+	       view port position. */
+	    ((secondStageBufferSizeInChunks / 2) * chunkSize.y)) % fSBSize.y, 0};
 	// Maybe fix negative and wrap around in y...
 	yAndXComponents.y = yAndXComponents.y < 0 ?
 	  fSBSize.y + yAndXComponents.y:
 	  yAndXComponents.y;
 	// Convert to linear position in array with respect to y.
 	yAndXComponents.y *= fSBSize.x;
-      
-	for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	
+	for(int xIter {}; xIter < (secondStageBufferSizeInChunks * chunkSize.x);
+	    ++xIter)
 	  {
 	    yAndXComponents.x =
-	      ((firstStageBuffer.viewPortPosition.x + xIter) % fSBSize.x);
+	      ((firstStageBuffer.viewPortPosition.x + xIter -
+		((secondStageBufferSizeInChunks / 2) * chunkSize.x)) % fSBSize.x);
 	    // Maybe fix negative and wrap around in x...
 	    yAndXComponents.x = yAndXComponents.x < 0 ?
 	      fSBSize.x + yAndXComponents.x:
 	      yAndXComponents.x;
 
-	    secondStageBuffer[(yIter * chunkSize.x) + xIter] =
+	    secondStageBuffer
+	      [(yIter * (secondStageBufferSizeInChunks * chunkSize.x)) + xIter] =
 	      firstStageBuffer.buffer[yAndXComponents.y + yAndXComponents.x];
-	  }  
+	  }
       }
+
+    // UN-COMMENT FOR DEBUGGING START ==========================================
+    /* std::ofstream out("out.txt");
+    for(int i {};
+        i < (secondStageBufferSizeInChunks * chunkSize.x *
+	     secondStageBufferSizeInChunks * chunkSize.y);
+        ++i)
+      {
+        if(i % (secondStageBufferSizeInChunks * chunkSize.x) == 0)
+	  out<<'\n';
+        // out<<(char)(firstStageBuffer.buffer[i] % 159);
+	out<<(secondStageBuffer[i]);
+      }
+    out.close();
+    exit(-1); */
+    // UN-COMMENT FOR DEBUGGING END ============================================
   }
        
   
 public:
   chunk(const yx chunkSizeIn, const int fSBSizeInChunks,
-	const chunkElementType missingChunkFiller, const char fileName []):
+	const chunkElementType missingChunkFiller, const char fileName [],
+	const std::string eMsg):
     chunkSize(chunkSizeIn.y, chunkSizeIn.x),
-    firstStageBuffer(chunkSizeIn, fSBSizeInChunks, minFSBSizeInChunks),
+    secondStageBufferSizeInChunks
+    (getSecondStageBufferSizeInChunks(fSBSizeInChunks, minFSBSizeInChunks, eMsg)),
+    firstStageBuffer(chunkSizeIn, fSBSizeInChunks, minFSBSizeInChunks, eMsg),
     fileName(fileName),
     MISSING_CHUNK_FILLER(missingChunkFiller)
   {
-  }
-
-
-  /* This function should be called by any code that allocates memory for a
-     second stage buffer. Where firstStageBufferSizeInChunks is the size of the
-     first stage buffer (in chunks) that will be used by the object the second
-     stage buffer in question will be used with. For example a first stage
-     buffer for the game background might be 5x5, it's second stage buffer
-     should then be 1x1  or 5 - (minFSBSizeInChunks -1) (assuming
-     minFSBSizeInChunks is 5), but a first stage buffer for character rules
-     may be 7x7 and in this case it's second stage buffer should be 3x3 or 7 -
-     (minFSBSizeInChunks -1) (assuming minFSBSizeInChunks is 5). This would
-     mean that physics could be calculated outside of the view port (to some
-     extent.) */
-  static ssize_t getSecondStageBufferSizeInChunks
-  (const ssize_t firstStageBufferSizeInChunks, const std::string eMsg)
-  {
-    if(firstStageBufferSizeInChunks < minFSBSizeInChunks ||
-       firstStageBufferSizeInChunks % 2 != 1)
-      {
-	exit(concat("Error calculating second stage buffer dimension size in "
-		    "chunks when ", eMsg, "."), ERROR_BAD_INTERNAL_VALUE);
-      }
-    
-    return (firstStageBufferSizeInChunks - (minFSBSizeInChunks -1));
   }
   
   

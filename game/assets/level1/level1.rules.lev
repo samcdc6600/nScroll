@@ -7,7 +7,7 @@
    be supplied by the game engine. */
 (
   player(
-    initialViewPortCoordinate(0,0)
+    initialViewPortCoordinate(-48,0)
     viewPortPadding(0, 0)
     initialCoordinateViewPortRelative(0, 0)
     sprites("./assets/sprites/sprite(0).sprite",

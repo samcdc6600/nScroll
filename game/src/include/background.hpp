@@ -37,14 +37,12 @@ public:
   // Third argument to chunk is used to fill missing chunks with black spaces.
   backgroundData(const yx chunkSizeIn, const char bgFileName []):
     chunk(chunkSizeIn, FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
-	  (MONO_CH_MAX +1) * 1 + ' ', bgFileName),
+	  (MONO_CH_MAX +1) * 1 + ' ', bgFileName, "calling chunk constructor"
+	  "before backgroundData constructor body"),
     secondStageDrawBuffer
-    (new chunkElementBaseType [chunk::getSecondStageBufferSizeInChunks
-      (FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
-       "creating second stage background buffer") * chunkSizeIn.y *
-      chunk::getSecondStageBufferSizeInChunks
-      (FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
-       "creating second stage background buffer") * chunkSizeIn.x])
+    (new chunkElementBaseType
+     [chunk::secondStageBufferSizeInChunks * chunkSizeIn.y *
+      chunk::secondStageBufferSizeInChunks * chunkSizeIn.x])
   {
     loadAndInitialiseBackground();
   }
