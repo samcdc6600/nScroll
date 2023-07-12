@@ -49,6 +49,21 @@ public:
    const double rightAcceleration);
   
   virtual ~player() {};
+  /* Since we only want the view ports position to be updated by one character
+     per dimension per time step we need to make sure that the player cannot
+     move more than one character per time step. We apply this restriction
+     because we think that there may be issues with updating the position more
+     than one character per dimension per time step with regards to the chunk
+     code. With further testing and possible a possible fix we could lift this
+     restriction in the future. However we think that the restriction should
+     allow for enough flexibility in player moment speed. This function should
+     check that all movement limit variables are less than fixedTimeStep and
+     exit if any of them are not. */
+  void verifyIfMovementLimitsLessThanFixedTimeStep
+  (const double fixedTimeStep, const double g,
+   const double jumpingPower, const double maxVelocity,
+   const double maxYVelocityFalling, const double leftAcceleration,
+   const double rightAcceleration);
   // Unlike sprite player needs to handle input direction characters.
   static directions convertDirectionCharsToDirections(const directionChars dir);
   static bool isDirectionCharInputValid(const int input);

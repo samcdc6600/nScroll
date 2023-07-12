@@ -5,20 +5,20 @@
 #include "include/chronological.hpp"
 
 
-void sprite::spriteTimers::updateSliceTimer()
+void sprite::spriteTimer::updateSliceTimer()
 {
   timeSinceLastSliceUpdate += fixedTimeStep;
 }
 
 
-double sprite::spriteTimers::getTimeSinceLastSliceUpdate() const 
+double sprite::spriteTimer::getTimeSinceLastSliceUpdate() const 
 {
   return timeSinceLastSliceUpdate;
 }
 
 
 
-void sprite::spriteTimers::resetTimeSinceLastSliceUpdate()
+void sprite::spriteTimer::resetTimeSinceLastSliceUpdate()
 {
   timeSinceLastSliceUpdate = 0;
 }

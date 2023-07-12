@@ -7,13 +7,13 @@
 class animateSprite: public sprite
 {
  public:
-  class spriteTimers: public sprite::spriteTimers
+  class spriteTimer: public sprite::spriteTimer
   {
     double timeSinceLastYUpdate {}, timeSinceLastXUpdate {};
     
   public:
-    spriteTimers(const double fTS):
-      sprite::spriteTimers(fTS)
+    spriteTimer(const double fTS):
+      sprite::spriteTimer(fTS)
     {
     }
 
@@ -88,25 +88,29 @@ class animateSprite: public sprite
        distTravelled that is calculated to be more than 1 when it is called. */
     velocityComps distTravelled			{};
     velocityComps comps				{};
-    /* For some reason we have to pass this in from spriteTimers and use it like
+    /* For some reason we have to pass this in from spriteTimer and use it like
        this otherwise we get a compilation error:
        "
        error: invalid use of non-static data member 'timers'
        distTravelled.y += comps.y * timers.fixedTimeStep * yVelocitySailFactor;
        "
        When we try to use timers in a member function of this class. */
-    spriteTimers & timers;
+    spriteTimer & timers;
     
   public:
     /* The sprites velocity components should not exceed this value at
        any point the sum of the components can be greater however. */
+    /* TODO: Rename this variable!? Note that this name also appears in
+       animateSprite and player (specifically remember to update string in
+       player::verifyIfMovementLimitsLessThanFixedTimeStep). We may also need to
+       look at the name of the configuration file field for this variable. */
     const double maxVelocity			{};
     const double maxYVelocityFalling		{};
     const double leftAcceleration		{};
     const double rightAcceleration		{};
 
 
-    velocity(spriteTimers & t, const double maxXYVel, const double maxFallingV,
+    velocity(spriteTimer & t, const double maxXYVel, const double maxFallingV,
 	     const double lAccel, const double rAccel):
       timers(t), maxVelocity(maxXYVel), maxYVelocityFalling(maxFallingV),
       leftAcceleration(lAccel), rightAcceleration(rAccel)
@@ -198,10 +202,10 @@ private:
 
 protected:
   const yx coordRulesBufferSize;
-  /* This masks the timers in the parent class and uses the spriteTimers class
-     defined in this class (that inherits from the spriteTimers class from the
+  /* This masks the timers in the parent class and uses the spriteTimer class
+     defined in this class (that inherits from the spriteTimer class from the
      parent class NOTE THAT THIS MUST BE INITIALISED BEFORE velComp! */
-  spriteTimers timers;
+  spriteTimer timers;
 
 private:
   jumpingState jumping;
@@ -236,7 +240,8 @@ public:
     jumping(g, jumpingPower, maxFallingJmpNum, maxJmpNum),
     velComp(this->timers, maxVelocity, maxYVelocityFalling,
 	    leftAcceleration, rightAcceleration)
-  {}
+  {
+  }
 
 
 protected:

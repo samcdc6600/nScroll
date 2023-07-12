@@ -131,8 +131,11 @@ enum errorsCodes {                     /* Error codes. */
                                                           // that is malformed.
                    ERROR_BAD_LOGIC, // There was an error in the code.
 		   ERROR_BAD_COMMENT,	// C style comment not closed.
-		   ERROR_BAD_INTERNAL_VALUE	// Used when a bad hard coded
+		   ERROR_BAD_INTERNAL_VALUE,	// Used when a bad hard coded
 						// value is encountered.
+		   ERROR_INVALID_MOVEMENT_LIMIT	// A user supplied player
+						// movement limit is out of
+						// range. 
 };
 
 

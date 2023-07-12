@@ -1066,7 +1066,9 @@ void initPlayer
 	     buffPos, rulesFileName);
 	}
     }
-  
+
+  /* NOTE THAT PLAYER::VERIFYIFMOVEMENTLIMITSLESSTHANFIXEDTIMESTEP() MUST BE
+     UPDATED IF ANY PLAYER MOVEMENT LIMITS ARE ADDED HERE! */
   levelRules.gamePlayer =
     new player(fixedTimeStep,
 	       background,

@@ -14,6 +14,53 @@ player::player
      cRBS, g, jumpingPower,  maxFallingJmpNum, maxJmpNum, maxVelocity,
      maxYVelocityFalling, leftAcceleration, rightAcceleration)
 {
+  verifyIfMovementLimitsLessThanFixedTimeStep
+    (fixedTimeStep, g, jumpingPower, maxVelocity, maxYVelocityFalling,
+     leftAcceleration, rightAcceleration);
+}
+
+
+void player::verifyIfMovementLimitsLessThanFixedTimeStep
+(const double fixedTimeStep, const double g,
+ const double jumpingPower, const double maxVelocity,
+ const double maxYVelocityFalling, const double leftAcceleration,
+ const double rightAcceleration)
+{
+  const double movementLimit {1 / fixedTimeStep};
+
+  if(g > movementLimit)
+    {
+      exit(concat("Error when initialising player. gravConst cannot be more "
+		  "than ", movementLimit, "."), ERROR_INVALID_MOVEMENT_LIMIT);
+    }
+  else if(jumpingPower > movementLimit)
+    {
+      exit(concat("Error when initialising player. jumpingPower cannot be more "
+		  "than ", movementLimit, "."), ERROR_INVALID_MOVEMENT_LIMIT);
+    }
+  else if(maxVelocity > movementLimit)
+    {
+      exit(concat("Error when initialising player. maxXVelocity cannot be more "
+		  "than ", movementLimit, "."), ERROR_INVALID_MOVEMENT_LIMIT);
+    }
+  else if(maxYVelocityFalling > movementLimit)
+    {
+      exit(concat("Error when initialising player. maxFallingVelocity cannot be"
+		  " more than ", movementLimit, "."),
+	   ERROR_INVALID_MOVEMENT_LIMIT);
+    }
+  else if(leftAcceleration > movementLimit)
+    {
+      exit(concat("Error when initialising player. leftAcceleration cannot be "
+		  "more than ", movementLimit, "."),
+	   ERROR_INVALID_MOVEMENT_LIMIT);
+    }
+  else if(rightAcceleration > movementLimit)
+    {
+      exit(concat("Error when initialising player. rightAcceleration cannot be "
+		  "more than ", movementLimit, "."),
+	   ERROR_INVALID_MOVEMENT_LIMIT);
+    }
 }
 
 

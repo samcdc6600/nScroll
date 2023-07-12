@@ -31,17 +31,17 @@ protected:
   yx positionVPRel;
   directions direction {DIR_NONE};
 
-  class spriteTimers
+  class spriteTimer
   {
     /* This class is used to store fixedTimeStep timing for sprites. Classes
        that inherit from sprite will probably need to add things to this class
        (this can be done using the following syntax, which of course technically
-       is inheriting from spriteTimers):
+       is inheriting from spriteTimer):
 	    "
 	    class childClass : public sprite
 	    {
 	    	...
-		class spriteTimers: public sprite::spriteTimers
+		class spriteTimer: public sprite::spriteTimer
 		{
 		...
 		};
@@ -57,7 +57,7 @@ protected:
     const double fixedTimeStep;
     
   public:    
-    spriteTimers(const double fTS):
+    spriteTimer(const double fTS):
       fixedTimeStep(fTS)
     {}
 
@@ -72,7 +72,7 @@ protected:
     void resetTimeSinceLastSliceUpdate();
   };
 
-  spriteTimers timers;
+  spriteTimer timers;
   
   const yx viewPortSize;
   /* Sprites should only have these numbers of sets of slices. 5
