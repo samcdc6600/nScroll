@@ -84,7 +84,8 @@ private:
   /* This function returns the size that the second stage buffer should (in
      chunks) be given the size of the first stage buffer. */
   int getSecondStageBufferSizeInChunks
-  (const int firstStageBufferSizeInChunks, const int minFSBSizeInChunks, const std::string eMsg) const
+  (const int firstStageBufferSizeInChunks, const int minFSBSizeInChunks,
+   const std::string eMsg) const
   {
     if(firstStageBufferSizeInChunks < minFSBSizeInChunks ||
        firstStageBufferSizeInChunks % 2 != 1)

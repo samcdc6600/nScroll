@@ -47,8 +47,15 @@ public:
    const unsigned maxJmpNum, const double maxVelocity,
    const double maxYVelocityFalling, const double leftAcceleration,
    const double rightAcceleration);
+
   
   virtual ~player() {};
+
+
+  /* Return player position with offset relative to second stage coord rules
+     buffer removed. (See animateSprite::addRulesBufferOffset() header
+     comment.) */
+  virtual yx getPos() const;
   /* Since we only want the view ports position to be updated by one character
      per dimension per time step we need to make sure that the player cannot
      move more than one character per time step. We apply this restriction

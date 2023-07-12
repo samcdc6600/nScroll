@@ -20,6 +20,18 @@ player::player
 }
 
 
+yx player::getPos() const
+{
+  yx ret {positionVPRel};
+  if(secondStageCoordRulesBufferSize.y > viewPortSize.y)
+    {
+      ret.y -= ((secondStageCoordRulesBufferSize.y - viewPortSize.y) / 2);
+      ret.x -= ((secondStageCoordRulesBufferSize.x - viewPortSize.x) / 2);
+    }
+  return ret;
+}
+
+
 void player::verifyIfMovementLimitsLessThanFixedTimeStep
 (const double fixedTimeStep, const double g,
  const double jumpingPower, const double maxVelocity,

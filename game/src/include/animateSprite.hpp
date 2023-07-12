@@ -201,7 +201,8 @@ private:
   };
 
 protected:
-  const yx coordRulesBufferSize;
+  // Size in characters.
+  const yx secondStageCoordRulesBufferSize;
   /* This masks the timers in the parent class and uses the spriteTimer class
      defined in this class (that inherits from the spriteTimer class from the
      parent class NOTE THAT THIS MUST BE INITIALISED BEFORE velComp! */
@@ -234,8 +235,8 @@ public:
    const unsigned maxFallingJmpNum, const unsigned maxJmpNum,
    const double maxVelocity, const double maxYVelocityFalling,
    const double leftAcceleration, const double rightAcceleration):
-    sprite(fixedTimeStep, spritePaths, vPS, pos, dir),
-    coordRulesBufferSize(cRBS),
+    sprite(fixedTimeStep, spritePaths, vPS, addRulesBufferOffset(pos, cRBS), dir),
+    secondStageCoordRulesBufferSize(cRBS),
     timers(fixedTimeStep),
     jumping(g, jumpingPower, maxFallingJmpNum, maxJmpNum),
     velComp(this->timers, maxVelocity, maxYVelocityFalling,
@@ -245,6 +246,10 @@ public:
 
 
 protected:
+  /* All animateSprites should have their position be offset from the view
+     port position so that their origin is the top left corner of the second
+     stage coord rules buffer. */
+  yx addRulesBufferOffset(const yx vPRelPos, const yx cRBS) const;
   /* Updates the position of the sprite relative to the current position based
      on the value of dir. Also performs actions related to change of direction
      such as updating the sprite. */
@@ -755,13 +760,15 @@ bool animateSprite::getCoordRule
      stage rules buffer). CoordRulesBufferSize should be some odd multiple of
      viewPortSize. */
   const int linearAddressOffset
-    {((coordRulesBufferSize.y - viewPortSize.y) / 2) * coordRulesBufferSize.x +
-     (coordRulesBufferSize.x - viewPortSize.x) / 2};
+    {((secondStageCoordRulesBufferSize.y - viewPortSize.y) / 2) *
+     secondStageCoordRulesBufferSize.x +
+     (secondStageCoordRulesBufferSize.x - viewPortSize.x) / 2};
   /* Offset into position within centre chunk of sSRB. */
   const int linearAddress
-    {pos.y * coordRulesBufferSize.x + pos.x + linearAddressOffset};
+    {pos.y * secondStageCoordRulesBufferSize.x + pos.x + linearAddressOffset};
   
-  if(linearAddress < (coordRulesBufferSize.y * coordRulesBufferSize.x))
+  if(linearAddress < (secondStageCoordRulesBufferSize.y *
+		      secondStageCoordRulesBufferSize.x))
     {
       coordRulesRet = coordRules[linearAddress];      
       for(auto rule: boarderRuleChars::CHARS)
