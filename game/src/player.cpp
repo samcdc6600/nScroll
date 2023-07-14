@@ -17,10 +17,11 @@ player::player
   verifyIfMovementLimitsLessThanFixedTimeStep
     (fixedTimeStep, g, jumpingPower, maxVelocity, maxYVelocityFalling,
      leftAcceleration, rightAcceleration);
+  positionVPRel = removeRulesBufferOffset(positionVPRel, background.chunkSize, cRBS);
 }
 
 
-yx player::getPos() const
+/*yx player::getPos() const
 {
   yx ret {positionVPRel};
   if(secondStageCoordRulesBufferSize.y > viewPortSize.y)
@@ -29,14 +30,14 @@ yx player::getPos() const
       ret.x -= ((secondStageCoordRulesBufferSize.x - viewPortSize.x) / 2);
     }
   return ret;
-}
+  }*/
 
 
 void player::verifyIfMovementLimitsLessThanFixedTimeStep
 (const double fixedTimeStep, const double g,
  const double jumpingPower, const double maxVelocity,
  const double maxYVelocityFalling, const double leftAcceleration,
- const double rightAcceleration)
+ const double rightAcceleration) const
 {
   const double movementLimit {1 / fixedTimeStep};
 
@@ -73,6 +74,23 @@ void player::verifyIfMovementLimitsLessThanFixedTimeStep
 		  "more than ", movementLimit, "."),
 	   ERROR_INVALID_MOVEMENT_LIMIT);
     }
+}
+
+
+yx player::removeRulesBufferOffset
+(const yx vPRelPos, const yx vPS, const yx cRBS) const
+{
+    yx ret {vPRelPos};
+  /* Only add offset if second stage coord rules buffer is larger than view
+     port in y. It should also be larger in x if this is the case and the size
+     should already have been verified to be an odd multiple. */
+  if(cRBS.y > vPS.y)
+    {
+      ret.y -= ((cRBS.y - vPS.y) / 2);
+      ret.x -= ((cRBS.x - vPS.x) / 2);
+    }
+
+   return ret;
 }
 
 

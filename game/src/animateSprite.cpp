@@ -169,16 +169,18 @@ void animateSprite::updatePosRel(const sprite::directions dir)
 }
 
 
-yx animateSprite::addRulesBufferOffset(const yx vPRelPos, const yx cRBS) const
+yx animateSprite::addRulesBufferOffset
+    (const yx vPRelPos, const yx vPS, const yx cRBS) const
 {
   yx ret {vPRelPos};
   /* Only add offset if second stage coord rules buffer is larger than view
      port in y. It should also be larger in x if this is the case and the size
      should already have been verified to be an odd multiple. */
-  if(cRBS.y > viewPortSize.y)
+  if(cRBS.y > vPS.y)
     {
-      ret.y += ((cRBS.y - viewPortSize.y) / 2);
-      ret.x += ((cRBS.x - viewPortSize.x) / 2);
+      ret.y += ((cRBS.y - vPS.y) / 2);
+      ret.x += ((cRBS.x - vPS.x) / 2);
     }
+
    return ret;
 }

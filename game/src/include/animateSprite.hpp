@@ -235,7 +235,8 @@ public:
    const unsigned maxFallingJmpNum, const unsigned maxJmpNum,
    const double maxVelocity, const double maxYVelocityFalling,
    const double leftAcceleration, const double rightAcceleration):
-    sprite(fixedTimeStep, spritePaths, vPS, addRulesBufferOffset(pos, cRBS), dir),
+    sprite(fixedTimeStep, spritePaths, vPS,
+	   addRulesBufferOffset(pos, vPS, cRBS), dir),
     secondStageCoordRulesBufferSize(cRBS),
     timers(fixedTimeStep),
     jumping(g, jumpingPower, maxFallingJmpNum, maxJmpNum),
@@ -249,7 +250,7 @@ protected:
   /* All animateSprites should have their position be offset from the view
      port position so that their origin is the top left corner of the second
      stage coord rules buffer. */
-  yx addRulesBufferOffset(const yx vPRelPos, const yx cRBS) const;
+  yx addRulesBufferOffset(const yx vPRelPos, const yx vPS, const yx cRBS) const;
   /* Updates the position of the sprite relative to the current position based
      on the value of dir. Also performs actions related to change of direction
      such as updating the sprite. */

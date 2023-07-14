@@ -52,10 +52,10 @@ public:
   virtual ~player() {};
 
 
-  /* Return player position with offset relative to second stage coord rules
-     buffer removed. (See animateSprite::addRulesBufferOffset() header
-     comment.) */
-  virtual yx getPos() const;
+  // /* Return player position with offset relative to second stage coord rules
+  //    buffer removed. (See animateSprite::addRulesBufferOffset() header
+  //    comment.) */
+  // virtual inline yx getPos() const; 
   /* Since we only want the view ports position to be updated by one character
      per dimension per time step we need to make sure that the player cannot
      move more than one character per time step. We apply this restriction
@@ -70,7 +70,16 @@ public:
   (const double fixedTimeStep, const double g,
    const double jumpingPower, const double maxVelocity,
    const double maxYVelocityFalling, const double leftAcceleration,
-   const double rightAcceleration);
+   const double rightAcceleration) const;
+  /* AnimateSprite adds an offset to the position passed to it because animate
+     sprites (other than the player) can interact with a limited area outside
+     of view port. The player should never move outside of the view port. This
+     function removes the offset that was added and should be called from the
+     player constructor. Where vPRelPos should be positionVPRel (the player
+     objects position), vPS should be the view port size (or chunk size) and
+     cRBS should be the size of the coord rules buffer in characters. */
+  yx removeRulesBufferOffset
+  (const yx vPRelPos, const yx vPS, const yx cRBS) const;
   // Unlike sprite player needs to handle input direction characters.
   static directions convertDirectionCharsToDirections(const directionChars dir);
   static bool isDirectionCharInputValid(const int input);
