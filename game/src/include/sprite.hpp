@@ -26,9 +26,9 @@ public:
     };
   
 protected:
-  /* Position of the top left corner of the sprite object relative to the
-     window. */
-  yx positionVPRel;
+  /* POSITION OF THE TOP LEFT CORNER OF THE SPRITE OBJECT POTENTIALLY RELATIVE
+     TO THE WINDOW (IS THE CASE FOR ANIMATESPRITES.) */
+  yx spritePosition;
   directions direction {DIR_NONE};
 
   class spriteTimer
@@ -202,13 +202,13 @@ public:
 
   
   // Returns the relative sprite position.
-  yx getPos() const {return positionVPRel;}
+  yx getPos() const {return spritePosition;}
 
   
   std::string getXPosAsStr() const
   {
     std::stringstream ss {};
-    ss<<positionVPRel.x;
+    ss<<spritePosition.x;
     return ss.str();
   }
 
@@ -216,7 +216,7 @@ public:
   std::string getYPosAsStr() const
   {
     std::stringstream ss {};
-    ss<<positionVPRel.y;
+    ss<<spritePosition.y;
     return ss.str();
   }
   

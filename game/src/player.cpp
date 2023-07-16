@@ -17,13 +17,14 @@ player::player
   verifyIfMovementLimitsLessThanFixedTimeStep
     (fixedTimeStep, g, jumpingPower, maxVelocity, maxYVelocityFalling,
      leftAcceleration, rightAcceleration);
-  positionVPRel = removeRulesBufferOffset(positionVPRel, background.chunkSize, cRBS);
+  // TODO: Remove this function and the corresponding code in animateSprite?
+  spritePosition = removeRulesBufferOffset(spritePosition, background.chunkSize, cRBS);
 }
 
 
 /*yx player::getPos() const
 {
-  yx ret {positionVPRel};
+  yx ret {spritePosition};
   if(secondStageCoordRulesBufferSize.y > viewPortSize.y)
     {
       ret.y -= ((secondStageCoordRulesBufferSize.y - viewPortSize.y) / 2);
@@ -183,33 +184,33 @@ bool player::testIntersectionWithPaddingInBottomOrRight
 void player::moveIntoViewPort(const yx playerMovementAreaPadding)
 {
   if(testIntersectionWithPaddingInTopOrLeft
-     (playerMovementAreaPadding, positionVPRel, maxBottomRightOffset, true))
+     (playerMovementAreaPadding, spritePosition, maxBottomRightOffset, true))
     {
       // The top of player is in or above the top padding region.
-      positionVPRel.y = playerMovementAreaPadding.y;
+      spritePosition.y = playerMovementAreaPadding.y;
     }
   else if(testIntersectionWithPaddingInBottomOrRight
-	  (playerMovementAreaPadding, positionVPRel, maxBottomRightOffset,
+	  (playerMovementAreaPadding, spritePosition, maxBottomRightOffset,
 	   true, viewPortSize))
     {
       // The bottom of player is in or below the bottom padding region.
-      positionVPRel.y = (viewPortSize.y -playerMovementAreaPadding.y
+      spritePosition.y = (viewPortSize.y -playerMovementAreaPadding.y
 			 -(maxBottomRightOffset.y + 1));
     }
   else if(testIntersectionWithPaddingInTopOrLeft
-	  (playerMovementAreaPadding, positionVPRel, maxBottomRightOffset,
+	  (playerMovementAreaPadding, spritePosition, maxBottomRightOffset,
 	   false))
     {
       // The left of the player is in or to the left of the left padding region.
-      positionVPRel.x = playerMovementAreaPadding.x;
+      spritePosition.x = playerMovementAreaPadding.x;
     }
   else if(testIntersectionWithPaddingInBottomOrRight
-	  (playerMovementAreaPadding, positionVPRel, maxBottomRightOffset,
+	  (playerMovementAreaPadding, spritePosition, maxBottomRightOffset,
 	   false, viewPortSize))
     {
       /* The right of the player is in or to the right of the right padding
          region. */
-      positionVPRel.x = (viewPortSize.x -playerMovementAreaPadding.x
+      spritePosition.x = (viewPortSize.x -playerMovementAreaPadding.x
 			 -(maxBottomRightOffset.x +1));
     }
 }
@@ -236,8 +237,8 @@ void player::draw
 	  if(ch != DRAW_NO_OP)
 	    {
 	      background.secondStageDrawBuffer
-		[(positionVPRel.y + sliceLine) * viewPortSize.x +
-		 positionVPRel.x + sliceLineIter +
+		[(spritePosition.y + sliceLine) * viewPortSize.x +
+		 spritePosition.x + sliceLineIter +
 		 spriteS[direction].
 		 spriteSlices[currentSliceNumber].slice[sliceLine].offset] = ch;
 	    }

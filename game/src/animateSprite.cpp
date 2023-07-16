@@ -160,7 +160,7 @@ void animateSprite::updatePosRel(const sprite::directions dir)
   checkDirection(dir);
   yx p {getNewPos(dir)};	// GetNewPos will check if dir is valid!
 
-  positionVPRel = p;
+  spritePosition = p;
   if(direction != dir)
     {			// Change sprite direction animation.
       resetCurrentSliceNum();

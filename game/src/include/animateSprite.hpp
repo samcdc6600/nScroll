@@ -790,8 +790,8 @@ std::vector<yx> animateSprite::getXAbsRangeAsStrs(const bool bottomSide,
 					   const bool directContact) const
 {
   const int absLeftPos
-    {this->positionVPRel.x + leftCollisionDirectOffset};
-  const int absRightPos {this->positionVPRel.x + maxBottomRightOffset.x +
+    {this->spritePosition.x + leftCollisionDirectOffset};
+  const int absRightPos {this->spritePosition.x + maxBottomRightOffset.x +
 			 rightCollisionDirectOffset};
 
   const int collisionOffset {bottomSide ?
@@ -800,7 +800,7 @@ std::vector<yx> animateSprite::getXAbsRangeAsStrs(const bool bottomSide,
   const int y
     {(bottomSide ?
       this->maxBottomRightOffset.y: 0) +
-     collisionOffset + this->positionVPRel.y};
+     collisionOffset + this->spritePosition.y};
 
   std::vector<yx> retCoords {};
   for(int pos {absLeftPos}; pos <= absRightPos; pos++)
@@ -815,8 +815,8 @@ std::vector<yx> animateSprite::getXAbsRangeAsStrs(const bool bottomSide,
 std::vector<yx> animateSprite::getYAbsRangeAsStrs(const bool rightSide,
 					   const bool directContact) const
 {
-  const int absTopPos {this->positionVPRel.y + topCollisionDirectOffset};
-  const int absBottomPos {this->positionVPRel.y + maxBottomRightOffset.y +
+  const int absTopPos {this->spritePosition.y + topCollisionDirectOffset};
+  const int absBottomPos {this->spritePosition.y + maxBottomRightOffset.y +
 			  bottomCollisionDirectOffset};
 
   const int collisionOffset {rightSide ?
@@ -824,7 +824,7 @@ std::vector<yx> animateSprite::getYAbsRangeAsStrs(const bool rightSide,
 			     (directContact ? leftCollisionDirectOffset: leftCollisionOneOffOffset)};
   const int x {(rightSide ?
 		this->maxBottomRightOffset.x: 0) +
-	       collisionOffset + positionVPRel.x};
+	       collisionOffset + spritePosition.x};
 
     
   std::vector<yx> retCoords {};

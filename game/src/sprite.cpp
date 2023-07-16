@@ -27,7 +27,7 @@ void sprite::spriteTimer::resetTimeSinceLastSliceUpdate()
 sprite::sprite
 (const double fixedTimeStep, std::vector<std::string> & spritePaths,
  const yx vPS, const yx pos, const directions dir)
-  : timers(fixedTimeStep), viewPortSize(vPS), positionVPRel(pos),
+  : timers(fixedTimeStep), viewPortSize(vPS), spritePosition(pos),
     direction(checkDirection(dir)), currentSliceNumber(0)
 {
   for(auto spriteFileName {spritePaths.begin()};
@@ -375,24 +375,24 @@ yx sprite::getNewPos(const directions dir)
   switch(dir)
     {
     case DIR_NONE:
-      d.y = positionVPRel.y;
-      d.x = positionVPRel.x;
+      d.y = spritePosition.y;
+      d.x = spritePosition.x;
       break;
     case DIR_UP:
-      d.y = positionVPRel.y -1;
-      d.x = positionVPRel.x;
+      d.y = spritePosition.y -1;
+      d.x = spritePosition.x;
       break;
     case DIR_RIGHT:
-      d.y = positionVPRel.y;
-      d.x = positionVPRel.x +1;
+      d.y = spritePosition.y;
+      d.x = spritePosition.x +1;
       break;
     case DIR_DOWN:
-      d.y = positionVPRel.y +1;
-      d.x = positionVPRel.x;
+      d.y = spritePosition.y +1;
+      d.x = spritePosition.x;
       break;
     case DIR_LEFT:
-      d.y = positionVPRel.y;
-      d.x = positionVPRel.x -1;
+      d.y = spritePosition.y;
+      d.x = spritePosition.x -1;
       break;
     default:
       std::stringstream e {};
@@ -449,12 +449,12 @@ yx sprite::getMaxBottomRightOffset() const
 // Was: virtual void updatePosAbs(int y, int x);
 void sprite::updatePos(const yx newRelPos)
 {
-  positionVPRel.y = newRelPos.y, positionVPRel.x = newRelPos.x;
+  spritePosition.y = newRelPos.y, spritePosition.x = newRelPos.x;
 }
 
 
 // Was: void sprite::updatePosRel(const sprite::directions dir)
 void sprite::updatePos(const sprite::directions dir)
 {
-  positionVPRel = getNewPos(dir);
+  spritePosition = getNewPos(dir);
 }

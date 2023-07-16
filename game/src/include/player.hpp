@@ -75,7 +75,7 @@ public:
      sprites (other than the player) can interact with a limited area outside
      of view port. The player should never move outside of the view port. This
      function removes the offset that was added and should be called from the
-     player constructor. Where vPRelPos should be positionVPRel (the player
+     player constructor. Where vPRelPos should be spritePosition (the player
      objects position), vPS should be the view port size (or chunk size) and
      cRBS should be the size of the coord rules buffer in characters. */
   yx removeRulesBufferOffset
@@ -186,7 +186,7 @@ void player::move
     }
 #endif
 
-  positionVPRel += distTravelled;
+  spritePosition += distTravelled;
   updateDirection(input);
 }
 
