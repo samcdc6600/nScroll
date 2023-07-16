@@ -15,13 +15,17 @@ const std::string FILE_NAME {"draw.cpp"};
 
 /* Class handels the setting of color when printing characters (used in
    draw.cpp) argument is the default color pair. */
-//If argument to object constructor is changed it must also be changed in main.cpp.    
+//If argument to object constructor is changed it must also be changed in main.cpp.
 setColorMode colorMode{56};
 
 
+void calculateChunksToCheck
+(const backgroundData & background, std::vector<yx>  & chunksToCheck);
+
+
 void draw
-(backgroundData & background,
- player * gamePlayer, std::vector<bgSprite *> & bgSprites)
+(const backgroundData & background, player * gamePlayer,
+ const std::map<std::string, std::vector<bgSprite *>> & bgSprites)
 {
   /* NOTE THAT A FLAG THAT IS SETTABLE FROM A RULES.LEV FILE SHOULD BE ADDED TO
      THE SPRITE CLASS THAT SPECIFIES IF A SPRITE SHOULD BE DISPLAYED IN FRONT
@@ -53,31 +57,142 @@ void draw
      WOULDN'T HAVE TO ADD ANY EXTRA COMPLEXITY TO SPRITE FILES (THE CODE FOR
      WHICH DEFINITELY NEEDS SOME ATTENTION HAHA.) */
 
-  // std::vector<bgSprite *> drawInForground;
+  std::vector<bgSprite *> forgroundBgSprites;
 
-  for(auto bgS: bgSprites)
-    {
-      if(!bgS->displayInForground)
-	{
-	  bgS->draw(background.secondStageDrawBuffer, true,
-		    background.getViewPortPosition());
-	}
-      // else
-      //   {
-      //     /* We think this will probably be faster than searching the whole list
-      // 	 again if the list is of a large size (and taking into consideration
-      // 	 that most sprites will probably be behind the player). */
-      //     drawInForground.push_back(bgS);
-      //   }
-    }  
+  drawBgBackgroundBgSprites(background, bgSprites,
+			  forgroundBgSprites);
   gamePlayer->draw(background, true);
-  // for(auto bgSF: drawInForground)
-  //   {
-  //     bgSF->draw(secondStageDrawBuffer, true, viewPortPosition);
-  //   }
- 
+  drawFgBgSprites(background, forgroundBgSprites); 
   printDrawBuffer(background.secondStageDrawBuffer, background.chunkSize);
   refresh();
+}
+
+
+void drawBgBackgroundBgSprites
+(const backgroundData & background,
+ const std::map<std::string, std::vector<bgSprite *>> & bgSprites,
+ std::vector<bgSprite *> & forgroundBgSprites)
+{
+  std::vector<yx> chunksToCheck {};
+
+  calculateChunksToCheck(background, chunksToCheck);
+
+  for(yx chunkKey: chunksToCheck)
+    {
+      try
+	{
+	  for(bgSprite * sprite: bgSprites.at(createChunkCoordKey(chunkKey)))
+	    {
+	      if(!sprite->displayInForground)
+		{
+		  sprite->draw(background.secondStageDrawBuffer, true,
+			       background.getViewPortPosition());
+		}
+	      else
+		{
+		  forgroundBgSprites.push_back(sprite);
+		}
+	    }
+	}
+      catch(const std::out_of_range & err)
+	{
+	  // No bg sprites in this chunk. Do nothing.
+	}
+    }
+}
+
+
+void calculateChunksToCheck
+(const backgroundData & background, std::vector<yx>  & chunksToCheck)
+{
+  /* This function can probably be simplified... */
+  yx vPPRelativeChunk
+    {convertCharCoordToChunkCoord
+     (background.chunkSize, background.getViewPortPosition())};  
+  const yx viewPortChunkAlignment
+    {background.getViewPortPosition() % background.chunkSize};
+
+  /* If we are only 1 character from the chunk below we want to use the
+     coordinates of the below chunk as no sprite from the chunk above us should
+     be visible given that sprites should not be larger than one chunk. */
+  if(background.getViewPortPosition().y < 0 ?
+     abs(viewPortChunkAlignment.y) == 1:
+     viewPortChunkAlignment.y == background.chunkSize.y -1)
+    {
+      vPPRelativeChunk.y += 1;
+    }
+  /* Here we follow the same logic as above only for the x axis. */
+  if(background.getViewPortPosition().x < 0 ?
+     abs(viewPortChunkAlignment.x) == 1:
+     viewPortChunkAlignment.x == background.chunkSize.x -1)
+    {
+      vPPRelativeChunk.x += 1;
+    }
+  
+  /* Coordinates of chunks we need to check for sprites in. Always includes the
+     chunk the view port origin is in (at least almost always, see above.) */
+  chunksToCheck.push_back(vPPRelativeChunk);
+  
+  /* No matter what the alignment of the VPP is we always need to check the
+     chunks 1 left of the VPP relative chunk, 1 above and 1 to the left and
+     1 above it. */
+  chunksToCheck.push_back(yx{vPPRelativeChunk.y -1, vPPRelativeChunk.x});
+  chunksToCheck.push_back(yx{vPPRelativeChunk.y, vPPRelativeChunk.x -1});
+  chunksToCheck.push_back(yx{vPPRelativeChunk.y -1, vPPRelativeChunk.x -1});
+  
+  /* If the view port position is misaligned (relative to a chunk) in y then we
+     need to check two extra chunks. One to the left and below the VPP relative
+     chunk (the chunk returned by convertCharCoordToChunkCoord
+     (background.chunkSize, background.getViewPortPosition())) and one below
+     the VPP relative chunk. This however is not the case if the top of the
+     VPP is only one char off of the top of the next chunk. */
+  if((background.getViewPortPosition().y < 0 ?
+     (abs(viewPortChunkAlignment.y) != 1):
+     (abs(viewPortChunkAlignment.y) != background.chunkSize.y -1)) &&
+     viewPortChunkAlignment.y != 0)
+    {
+      chunksToCheck.push_back(yx{vPPRelativeChunk.y +1, vPPRelativeChunk.x -1});
+      chunksToCheck.push_back(yx{vPPRelativeChunk.y +1, vPPRelativeChunk.x});
+    }
+  
+  /* If the view port position is misaligned (relative to a chunk) in x then we
+     need to check two extra chunks. One above and to the right of the VPP
+     relative chunk (the chunk returned by convertCharCoordToChunkCoord
+     (background.chunkSize, background.getViewPortPosition())) and one to the
+     right of the VPP relative chunk. This however is not the case if the VPP is
+     only one char off of the next chunk to the right. */
+  if((background.getViewPortPosition().x < 0 ?
+     (abs(viewPortChunkAlignment.x) != 1):
+     (abs(viewPortChunkAlignment.x) != background.chunkSize.x -1)) &&
+     viewPortChunkAlignment.x != 0)
+    {
+      chunksToCheck.push_back(yx{vPPRelativeChunk.y -1, vPPRelativeChunk.x +1});
+      chunksToCheck.push_back(yx{vPPRelativeChunk.y, vPPRelativeChunk.x +1});
+    }
+  
+  /* If the VPP is misaligned in both axis we need to add both of the chunks
+     described in the previous comments about misalignment as well as the chunk
+     one down and to the right. */
+  if(background.getViewPortPosition().y < 0 ?
+     abs(viewPortChunkAlignment.y) != 1 && abs(viewPortChunkAlignment.x) != 1:     
+     ((abs(viewPortChunkAlignment.x) != background.chunkSize.x -1) &&
+      viewPortChunkAlignment.x != 0) &&
+     (abs(viewPortChunkAlignment.y) != background.chunkSize.y -1) &&
+     viewPortChunkAlignment.y != 0)
+    {
+      chunksToCheck.push_back(yx{vPPRelativeChunk.y +1, vPPRelativeChunk.x +1});
+    }
+}
+
+
+void drawFgBgSprites
+(const backgroundData & background, const std::vector<bgSprite *> & bgSprites)
+{
+  for(bgSprite * sprite: bgSprites)
+    {
+      sprite->draw(background.secondStageDrawBuffer, true,
+		   background.getViewPortPosition());
+    }
 }
 
 

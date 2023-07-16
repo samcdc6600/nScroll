@@ -74,9 +74,14 @@ struct yx
     return yx{y + rhs.y, x + rhs.x};
   }
 
-    yx operator-(const yx & rhs) const
+  yx operator-(const yx & rhs) const
   {
     return yx{y - rhs.y, x - rhs.x};
+  }
+
+  yx operator%(const yx & rhs) const
+  {
+    return yx{y % rhs.y, x % rhs.x};
   }
 };
 
@@ -179,6 +184,18 @@ double readSingleRNum
 void getChunk
 (const std::string & data, std::string::const_iterator & buffPos,
  const std::string & eMsg, std::string & chunk, const yx expectedChunkSize);
+
+
+inline yx convertCharCoordToChunkCoord(const yx chunkSize, yx charCoord)
+{
+  /* We need to add an offset here if charCoord is less than 0 because otherwise
+     we would have two zero chunks (for each axis). */
+  return yx
+    {(charCoord.y - (charCoord.y < 0 ? chunkSize.y -1: 0)) / chunkSize.y,
+     (charCoord.x - (charCoord.x < 0 ? chunkSize.x -1: 0)) / chunkSize.x};
+}
+
+
 /* Creates a chunk coord key from a chunk coordinate. I.e. the input must
    already be a chunk coordinate and not a character coordinate. */
 std::string createChunkCoordKey(const yx coord);
@@ -272,6 +289,7 @@ void insertChunk
      be 3 by 3 chunks. */
   const std::string key
     {createChunkCoordKey(coord)};
+  // Note that insert should copy it's argument.
   if(chunkMap.insert
      (std::pair<std::string, T1>
       (key, chunk)).second == false)

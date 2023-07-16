@@ -7,7 +7,7 @@
    be supplied by the game engine. */
 (
   player(
-    initialViewPortCoordinate(-48,0)
+    initialViewPortCoordinate(0, 0)
     viewPortPadding(0, 0)
     initialCoordinateViewPortRelative(0, 0)
     sprites("./assets/sprites/sprite(0).sprite",
@@ -41,7 +41,7 @@
     ("./assets/sprites/platform1(0).sprite")
   )
   backgroundSprite(
-    initialCoordinate(8,135)
+    initialCoordinate(70,135)
     sprites
     ("./assets/sprites/tree2BlueBg(0).sprite")
   )
@@ -77,12 +77,12 @@
     ("./assets/sprites/tree2BlueBg(0).sprite")
   )
   backgroundSprite(
-    initialCoordinate(2,335)
+    initialCoordinate(-1,-1)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
   backgroundSprite(
-    initialCoordinate(21,441)
+    initialCoordinate(21,-150)
     sprites
     ("./assets/sprites/tree2BlueBg(0).sprite")
   )

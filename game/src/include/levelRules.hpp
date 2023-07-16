@@ -26,8 +26,13 @@ public:
   };
   // /* Sprites (multiple sprites can map to the same coord, thus the vector.) */
   // std::map<std::string, std::vector<spriteInfo>> spriteCoords {};
-  player * gamePlayer; /* Info about user controlled sprite (AKA player.) */
-  std::vector<bgSprite *> bgSprites;
+  player * gamePlayer; /* Info about user controlled sprite (AKA
+			  player.) */
+  /* Key is the chunk position of the sprite (i.e a sprite with
+     position 33, 169 would have a key  "(0,0)"). Since each key must
+     be unique we store sprites that are in the same chunk in a
+     vector. */
+  std::map<std::string, std::vector<bgSprite *>> bgSprites;
   /* This var is used in the initialisation of the player and other sprites in
      the rules.lev file parsing code in levelRules.cpp. It is also used to
      calculate how much memory to allocate for the second stage rules
@@ -217,6 +222,15 @@ public:
   {
     delete [] secondStageRulesBuffer;
     delete gamePlayer;
+    for (const auto & bgSpritesPair: bgSprites)
+      {
+	const std::vector<bgSprite *> & bgSprites =
+	  bgSpritesPair.second;
+	for(auto bgSprite: bgSprites)
+	  {
+	    delete bgSprite;
+	  }
+      }
   }
 
 

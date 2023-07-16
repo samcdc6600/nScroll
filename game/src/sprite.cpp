@@ -311,6 +311,8 @@ void sprite::setMaxYXOffset()
 
 void sprite::loadSprite(const char spriteFileName [], spriteData & sD)
 {
+  /* TODO: Add check here (or probably in one of these below sub functions to
+     make sure that the sprite is not larger than the view port! */
   // Load sprite asset. --------------------------------------------------------
   std::string rawSprite {};// Holds raw contents of sprite file.
   loadFileIntoString(spriteFileName, rawSprite,

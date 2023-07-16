@@ -452,7 +452,7 @@ private:
 	      }
 	  }
       }
-    catch(const std::out_of_range& err)
+    catch(const std::out_of_range & err)
       {
 	/* Key not found... Fill target chunk in first stage buffer with
 	   some stuff. */

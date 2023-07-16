@@ -256,7 +256,7 @@ int readSingleNum
 	       ERROR_RULES_LEV_HEADER);
 	}
     }
-
+  
   // Read in number.
   while(isNum(*buffPos))
     {

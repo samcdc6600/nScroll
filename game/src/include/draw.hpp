@@ -12,9 +12,22 @@ extern const int yHeight;
 
 
 void draw
-(backgroundData & background, player * playerSprite,
- std::vector<bgSprite *> & bgSprites);
-// //Draws background at current position into secondStageDrawBuffer.
+(const backgroundData & background, player * gamePlayer,
+ const std::map<std::string, std::vector<bgSprite *>> & bgSprites);
+/* Draws background sprites with displayInForground set to false. Saves
+   references to background sprites with displayInForground set to true in
+   forgroundbgsprites. A sprite must be in a region where it may be visible
+   (sprites should be no larger than the view port) to have it's draw function
+   called or have a reference to it saved in forgroundBgSprites */
+void drawBgBackgroundBgSprites
+(const backgroundData & background,
+ const std::map<std::string, std::vector<bgSprite *>> & bgSprites,
+ std::vector<bgSprite *> & forgroundBgSprites);
+/* Draws sprites pointed to by bgSprites. Should be called after the player
+   sprite is drawn. */
+void drawFgBgSprites
+(const backgroundData & background, const std::vector<bgSprite *> & bgSprites);
+// Draws background at current position into secondStageDrawBuffer.
 void printDrawBuffer
 (backgroundData::chunkElementBaseType * secondStageDrawBuffer, const yx viewPortSize);
 // Set's or clears the colour code based on the value of charCodeWithColor.
