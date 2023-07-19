@@ -7,7 +7,7 @@
    be supplied by the game engine. */
 (
   player(
-    initialViewPortCoordinate(0, 0)
+    initialViewPortCoordinate(0, 150)
     viewPortPadding(14, 36)
     initialCoordinateViewPortRelative(18, 74)
     sprites("./assets/sprites/sprite(0).sprite",
@@ -31,7 +31,7 @@
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
-  /* 2st tree near hole in 0,0.*/
+  /* 2nd tree near hole in 0,0.*/
   backgroundSprite(
     initialCoordinate(28,97)
     sprites
@@ -66,13 +66,14 @@
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
+  /* Tree inside large underground cave in light beam. */
   backgroundSprite(
-    initialCoordinate(3,271)
+    initialCoordinate(76,62)
     sprites
     ("./assets/sprites/tree2BlueBg(0).sprite")
   )
   backgroundSprite(
-    initialCoordinate(16,285)
+    initialCoordinate(14,270)
     displayInForground(true)
     sprites
     ("./assets/sprites/caveForground1(0).sprite")
