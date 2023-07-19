@@ -2134,46 +2134,61 @@ void checkForDefaultBgSpriteValues
 #include <stdlib.h>
 #include "include/colorS.hpp"
 
-void rules::printRuleChars()
+void rules::printRuleChars(const long double printInterval)
 {
   const colourMap cuMap;
   setColorMode setCuMode {0};
 
-  for(int yIter {}; yIter < chunkSize.y; ++yIter)
+  static std::__1::chrono::system_clock::time_point tLast
+    {std::chrono::system_clock::now()};
+  static bool printRules {true};
+  
+  if((duration_cast<std::chrono::duration<long double>>
+      (std::chrono::system_clock::now() - tLast)).count() >
+     chronological::millisecToSec(printInterval))
     {
-      for(int xIter {}; xIter < chunkSize.x; ++xIter)
-	{
-	  /* For a 3x3 buffer with a chunkSize of (48, 170) this should
-	     calculate:
-	     	((3 / 2) * 48 *
-		3 * 170) +
-		(3 * 170) * 0 +
-		((3 / 2) * 170) + 0
-		=
-		(170 * 3 * 48) + 170
-		=
-		24650 */
-	  int sSRBIndex
-	    {(secondStageBufferSizeInChunks < 3) ?
-	     yIter * chunkSize.x + xIter:
-	     // Initial y offset to middle chunk in sSRB.
-	     ((secondStageBufferSizeInChunks / 2) * chunkSize.y *
-	      secondStageBufferSizeInChunks * chunkSize.x) +
-	     // Add yIter y offset.
-	     (secondStageBufferSizeInChunks * chunkSize.x) * yIter +
-	     // Add x offset to left middle chunk in sSRB and add x offset.
-	     ((secondStageBufferSizeInChunks / 2) * chunkSize.x)  + xIter};
-	    
-	  if(secondStageRulesBuffer[sSRBIndex] != ' ')
-	    {
-	      setCuMode.setColor((sSRBIndex * rand()) % cuMap.colorPairs.size());
-	      mvprintw(yIter, xIter,
-		       concat("", secondStageRulesBuffer[sSRBIndex]).c_str());
-	    }
-	}
+      tLast = std::chrono::system_clock::now();
+      printRules = !printRules;
+      
     }
 
-  refresh();
+  if(printRules)
+    {
+      for(int yIter {}; yIter < chunkSize.y; ++yIter)
+	{
+	  for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	    {
+	      /* For a 3x3 buffer with a chunkSize of (48, 170) this should
+		 calculate:
+		 ((3 / 2) * 48 *
+		 3 * 170) +
+		 (3 * 170) * 0 +
+		 ((3 / 2) * 170) + 0
+		 =
+		 (170 * 3 * 48) + 170
+		 =
+		 24650 */
+	      int sSRBIndex
+		{(secondStageBufferSizeInChunks < 3) ?
+		 yIter * chunkSize.x + xIter:
+		 // Initial y offset to middle chunk in sSRB.
+		 ((secondStageBufferSizeInChunks / 2) * chunkSize.y *
+		  secondStageBufferSizeInChunks * chunkSize.x) +
+		 // Add yIter y offset.
+		 (secondStageBufferSizeInChunks * chunkSize.x) * yIter +
+		 // Add x offset to left middle chunk in sSRB and add x offset.
+		 ((secondStageBufferSizeInChunks / 2) * chunkSize.x)  + xIter};
+	    
+	      if(secondStageRulesBuffer[sSRBIndex] != ' ')
+		{
+		  setCuMode.setColor((sSRBIndex * rand()) % cuMap.colorPairs.size());
+		  mvprintw(yIter, xIter,
+			   concat("", secondStageRulesBuffer[sSRBIndex]).c_str());
+		}
+	    }
+	}
+      refresh();
+    }
 }
 #endif
 
@@ -2186,11 +2201,7 @@ void rules::startTimers()
 
 void rules::physics
 (backgroundData & background, const sprite::directions input)
-{ 
-#ifdef DEBUG
-  printRuleChars();
-#endif
-  
+{   
       gamePlayer->move(secondStageRulesBuffer, input);
       // Update 2nd stage rules buffer position based on player position.
       this->updateViewPortPosition

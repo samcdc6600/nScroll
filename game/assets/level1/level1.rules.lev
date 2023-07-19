@@ -24,24 +24,34 @@
                      /* rightAcceleration has default argument 2.5. */
     rightAcceleration(2.8)
   )
+  /* 1st tree near hole in 0,0.*/
   backgroundSprite(
     		     /* displayInForground has default argument false. */
-    initialCoordinate(-5,67)
+    initialCoordinate(28,67)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
+  /* 2st tree near hole in 0,0.*/
   backgroundSprite(
     initialCoordinate(28,97)
     sprites
     ("./assets/sprites/tree1BlueBg(0).sprite")
   )
+  /* 1st platform (in 0,0)*/
   backgroundSprite(
     initialCoordinate(19,125)
     sprites
     ("./assets/sprites/platform1(0).sprite")
   )
+  /* 2nd platform (in 0,1). */
   backgroundSprite(
-    initialCoordinate(70,135)
+    initialCoordinate(12,188)
+    sprites
+    ("./assets/sprites/platform1(0).sprite")
+  )
+  /* Tree on 1st platform (in 0,0). */
+  backgroundSprite(
+    initialCoordinate(8,135)
     sprites
     ("./assets/sprites/tree2BlueBg(0).sprite")
   )
@@ -50,11 +60,7 @@
     sprites
     ("./assets/sprites/tree2BlueBg(0).sprite")
   )
-  backgroundSprite(
-    initialCoordinate(12,188)
-    sprites
-    ("./assets/sprites/platform1(0).sprite")
-  )
+  /* Tree on 2nd platform (in 0,1).*/
   backgroundSprite(
     initialCoordinate(2,194)
     sprites

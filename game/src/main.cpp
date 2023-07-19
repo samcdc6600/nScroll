@@ -46,7 +46,8 @@ void menu
   backgroundData background
     {viewPortSize, "assets/level1/level1.background.lev"};
   rules levelRules
-    {viewPortSize, "assets/level1/level1.coordRules.lev", 'b',
+    {viewPortSize, "assets/level1/level1.coordRules.lev",
+     boarderRuleChars::BOARDER_CHAR,
      "assets/level1/level1.rules.lev", background};
   background.initBuffers(levelRules.getInitialViewPortPosition());
   levelRules.initBuffers(levelRules.getInitialViewPortPosition());
@@ -87,6 +88,9 @@ int gameLoop
 	(background, player::convertDirectionCharsToDirections
 	 (static_cast<player::directionChars>(input)));
       draw(background, levelRules.gamePlayer, levelRules.bgSprites);
+#ifdef DEBUG
+      levelRules.printRuleChars(750);
+#endif
       /* Sleep for the rest of the tick time (if we haven't already exceeded
 	 it! */
       levelRules.gameTiming.physics.sleepForRemainingTickTime();

@@ -184,11 +184,14 @@ private:
   // Analogous to handleRightCollision but of course for leftward movement.
   sprite::directions handleLeftCollision();
 
-#ifdef DEBUG
-  void printRuleChars();
-#endif
-
 public:
+#ifdef DEBUG
+  /* Will print rules chars for printInterval and then won't print them for
+     printInterval. Then the cycle is repeated. This way both rules chars and bg
+     chars / sprite chars can be seen when debugging. The unit for printInterval
+     is ms.  */
+  void printRuleChars(const long double printInterval);
+#endif
   rules
   (const yx viewPortSize, const char coordRulesFileName [],
    const chunk::chunkElementBaseType missingChunkFiller,
