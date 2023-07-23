@@ -1,0 +1,214 @@
+#!/bin/sh
+
+
+NSCRL="nscrl"
+CR_AND_KILL_LINE="\r\033[K"	# Does a carriage return and then kills line.
+SUPRESS_POSTFIX="\c"		# Suppresses output after it's self.
+NO_COLOR="\033[0m"
+RED="\033[0;31m"		# Indicates bad things :'(
+GREEN="\033[0;32m"		# Indicates all is well in the world :)
+IPC_TO_CLIENT="/tmp/${NSCRL}_perf_test_ipc_to_client"
+IPC_TO_SERVER="/tmp/${NSCRL}_perf_test_ipc_to_server"
+
+ECHO_PROG="echo"		# "Built in echo supports changing colours.
+READ_PROG="read"		# NOTE THAT /USR/BIN/READ DOESN'T WORK!
+CPU_MON_PROG="./cpuMon"
+TRAP_PROG="trap"
+RM_PROG="/bin/rm"
+MKFIFO_PROG="/usr/bin/mkfifo"
+SEQ_PROG="/usr/bin/seq"
+CUT_PROG="/usr/bin/cut"
+XDOTOOL_PROG="/usr/local/bin/xdotool"
+SLEEP_PROG="/bin/sleep"
+EXIT_PROG="exit"
+JOT_PROG="/usr/bin/jot"
+
+
+sendSequenceOfKeyEventsAsLocalCommand()
+{
+    $XDOTOOL_PROG key period
+    $XDOTOOL_PROG key slash
+    
+    for INDEX in $($SEQ_PROG 1 ${#1})
+    do
+	KEY="`$ECHO_PROG $1 | $CUT_PROG -c$INDEX-$INDEX`"
+	$XDOTOOL_PROG key $KEY
+    done
+}
+
+
+startCpuMonAndCreateIpcFiles()
+{
+    RAND_NUM=`${JOT_PROG} -r 1 1 999999999`
+    # Make named pipe names unique.
+    IPC_TO_CLIENT="${IPC_TO_CLIENT}${RAND_NUM}"
+    IPC_TO_SERVER="${IPC_TO_SERVER}${RAND_NUM}"
+    
+    # Create named pipes for IPC with cpuMon.
+    $ECHO_PROG -e "${NO_COLOR}${SUPRESS_POSTFIX}"
+    $MKFIFO_PROG -m 660 $IPC_TO_CLIENT
+    $MKFIFO_PROG -m 660 $IPC_TO_SERVER
+    $ECHO_PROG -e "${GREEN}${SUPRESS_POSTFIX}"
+    # Destroy named piped on exit!
+    $TRAP_PROG "${RM_PROG} -f ${IPC_TO_CLIENT} ${IPC_TO_SERVER}" $EXIT_PROG
+
+    $CPU_MON_PROG "${IPC_TO_CLIENT}" "${IPC_TO_SERVER}" &
+}
+
+
+stopCpuMonAndGetAndPrintResults()
+{
+    # NOTE THAT THIS SCRIPT SHOULD NOT FINISH TOO SOON OR ELSE THE MESSAGE
+    # FROM CPUMON WILL NOT BE RECEIVED PROPERLY (HENCE THE SLEEP AT THE END OF
+    # THIS FUNCTION.)
+    $ECHO_PROG "t3rmin4t3" > ${IPC_TO_CLIENT}
+    $READ_PROG MESSAGE_FROM_CLIENT < ${IPC_TO_SERVER}
+
+    $ECHO_PROG -e "${CR_AND_KILL_LINE}Performance results = \
+${MESSAGE_FROM_CLIENT}."
+}
+
+
+progCommSeq()
+{
+    # Move right.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key d
+    $SLEEP_PROG 1.7
+    # Jump first hole.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.4
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 1.3
+    # Jump onto first platform.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.40
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.40
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 1.1
+    # Jump onto second platform.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.45
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.45
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 1.35
+    # Jump onto top of cave.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.45
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.55
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 4.3
+    # Jump off of cave and down.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 1
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key s
+    $SLEEP_PROG 0.52
+    # Go left for a bit.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key a
+    $SLEEP_PROG 5.68
+    # Jump up and then "turn around".
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.45
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key d
+    $SLEEP_PROG 0.0
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.45
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 5.6
+    # Jump onto small cliff at end of level.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.3
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.3
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 4.1
+    # Go left for a bit.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key a
+    $SLEEP_PROG 9.96
+    # Jump over 2nd hole.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.5
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} \ ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.5
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 4.3
+    # Jump over 1st hole.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.5
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} / ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 0.5
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} - ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $SLEEP_PROG 3.34
+}
+
+
+main()
+{
+    $ECHO_PROG -e "${GREEN}PerfTest started...\n${RED}PLEASE REFRAIN FROM\
+ TOUCHING YOUR MOUSE AND KEYBOARD!${GREEN}"
+
+    $ECHO_PROG -e "Switching window..."
+    $XDOTOOL_PROG key super+space
+    $SLEEP_PROG 0.7
+
+    # Type program path out.
+    $ECHO_PROG -e "Starting program (./${NSCRL})..."
+    sendSequenceOfKeyEventsAsLocalCommand "$NSCRL"
+    $XDOTOOL_PROG key return
+    
+    $ECHO_PROG -e "Starting program command sequence..."
+    progCommSeq
+    # We start this hear because it takes a little while to get accurate
+    # performance results.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE}Starting performance counter..."
+    startCpuMonAndCreateIpcFiles
+    # # Run again.
+    progCommSeq
+    progCommSeq
+    progCommSeq
+
+    stopCpuMonAndGetAndPrintResults
+    
+    # Exit.
+    $ECHO_PROG -e "${CR_AND_KILL_LINE} | ${SUPRESS_POSTFIX}"
+    $XDOTOOL_PROG key w
+    $XDOTOOL_PROG key Escape
+
+    $ECHO_PROG -e "${CR_AND_KILL_LINE}Switching window..."
+    $XDOTOOL_PROG key super+space
+
+    $ECHO_PROG -e "${NO_COLOR}"
+}
+
+
+main
+
