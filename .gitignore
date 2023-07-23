@@ -35,6 +35,7 @@ tools/benchmarking/~*
 tools/benchmarking/*~
 tools/benchmarking/*#
 tools/benchmarking/#*
+tools/chunkEditor/chunked
 tools/chunkEditor/*.core
 tools/chunkEditor/.tmp
 tools/chunkEditor/tmp*
