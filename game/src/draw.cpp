@@ -16,7 +16,7 @@ const std::string FILE_NAME {"draw.cpp"};
 /* Class handels the setting of color when printing characters (used in
    draw.cpp) argument is the default color pair. */
 //If argument to object constructor is changed it must also be changed in main.cpp.
-setColorMode colorMode{56};
+setColorMode colorMode{colorParams::defaultColorPair};
 
 
 void calculateChunksToCheck

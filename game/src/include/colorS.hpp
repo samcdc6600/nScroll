@@ -1,8 +1,26 @@
 #ifndef COLOUROFFSET_HPP_
 #define COLOUROFFSET_HPP_
+
+
 #include <map>
 #include <string>
 #include <vector>
+
+
+namespace colorParams
+{
+  /* The game has supports this many colors and as such the terminal must also
+     support this many colors. */
+  const int gameColors {256};
+  /* Number of color pairs used by the game. Ncurses must support at least this
+     many color pairs. COLOR_PAIRS is 32767 on our system. We will support 125^2
+     (15625) color pairs. That is 125 bg colors and 125 fg colors. */
+  const int gameColorCompNo {5};
+  const int gameColorPairsNo {15625};
+  /* The RGB values should be in the range [0, 1000]. */
+  const int gameRGBMax {1000};
+  const int defaultColorPair {0};
+}
 
 
 class colourMap//this classes main function is to help in converting the background input from char's to int's
