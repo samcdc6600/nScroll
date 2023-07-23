@@ -7,11 +7,14 @@ nscrl.core
 clangd.core
 *.core
 
+tmp
 game/~*
 game/*~
-game/~#
-game/#~
+game/*#
+game/#*
+game/.cache
 game/tmp
+game/tmp/*
 game/nscrl
 game/clangd.core
 game/.clangd
@@ -26,6 +29,26 @@ game/src/include/*~
 game/src/include/*#
 game/src/include/#*
 game/obj/*
+
+
+tools/benchmarking/~*
+tools/benchmarking/*~
+tools/benchmarking/*#
+tools/benchmarking/#*
+tools/chunkEditor/*.core
+tools/chunkEditor/.tmp
+tools/chunkEditor/tmp*
+tools/chunkEditor/chunked
+tools/chunkEditor/obj
+tools/chunkEditor/src/*~
+tools/chunkEditor/src/~*
+tools/chunkEditor/src/*#
+tools/chunkEditor/src/#*
+tools/chunkEditor/src/include/*~
+tools/chunkEditor/src/include/~*
+tools/chunkEditor/src/include/*#
+tools/chunkEditor/src/include/#*
+
 
 spriteCreate/~*
 spriteCreate/*~
