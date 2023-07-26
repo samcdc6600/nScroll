@@ -1,4 +1,5 @@
 #include <chrono>
+#include <ostream>
 #include <thread>
 #include <ncurses.h>
 #include <iostream>
@@ -84,7 +85,7 @@ void printMessageNoWin
 {
   for(char c: msg)
     {
-      std::cout<<c;
+      std::cout<<c<<std::flush;
       sleep(interCharacterSleep);
     }
   std::cout<<std::endl;

@@ -10,8 +10,8 @@ constexpr int afterPrintSleep {900};
    name of a rules chunk file or it should take the name of a background chunk
    file and a background file or it should take the name of a rules chunk file
    and a rules file. */
-void verifyCmdArgs(const int argc, const char * argv [], const yx viewPortSize);
-void printHelp(const char * argv [], const yx viewPortSize);
+void verifyCmdArgs(const int argc, const char * argv []);
+void printHelp(const char * argv []);
 void readInChunkFile();
 
 
@@ -23,7 +23,7 @@ int main(const int argc, const char * argv [])
   // Start and setup ncurses.
   std::vector<int> pairIndexes {initialiseCurses(viewPortSize)};
 
-  verifyCmdArgs(argc, argv, viewPortSize);
+  verifyCmdArgs(argc, argv);
 
   int bgChunk [yHeight][xWidth] {};
   char rulesChunk [yHeight][xWidth] {};
@@ -45,86 +45,110 @@ int main(const int argc, const char * argv [])
 }
 
 
-void verifyCmdArgs(const int argc, const char * argv [], const yx viewPortSize)
+void verifyCmdArgs(const int argc, const char * argv [])
 {
-  constexpr int argNumForModes_1_and_2 {3}, argNumForMode_3 {5},
-    argNumForMode_4 {2};
-
-  if(argc == argNumForMode_3)
-    {
-      const std::string yArg {argv[3]}, xArg {argv[4]};
-      auto yIter {yArg.begin()}, xIter {xArg.begin()};
-      /* This isn't the best solution as printHelp() will not be called and also
-	 there can be non number characters after a number, but for now it will
-	 be fine. */
-      readSingleNum(yArg, yIter, "trying to read 3rd argument (chunk y "
-		    "position)", true);
-      readSingleNum(xArg, xIter, "trying to read 4th argument (chunk x "
-		    "position)", true);
-    }
-  if(argc != argNumForModes_1_and_2 && argc != argNumForMode_3 &&
-     argc != argNumForMode_4)
-    {
-      printHelp(argv, viewPortSize);
-      exit(concat(""), ERROR_INVALID_CMD_ARGS);
-    }
   /* If argc == argNumForModes_1_and_2 check for form like:
-         chunked x.bgChunk x.crchunk
+     chunked x.bgchunk x.crchunk
      else check for form like
-         chunked x.bgChunk x.background.lev
+     chunked x.bgchunk x.background.lev
      (and again for rules.)
      
      If argc == argNumForMode_3 check for form like:
-         chunked x.background.lev x.bgchunk
+     chunked x.background.lev x.bgchunk y x
      (and again for rules.)
 
      If argc == argNumForMode_4 check for form like:
-         chunked x.background.lev
+     chunked x.background.lev
      (and again for rules.) */
-  bool found {false};
+  /* Print help message and exit if arguments in argv don't correspond to
+     either mode 1 or mode 2. */
+  auto testMode1And2Args = [argv]() -> void
+  {
+    bool found {false};
+    if(checkForPostfix(argv[1], BACKGROUND_CHUNK_FILE_EXTENSION) &&
+       checkForPostfix(argv[2], COORD_RULES_CHUNK_FILE_EXTENSION))
+      {
+	found = true;
+      }
+    else if(checkForPostfix(argv[1], BACKGROUND_CHUNK_FILE_EXTENSION) &&
+	    checkForPostfix(argv[2], BACKGROUND_FILE_EXTENSION))
+      {
+	found = true;
+      }
+    else if(checkForPostfix(argv[1], COORD_RULES_CHUNK_FILE_EXTENSION) &&
+	    checkForPostfix(argv[2], COORD_RULES_FILE_EXTENSION))
+      {
+	found = true;
+      }
+    if(!found)
+      {
+	// Argument values don't correspond to mode 1 or 2.
+	printHelp(argv);
+	exit(ERROR_INVALID_CMD_ARGS);
+      }
+  };
+
+
+  /* Print help message and exit if arguments in argv don't correspond to mode
+     3. */
+  auto testMode3Args = [argv]() -> void
+  {
+    if((!checkForPostfix(argv[1], BACKGROUND_FILE_EXTENSION) ||
+	!checkForPostfix(argv[2], BACKGROUND_CHUNK_FILE_EXTENSION)) &&
+       (!checkForPostfix(argv[1], COORD_RULES_FILE_EXTENSION) ||
+	!checkForPostfix(argv[2], COORD_RULES_CHUNK_FILE_EXTENSION)))
+      {
+	// Argument number corresponds to mode 3, but values don't.
+	printHelp(argv);
+	exit(ERROR_INVALID_CMD_ARGS);
+      }
+    else
+      {
+	// Argument number corresponds to mode 3, but values don't.
+	const std::string yArg {argv[3]}, xArg {argv[4]};
+	auto yIter {yArg.begin()}, xIter {xArg.begin()};
+	/* This isn't the best solution as printHelp() will not be called and also
+	   there can be non number characters after a number, but for now it will
+	   be fine. ReadSingleNum() will print an error and exit message if no
+	   number is found. */
+	readSingleNum(yArg, yIter, "trying to read 3rd argument (chunk y "
+		      "position)", true);
+	readSingleNum(xArg, xIter, "trying to read 4th argument (chunk x "
+		      "position)", true);
+      }
+  };
+      
+  
+  constexpr int argNumForModes_1_and_2 {3}, argNumForMode_3 {5},
+    argNumForMode_4 {2};
+
+  if(argc != argNumForModes_1_and_2 && argc != argNumForMode_3 &&
+     argc != argNumForMode_4)
+    {
+      // Incorrect number of argument supplied.
+      printHelp(argv);
+      exit(ERROR_INVALID_CMD_ARGS);
+    }
   else if(argc == argNumForModes_1_and_2)
     {
-      if(checkForPostfix(argv[1], BACKGROUND_CHUNK_FILE_EXTENSION) &&
-	  checkForPostfix(argv[2], COORD_RULES_CHUNK_FILE_EXTENSION))
-	{
-	  found = true;
-	}
-      else if(checkForPostfix(argv[1], BACKGROUND_CHUNK_FILE_EXTENSION) &&
-	      checkForPostfix(argv[2], BACKGROUND_FILE_EXTENSION))
-	{
-	  found = true;
-	}
-      else if(checkForPostfix(argv[1], COORD_RULES_CHUNK_FILE_EXTENSION) &&
-	  checkForPostfix(argv[2], COORD_RULES_FILE_EXTENSION))
-	{
-	  found = true;
-	}
-      if(!found)
-	{
-	  printHelp(argv, viewPortSize);
-	  exit(concat(""), ERROR_INVALID_CMD_ARGS);
-	}
+      testMode1And2Args();
     }
-  else if(argc == argNumForMode_3 &&
-	  (!checkForPostfix(argv[1], BACKGROUND_FILE_EXTENSION) &&
-	   !checkForPostfix(argv[2], BACKGROUND_CHUNK_FILE_EXTENSION)) &&
-	  (!checkForPostfix(argv[1], COORD_RULES_FILE_EXTENSION) &&
-	   !checkForPostfix(argv[2], COORD_RULES_CHUNK_FILE_EXTENSION)))
+  else if(argc == argNumForMode_3)
     {
-      printHelp(argv, viewPortSize);
-      exit(concat(""), ERROR_INVALID_CMD_ARGS);
+      testMode3Args();
     }
   else if(argc == argNumForMode_4 &&
 	  (!checkForPostfix(argv[1], BACKGROUND_FILE_EXTENSION) &&
 	   !checkForPostfix(argv[1], COORD_RULES_FILE_EXTENSION)))
     {
-      printHelp(argv, viewPortSize);
-      exit(concat(""), ERROR_INVALID_CMD_ARGS);
+      // Argument number corresponds to mode 4, but value doesn't.
+      printHelp(argv);
+      exit(ERROR_INVALID_CMD_ARGS);
     }
 }
 
 
-void printHelp(const char * argv [], const yx viewPortSize)
+void printHelp(const char * argv [])
 {
   std::string help
     {
