@@ -6,6 +6,7 @@
 #include <fstream>
 #include <algorithm>
 #include "include/utils.hpp"
+#include "include/colorS.hpp"
 
 
 yx abs(const yx a)
@@ -63,17 +64,78 @@ namespace boarderRuleChars
 constexpr int MAX_COORD_LEN{10};
 
 
+void disableBlockingUserInput()
+{
+  noecho();			// Turn echoing off on the terminal
+  // Dissable blocking while waiting for input (use non blocking sys call.)
+  nodelay(stdscr, TRUE);
+}
+
+
+void enableBlockingUserInput()
+{
+  echo();
+  nodelay(stdscr, FALSE);
+}
+
+
+void move(const yx pos)
+{
+  move(pos.y, pos.x);
+}
+
+
+void mvprintw(const yx pos, const std::string & str)
+{
+  mvprintw(pos.y, pos.x, str.c_str());
+}
+
+
 void printMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep)
 {
-  mvprintw(viewPortSize.y / 2, viewPortSize.x / 2 - msg.size() / 2, "");
-  for(char c: msg)
+  /* TODO: Fix up this function a bit. Right now if more than one line is
+     printed the output of all lines will be the same width, but will be left
+     justified (to some lesser or greater extent.) */
+  clear();
+  const yx margins {viewPortSize.y / 7, viewPortSize.x / 7};
+  const double lineCount  {(double)msg.size() /
+			   (viewPortSize.x - 2 * margins.x)};
+
+  if(lineCount < 1)
     {
-      printw(concat("", c).c_str());
-      refresh();
-      sleep(interCharacterSleep);
+      mvprintw(viewPortSize.y / 2, viewPortSize.x / 2 - msg.size() / 2,
+	       "");
+      for(char c: msg)
+	{
+	  printw(concat("", c).c_str());
+	  refresh();
+	  sleep(interCharacterSleep);
+	}
     }
+  else
+    {
+      int charsPrinted {};
+      for(int lines {}; lines < std::ceil(lineCount); ++lines)
+	{
+	  for(int chars {};
+	      (double)chars < (msg.size() / std::ceil(lineCount)); ++chars)
+	    {
+	      mvprintw
+		(viewPortSize.y / 2 + lines, margins.x + chars,
+		 concat("", msg[charsPrinted]).c_str());
+	      refresh();
+	      sleep(interCharacterSleep);
+	      charsPrinted++;
+	    }
+	}
+      for( ; charsPrinted < msg.size(); ++charsPrinted)
+	{
+	  printw(concat("", msg[charsPrinted]).c_str());
+	}
+    }
+  
   refresh();
   sleep(afterMsgSleep);
 }
@@ -395,6 +457,113 @@ double readSingleRNum
 }
 
 
+void readInBgChunkFile
+(const std::string fileName, int chunk[][xWidth], const yx chunkSize,
+ yx & chunkCoord, bool & foundCoord)
+{
+  std::fstream chunkFile;
+
+  chunkFile.open(fileName, std::ios::in);
+
+  if(!chunkFile.is_open())
+    {
+      chunkFile.open(fileName, std::ios::out);
+      if(!chunkFile.is_open())
+	{
+	  exit(concat("Error could not open or create file ", fileName),
+	       ERROR_OPENING_FILE);
+	}
+      printMessage(concat("", fileName, " not found. Creating new"
+			  " file..."), chunkSize, printCharSpeed,
+		   afterPrintSleep);
+      foundCoord = false;
+    }
+  else
+    {
+      // File already exists, try reading in and decompressing contents.
+      getBgChunk(chunkFile, chunk, chunkSize.y + 1, chunkCoord,
+		 concat("Error: trying to read in background chunk file ",
+			fileName, ". "));
+      foundCoord = true;
+    }
+}
+
+
+void readInCRChunkFile
+(const std::string fileName, char cRChunk[][xWidth], const yx chunkSize,
+ yx & chunkCoord, bool & foundCoord)
+{
+  std::fstream chunkFile;
+
+  if(!chunkFile.is_open())
+    {
+      chunkFile.open(fileName, std::ios::out);
+      if(!chunkFile.is_open())
+	{
+	  exit(concat("Error could not open or create file ", fileName),
+	       ERROR_OPENING_FILE);
+	}
+      printMessage(concat("", fileName, " not found. Creating new"
+			  " file..."), chunkSize, printCharSpeed,
+		   afterPrintSleep);
+      foundCoord = false;
+    }
+  else
+    {
+      // File already exists, try reading in and decompressing contents.
+      foundCoord = true;
+    }
+}
+
+
+void getBgChunk
+(std::fstream & file, int chunk[][xWidth], const int expectedNumberOfLines,
+ yx & chunkCoord, const std::string & eMsg)
+{
+  int linesRead {};
+  std::string line {};
+  char bgChar {};
+  
+  if(!std::getline(file, line))
+    {
+      // Error reading chunk coord (file malformed.)
+      exit(concat(eMsg, "Malformed file (file empty)."), ERROR_MALFORMED_FILE);
+    }
+  else
+    {
+      // TODO: fully implement code in this else block.
+      while(std::getline(file, line))
+	{
+	  if(line.size() % sizeof(int) != 0)
+	    {
+	      // Error apart from new lines and chunk coord files stores ints.
+	    }
+	  else
+	    {
+	      for(int bgCharIter {}; bgCharIter < line.size();
+		  bgCharIter += sizeof(int))
+		{
+		  /* TODO: check for largest int value (which will indicate the
+		     start of a run length number (the next int). */
+		  bgChar |= line[bgCharIter];
+		  bgChar <<= 8;
+		  bgChar |= line[bgCharIter];
+		  bgChar <<= 8;
+		  bgChar |= line[bgCharIter];
+		  bgChar <<= 8;
+		  bgChar |= line[bgCharIter];
+		}
+	    }
+	  linesRead++;
+	}
+      if(linesRead != expectedNumberOfLines)
+	{
+	  // Error file malformed.
+	}
+    }
+}
+
+
 void getChunk(const std::string & data,
 	      std::string::const_iterator & buffPos, const std::string & eMsg,
 	      std::string & chunk, const yx expectedChunkSize)
@@ -471,7 +640,7 @@ bool checkForStringInBufferAtPos(const std::string & buff, int buffPos,
      buff.size() - buffPos >= str.size())
     {
       int strIter {};
-      for( ; buffPos < buff.size(); ++buffPos, ++strIter)
+      for( ; (size_t)buffPos < buff.size(); ++buffPos, ++strIter)
 	{
 	  if(buff[buffPos] != str[strIter])
 	    {
@@ -621,7 +790,7 @@ bool checkForPostfix(const char str [], const char postfix [])
   const char * postfixPos {strstr(str, postfix)};
 
   if(postfixPos == nullptr ||
-     (postfixPos + strlen(postfix)) - str != strlen(str))
+     (size_t)((postfixPos + strlen(postfix)) - str) != strlen(str))
     {
       return false;
     }

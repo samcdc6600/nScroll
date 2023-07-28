@@ -1,16 +1,7 @@
 #include <ncurses.h>
 #include "include/colorS.hpp"
+#include "include/utils.hpp"
 
-colourMap::colourMap()
-{
-  const int offset{159};
-  int colourVal {offset};//range of characters
-  for(std::string colourIter: colorPairs)
-    {
-      map[colourIter] = colourVal;//associate color pair with range (offset)
-      colourVal += offset;//set to next range
-    }
-}
 
 void setColorMode::setState(const int state)
 {
@@ -24,38 +15,20 @@ void setColorMode::setState(const int state)
   attron(COLOR_PAIR(state));
 }
 
+
 bool setColorMode::inRange(const int color)
 {
-  if(color < 0 || color > colorMax)
+  if(color < 0 || color > colorParams::gameColorPairsNo)
     return false;//color is out of range
   return true;//color is in range
-}
-
-setColorMode::setColorMode(const int color): defaultColor(color)//set the default color and the color state
-{
-  if(!inRange(color))
-    {
-      std::string eMsg {"in colorS.cpp->setColorMode(const int color), color = "};
-      eMsg += color;
-      eMsg += "\n";
-      throw std::logic_error(eMsg);
-    }
-  setState(defaultColor);//set default color
 }
 
 void setColorMode::setColor(const int color)
 {
   if(!inRange(color))//is the color variable out of range?
     {
-      std::string eMsg {"in colorS.cpp->setColor(const int color), color = "};
-      eMsg += color;
-      eMsg += "\n";
-      throw std::logic_error(eMsg);
+      exit(concat("Error: in setColor, colour (", color, ") is out of range\n"),
+	   ERROR_COLOR_CODE_RANGE);
     }
   setState(color);//turn on color color
-}
-
-void setColorMode::clearColor()
-{
-  setState(defaultColor);//turn on defaultColor color
 }

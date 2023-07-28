@@ -1,18 +1,15 @@
 #include "include/initCurses.hpp"
 #include "include/utils.hpp"
+#include "include/editMode.hpp"
 
 
-constexpr int printCharSpeed {35};
-constexpr int afterPrintSleep {900};
-
-
-/* The program should take either the name of a background chunk file and the
-   name of a rules chunk file or it should take the name of a background chunk
-   file and a background file or it should take the name of a rules chunk file
-   and a rules file. */
-void verifyCmdArgs(const int argc, const char * argv []);
-void printHelp(const char * argv []);
-void readInChunkFile();
+/* Verifies that the CMD args in argv conform to one of the modes (see the
+   function definition) and then returns the mode they conform to. If they are
+   found not to conform to a mode printHelp() will be called and the program
+   will be terminated. */
+int verifyCmdArgsAndGetMode(const int argc, const char * argv []);
+void printHelp(const char *argv[]);
+void enterMode(const int mode, const char * argv [], const yx viewPortSize);
 
 
 int main(const int argc, const char * argv [])
@@ -21,32 +18,22 @@ int main(const int argc, const char * argv [])
      future.) */
   yx viewPortSize;
   // Start and setup ncurses.
-  std::vector<int> pairIndexes {initialiseCurses(viewPortSize)};
+  std::vector<int> pairIndexes {initialiseCurses(viewPortSize)};  
+  const int mode {verifyCmdArgsAndGetMode(argc, argv)};
 
-  verifyCmdArgs(argc, argv);
-
-  int bgChunk [yHeight][xWidth] {};
-  char rulesChunk [yHeight][xWidth] {};
-
-  // std::ofstream bgChunkFile
   printMessage("Welcome to the chunk editor.", viewPortSize, printCharSpeed,
 	       afterPrintSleep);
-
-  // TODO
- // if()
- //    {
- //  readInChunkFile();
- //    }
-
-
+  enterMode(mode, argv, viewPortSize);
+    
   endwin();
   
   return 0;
 }
 
 
-void verifyCmdArgs(const int argc, const char * argv [])
+int verifyCmdArgsAndGetMode(const int argc, const char * argv [])
 {
+  int modeFound {};
   /* If argc == argNumForModes_1_and_2 check for form like:
      chunked x.bgchunk x.crchunk
      else check for form like
@@ -62,23 +49,26 @@ void verifyCmdArgs(const int argc, const char * argv [])
      (and again for rules.) */
   /* Print help message and exit if arguments in argv don't correspond to
      either mode 1 or mode 2. */
-  auto testMode1And2Args = [argv]() -> void
+  auto testMode1And2Args = [argv, & modeFound]() -> void
   {
     bool found {false};
     if(checkForPostfix(argv[1], BACKGROUND_CHUNK_FILE_EXTENSION) &&
        checkForPostfix(argv[2], COORD_RULES_CHUNK_FILE_EXTENSION))
       {
 	found = true;
+	modeFound = 1;
       }
     else if(checkForPostfix(argv[1], BACKGROUND_CHUNK_FILE_EXTENSION) &&
 	    checkForPostfix(argv[2], BACKGROUND_FILE_EXTENSION))
       {
 	found = true;
+	modeFound = 2;
       }
     else if(checkForPostfix(argv[1], COORD_RULES_CHUNK_FILE_EXTENSION) &&
 	    checkForPostfix(argv[2], COORD_RULES_FILE_EXTENSION))
       {
 	found = true;
+	modeFound = 2;
       }
     if(!found)
       {
@@ -91,7 +81,7 @@ void verifyCmdArgs(const int argc, const char * argv [])
 
   /* Print help message and exit if arguments in argv don't correspond to mode
      3. */
-  auto testMode3Args = [argv]() -> void
+  auto testMode3Args = [argv, & modeFound]() -> void
   {
     if((!checkForPostfix(argv[1], BACKGROUND_FILE_EXTENSION) ||
 	!checkForPostfix(argv[2], BACKGROUND_CHUNK_FILE_EXTENSION)) &&
@@ -116,6 +106,8 @@ void verifyCmdArgs(const int argc, const char * argv [])
 	readSingleNum(xArg, xIter, "trying to read 4th argument (chunk x "
 		      "position)", true);
       }
+
+    modeFound = 3;
   };
       
   
@@ -145,6 +137,12 @@ void verifyCmdArgs(const int argc, const char * argv [])
       printHelp(argv);
       exit(ERROR_INVALID_CMD_ARGS);
     }
+  else
+    {
+      modeFound = 4;
+    }
+
+  return modeFound;
 }
 
 
@@ -232,10 +230,58 @@ void printHelp(const char * argv [])
 	  COORD_RULES_FILE_EXTENSION, " file.\n\t    Example:\n\t\t", argv[0],
 	  " splendid", BACKGROUND_FILE_EXTENSION)};
   endwin();
-  printMessageNoWin(help, printCharSpeed / 20, afterPrintSleep);
+  printMessageNoWin(help, 1, afterPrintSleep);
 }
 
 
-void readInChunkFile()
+void enterMode(const int mode, const char * argv [], const yx viewPortSize)
 {
+  backgroundChunkCharInfo bgChunk [yHeight][xWidth] {};
+  char cRChunk [yHeight][xWidth] {};
+  
+  switch(mode)
+    {
+    case 1:
+      // Chunk edit mode.
+      printMessage("Starting Chunk Edit mode.", viewPortSize, printCharSpeed,
+		   afterPrintSleep);
+      editMode(argv[1], argv[2], bgChunk, cRChunk, viewPortSize);
+      break;
+    case 2:
+      // Append mode.
+      printMessage("Starting Append mode.", viewPortSize, printCharSpeed,
+		   afterPrintSleep);
+      clear();
+      refresh();
+      endwin();
+      printMessageNoWin("Error: mode not implemented.", printCharSpeed,
+			afterPrintSleep);
+      break;
+    case 3:
+      // Extraction mode.
+      printMessage("Starting Extraction mode.", viewPortSize, printCharSpeed,
+		   afterPrintSleep);
+      clear();
+      refresh();
+      endwin();
+      printMessageNoWin("Error: mode not implemented.", printCharSpeed,
+			afterPrintSleep);
+      break;
+    case 4:
+      // Map view mode.
+      refresh();
+      printMessage("Starting Map View mode.", viewPortSize, printCharSpeed,
+		   afterPrintSleep);
+      clear();
+      refresh();
+      endwin();
+      printMessageNoWin("Error: mode not implemented.", printCharSpeed,
+			afterPrintSleep);
+      break;
+    default:
+      exit(concat("Error: reached default case statement in enterMode(). Where,"
+		  " mode = ", mode, ". Note that this is a program logic "
+		  "error."), ERROR_BAD_LOGIC);
+      break;
+    }
 }

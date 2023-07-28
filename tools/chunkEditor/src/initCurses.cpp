@@ -10,38 +10,42 @@ std::vector<int> initialiseCurses(yx & maxyx)
   if(maxyx.y != yHeight || maxyx.x != xWidth) // Check the window size.                                                
     {
       std::stringstream e {};
-      e<<"error windows must be "<<yHeight<<" characters high and "<<xWidth<<" characters wide. "
+      e<<"Error windows must be "<<yHeight<<" characters high and "<<xWidth<<" characters wide. "
         "The current height is "<<maxyx.y<<" characters and the current width is "<<maxyx.x<<" characters.\n";
-      exit(e.str(), ERROR_WIN_PARAM);
+      printMessageNoWin(e.str(), printCharSpeed, afterPrintSleep);
+      exit(ERROR_WIN_PARAM);
     }
   if(has_colors() == FALSE)  // If the terminal does not support colors                                                
     {
-      exit("Error your terminal does not support colour :'(\n", ERROR_WIN_PARAM);
+      printMessageNoWin("Error your terminal does not support colour :'(\n",
+			printCharSpeed, afterPrintSleep);
+      exit(ERROR_WIN_PARAM);
     }
   if(tigetnum("colors") < colorParams::gameColors)
     {
-      exit(concat("Error your terminal only supports ", tigetnum("colors"),
-		  " colors which is less than the required ",
-		  colorParams::gameColors, " colors.\n"),
-	   ERROR_WIN_PARAM);
+      printMessageNoWin
+	(concat("Error your terminal only supports ", tigetnum("colors"),
+		" colors which is less than the required ",
+		colorParams::gameColors, " colors.\n"),
+	 printCharSpeed, afterPrintSleep);
+      exit(ERROR_WIN_PARAM);
     }
   
-  raw();                     // To disable line buffering                                                              
-  // curs_set(0);               // Make the cursor invisible                                                              
-  noecho();                  // Turn echoing off on the terminal                                                       
+  raw();                     // To disable line buffering
+  // curs_set(0);               // Make the cursor invisible
+  disableBlockingUserInput();
   start_color();             // Start color and initialise color pairs!
 
   /* COLOR_PAIRS is 0 before start_color() is called! */
   if(COLOR_PAIRS < colorParams::gameColorPairsNo)
     {
-      exit(concat("Error this implementation of ncurses only supports ",
-		  COLOR_PAIRS, " color pairs which is less than the required ",
-		  colorParams::gameColorPairsNo, " color pairs.\n"),
-	   ERROR_WIN_PARAM);
+      printMessageNoWin
+	(concat("Error this implementation of ncurses only supports ",
+		COLOR_PAIRS, " color pairs which is less than the required ",
+		colorParams::gameColorPairsNo, " color pairs.\n"),
+	 printCharSpeed, afterPrintSleep);
+      exit(ERROR_WIN_PARAM);
     }
-  
-  // Dissable blocking while waiting for input (use non blocking sys call.)
-  nodelay(stdscr, TRUE);
   
   return initColorPairs();
 }
@@ -85,7 +89,10 @@ std::vector<int> initColorPairs()
   // Init colors.
   for(int colorNoIter {}; colorNoIter < (int)newColors.size(); ++colorNoIter)
     {
-      init_color(colorNoIter, newColors[colorNoIter].r,
+      /* Note that the 0th color pair (which we are not using) is reserved for
+	 the default color (which is one of the other color pairs). Hence + 1.
+      */
+      init_color(colorNoIter +1, newColors[colorNoIter].r,
 		 newColors[colorNoIter].g, newColors[colorNoIter].b);
     }
 
@@ -95,15 +102,15 @@ std::vector<int> initColorPairs()
       for(int bgIter {}; bgIter < (int)newColors.size();
 	  ++bgIter)
 	{
+	  /* Note that the 0th color pair (which we are not using) is reserved
+	     for the default color (which is one of the other color pairs).
+	     Hence + 1. */
 	  const int pairNumber
-	    {fgIter * (int)newColors.size() + bgIter};
+	    {fgIter * (int)newColors.size() + bgIter + 1};
 	  init_pair(pairNumber, fgIter, bgIter);
 	  retColorPairIndexes.push_back(pairNumber);
 	}      
     }
-  
-  // Set current color to default color.
-  attron(COLOR_PAIR(colorParams::defaultColorPair));
 
   return retColorPairIndexes;
 }

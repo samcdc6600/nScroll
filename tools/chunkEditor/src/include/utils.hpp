@@ -2,7 +2,6 @@
 #define UTILS_HPP_
 
 
-// #include <string>
 #include <vector>
 #include <sstream>
 #ifdef DEBUG
@@ -118,6 +117,7 @@ enum errorsCodes {                     /* Error codes. */
                    ERROR_INVALID_DIRECTION, // Direction character found not to
                                             // be valid.
                    ERROR_OPENING_FILE,      // Error opening file.
+		   ERROR_MALFORMED_FILE,
                    ERROR_CHARACTER_RANGE,   // Character out of range.
                    ERROR_COLOR_CODE_RANGE,  // Color code out of range.
                    ERROR_GENERIC_RANGE_ERROR,
@@ -157,6 +157,14 @@ namespace boarderRuleChars
 };
 
 
+constexpr int printCharSpeed {1};
+constexpr int afterPrintSleep {580};
+
+
+void disableBlockingUserInput();
+void enableBlockingUserInput();
+void move(const yx pos);
+void mvprintw(const yx pos, const std::string &str);
 /* Print a message to the centre of the view port when in curses mode. */
 void printMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
@@ -192,6 +200,19 @@ int readSingleNum
 double readSingleRNum
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg);
+void readInBgChunkFile
+(const std::string fileName, int chunk[][xWidth], const yx chunkSize,
+ yx & chunkCoord, bool & foundCoord);
+void readInCRChunkFile
+(const std::string fileName, char cRChunk[][xWidth], const yx chunkSize,
+ yx & chunkCoord, bool & foundCoord);
+/* Read in and decompress a chunk from a bg chunk file, Where file is an already
+   opened chunk file, eMsg is an error message, expectedNumberOfLines is the
+   expected number of lines the file should have and chunkCoord is the chunk
+   coordinates read from the file (if any.)*/
+void getBgChunk
+(std::fstream & file, int chunk[][xWidth], const int expectedNumberOfLines,
+ yx & chunkCoord, const std::string & eMsg);
 void getChunk
 (const std::string & data, std::string::const_iterator & buffPos,
  const std::string & eMsg, std::string & chunk, const yx expectedChunkSize);
@@ -314,6 +335,66 @@ void insertChunk
 	   ERROR_DUPLICATE_COORDINATE);
     }
 }
+
+
+/* Pushes sucessive characters from secondStageDrawBuffer (starting at
+   buffIndex) into contiguouscolorchars untill either reaching the end of
+   secondStageDrawBuffer, reaching a character that has a different colour or
+   an ACS character. If a the end of secondStageDrawBuffer is reached or a
+   character with a different colour is reached returns false with
+   contiguousColorChars populated and buffIndex pointing to the character after
+   the last that was pushed into contiguousColorChars. If an ACS
+   character is encountered returns true with acsChar set to the character
+   found and with contiguousColorChars and buffIndex set as they are with the
+   situation where an ACS character isn't found. */
+// inline bool getContiguouslyColordString
+// (char const drawBuffer[][xWidth],
+//  yx & buffIndex, const yx viewPortSize, std::string & contiguousColorChars,
+//  unsigned short & acsCode)
+// {
+//   const unsigned short startColorCode =
+//     getColor(drawBuffer[buffIndex]);
+//   // const int startIndex {buffIndex};
+
+
+//   for( ; buffIndex < (viewPortSize.y * viewPortSize.x) &&
+// 	 getColor(drawBuffer[buffIndex]) == startColorCode;
+//        buffIndex++)
+//     {
+//       unsigned short ch;
+//       ch = drawBuffer[buffIndex];
+
+//       // Remove colour information (if any) from ch.
+//       if(inColorRange(ch))
+// 	{
+// 	  ch -= (getColor(ch) * (MONO_CH_MAX + 1));
+// 	}
+
+//       if(ch <= ASCII_CH_MAX)
+// 	{
+// 	  // We have an ASCII char.
+// 	  contiguousColorChars.push_back(ch);
+// 	}
+//       else if(ch <= MONO_CH_MAX)
+// 	{
+// 	  // We have an ACS char. 
+// 	  acsCode = ch;
+// 	  return true;
+// 	}
+//       else
+// 	{
+// 	  exit(concat("Error: encountered default colour character (",
+// 		      (int)ch, ") that is greater than ", MONO_CH_MAX,".!"),
+// 	       ERROR_CHARACTER_RANGE);
+// 	}
+//     }
+
+//   /* We must decrement buffIndex here because it is incremented at the end of
+//      the loop but the loop isn't run again and thus the next character isn't
+//      added. */
+//   buffIndex--;
+//   return false;
+// }
 
 
 #endif
