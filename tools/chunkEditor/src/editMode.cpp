@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <curses.h>
 #include "include/editMode.hpp"
 
 

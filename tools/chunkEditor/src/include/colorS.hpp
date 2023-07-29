@@ -11,22 +11,24 @@ namespace colorParams
 {
   /* The game has supports this many colors and as such the terminal must also
      support this many colors. */
-  constexpr int gameColors {256};
+  // constexpr int gameColors {256};
+    constexpr int gameColors {16};
   /* Number of color pairs used by the game. Ncurses must support at least this
      many color pairs. COLOR_PAIRS is 32767 on our system. We will support 125^2
      (15625) color pairs. That is 125 bg colors and 125 fg colors. */
   // Each game color component (rgb) has 5 levels.
-  constexpr int gameColorCompNo {5};
+  // constexpr int gameColorCompNo {5};
+  constexpr int gameColorCompNo {3};
   // No. of colors (not color pairs.)
   // constexpr int gameColors {125};
-  constexpr int gameColorPairsNo {15625}; //gameColors * gameColors}; // 15625
+  // constexpr int gameColorPairsNo {15625}; //gameColors * gameColors}; // 15625
+  constexpr int gameColorPairsNo {256}; // 2 * 2 * 3
   /* The RGB values should be in the range [0, 1000]. */
   constexpr int gameRGBMax {1000};
   /* This color pair is used when a character is not yet in the position in
      question. */
   constexpr int noCharColorPair {8};
 }
-
 
 class setColorMode//This class is used to change the color mode of Ncurses
 {

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <cmath>
 #include "include/utils.hpp"
 #include "include/colorS.hpp"
 
