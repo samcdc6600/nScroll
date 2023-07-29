@@ -94,7 +94,8 @@ std::ostream & operator<<(std::ostream &lhs, const yx rhs);
 // The window must be these dimensions.
 constexpr int yHeight {48}, xWidth {170};
 constexpr int ASCII_CH_MAX {127};
-constexpr int MONO_CH_MAX {158};
+/* Numerical value of highest character using color pair 1.  */
+constexpr int maxCharNum {158};
 constexpr int COLOR_CH_MAX {63};
 constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR{27};
@@ -165,10 +166,20 @@ void disableBlockingUserInput();
 void enableBlockingUserInput();
 void move(const yx pos);
 void mvprintw(const yx pos, const std::string &str);
-/* Print a message to the centre of the view port when in curses mode. */
-void printMessage
+/* Calls progressivePrintMessage() (see header below.) with clearScreen and
+   printProgressively set to true. */
+void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep);
+/* Print a message to the centre of the view port when in curses mode.
+   If printProgressively is set to true then refresh() will be called and each
+   character is printed at which point the function will sleep for
+   interCharacterSleep before the next character is printed. If clearScreen is
+   true then the screen will be cleared before printing the message. */
+void progressivePrintMessage
+(const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
+ const int afterMsgSleep, const bool clearScreen,
+ const bool printProgressively);
 /* Print a message when not in curses mode. */
 void printMessageNoWin
 (const std::string & msg, const int interCharacterSleep,
@@ -367,7 +378,7 @@ void insertChunk
 //       // Remove colour information (if any) from ch.
 //       if(inColorRange(ch))
 // 	{
-// 	  ch -= (getColor(ch) * (MONO_CH_MAX + 1));
+// 	  ch -= (getColor(ch) * (maxCharNum + 1));
 // 	}
 
 //       if(ch <= ASCII_CH_MAX)
@@ -375,7 +386,7 @@ void insertChunk
 // 	  // We have an ASCII char.
 // 	  contiguousColorChars.push_back(ch);
 // 	}
-//       else if(ch <= MONO_CH_MAX)
+//       else if(ch <= maxCharNum)
 // 	{
 // 	  // We have an ACS char. 
 // 	  acsCode = ch;
@@ -384,7 +395,7 @@ void insertChunk
 //       else
 // 	{
 // 	  exit(concat("Error: encountered default colour character (",
-// 		      (int)ch, ") that is greater than ", MONO_CH_MAX,".!"),
+// 		      (int)ch, ") that is greater than ", maxCharNum,".!"),
 // 	       ERROR_CHARACTER_RANGE);
 // 	}
 //     }

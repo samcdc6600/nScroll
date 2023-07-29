@@ -91,14 +91,27 @@ void mvprintw(const yx pos, const std::string & str)
 }
 
 
-void printMessage
+void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep)
+{
+  progressivePrintMessage(msg, viewPortSize, interCharacterSleep, afterMsgSleep,
+			  true, true);
+}
+
+
+void progressivePrintMessage
+(const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
+ const int afterMsgSleep, const bool clearScreen, const bool printProgressively)
 {
   /* TODO: Fix up this function a bit. Right now if more than one line is
      printed the output of all lines will be the same width, but will be left
      justified (to some lesser or greater extent.) */
-  clear();
+  if(clearScreen)
+    {
+      clear();
+    }
+  
   const yx margins {viewPortSize.y / 7, viewPortSize.x / 7};
   const double lineCount  {(double)msg.size() /
 			   (viewPortSize.x - 2 * margins.x)};
@@ -110,8 +123,11 @@ void printMessage
       for(char c: msg)
 	{
 	  printw(concat("", c).c_str());
-	  refresh();
-	  sleep(interCharacterSleep);
+	  if(printProgressively)
+	    {
+	      refresh();
+	      sleep(interCharacterSleep);
+	    }
 	}
     }
   else
@@ -125,8 +141,11 @@ void printMessage
 	      mvprintw
 		(viewPortSize.y / 2 + lines, margins.x + chars,
 		 concat("", msg[charsPrinted]).c_str());
-	      refresh();
-	      sleep(interCharacterSleep);
+	      if(printProgressively)
+		{
+		  refresh();
+		  sleep(interCharacterSleep);
+		}
 	      charsPrinted++;
 	    }
 	}
@@ -473,7 +492,7 @@ void readInBgChunkFile
 	  exit(concat("Error could not open or create file ", fileName),
 	       ERROR_OPENING_FILE);
 	}
-      printMessage(concat("", fileName, " not found. Creating new"
+      progressivePrintMessage(concat("", fileName, " not found. Creating new"
 			  " file..."), chunkSize, printCharSpeed,
 		   afterPrintSleep);
       foundCoord = false;
@@ -503,7 +522,7 @@ void readInCRChunkFile
 	  exit(concat("Error could not open or create file ", fileName),
 	       ERROR_OPENING_FILE);
 	}
-      printMessage(concat("", fileName, " not found. Creating new"
+      progressivePrintMessage(concat("", fileName, " not found. Creating new"
 			  " file..."), chunkSize, printCharSpeed,
 		   afterPrintSleep);
       foundCoord = false;

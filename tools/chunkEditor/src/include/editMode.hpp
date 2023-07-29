@@ -17,16 +17,30 @@ namespace editingSettings
      setColorMode colorMode {colorParams::defaultColorPair}; */
   namespace editChars
   {
+    constexpr char quit			{'q'};
     constexpr char cursorUp		{'w'};
     constexpr char cursorDown		{'s'};
     constexpr char cursorLeft		{'a'};
     constexpr char cursorRight		{'d'};
     constexpr char setCharacterAtPos	{' '};
     constexpr char toggleBetweenCRandBg	{'t'};
+    constexpr char eraseCRChar		{'e'};
     constexpr char setCRCharToBorder	{'b'};
     constexpr char setCRCharToPlatform	{'p'};
+    constexpr char toggleCharacterSelection {'c'};
     constexpr char toggleHelpMsg       	{'h'};
   };
+
+  namespace rulesChars
+  {
+    constexpr char nullRule	{' '};
+    constexpr char boarder	{'b'};
+    constexpr char platform	{'p'};
+  }
+
+  namespace bgChars
+  {
+  }
 }
 
 

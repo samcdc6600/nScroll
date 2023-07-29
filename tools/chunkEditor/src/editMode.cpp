@@ -12,6 +12,10 @@ struct editingState
 {
   // Are we editing the cRChunk or the bgChunk?
   bool cRChunkToggle;
+  // // Show character selection screen?
+  // bool characterSelection;
+  // // Show help screen.
+  // bool help;
   // Used for blinking the cursor.
   bool cursorOn;
   std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast;
@@ -36,7 +40,10 @@ void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidt
 void actOnInput
 (backgroundChunkCharInfo bgChunk[][xWidth], char cRChunk[][xWidth], const yx chunkSize,
  editingState & edState);
-void printEditHelp();
+void printCharacterSelection();
+/* Once entered this function will not exit untill one of editChars::quit or
+   editChars::toggleHelpMsg is pressed.  */
+void printEditHelp(const yx viewPortSize, editingState & edState);
 void printBgChunk(const backgroundChunkCharInfo bgChunk[][xWidth], const yx viewPortSize);
 void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize);
 void printCursorForCREditMode
@@ -45,8 +52,8 @@ void printCursorForBgEditMode
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx cursorPos, const int currentBgChar);
 void printACS(const yx position, const int aCSChar);
 void printACS(const int aCSChar);
-void setColor(const int charCodeWithColor);
-bool inColorRange(const int ch);
+void setColorFromChar(const int ch);
+bool charInColorCharRange(const int ch);
 int getColor(const int ch);
 /* Removes color info from ch. If ch is an aCS character sets aCS to true,
    otherwise sets aCS to false. Prints an error and exits if ch is out of
@@ -66,6 +73,9 @@ void fillChunk(T1 chunk[][xWidth], const yx viewPortSize, const T2 filler,
     {
       for(int xIter {}; xIter < viewPortSize.x; ++xIter)
 	{
+	  /* Chunk's elements may be structures or basic types so we use a
+	     function that's passed in as the argument "assign" to do the
+	     assignment. */
 	  assign(chunk[yIter][xIter], filler);
 	}
     }
@@ -115,7 +125,7 @@ void editMode
   if(!foundCRChunkCoord)
     {
       // Chunk coord not found i.e. file not found. So initialise chunk.
-      fillChunk(cRChunk, chunkSize, ' ',
+      fillChunk(cRChunk, chunkSize, editingSettings::rulesChars::nullRule,
 		[](auto & element, const char filler)
 		{
 		  element = filler;
@@ -124,20 +134,19 @@ void editMode
   if(!foundBgChunkCoord && !foundCRChunkCoord)
     {
       // No void files were found, so we must ask the user for coordinates.
-      printMessage(concat
-		   ("Both ", bgChunkFileName, " and ", cRChunkFileName,
-		    " found to be empty. Please enter the y chunk coordinate "
-		    "followed by a space and then followed by the x chunk "
-		    "coordinate: "), chunkSize,
-		   printCharSpeed, 0);
+      progressivePrintMessage
+	(concat("Both ", bgChunkFileName, " and ", cRChunkFileName, " found to "
+		"be empty. Please enter the y chunk coordinate followed by a "
+		"space and then followed by the x chunk coordinate: "),
+	 chunkSize, printCharSpeed, 0);
 
       enableBlockingUserInput();
       while(scanw("%d %d", &bgChunkCoord.y, &bgChunkCoord.x) != 2)
 	{
-	  printMessage(concat("Error: you must enter a chunk coordinate in the "
-			      "form of a y and x coordinate seperated by a "
-			      "space. Please enter coordinates: ").c_str(),
-		       chunkSize, printCharSpeed, 0);
+	  progressivePrintMessage
+	    (concat("Error: you must enter a chunk coordinate in the form of a "
+		    "y and x coordinate seperated by a space. Please enter "
+		    "coordinates: "), chunkSize, printCharSpeed, 0);
 	}
       disableBlockingUserInput();
       editModeProper(bgChunkCoord, bgChunk, cRChunk, chunkSize);
@@ -160,41 +169,28 @@ void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidt
       true,
       std::chrono::steady_clock::now(),
       ERR, 	        // This is returned by getch() when there is no input.
-      yx{0, 0},
+      yx{chunkSize.y / 2, chunkSize.x / 2},
       ' ',
-      'b'
+      editingSettings::rulesChars::boarder
     };
-
-
-   for(int yIter {}; yIter < chunkSize.y; ++yIter)
-    {
-      for(int xIter {}; xIter < chunkSize.x; ++xIter)
-	{
-	  // if(rand() % colorParams::gameColorPairsNo != 0)
-	  //   {
-	  //     cRChunk[yIter][xIter] = ' ';
-	  //   }
-	  // else
-	    {
-	      // bgChunk[yIter][xIter] = rand() % (colorParams::gameColorPairsNo * 158);
-	    }
-	}
-	}
   
-  move(chunkSize.y / 2, chunkSize.x /2);
-  
-  while(edState.input != 'q')
+  while(edState.input != editingSettings::editChars::quit)
     {      
       edState.input = getch();
 
       actOnInput(bgChunk, cRChunk, chunkSize, edState);
 
       // We always print the background chunk.
-      printBgChunk(bgChunk, chunkSize);      
-	
+      printBgChunk(bgChunk, chunkSize);
       if(edState.cRChunkToggle)
 	{
+	  // We want to print coord rules over the bg chunk.
 	  printCRChunk(cRChunk, chunkSize);
+	}
+
+	// The cursor should always be visible, so print last.
+      if(edState.cRChunkToggle)
+	{
 	  printCursorForCREditMode(cRChunk, edState.cursorPos, edState.currentCRChar);
 	}
       else
@@ -214,56 +210,89 @@ void actOnInput
 (backgroundChunkCharInfo bgChunk[][xWidth], char cRChunk[][xWidth], const yx chunkSize,
  editingState & edState)
 {
+  using namespace editingSettings::editChars;
+  
   switch(edState.input)
     {
-    case 'w':
+    case cursorUp:
       if(edState.cursorPos.y > 0)
 	{
 	  edState.cursorPos.y--;
 	  move(edState.cursorPos);
 	}
       break;
-    case 's':
+    case cursorDown:
       if(edState.cursorPos.y < chunkSize.y -1)
 	{
 	  edState.cursorPos.y++;
 	  move(edState.cursorPos);
 	}
       break;
-    case 'a':
+    case cursorLeft:
       if(edState.cursorPos.x > 0)
 	{
 	  edState.cursorPos.x--;
 	  move(edState.cursorPos);
 	}
       break;
-    case 'd':
+    case cursorRight:
       if(edState.cursorPos.x < chunkSize.x -1)
 	{
 	  edState.cursorPos.x++;
 	  move(edState.cursorPos);
 	}
       break;
-    case ' ':
-      cRChunk[edState.cursorPos.y][edState.cursorPos.x] = edState.currentCRChar;
+    case setCharacterAtPos:
+      if(edState.cRChunkToggle)
+	{
+	  cRChunk[edState.cursorPos.y][edState.cursorPos.x] = edState.currentCRChar;
+	}
+      else
+	{
+	}
       break;
-    case 't':
+    case toggleBetweenCRandBg:
       edState.cRChunkToggle = !edState.cRChunkToggle;
       break;
-    case 'b':
-      edState.currentCRChar = 'b';
+    case eraseCRChar:
+      edState.currentCRChar = editingSettings::rulesChars::nullRule;
       break;
-    case 'p':
-      edState.currentCRChar = 'p';
+    case setCRCharToBorder:
+      edState.currentCRChar = editingSettings::rulesChars::boarder;
       break;
-    case 'h':
-      printEditHelp();
+    case setCRCharToPlatform:
+      edState.currentCRChar = editingSettings::rulesChars::platform;
+      break;
+    case toggleCharacterSelection:
+      
+      break;
+    case toggleHelpMsg:
+      printEditHelp(chunkSize, edState);
     }
 }
 
 
-void printEditHelp()
+void printEditHelp(const yx viewPortSize, editingState & edState)
 {
+  using namespace editingSettings::editChars;
+  
+  editingSettings::colorMode.setColor(1);
+  progressivePrintMessage
+    (concat
+     ("~H~E~L~P~!~\t\t\t\t\t\t",
+      cursorUp, ": to move the cursor up.\t\t\t",
+      cursorDown, ": to move the cursor down.\t\t\t",
+     cursorLeft, ": to move the cursor left.\t\t\t",
+      cursorRight, ": to move the cursor right.\t\t\t"),
+     viewPortSize, 0, 200, false, false);
+
+  edState.input = getch();  
+  while(edState.input != quit &&
+	edState.input != toggleHelpMsg)
+    {
+      edState.input = getch();
+      sleep(editingSettings::loopSleepTimeMs);
+    }
 }
 
 
@@ -274,22 +303,33 @@ void printBgChunk
     {
       for(int xIter {}; xIter < viewPortSize.x; xIter++)
 	{
-	  unsigned short aCSCode;
-	  bool foundACSCode;
-
 	  if(bgChunk[yIter][xIter].set == true)
 	    {
-	      setColor(getColor(bgChunk[yIter][xIter].ch));
+	      int ch;
+	      bool foundACSCode;
+	      
+	      setColorFromChar(bgChunk[yIter][xIter].ch);
+	      ch = getChar(bgChunk[yIter][xIter].ch, foundACSCode);
+
+	      if(foundACSCode)
+		{
+		  printACS(yx{yIter, xIter}, ch);
+		}
+	      else
+		{
+		  mvprintw(yIter, xIter, concat("", ch).c_str());
+		}
 	    }
 	  else
 	    {
-	      setColor(colorParams::noCharColorPair);
+	      editingSettings::colorMode.setColor(colorParams::noCharColorPair);
+	      mvprintw(yIter, xIter, " ");
 	    }
 	  // foundAcsCode = getContiguouslyColordString
 	  //   (bgChunk, yx{yIter, xIter}, viewPortSize,
 	  //    contiguousColorChars, acsCode);
 
-	  mvprintw(yIter, xIter, " ");
+	  
 	  // if(contiguousColorChars.size() != 0)
 	  //   {
 	  //     // Print ASCII chars.
@@ -318,8 +358,8 @@ void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize)
 	{
 	  if(cRChunk[yIter][xIter] != ' ')
 	    {
-	      setCuMode.setColor(abs((xIter * rand()) %
-				     editingSettings::gameColorPairsNo -1));
+	      setCuMode.setColor
+		(abs(rand() % editingSettings::gameColorPairsNo) +1);
 	      mvprintw(yIter, xIter, concat("", cRChunk[yIter][xIter]).c_str());
 	    }
 	}
@@ -330,11 +370,11 @@ void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize)
 void printCursorForCREditMode
 (const char cRChunk[][xWidth], const yx cursorPos, const char currentCRChar)
 {
-	  // TMP (We want to set the cursor colour to the opposite of the bg
-	  // colour. No matter which chunk editing mode we are in.)
-	  setColor(colorParams::noCharColorPair);
-	  mvprintw(cursorPos, concat("", currentCRChar).c_str());
-	  move(cursorPos);
+  // TMP (We want to set the cursor colour to the opposite of the bg
+  // colour. No matter which chunk editing mode we are in.)
+  editingSettings::colorMode.setColor(colorParams::noCharColorPair);
+  mvprintw(cursorPos, concat("", currentCRChar).c_str());
+  move(cursorPos);
 }
 
 
@@ -344,10 +384,10 @@ void printCursorForBgEditMode
   bool aCSChar {false};
   /* Set cursor colour to opposite of bg color (maybe, we aren't doing
      it properly here.) at cursorPos. */
-  setColor
-    (getColor((bgChunk[cursorPos.y][cursorPos.x].ch +
+  setColorFromChar
+    ((bgChunk[cursorPos.y][cursorPos.x].ch +
 	       (colorParams::gameColorPairsNo / 2)) %
-	      colorParams::gameColorPairsNo));
+	      colorParams::gameColorPairsNo);
   const int bgChar {getChar(currentBgChar, aCSChar)};
 	  
   if(aCSChar)
@@ -474,41 +514,20 @@ void printACS(const int aCSChar)
 }
 
 
-void setColor(const int charCodeWithColor)
+void setColorFromChar(const int ch)
 {
-  // TODO: fix this (we no longer support default colors.
-      if(inColorRange(charCodeWithColor))
-	{
-	  int colorCode = getColor(charCodeWithColor);
-	  editingSettings::colorMode.setColor(colorCode);
-	}
-      else
-	{
-	  editingSettings::colorMode.setColor(1);
-	}
-}
-
-
-bool inColorRange(const int ch)
-{
-  if(ch > MONO_CH_MAX)
-    {
-      return true;
-    }
-  else
-    {
-      return false;
-    }
+  int colorCode = getColor(ch);
+  editingSettings::colorMode.setColor(colorCode);
 }
 
 
 int getColor(const int ch)
 {
-  /* A character is encoded as it's basic value + it's color value times
-     MONO_CH_MAX + 1 (MONO_CH_MAX starts at 1). Since integer division
-     rounds down ch / MONO_CH_MAX should give the color code. */
-  int color {ch / (MONO_CH_MAX +1)};		
-  if(color > colorParams::gameColorPairsNo -1)
+  /* A character is encoded as it's basic value + it's color value -1 times
+     maxCharNum. Since integer division rounds down ch / maxCharNum should give
+     the color code. less 1. */
+  int color {(ch / maxCharNum) +1};
+  if(color > colorParams::gameColorPairsNo)
     {
       exit(concat("Error (in getColor()): encountered colour (", color, ") "
 		  "code that is out of range.\n"),
@@ -525,21 +544,19 @@ int getChar(const int ch, bool & aCS)
   int rawCh;
   aCS = false;
   
-  // Remove colour information (if any) from ch.
-  if(inColorRange(rawCh))
-    {
-      rawCh -= (getColor(rawCh) * (MONO_CH_MAX + 1));
-    }
+  // Remove colour information (first color starts at 1, so we remove 1.)
+  rawCh -= ((getColor(rawCh) -1) * maxCharNum);
 
-  if(rawCh > ASCII_CH_MAX && rawCh <= MONO_CH_MAX)
+  if(rawCh > ASCII_CH_MAX && rawCh <= maxCharNum)
     {
       // We have an ACS char.
       aCS = true;
     }
-  else if(rawCh < 0 || rawCh > MONO_CH_MAX)
+  else if(rawCh < 0 || rawCh > ASCII_CH_MAX)
     {
-      exit(concat("Error: encountered default colour character (",
-		  (int)rawCh, ") that is greater than ", MONO_CH_MAX,".!"),
+      exit(concat("Error: encountered character (", (int)rawCh, ") that is lass"
+		  "than 0 or greater than ", maxCharNum,". after having color "
+		  "info removed."),
 	   ERROR_CHARACTER_RANGE);
     }
   

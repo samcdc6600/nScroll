@@ -21,8 +21,9 @@ int main(const int argc, const char * argv [])
   std::vector<int> pairIndexes {initialiseCurses(viewPortSize)};  
   const int mode {verifyCmdArgsAndGetMode(argc, argv)};
 
-  printMessage("Welcome to the chunk editor.", viewPortSize, printCharSpeed,
-	       afterPrintSleep);
+  progressivePrintMessage
+    ("Welcome to the chunk editor.", viewPortSize, printCharSpeed,
+     afterPrintSleep);
   enterMode(mode, argv, viewPortSize);
     
   endwin();
@@ -243,14 +244,16 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
     {
     case 1:
       // Chunk edit mode.
-      printMessage("Starting Chunk Edit mode.", viewPortSize, printCharSpeed,
-		   afterPrintSleep);
+      progressivePrintMessage
+	("Starting Chunk Edit mode.", viewPortSize, printCharSpeed,
+	 afterPrintSleep);
       editMode(argv[1], argv[2], bgChunk, cRChunk, viewPortSize);
       break;
     case 2:
       // Append mode.
-      printMessage("Starting Append mode.", viewPortSize, printCharSpeed,
-		   afterPrintSleep);
+      progressivePrintMessage
+	("Starting Append mode.", viewPortSize, printCharSpeed,
+	 afterPrintSleep);
       clear();
       refresh();
       endwin();
@@ -259,8 +262,9 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
       break;
     case 3:
       // Extraction mode.
-      printMessage("Starting Extraction mode.", viewPortSize, printCharSpeed,
-		   afterPrintSleep);
+      progressivePrintMessage
+	("Starting Extraction mode.", viewPortSize, printCharSpeed,
+	 afterPrintSleep);
       clear();
       refresh();
       endwin();
@@ -270,8 +274,9 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
     case 4:
       // Map view mode.
       refresh();
-      printMessage("Starting Map View mode.", viewPortSize, printCharSpeed,
-		   afterPrintSleep);
+      progressivePrintMessage
+	("Starting Map View mode.", viewPortSize, printCharSpeed,
+	 afterPrintSleep);
       clear();
       refresh();
       endwin();

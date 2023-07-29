@@ -112,5 +112,45 @@ std::vector<int> initColorPairs()
 	}      
     }
 
+
+
+  int pairNumber {8160};
+  
+  for(int yIter {}; yIter < 44; yIter++)
+    {
+      for(int xIter {}; xIter < 170; ++xIter)
+	{
+	  attron(COLOR_PAIR(pairNumber++));
+	  mvprintw(yIter, xIter, "#");
+	}
+    }
+  refresh();
+
+    // for(int fgIter {}; fgIter < (int)newColors.size(); ++fgIter)
+    //   {
+    // 	for(int bgIter {}; bgIter < (int)newColors.size() /2;
+    // 	    ++bgIter)
+    // 	  {
+    // 	    attron(COLOR_PAIR(fgIter * (int)newColors.size() + bgIter + ((int)newColors.size() /2) + 1));
+    // 	    mvprintw(fgIter, bgIter + (int)newColors.size() /2, "%");
+    // 	  }
+    // 	refresh();
+    //   }
+    // endwin();
+    exit(-1);
+      // // 12
+      // // 14
+      // /// 34
+      // attron(COLOR_PAIR(xIter + 1 + 125 * 37));
+      // mvprintw(0, xIter, "X");
+      // refresh();
+  //   }
+  // endwin();
+  // exit(-1);
+  
+  // /* Set current color to first color pair (not we are not using the default
+  //    color pair 0). */
+  // attron(COLOR_PAIR());
+
   return retColorPairIndexes;
 }

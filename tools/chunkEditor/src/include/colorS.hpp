@@ -24,7 +24,7 @@ namespace colorParams
   constexpr int gameRGBMax {1000};
   /* This color pair is used when a character is not yet in the position in
      question. */
-  constexpr int noCharColorPair {1};
+  constexpr int noCharColorPair {8};
 }
 
 
@@ -34,7 +34,7 @@ private:
   void setState(const int state);//set the color state in Ncurses
   // void setDefaultColor();
   bool inRange(const int color);//is the color passed to this function in range?
-  
+  // stupendous 
 public:
   void setColor(const int color);//set color to color
   void clearColor();//set color to default
