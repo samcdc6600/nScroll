@@ -3,7 +3,7 @@
 #include <curses.h>
 
 
-std::vector<int> initialiseCurses(yx & maxyx)
+void initialiseCurses(yx & maxyx)
 {
   initscr();                                  // Start curses mode                                                     
   getmaxyx(stdscr, maxyx.y, maxyx.x); // Screen size in characters
@@ -38,28 +38,27 @@ std::vector<int> initialiseCurses(yx & maxyx)
   start_color();             // Start color and initialise color pairs!
 
   /* COLOR_PAIRS is 0 before start_color() is called! */
-  if(COLOR_PAIRS < colorParams::gameColorPairsNo)
+  if(COLOR_PAIRS < colorParams::gameColorPairsNoMax)
     {
       printMessageNoWin
 	(concat("Error this implementation of ncurses only supports ",
 		COLOR_PAIRS, " color pairs which is less than the required ",
-		colorParams::gameColorPairsNo, " color pairs.\n"),
+		colorParams::gameColorPairsNoMax, " color pairs.\n"),
 	 printCharSpeed, afterPrintSleep);
       exit(ERROR_WIN_PARAM);
     }
   
-  return initColorPairs();
+  initColorPairs();
 }
 
 
-std::vector<int> initColorPairs()
+void initColorPairs()
 {  
   struct colors
   {
     int r, g, b;
   };
   std::vector<colors> newColors {};
-  std::vector<int> retColorPairIndexes {};
 
   int redComp {}, greenComp {}, blueComp {};
 
@@ -189,7 +188,6 @@ std::vector<int> initColorPairs()
   for(yx newPairsColorIndexes: indexesOfColorsForPairs)
     {
       init_pair(pairNumber, newPairsColorIndexes.y, newPairsColorIndexes.x);
-      retColorPairIndexes.push_back(pairNumber);
       pairNumber++;
     }
 
@@ -200,7 +198,6 @@ std::vector<int> initColorPairs()
   //     attron(COLOR_PAIR(pairNumber++));
   //     printw(" ");
   //   }
-
   // move(2, 0);
   // attroff(A_REVERSE);
   // pairNumber = 1;
@@ -209,11 +206,7 @@ std::vector<int> initColorPairs()
   //     attron(COLOR_PAIR(pairNumber++));
   //     printw(" ");
   //   }  
-
-  
   // refresh();
   // endwin();
   // exit(-1);
-
-  return retColorPairIndexes;
 }

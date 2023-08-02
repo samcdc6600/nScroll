@@ -6,19 +6,28 @@
 void setColorMode::setState(const int state)
 {
   if(!inRange(state))
-    {//state is out of range
-      std::string eMsg {"in colorS.cpp->setState(const int state), state = "};
-      eMsg += state;
-      eMsg += "\n";
-      throw std::logic_error(eMsg);      
+    {
+      exit(concat("Error: in setState. Color (", state, ") out of range."),
+	   ERROR_COLOR_CODE_RANGE);
     }
-  attron(COLOR_PAIR(state));
+  else
+    {
+      if(state > colorParams::gameColorPairsNo)
+	{
+	  attron(A_REVERSE);
+	}
+      else
+	{
+	  attroff(A_REVERSE);
+	}
+      attron(COLOR_PAIR(state));
+    }
 }
 
 
 bool setColorMode::inRange(const int color)
 {
-  if(color < 1 || color > colorParams::gameColorPairsNo)
+  if(color < 1 || color > colorParams::effectiveGameColorPairsNo)
     return false;//color is out of range
   return true;//color is in range
 }

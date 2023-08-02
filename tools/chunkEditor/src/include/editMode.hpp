@@ -9,10 +9,20 @@
 
 namespace editingSettings
 {
-  constexpr int loopSleepTimeMs {10};
+  constexpr int loopSleepTimeMs {5};
+  /* Sleep for this time when exiting a sub menu so that the character the user
+     is pressing isn't read in as an input to the "screen" "above" the
+     menu. This is especially important as the character my be editChars::quit.
+  */
+  constexpr int editSubMenuSleepTimeMs {160};
   constexpr std::chrono::milliseconds cursorBlinkTimeMs {700};
-  const int gameColorPairsNo {15625};
   extern setColorMode colorMode;
+  // Color used for help menu.
+  constexpr int helpColor {1};
+  /* This color pair is used when a character is not yet in the position in
+     question. */
+  constexpr int noCharColorPair {15};
+  
   /* See editMode.cpp for
      setColorMode colorMode {colorParams::defaultColorPair}; */
   namespace editChars
@@ -22,7 +32,7 @@ namespace editingSettings
     constexpr char cursorDown		{'s'};
     constexpr char cursorLeft		{'a'};
     constexpr char cursorRight		{'d'};
-    constexpr char setCharacterAtPos	{' '};
+    constexpr char performActionAtPos	{' '};
     constexpr char toggleBetweenCRandBg	{'t'};
     constexpr char eraseCRChar		{'e'};
     constexpr char setCRCharToBorder	{'b'};

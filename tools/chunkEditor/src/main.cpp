@@ -18,7 +18,7 @@ int main(const int argc, const char * argv [])
      future.) */
   yx viewPortSize;
   // Start and setup ncurses.
-  std::vector<int> pairIndexes {initialiseCurses(viewPortSize)};  
+  initialiseCurses(viewPortSize);
   const int mode {verifyCmdArgsAndGetMode(argc, argv)};
 
   progressivePrintMessage

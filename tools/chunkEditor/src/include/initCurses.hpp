@@ -9,8 +9,8 @@
 #include "colorS.hpp"
 
 
-std::vector<int> initialiseCurses(yx & maxyx);
-std::vector<int> initColorPairs();
+void initialiseCurses(yx & maxyx);
+void initColorPairs();
 
 
 #endif

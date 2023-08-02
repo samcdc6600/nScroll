@@ -22,12 +22,11 @@ namespace colorParams
      colors being equal (which can just be drawn using spaces) are removed.
      then use the function calls attron(A_REVERSE) and  attroff(A_REVERSE) to
      effectively double that number and regain the pairs that were removed. */
-  constexpr int gameColorPairsNo {256};
+  constexpr int gameColorPairsNoMax {256};
+  constexpr int gameColorPairsNo {253};
+  constexpr int effectiveGameColorPairsNo {gameColorPairsNo * 2};
   /* The RGB values should be in the range [0, 1000]. */
   constexpr int gameRGBMax {1000};
-  /* This color pair is used when a character is not yet in the position in
-     question. */
-  constexpr int noCharColorPair {8};
 }
 
 class setColorMode//This class is used to change the color mode of Ncurses

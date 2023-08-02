@@ -41,7 +41,24 @@ void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidt
 void actOnInput
 (backgroundChunkCharInfo bgChunk[][xWidth], char cRChunk[][xWidth], const yx chunkSize,
  editingState & edState);
+/* Updates the cursors position in edState if edState.input is one of cursorUp,
+    cursorDown, cursorLeft or cursorRight and if the cursor will not go outside
+    of the view port. */
+bool updateCursorPos
+(const yx chunkSize, editingState & edState);
 void printCharacterSelection();
+/* Displays available colors on the screen and waits for the user to select one
+   using the cursor navigation keys (see editingSettings.) This color will be
+   the bg color, then displayes available colors again. This color will be the
+   fg color. Then displayes available characters. This information will combined
+   to create a valid character with color information, this will then be
+   returned. The function will display suitable instructions at each set. */
+int getBgCharFromUser(const yx chunkSize, editingState & edState);
+/* Should be called when exiting an interactive "screen" or "menu". Sleeps for
+   editingSettings::editSubMenuSleepTimeMs and then sets edState.input to the
+   value returned from getch(). This give the user some time to take their
+   finger off of editChars::quit. */
+void safeScreenExit(editingState & edState);
 /* Once entered this function will not exit untill one of editChars::quit or
    editChars::toggleHelpMsg is pressed.  */
 void printEditHelp(const yx viewPortSize, editingState & edState);
@@ -54,7 +71,8 @@ void printCursorForBgEditMode
 void printACS(const yx position, const int aCSChar);
 void printACS(const int aCSChar);
 void setColorFromChar(const int ch);
-bool charInColorCharRange(const int ch);
+void setRandomColor();
+// bool charInColorCharRange(const int ch);
 int getColor(const int ch);
 /* Removes color info from ch. If ch is an aCS character sets aCS to true,
    otherwise sets aCS to false. Prints an error and exits if ch is out of
@@ -200,7 +218,8 @@ void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidt
 	}
 
       edState.cursorVisibilityChangeTimeLast =
-	setCursorVisibility(edState.cursorOn, edState.cursorVisibilityChangeTimeLast);
+	setCursorVisibility(edState.cursorOn,
+			    edState.cursorVisibilityChangeTimeLast);
       
       sleep(editingSettings::loopSleepTimeMs);
     }
@@ -212,6 +231,54 @@ void actOnInput
  editingState & edState)
 {
   using namespace editingSettings::editChars;
+
+  if(!updateCursorPos(chunkSize, edState))
+    {
+      switch(edState.input)
+	{
+	case performActionAtPos:
+	  if(edState.cRChunkToggle)
+	    {
+	      cRChunk[edState.cursorPos.y][edState.cursorPos.x] = edState.currentCRChar;
+	    }
+	  else
+	    {
+	      bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch =
+		edState.currentBgChar;
+	      bgChunk[edState.cursorPos.y][edState.cursorPos.x].set = true;
+	    }
+	  break;
+	case toggleBetweenCRandBg:
+	  edState.cRChunkToggle = !edState.cRChunkToggle;
+	  break;
+	case eraseCRChar:
+	  edState.currentCRChar = editingSettings::rulesChars::nullRule;
+	  break;
+	case setCRCharToBorder:
+	  edState.currentCRChar = editingSettings::rulesChars::boarder;
+	  break;
+	case setCRCharToPlatform:
+	  edState.currentCRChar = editingSettings::rulesChars::platform;
+	  break;
+	case toggleCharacterSelection:
+	  if(!edState.cRChunkToggle)
+	    {
+	      edState.currentCRChar = getBgCharFromUser(chunkSize, edState);
+	    }
+	  break;
+	case toggleHelpMsg:
+	  printEditHelp(chunkSize, edState);
+	}
+    }
+}
+
+
+bool updateCursorPos
+(const yx chunkSize, editingState & edState)
+{
+  using namespace editingSettings::editChars;
+
+  bool ret {false};
   
   switch(edState.input)
     {
@@ -220,6 +287,7 @@ void actOnInput
 	{
 	  edState.cursorPos.y--;
 	  move(edState.cursorPos);
+	  ret = true;
 	}
       break;
     case cursorDown:
@@ -227,6 +295,7 @@ void actOnInput
 	{
 	  edState.cursorPos.y++;
 	  move(edState.cursorPos);
+	  ret = true;
 	}
       break;
     case cursorLeft:
@@ -234,6 +303,7 @@ void actOnInput
 	{
 	  edState.cursorPos.x--;
 	  move(edState.cursorPos);
+	  ret = true;
 	}
       break;
     case cursorRight:
@@ -241,35 +311,171 @@ void actOnInput
 	{
 	  edState.cursorPos.x++;
 	  move(edState.cursorPos);
+	  ret = true;
 	}
       break;
-    case setCharacterAtPos:
-      if(edState.cRChunkToggle)
-	{
-	  cRChunk[edState.cursorPos.y][edState.cursorPos.x] = edState.currentCRChar;
-	}
-      else
-	{
-	}
-      break;
-    case toggleBetweenCRandBg:
-      edState.cRChunkToggle = !edState.cRChunkToggle;
-      break;
-    case eraseCRChar:
-      edState.currentCRChar = editingSettings::rulesChars::nullRule;
-      break;
-    case setCRCharToBorder:
-      edState.currentCRChar = editingSettings::rulesChars::boarder;
-      break;
-    case setCRCharToPlatform:
-      edState.currentCRChar = editingSettings::rulesChars::platform;
-      break;
-    case toggleCharacterSelection:
-      
-      break;
-    case toggleHelpMsg:
-      printEditHelp(chunkSize, edState);
     }
+
+  return ret;
+}
+
+
+int getBgCharFromUser(const yx chunkSize, editingState & edState)
+{
+  using namespace editingSettings::editChars;
+
+  auto printRandomColorAtCursoPos = [& edState]()
+  {
+    setRandomColor();
+    move(edState.cursorPos);
+    mvprintw(edState.cursorPos, concat(" ").c_str());
+    move(edState.cursorPos);
+  };
+
+  auto printAllColors = []()
+  {
+    move(0, 0);
+    for(int colorIter {1}; colorIter <= colorParams::gameColorPairsNo; colorIter++)
+      {
+	editingSettings::colorMode.setColor(colorIter);
+	printw(" ");
+      }
+    refresh();
+  };
+
+  auto printModeSpecificHelpMsg = [chunkSize]()
+  {
+    editingSettings::colorMode.setColor(editingSettings::helpColor);
+    progressivePrintMessage
+      (concat("\tPlease select a background color for the character.\t"),
+       chunkSize, 0, 0, false, false);
+  };
+
+  auto findColorPairWithColorComponents =
+    [](int fgColorIndex, int bgColorIndex) -> int
+  {
+    for(int pairNumberIter = 1; pairNumberIter <= COLOR_PAIRS; ++pairNumberIter)
+      {
+	short foundFgColorIndex, foundBgColorIndex;
+	pair_content(pairNumberIter, &foundFgColorIndex, &foundBgColorIndex);
+	if (foundFgColorIndex == fgColorIndex &&
+	    foundBgColorIndex == bgColorIndex)
+	  {
+	    return pairNumberIter;
+	  }
+      }
+    
+    return -1; // Return -1 if the combination is not found
+  };
+  
+  int retChar {};
+  bool gotBgColor {false}, gotFgColor {false};
+  short bgColorIndex {}, fgColorIndex {};
+
+  // Used to reset the cursor pos at the end of the fuc.
+  const yx initialCursorPos {edState.cursorPos};
+
+  /* We print the colors at the top of the screen so the cursor should be at the
+     top of the screen too. */
+  edState.cursorPos = {0, 0};
+  
+  while((!gotBgColor || !gotFgColor) && (char)edState.input != quit)
+    {
+      printAllColors();
+      printModeSpecificHelpMsg();
+
+      /* Get color at pos here before changing it with
+	 printRandomColorAtCursoPos() */
+      int pairNumberAtCursorPos
+	{PAIR_NUMBER(mvwinch(stdscr, edState.cursorPos.y,
+			     edState.cursorPos.x))};
+      
+      printRandomColorAtCursoPos();
+      
+      edState.input = getch();
+
+      if(!updateCursorPos(chunkSize, edState))
+	{
+	  switch(edState.input)
+	    {
+	    case toggleHelpMsg:
+	      printEditHelp(chunkSize, edState);
+	      break;
+	    case performActionAtPos:
+	      {
+		short dummyVal {}; // pair_content requires three arguments...
+		// Get color at cursor pos.
+		if(!gotBgColor)
+		  {
+		    pair_content
+		      (pairNumberAtCursorPos, &dummyVal, &bgColorIndex);
+		    gotBgColor = true;
+		  }
+		else
+		  {		    
+		    pair_content
+		      (pairNumberAtCursorPos, &fgColorIndex, &dummyVal);
+		    gotFgColor = true;
+		  }
+	      }
+	      
+	      break;
+	    }
+	}
+
+      edState.cursorVisibilityChangeTimeLast =
+	setCursorVisibility(edState.cursorOn,
+			    edState.cursorVisibilityChangeTimeLast);
+      
+      sleep(editingSettings::loopSleepTimeMs);
+    }
+
+  // Calculate color pair number!
+  // int pairNumber = (fgColorIndex + 1) + (bgColorIndex + 1) * COLOR_PAIRS + 1;
+  // int pairNumber = (fgColorIndex * COLORS) + bgColorIndex + 1; //fgColorIndex + (bgColorIndex * COLOR_PAIRS);
+
+  // attr_on(COLOR_PAIR(fgColorIndex +  (bgColorIndex << 8)), NULL);
+
+  // endwin();
+  // std::cout<<"fgColorIndex = "<<fgColorIndex<<"\n"<<"bgColorIndex = "<<bgColorIndex
+  // 	   <<'\n'<<"fgColorIndex +  (bgColorIndex << 8) = "<<pairNumber<<'\n';
+  // exit(-1);
+
+  const int foundColorPairNumber
+    {findColorPairWithColorComponents(fgColorIndex, bgColorIndex)};
+  if(foundColorPairNumber == -1)
+    {
+      endwin();
+      std::cout<<"color error!\n";
+      exit(-1);
+    }
+  else
+    {
+	  
+    }
+  
+
+  editingSettings::colorMode.setColor(foundColorPairNumber);
+  mvprintw(20, 20, " HELLLO lksadjf;l dsj");
+  mvprintw(50, 50, " ");
+  mvprintw(51, 50, " ");
+  mvprintw(50, 51, " ");
+  mvprintw(51, 51, " ");
+  refresh();
+
+  sleep(2000);
+
+  edState.cursorPos = initialCursorPos;
+  safeScreenExit(edState);
+  
+  return retChar;
+}
+
+
+void safeScreenExit(editingState & edState)
+{
+  sleep(editingSettings::editSubMenuSleepTimeMs);
+  edState.input = getch();
 }
 
 
@@ -277,10 +483,10 @@ void printEditHelp(const yx viewPortSize, editingState & edState)
 {
   using namespace editingSettings::editChars;
   
-  editingSettings::colorMode.setColor(1);
+  editingSettings::colorMode.setColor(editingSettings::helpColor);
   progressivePrintMessage
     (concat
-     ("~H~E~L~P~!~\t\t\t\t\t\t",
+     ("\t~H~E~L~P~!~\t\t\t\t\t\t",
       cursorUp, ": to move the cursor up.\t\t\t",
       cursorDown, ": to move the cursor down.\t\t\t",
      cursorLeft, ": to move the cursor left.\t\t\t",
@@ -294,6 +500,8 @@ void printEditHelp(const yx viewPortSize, editingState & edState)
       edState.input = getch();
       sleep(editingSettings::loopSleepTimeMs);
     }
+
+  safeScreenExit(edState);
 }
 
 
@@ -323,44 +531,24 @@ void printBgChunk
 	    }
 	  else
 	    {
-	      editingSettings::colorMode.setColor(colorParams::noCharColorPair);
+	      editingSettings::colorMode.setColor
+		(editingSettings::noCharColorPair);
 	      mvprintw(yIter, xIter, " ");
 	    }
-	  // foundAcsCode = getContiguouslyColordString
-	  //   (bgChunk, yx{yIter, xIter}, viewPortSize,
-	  //    contiguousColorChars, acsCode);
-
-	  
-	  // if(contiguousColorChars.size() != 0)
-	  //   {
-	  //     // Print ASCII chars.
-	  //     printw(contiguousColorChars.c_str());
-	  //   }
-	  // if(foundAcsCode)
-	  //   {
-	  //     // Print ACS char.
-	  //     printAcs(acsCode, false);
-	  //   }
-
-	  // contiguousColorChars.clear();
 	}
     }
 }
 
 
 void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize)
-{
-  setColorMode setCuMode {};
-  
-  
+{ 
   for(int yIter {}; yIter < viewPortSize.y; ++yIter)
     {
       for(int xIter {}; xIter < viewPortSize.x; ++xIter)
 	{
 	  if(cRChunk[yIter][xIter] != ' ')
 	    {
-	      setCuMode.setColor
-		(abs(rand() % editingSettings::gameColorPairsNo) +1);
+	      setRandomColor();
 	      mvprintw(yIter, xIter, concat("", cRChunk[yIter][xIter]).c_str());
 	    }
 	}
@@ -373,7 +561,7 @@ void printCursorForCREditMode
 {
   // TMP (We want to set the cursor colour to the opposite of the bg
   // colour. No matter which chunk editing mode we are in.)
-  editingSettings::colorMode.setColor(colorParams::noCharColorPair);
+  editingSettings::colorMode.setColor(editingSettings::noCharColorPair);
   mvprintw(cursorPos, concat("", currentCRChar).c_str());
   move(cursorPos);
 }
@@ -387,8 +575,8 @@ void printCursorForBgEditMode
      it properly here.) at cursorPos. */
   setColorFromChar
     ((bgChunk[cursorPos.y][cursorPos.x].ch +
-	       (colorParams::gameColorPairsNo / 2)) %
-	      colorParams::gameColorPairsNo);
+	       (colorParams::effectiveGameColorPairsNo / 2)) %
+	      colorParams::effectiveGameColorPairsNo);
   const int bgChar {getChar(currentBgChar, aCSChar)};
 	  
   if(aCSChar)
@@ -522,13 +710,28 @@ void setColorFromChar(const int ch)
 }
 
 
+void setRandomColor()
+{
+  editingSettings::colorMode.setColor
+    (abs(rand() % colorParams::gameColorPairsNo) +1);
+  if(rand() % 2)
+    {
+      attron(A_REVERSE);
+    }
+  else
+    {
+      attroff(A_REVERSE);
+    }
+}
+
+
 int getColor(const int ch)
 {
   /* A character is encoded as it's basic value + it's color value -1 times
      maxCharNum. Since integer division rounds down ch / maxCharNum should give
      the color code. less 1. */
   int color {(ch / maxCharNum) +1};
-  if(color > colorParams::gameColorPairsNo)
+  if(color > colorParams::effectiveGameColorPairsNo)
     {
       exit(concat("Error (in getColor()): encountered colour (", color, ") "
 		  "code that is out of range.\n"),
