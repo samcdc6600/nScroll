@@ -338,7 +338,7 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
     for(int colorIter {1}; colorIter <= colorParams::gameColorPairsNo; colorIter++)
       {
 	editingSettings::colorMode.setColor(colorIter);
-	printw(" ");
+	printw("     ");
       }
     refresh();
   };
@@ -352,20 +352,24 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
   };
 
   auto findColorPairWithColorComponents =
-    [](int fgColorIndex, int bgColorIndex) -> int
+    [](int fgColorIndex, int bgColorIndex, int & pairFound) -> bool
   {
-    for(int pairNumberIter = 1; pairNumberIter <= COLOR_PAIRS; ++pairNumberIter)
+    bool ret {false};
+    for(int pairNumberIter = 1; pairNumberIter <= colorParams::gameColorPairsNo;
+	++pairNumberIter)
       {
 	short foundFgColorIndex, foundBgColorIndex;
 	pair_content(pairNumberIter, &foundFgColorIndex, &foundBgColorIndex);
 	if (foundFgColorIndex == fgColorIndex &&
 	    foundBgColorIndex == bgColorIndex)
 	  {
-	    return pairNumberIter;
+	    pairFound = pairNumberIter;
+	    ret = true;
+	    break;
 	  }
       }
-    
-    return -1; // Return -1 if the combination is not found
+
+    return ret;
   };
   
   int retChar {};
@@ -405,17 +409,20 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
 	      {
 		short dummyVal {}; // pair_content requires three arguments...
 		// Get color at cursor pos.
-		if(!gotBgColor)
+		if(!gotFgColor)
+		  {
+		    /* Since we display two sets of colored spaces we always
+		       wen't to get the bg color (as that is the visible
+		       color.) */
+		    pair_content
+		      (pairNumberAtCursorPos, &dummyVal, &fgColorIndex);
+		    gotFgColor = true;
+		  }
+		else
 		  {
 		    pair_content
 		      (pairNumberAtCursorPos, &dummyVal, &bgColorIndex);
 		    gotBgColor = true;
-		  }
-		else
-		  {		    
-		    pair_content
-		      (pairNumberAtCursorPos, &fgColorIndex, &dummyVal);
-		    gotFgColor = true;
 		  }
 	      }
 	      
@@ -430,6 +437,14 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
       sleep(editingSettings::loopSleepTimeMs);
     }
 
+  if(fgColorIndex == bgColorIndex)
+    {
+      /* Color pairs with the same fg and bg color are not supported as these
+	 color pairs can be replicated with a ' ' character that has the desired
+	 bg color. */
+      fgColorIndex = editingSettings::validColorNumber;
+    }
+
   // Calculate color pair number!
   // int pairNumber = (fgColorIndex + 1) + (bgColorIndex + 1) * COLOR_PAIRS + 1;
   // int pairNumber = (fgColorIndex * COLORS) + bgColorIndex + 1; //fgColorIndex + (bgColorIndex * COLOR_PAIRS);
@@ -441,17 +456,27 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
   // 	   <<'\n'<<"fgColorIndex +  (bgColorIndex << 8) = "<<pairNumber<<'\n';
   // exit(-1);
 
-  const int foundColorPairNumber
-    {findColorPairWithColorComponents(fgColorIndex, bgColorIndex)};
-  if(foundColorPairNumber == -1)
+  int foundColorPairNumber {};
+  
+  if(!findColorPairWithColorComponents
+     (fgColorIndex, bgColorIndex, foundColorPairNumber))
     {
-      endwin();
-      std::cout<<"color error!\n";
-      exit(-1);
-    }
-  else
-    {
-	  
+	
+      if(findColorPairWithColorComponents
+	 (bgColorIndex, fgColorIndex, foundColorPairNumber))
+	{
+	  foundColorPairNumber += colorParams::gameColorPairsNo;
+	  mvprintw(10, 0, "Found inverted color!");
+	  sleep (1000);
+	  refresh();
+	}
+      else
+	{
+	  exit(concat
+	       ("Selected color pair with foreground color index (",
+		fgColorIndex, ") and background color index (",
+		bgColorIndex, ") does not exist."), ERROR_COLOR_CODE_RANGE);
+	}
     }
   
 
@@ -463,7 +488,7 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
   mvprintw(51, 51, " ");
   refresh();
 
-  sleep(2000);
+  sleep(3500);
 
   edState.cursorPos = initialCursorPos;
   safeScreenExit(edState);

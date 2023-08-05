@@ -22,6 +22,7 @@ namespace editingSettings
   /* This color pair is used when a character is not yet in the position in
      question. */
   constexpr int noCharColorPair {15};
+  constexpr int validColorNumber {0};
   
   /* See editMode.cpp for
      setColorMode colorMode {colorParams::defaultColorPair}; */

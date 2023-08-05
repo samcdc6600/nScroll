@@ -170,6 +170,23 @@ void initColorPairs()
 	}
     }
 
+
+  // for(yx indexs: indexesOfColorsForPairs)
+  //   {
+  //     if(indexs.y == 14 && indexs.x == 9 ||
+  // 	 indexs.x == 14 && indexs.y == 9)
+  // 	{
+  // 	  endwin();
+  // 	  std::cout<<"found y = "<<indexs.y<<" and x = "<<indexs.x<<'\n';
+  // 	  exit(-1);
+  // 	}
+  //   }
+
+  // endwin();
+  // std::cout<<indexesOfColorsForPairs.size();
+  // exit(-1);
+  
+
   // Init colors. ==============================================================
   for(int colorNoIter {}; colorNoIter < (int)newColors.size(); ++colorNoIter)
     {

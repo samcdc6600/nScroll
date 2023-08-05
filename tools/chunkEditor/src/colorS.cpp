@@ -15,12 +15,13 @@ void setColorMode::setState(const int state)
       if(state > colorParams::gameColorPairsNo)
 	{
 	  attron(A_REVERSE);
+	  attron(COLOR_PAIR(state - colorParams::gameColorPairsNo));
 	}
       else
 	{
 	  attroff(A_REVERSE);
+	  attron(COLOR_PAIR(state));
 	}
-      attron(COLOR_PAIR(state));
     }
 }
 
@@ -28,8 +29,13 @@ void setColorMode::setState(const int state)
 bool setColorMode::inRange(const int color)
 {
   if(color < 1 || color > colorParams::effectiveGameColorPairsNo)
-    return false;//color is out of range
-  return true;//color is in range
+    {
+      endwin();
+      std::cout<<"color = "<<color<<'\n';
+      exit(-1);
+      return false; 	// Color is out of range.
+    }
+  return true;
 }
 
 void setColorMode::setColor(const int color)
