@@ -49,11 +49,17 @@ bool updateCursorPos
 void printCharacterSelection();
 /* Displays available colors on the screen and waits for the user to select one
    using the cursor navigation keys (see editingSettings.) This color will be
-   the bg color, then displayes available colors again. This color will be the
-   fg color. Then displayes available characters. This information will combined
-   to create a valid character with color information, this will then be
-   returned. The function will display suitable instructions at each set. */
-int getBgCharFromUser(const yx chunkSize, editingState & edState);
+   the fg color, then displayes available colors again. This color will be the
+   bg color. This is done by calling getColorPairFromUser(). Then displayes
+   available characters. This information will combined to create a valid
+   character with color information, this will then be returned. The function
+   will display suitable instructions at each set. */
+int getBgCharFromUser(const yx chunkSize, editingState &edState);
+/* Displayes availbable colors on the screen for selection by the user (as
+   described above.) Where printHelpMsg() is a lambda function that prints a
+   help message. */
+int getColorPairFromUser(const yx chunkSize, editingState & edState,
+			 std::function<void()> printHelpMsg);
 /* Should be called when exiting an interactive "screen" or "menu". Sleeps for
    editingSettings::editSubMenuSleepTimeMs and then sets edState.input to the
    value returned from getch(). This give the user some time to take their
@@ -64,8 +70,8 @@ void safeScreenExit(editingState & edState);
 void printEditHelp(const yx viewPortSize, editingState & edState);
 void printBgChunk(const backgroundChunkCharInfo bgChunk[][xWidth], const yx viewPortSize);
 void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize);
-void printCursorForCREditMode
-(const char cRChunk[][xWidth], const yx cursorPos, const char currentCRChar);
+void printRandomColorAtCursoPos(editingState & edState);
+void printCursorForCREditMode(const yx cursorPos, const char currentCRChar);
 void printCursorForBgEditMode
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx cursorPos, const int currentBgChar);
 void printACS(const yx position, const int aCSChar);
@@ -210,11 +216,12 @@ void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidt
 	// The cursor should always be visible, so print last.
       if(edState.cRChunkToggle)
 	{
-	  printCursorForCREditMode(cRChunk, edState.cursorPos, edState.currentCRChar);
+	  printCursorForCREditMode(edState.cursorPos, edState.currentCRChar);
 	}
       else
 	{
-	  printCursorForBgEditMode(bgChunk, edState.cursorPos, edState.currentBgChar);
+	  printCursorForBgEditMode
+	    (bgChunk, edState.cursorPos, edState.currentBgChar);
 	}
 
       edState.cursorVisibilityChangeTimeLast =
@@ -323,14 +330,122 @@ bool updateCursorPos
 int getBgCharFromUser(const yx chunkSize, editingState & edState)
 {
   using namespace editingSettings::editChars;
-
-  auto printRandomColorAtCursoPos = [& edState]()
+    
+  auto printAllCharacters = [chunkSize](int printACSAtYPos)
   {
-    setRandomColor();
-    move(edState.cursorPos);
-    mvprintw(edState.cursorPos, concat(" ").c_str());
-    move(edState.cursorPos);
+    move(0, 0);
+    editingSettings::colorMode.setColor(editingSettings::helpColor);
+    /* All ASCII characters that are not control characters are
+       contiguous. These characters start with ' ' (32) and end with '~'
+       (126). */
+    for(char charIter {' '}; charIter <= '~'; charIter++)
+      {
+	printw(concat("", charIter).c_str());
+      }
+    /* ASCII chars should only take up one line (unless the view port size is
+       changed. We also have to know on which line the ACS characters are
+       printed as we cannot tell just from mvwinch() if a character is an ASCII
+       character or an ACS character. */
+    move(printACSAtYPos, 0);
+    addch(ACS_ULCORNER),	addch(ACS_LLCORNER),	addch(ACS_LRCORNER),
+    addch(ACS_LTEE),		addch(ACS_RTEE),	addch(ACS_BTEE),
+    addch(ACS_TTEE),		addch(ACS_HLINE),	addch(ACS_VLINE),
+    addch(ACS_PLUS),		addch(ACS_S1),		addch(ACS_S3),
+    addch(ACS_S7),		addch(ACS_S9),		addch(ACS_DIAMOND),
+    addch(ACS_CKBOARD),		addch(ACS_DEGREE),	addch(ACS_PLMINUS),
+    addch(ACS_BULLET),		addch(ACS_LARROW),	addch(ACS_RARROW),
+    addch(ACS_DARROW),		addch(ACS_UARROW),	addch(ACS_BOARD),
+    addch(ACS_LANTERN),		addch(ACS_BLOCK),	addch(ACS_LEQUAL),
+    addch(ACS_GEQUAL),		addch(ACS_PI),		addch(ACS_NEQUAL),
+    addch(ACS_STERLING);
+    
+    refresh();
   };
+  
+  auto printModeSpecificHelpMsg = [chunkSize]()
+  {
+    editingSettings::colorMode.setColor(editingSettings::helpColor);
+    progressivePrintMessage
+      (concat("\tPlease select a background color for the character.\t"),
+       chunkSize, 0, 0, false, false);
+  };
+
+  int retChar {};
+  // Used to reset the cursor pos at the end of the fuc.
+  const yx initialCursorPos {edState.cursorPos};
+  const int colorPair
+    {getColorPairFromUser(chunkSize, edState, printModeSpecificHelpMsg)};
+  bool foundChar {false};
+
+
+  while(!foundChar && (char)edState.input != quit)
+    {
+      /* We cannot tell mvwinch() if a character is an ASCII
+	 character or an ACS character. So we print all ACS characters on a
+	 different line. */
+      const int printACSAtY {1};
+      
+      printAllCharacters(printACSAtY);
+      printModeSpecificHelpMsg();
+      /* Get character at pos here before changing it with
+	 printRandomColorAtCursoPos() */
+      const chtype charAtPos 
+	{mvwinch(stdscr, edState.cursorPos.y, edState.cursorPos.x)};
+      printRandomColorAtCursoPos(edState);
+      edState.input = getch();
+      
+
+      if(!updateCursorPos(chunkSize, edState))
+	{
+	  switch(edState.input)
+	    {
+	    case toggleHelpMsg:
+	      printEditHelp(chunkSize, edState);
+	      break;
+	    case performActionAtPos:
+
+	      move(10, 10);
+
+	      editingSettings::colorMode.setColor(colorPair);
+	      /* As far as we know there is no direct way to tell if a
+		 character on in the view port is an ASCII character or an ACS
+		 character. We use the cursor position to determine which
+		 character set we are dealing with. */
+	      if(edState.cursorPos.y == printACSAtY)
+		{
+		  addch(acs_map[charAtPos & A_CHARTEXT]);
+		}
+	      else
+		{
+		  printw("%c", (char)charAtPos & A_CHARTEXT);
+		}
+	      refresh();
+	      sleep(3000);
+	  
+	  
+	      foundChar = true;
+	      break;
+	    }
+	}
+
+      edState.cursorVisibilityChangeTimeLast =
+	setCursorVisibility(edState.cursorOn,
+			    edState.cursorVisibilityChangeTimeLast);
+      sleep(editingSettings::loopSleepTimeMs);
+    }
+  
+  
+  edState.cursorPos = initialCursorPos;
+  safeScreenExit(edState);
+  
+  return retChar;
+}
+
+
+int getColorPairFromUser(const yx chunkSize, editingState & edState,
+			 std::function<void()> printHelpMsg)
+{
+  using namespace editingSettings::editChars;
 
   auto printAllColors = []()
   {
@@ -343,41 +458,29 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
     refresh();
   };
 
-  auto printModeSpecificHelpMsg = [chunkSize]()
-  {
-    editingSettings::colorMode.setColor(editingSettings::helpColor);
-    progressivePrintMessage
-      (concat("\tPlease select a background color for the character.\t"),
-       chunkSize, 0, 0, false, false);
-  };
-
   auto findColorPairWithColorComponents =
     [](int fgColorIndex, int bgColorIndex, int & pairFound) -> bool
-  {
-    bool ret {false};
-    for(int pairNumberIter = 1; pairNumberIter <= colorParams::gameColorPairsNo;
-	++pairNumberIter)
-      {
-	short foundFgColorIndex, foundBgColorIndex;
-	pair_content(pairNumberIter, &foundFgColorIndex, &foundBgColorIndex);
-	if (foundFgColorIndex == fgColorIndex &&
-	    foundBgColorIndex == bgColorIndex)
-	  {
-	    pairFound = pairNumberIter;
-	    ret = true;
-	    break;
-	  }
-      }
+    {
+      bool ret {false};
+      for(int pairNumberIter = 1; pairNumberIter <= colorParams::gameColorPairsNo;
+	  ++pairNumberIter)
+	{
+	  short foundFgColorIndex, foundBgColorIndex;
+	  pair_content(pairNumberIter, &foundFgColorIndex, &foundBgColorIndex);
+	  if (foundFgColorIndex == fgColorIndex &&
+	      foundBgColorIndex == bgColorIndex)
+	    {
+	      pairFound = pairNumberIter;
+	      ret = true;
+	      break;
+	    }
+	}
 
-    return ret;
-  };
-  
-  int retChar {};
+      return ret;
+    };
+
   bool gotBgColor {false}, gotFgColor {false};
   short bgColorIndex {}, fgColorIndex {};
-
-  // Used to reset the cursor pos at the end of the fuc.
-  const yx initialCursorPos {edState.cursorPos};
 
   /* We print the colors at the top of the screen so the cursor should be at the
      top of the screen too. */
@@ -386,15 +489,13 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
   while((!gotBgColor || !gotFgColor) && (char)edState.input != quit)
     {
       printAllColors();
-      printModeSpecificHelpMsg();
-
+      printHelpMsg();
       /* Get color at pos here before changing it with
 	 printRandomColorAtCursoPos() */
       int pairNumberAtCursorPos
 	{PAIR_NUMBER(mvwinch(stdscr, edState.cursorPos.y,
 			     edState.cursorPos.x))};
-      
-      printRandomColorAtCursoPos();
+      printRandomColorAtCursoPos(edState);
       
       edState.input = getch();
 
@@ -425,15 +526,12 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
 		    gotBgColor = true;
 		  }
 	      }
-	      
 	      break;
 	    }
 	}
-
       edState.cursorVisibilityChangeTimeLast =
 	setCursorVisibility(edState.cursorOn,
 			    edState.cursorVisibilityChangeTimeLast);
-      
       sleep(editingSettings::loopSleepTimeMs);
     }
 
@@ -445,55 +543,32 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
       fgColorIndex = editingSettings::validColorNumber;
     }
 
-  // Calculate color pair number!
-  // int pairNumber = (fgColorIndex + 1) + (bgColorIndex + 1) * COLOR_PAIRS + 1;
-  // int pairNumber = (fgColorIndex * COLORS) + bgColorIndex + 1; //fgColorIndex + (bgColorIndex * COLOR_PAIRS);
-
-  // attr_on(COLOR_PAIR(fgColorIndex +  (bgColorIndex << 8)), NULL);
-
-  // endwin();
-  // std::cout<<"fgColorIndex = "<<fgColorIndex<<"\n"<<"bgColorIndex = "<<bgColorIndex
-  // 	   <<'\n'<<"fgColorIndex +  (bgColorIndex << 8) = "<<pairNumber<<'\n';
-  // exit(-1);
-
   int foundColorPairNumber {};
   
   if(!findColorPairWithColorComponents
      (fgColorIndex, bgColorIndex, foundColorPairNumber))
     {
-	
+      /* We didn't find the color pair. It may be an inverted color pair. In
+	 which case we check for it's opposite and if found we add the total
+	 number of color pairs colorParams::gameColorPairsNo to the found color
+	 pair to get the "virtual" color pair (this color will be printed with
+	 A_REVERSE set. */
       if(findColorPairWithColorComponents
 	 (bgColorIndex, fgColorIndex, foundColorPairNumber))
 	{
 	  foundColorPairNumber += colorParams::gameColorPairsNo;
-	  mvprintw(10, 0, "Found inverted color!");
-	  sleep (1000);
-	  refresh();
 	}
       else
 	{
 	  exit(concat
-	       ("Selected color pair with foreground color index (",
+	       ("Error: selected color pair with foreground color index (",
 		fgColorIndex, ") and background color index (",
-		bgColorIndex, ") does not exist."), ERROR_COLOR_CODE_RANGE);
+		bgColorIndex, ") does not exist. This is a logic error."),
+	       ERROR_COLOR_CODE_RANGE);
 	}
     }
-  
 
-  editingSettings::colorMode.setColor(foundColorPairNumber);
-  mvprintw(20, 20, " HELLLO lksadjf;l dsj");
-  mvprintw(50, 50, " ");
-  mvprintw(51, 50, " ");
-  mvprintw(50, 51, " ");
-  mvprintw(51, 51, " ");
-  refresh();
-
-  sleep(3500);
-
-  edState.cursorPos = initialCursorPos;
-  safeScreenExit(edState);
-  
-  return retChar;
+  return foundColorPairNumber;
 }
 
 
@@ -581,8 +656,17 @@ void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize)
 }
 
 
+void printRandomColorAtCursoPos(editingState & edState)
+{
+  setRandomColor();
+  move(edState.cursorPos);
+  mvprintw(edState.cursorPos, concat(" ").c_str());
+  move(edState.cursorPos);
+};
+
+
 void printCursorForCREditMode
-(const char cRChunk[][xWidth], const yx cursorPos, const char currentCRChar)
+(const yx cursorPos, const char currentCRChar)
 {
   // TMP (We want to set the cursor colour to the opposite of the bg
   // colour. No matter which chunk editing mode we are in.)
@@ -770,7 +854,7 @@ int getColor(const int ch)
 
 int getChar(const int ch, bool & aCS)
 {
-  int rawCh;
+  int rawCh {ch};
   aCS = false;
   
   // Remove colour information (first color starts at 1, so we remove 1.)
