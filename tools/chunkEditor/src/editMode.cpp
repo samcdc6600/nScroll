@@ -20,7 +20,7 @@ struct editingState
   // Used for blinking the cursor.
   bool cursorOn;
   std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast;
-  char input;
+  int input;
   yx cursorPos;
   // The bg char that will be saved to bgChunk if we press space.
   int currentBgChar;
@@ -54,12 +54,14 @@ void printCharacterSelection();
    available characters. This information will combined to create a valid
    character with color information, this will then be returned. The function
    will display suitable instructions at each set. */
-int getBgCharFromUser(const yx chunkSize, editingState &edState);
+void getBgCharFromUser(const yx chunkSize, editingState &edState);
 /* Displayes availbable colors on the screen for selection by the user (as
-   described above.) Where printHelpMsg() is a lambda function that prints a
-   help message. */
+   described above.) Where userQuit is set to true and the return value is
+   invalid if the user hit the editChars::quit. Otherwise userQuit is false and
+   the return value is valid. And where printHelpMsg() is a lambda function that
+   prints a help message. */
 int getColorPairFromUser(const yx chunkSize, editingState & edState,
-			 std::function<void()> printHelpMsg);
+			 bool & userQuit, std::function<void()> printHelpMsg);
 /* Should be called when exiting an interactive "screen" or "menu". Sleeps for
    editingSettings::editSubMenuSleepTimeMs and then sets edState.input to the
    value returned from getch(). This give the user some time to take their
@@ -68,12 +70,13 @@ void safeScreenExit(editingState & edState);
 /* Once entered this function will not exit untill one of editChars::quit or
    editChars::toggleHelpMsg is pressed.  */
 void printEditHelp(const yx viewPortSize, editingState & edState);
-void printBgChunk(const backgroundChunkCharInfo bgChunk[][xWidth], const yx viewPortSize);
+void printBgChunk
+(const backgroundChunkCharInfo bgChunk[][xWidth], const yx viewPortSize);
 void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize);
 void printRandomColorAtCursoPos(editingState & edState);
 void printCursorForCREditMode(const yx cursorPos, const char currentCRChar);
 void printCursorForBgEditMode
-(const backgroundChunkCharInfo bgChunk[][xWidth], const yx cursorPos, const int currentBgChar);
+(const yx cursorPos, const int currentBgChar);
 void printACS(const yx position, const int aCSChar);
 void printACS(const int aCSChar);
 void setColorFromChar(const int ch);
@@ -83,7 +86,7 @@ int getColor(const int ch);
 /* Removes color info from ch. If ch is an aCS character sets aCS to true,
    otherwise sets aCS to false. Prints an error and exits if ch is out of
    range. */
-int getChar(const int ch, bool &aCS);
+int getChar(const int ch, bool & aCS);
 std::chrono::steady_clock::time_point setCursorVisibility
 (bool & cursorOn, const std::chrono::steady_clock::time_point tLast);
 
@@ -221,7 +224,7 @@ void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidt
       else
 	{
 	  printCursorForBgEditMode
-	    (bgChunk, edState.cursorPos, edState.currentBgChar);
+	    (edState.cursorPos, edState.currentBgChar);
 	}
 
       edState.cursorVisibilityChangeTimeLast =
@@ -270,7 +273,7 @@ void actOnInput
 	case toggleCharacterSelection:
 	  if(!edState.cRChunkToggle)
 	    {
-	      edState.currentCRChar = getBgCharFromUser(chunkSize, edState);
+	      getBgCharFromUser(chunkSize, edState);
 	    }
 	  break;
 	case toggleHelpMsg:
@@ -327,7 +330,7 @@ bool updateCursorPos
 }
 
 
-int getBgCharFromUser(const yx chunkSize, editingState & edState)
+void getBgCharFromUser(const yx chunkSize, editingState & edState)
 {
   using namespace editingSettings::editChars;
     
@@ -348,16 +351,16 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
        character or an ACS character. */
     move(printACSAtYPos, 0);
     addch(ACS_ULCORNER),	addch(ACS_LLCORNER),	addch(ACS_LRCORNER),
-    addch(ACS_LTEE),		addch(ACS_RTEE),	addch(ACS_BTEE),
-    addch(ACS_TTEE),		addch(ACS_HLINE),	addch(ACS_VLINE),
-    addch(ACS_PLUS),		addch(ACS_S1),		addch(ACS_S3),
-    addch(ACS_S7),		addch(ACS_S9),		addch(ACS_DIAMOND),
-    addch(ACS_CKBOARD),		addch(ACS_DEGREE),	addch(ACS_PLMINUS),
-    addch(ACS_BULLET),		addch(ACS_LARROW),	addch(ACS_RARROW),
-    addch(ACS_DARROW),		addch(ACS_UARROW),	addch(ACS_BOARD),
-    addch(ACS_LANTERN),		addch(ACS_BLOCK),	addch(ACS_LEQUAL),
-    addch(ACS_GEQUAL),		addch(ACS_PI),		addch(ACS_NEQUAL),
-    addch(ACS_STERLING);
+      addch(ACS_LTEE),		addch(ACS_RTEE),	addch(ACS_BTEE),
+      addch(ACS_TTEE),		addch(ACS_HLINE),	addch(ACS_VLINE),
+      addch(ACS_PLUS),		addch(ACS_S1),		addch(ACS_S3),
+      addch(ACS_S7),		addch(ACS_S9),		addch(ACS_DIAMOND),
+      addch(ACS_CKBOARD),		addch(ACS_DEGREE),	addch(ACS_PLMINUS),
+      addch(ACS_BULLET),		addch(ACS_LARROW),	addch(ACS_RARROW),
+      addch(ACS_DARROW),		addch(ACS_UARROW),	addch(ACS_BOARD),
+      addch(ACS_LANTERN),		addch(ACS_BLOCK),	addch(ACS_LEQUAL),
+      addch(ACS_GEQUAL),		addch(ACS_PI),		addch(ACS_NEQUAL),
+      addch(ACS_STERLING);
     
     refresh();
   };
@@ -370,80 +373,88 @@ int getBgCharFromUser(const yx chunkSize, editingState & edState)
        chunkSize, 0, 0, false, false);
   };
 
-  int retChar {};
   // Used to reset the cursor pos at the end of the fuc.
   const yx initialCursorPos {edState.cursorPos};
+  bool userQuit {false};
   const int colorPair
-    {getColorPairFromUser(chunkSize, edState, printModeSpecificHelpMsg)};
+    {getColorPairFromUser
+     (chunkSize, edState, userQuit, printModeSpecificHelpMsg)};
   bool foundChar {false};
 
 
-  while(!foundChar && (char)edState.input != quit)
+  if(!userQuit)
     {
-      /* We cannot tell mvwinch() if a character is an ASCII
-	 character or an ACS character. So we print all ACS characters on a
-	 different line. */
-      const int printACSAtY {1};
-      
-      printAllCharacters(printACSAtY);
-      printModeSpecificHelpMsg();
-      /* Get character at pos here before changing it with
-	 printRandomColorAtCursoPos() */
-      const chtype charAtPos 
-	{mvwinch(stdscr, edState.cursorPos.y, edState.cursorPos.x)};
-      printRandomColorAtCursoPos(edState);
-      edState.input = getch();
-      
-
-      if(!updateCursorPos(chunkSize, edState))
+      while(!foundChar && (char)edState.input != quit)
 	{
-	  switch(edState.input)
+	  /* We cannot tell mvwinch() if a character is an ASCII
+	     character or an ACS character. So we print all ACS characters on a
+	     different line. */
+	  const int printACSAtY {1};
+      
+	  printAllCharacters(printACSAtY);
+	  printModeSpecificHelpMsg();
+	  /* Get character at pos here before changing it with
+	     printRandomColorAtCursoPos() */
+	  const chtype charAtPos 
+	    {mvwinch(stdscr, edState.cursorPos.y, edState.cursorPos.x)};
+	  printRandomColorAtCursoPos(edState);
+	  edState.input = getch();
+      
+
+	  if(!updateCursorPos(chunkSize, edState))
 	    {
-	    case toggleHelpMsg:
-	      printEditHelp(chunkSize, edState);
-	      break;
-	    case performActionAtPos:
-
-	      move(10, 10);
-
-	      editingSettings::colorMode.setColor(colorPair);
-	      /* As far as we know there is no direct way to tell if a
-		 character on in the view port is an ASCII character or an ACS
-		 character. We use the cursor position to determine which
-		 character set we are dealing with. */
-	      if(edState.cursorPos.y == printACSAtY)
+	      switch(edState.input)
 		{
-		  addch(acs_map[charAtPos & A_CHARTEXT]);
+		case toggleHelpMsg:
+		  printEditHelp(chunkSize, edState);
+		  break;
+		case performActionAtPos:
+		  const int charColorOffset {maxCharNum * (colorPair -1)};
+		  /* As far as we know there is no direct way to tell if a
+		     character on in the view port is an ASCII character or an ACS
+		     character. We use the cursor position to determine which
+		     character set we are dealing with. */
+		  if(edState.cursorPos.y == printACSAtY)
+		    {
+		      edState.currentBgChar =
+			charColorOffset + acs_map[charAtPos & A_CHARTEXT];
+		    }
+		  else
+		    {
+		      edState.currentBgChar =
+			charColorOffset + (charAtPos & A_CHARTEXT);
+		    }
+		  foundChar = true;
+		  break;
 		}
-	      else
-		{
-		  printw("%c", (char)charAtPos & A_CHARTEXT);
-		}
-	      refresh();
-	      sleep(3000);
-	  
-	  
-	      foundChar = true;
-	      break;
 	    }
-	}
 
-      edState.cursorVisibilityChangeTimeLast =
-	setCursorVisibility(edState.cursorOn,
-			    edState.cursorVisibilityChangeTimeLast);
-      sleep(editingSettings::loopSleepTimeMs);
+	  edState.cursorVisibilityChangeTimeLast =
+	    setCursorVisibility(edState.cursorOn,
+				edState.cursorVisibilityChangeTimeLast);
+	  sleep(editingSettings::loopSleepTimeMs);
+	}
     }
-  
-  
+
+      editingSettings::colorMode.setColor(editingSettings::helpColor);
+  mvprintw(10, 10,
+	   concat("colorPair = ", colorPair,
+		  ", currentBgChar = ", edState.currentBgChar,
+		  ", currentBgChar / maxCharNum + 1 = ",
+		  edState.currentBgChar / maxCharNum + 1).c_str());
+  refresh();
+  sleep(200);
+  nodelay(stdscr, FALSE);
+  char c {(char)getch()};
+  nodelay(stdscr, TRUE);
+
   edState.cursorPos = initialCursorPos;
   safeScreenExit(edState);
-  
-  return retChar;
 }
 
 
 int getColorPairFromUser(const yx chunkSize, editingState & edState,
-			 std::function<void()> printHelpMsg)
+			 bool & userQuit, std::function<void()> printHelpMsg)
 {
   using namespace editingSettings::editChars;
 
@@ -481,6 +492,8 @@ int getColorPairFromUser(const yx chunkSize, editingState & edState,
 
   bool gotBgColor {false}, gotFgColor {false};
   short bgColorIndex {}, fgColorIndex {};
+
+  userQuit = false;
 
   /* We print the colors at the top of the screen so the cursor should be at the
      top of the screen too. */
@@ -558,13 +571,19 @@ int getColorPairFromUser(const yx chunkSize, editingState & edState,
 	{
 	  foundColorPairNumber += colorParams::gameColorPairsNo;
 	}
-      else
+      else if(edState.input != quit)
 	{
 	  exit(concat
 	       ("Error: selected color pair with foreground color index (",
 		fgColorIndex, ") and background color index (",
 		bgColorIndex, ") does not exist. This is a logic error."),
 	       ERROR_COLOR_CODE_RANGE);
+	}
+      else
+	{
+	  /* The user has pressed the quit button (foundColorPairNumber isn't
+	     valid. */
+	  userQuit = true;
 	}
     }
 
@@ -659,7 +678,6 @@ void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize)
 void printRandomColorAtCursoPos(editingState & edState)
 {
   setRandomColor();
-  move(edState.cursorPos);
   mvprintw(edState.cursorPos, concat(" ").c_str());
   move(edState.cursorPos);
 };
@@ -677,15 +695,17 @@ void printCursorForCREditMode
 
 
 void printCursorForBgEditMode
-(const backgroundChunkCharInfo bgChunk[][xWidth], const yx cursorPos, const int currentBgChar)
+(const yx cursorPos, const int currentBgChar)
 {
   bool aCSChar {false};
   /* Set cursor colour to opposite of bg color (maybe, we aren't doing
      it properly here.) at cursorPos. */
-  setColorFromChar
-    ((bgChunk[cursorPos.y][cursorPos.x].ch +
-	       (colorParams::effectiveGameColorPairsNo / 2)) %
-	      colorParams::effectiveGameColorPairsNo);
+  // setColorFromChar
+  //   ((bgChunk[cursorPos.y][cursorPos.x].ch +
+  // 	       (colorParams::effectiveGameColorPairsNo / 2)) %
+  // 	      colorParams::effectiveGameColorPairsNo);
+  // const int bgChar {getChar(currentBgChar, aCSChar)};
+
   const int bgChar {getChar(currentBgChar, aCSChar)};
 	  
   if(aCSChar)
@@ -854,11 +874,9 @@ int getColor(const int ch)
 
 int getChar(const int ch, bool & aCS)
 {
-  int rawCh {ch};
-  aCS = false;
-  
   // Remove colour information (first color starts at 1, so we remove 1.)
-  rawCh -= ((getColor(rawCh) -1) * maxCharNum);
+  int rawCh {ch - ((getColor(ch) -1) * maxCharNum)};
+  aCS = false;
 
   if(rawCh > ASCII_CH_MAX && rawCh <= maxCharNum)
     {
@@ -868,7 +886,7 @@ int getChar(const int ch, bool & aCS)
   else if(rawCh < 0 || rawCh > ASCII_CH_MAX)
     {
       exit(concat("Error: encountered character (", (int)rawCh, ") that is lass"
-		  "than 0 or greater than ", maxCharNum,". after having color "
+		  " than 0 or greater than ", maxCharNum,". after having color "
 		  "info removed."),
 	   ERROR_CHARACTER_RANGE);
     }
