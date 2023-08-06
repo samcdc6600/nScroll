@@ -120,6 +120,12 @@ int getColorPairFromUser(const yx chunkSize, editingState & edState,
    value returned from getch(). This give the user some time to take their
    finger off of editChars::quit. */
 void safeScreenExit(editingState & edState);
+/* Prints changing colored emptyCharChar for each unset character in bgChunk (at the
+   position of the unset character.) Returns if the user pressed
+   editChars::quit. */
+void showUnsetBgChars
+(const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
+ editingState & edState);
 /* Once entered this function will not exit untill one of editChars::quit or
    editChars::toggleHelpMsg is pressed.  */
 void printEditHelp(const yx viewPortSize, editingState & edState);
@@ -197,7 +203,7 @@ void editMode
   if(!foundBgChunkCoord)
     {
       // Chunk coord not found i.e. file not found. So initialise chunk.
-      fillChunk(bgChunk, chunkSize, (int)' ',
+      fillChunk(bgChunk, chunkSize, (int)editingSettings::emptyCharChar,
 		[](auto & element, const int filler)
 		{
 		  element.ch = filler;
@@ -355,6 +361,12 @@ void actOnInput
 	    {
 	      edState.setCurrentBgChar
 		(bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch);
+	    }
+	  break;
+	case bgShowUnsetChars:
+	  if(!edState.cRChunkToggle)
+	    {
+	      showUnsetBgChars(bgChunk, chunkSize, edState);
 	    }
 	  break;
 	case toggleHelpMsg:
@@ -692,6 +704,42 @@ void safeScreenExit(editingState & edState)
 }
 
 
+void showUnsetBgChars
+(const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
+ editingState & edState)
+{
+  using namespace editingSettings;
+
+  safeScreenExit(edState);
+	
+  while(edState.input != editChars::quit &&
+	edState.input != editChars::bgShowUnsetChars)
+    {
+      if(edState.input == editChars::toggleHelpMsg)
+	{
+	  printEditHelp(chunkSize, edState);
+	}
+      for(int yIter {}; yIter < chunkSize.y; yIter++)
+	{
+	  for(int xIter {}; xIter < chunkSize.x; xIter++)
+	    {
+	      if(!bgChunk[yIter][xIter].set)
+		{
+		  int color = rand() % 2 ? noCharColorPair: validColorNumber;
+		  colorMode.setColor(color);
+		  mvprintw(yIter, xIter, "%c", emptyCharChar);
+		}
+	    }
+	}
+      
+      refresh();
+      edState.input = getch();
+      sleep(editSubMenuSleepTimeMs);
+    }  
+  safeScreenExit(edState);
+}
+
+
 void printEditHelp(const yx viewPortSize, editingState & edState)
 {
   using namespace editingSettings::editChars;
@@ -759,7 +807,7 @@ void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize)
     {
       for(int xIter {}; xIter < viewPortSize.x; ++xIter)
 	{
-	  if(cRChunk[yIter][xIter] != ' ')
+	  if(cRChunk[yIter][xIter] != editingSettings::emptyCharChar)
 	    {
 	      setRandomColor();
 	      mvprintw(yIter, xIter, concat("", cRChunk[yIter][xIter]).c_str());
@@ -800,7 +848,9 @@ void printCursorForBgEditMode
   // 	      colorParams::effectiveGameColorPairsNo);
   // const int bgChar {getChar(currentBgChar, aCSChar)};
 
+
   const int bgChar {getChar(currentBgChar, aCSChar)};
+  setColorFromChar(currentBgChar);
 	  
   if(aCSChar)
     {

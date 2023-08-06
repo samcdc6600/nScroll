@@ -22,7 +22,8 @@ namespace editingSettings
   /* This color pair is used when a character is not yet in the position in
      question. */
   constexpr int noCharColorPair {15};
-  constexpr int validColorNumber {0};
+  constexpr int validColorNumber {1};
+  constexpr int emptyCharChar {' '};
   
   /* See editMode.cpp for
      setColorMode colorMode {colorParams::defaultColorPair}; */
@@ -45,6 +46,9 @@ namespace editingSettings
     constexpr char bgNextCurrentChar	{'n'};
     constexpr char bgLastCurrentChar	{'l'};
     constexpr char bgGetCharAtPos      	{'g'};
+    constexpr char bgFloodFill		{'f'};
+    // 'i' for info.
+    constexpr char bgShowUnsetChars	{'i'};
     constexpr char toggleHelpMsg       	{'h'};
   };
 
