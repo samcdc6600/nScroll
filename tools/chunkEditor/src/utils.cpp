@@ -478,7 +478,7 @@ double readSingleRNum
 
 
 void readInBgChunkFile
-(const std::string fileName, int chunk[][xWidth], const yx chunkSize,
+(const std::string fileName, int chunk[yHeight][xWidth], const yx chunkSize,
  yx & chunkCoord, bool & foundCoord)
 {
   std::fstream chunkFile;

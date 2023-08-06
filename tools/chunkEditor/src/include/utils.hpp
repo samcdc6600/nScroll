@@ -167,7 +167,7 @@ void enableBlockingUserInput();
 void move(const yx pos);
 void mvprintw(const yx pos, const std::string &str);
 /* Calls progressivePrintMessage() (see header below.) with clearScreen and
-   printProgressively set to true. */
+   printProgressively  */
 void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep);
@@ -212,7 +212,7 @@ double readSingleRNum
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg);
 void readInBgChunkFile
-(const std::string fileName, int chunk[][xWidth], const yx chunkSize,
+(const std::string fileName, int chunk[yHeight][xWidth], const yx chunkSize,
  yx & chunkCoord, bool & foundCoord);
 void readInCRChunkFile
 (const std::string fileName, char cRChunk[][xWidth], const yx chunkSize,

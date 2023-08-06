@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <stack>
 #include <curses.h>
 #include "include/editMode.hpp"
 
@@ -26,7 +27,7 @@ struct editingState
 
 private:
   // Buffer to remember x of the last bg chars.
-  static constexpr int bgCharsBufferSize {16};
+  static constexpr int bgCharsBufferSize {64};
   int bgCharsRingBuffer [bgCharsBufferSize] {};
   int currentBgCharIndex {};
   // The user can switch between the current and last bg chars.
@@ -89,10 +90,12 @@ void readInBgChunkFile
 (const std::string fileName, backgroundChunkCharInfo chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, bool & foundCoord);
 /* This is the main routine that handles chunk editing. */
-void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidth],
-                    char cRChunk[][xWidth], const yx chunkSize);
+void editModeProper
+(const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+ chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize);
 void actOnInput
-(backgroundChunkCharInfo bgChunk[][xWidth], char cRChunk[][xWidth], const yx chunkSize,
+(chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+ chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize,
  editingState & edState);
 /* Updates the cursors position in edState if edState.input is one of cursorUp,
     cursorDown, cursorLeft or cursorRight and if the cursor will not go outside
@@ -119,7 +122,14 @@ int getColorPairFromUser(const yx chunkSize, editingState & edState,
    editingSettings::editSubMenuSleepTimeMs and then sets edState.input to the
    value returned from getch(). This give the user some time to take their
    finger off of editChars::quit. */
-void safeScreenExit(editingState & edState);
+void safeScreenExit(editingState &edState);
+/* If the character at edState.cursorPos is different from
+   edState.getCurrentBgChar() then all characters equal to the character at
+   edState.cursorPos that are contiguous with it will be set to
+   edState.getCurrentBgChar(). */
+void floodFill
+(backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
+ editingState & edState);
 /* Prints changing colored emptyCharChar for each unset character in bgChunk (at the
    position of the unset character.) Returns if the user pressed
    editChars::quit. */
@@ -189,21 +199,22 @@ void readInBgChunkFile
 
 void editMode
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
- backgroundChunkCharInfo bgChunk[][xWidth], char cRChunk[][xWidth],
- const yx chunkSize)
+ chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+ chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize)
 {
   bool foundBgChunkCoord {false}, foundCRChunkCoord {false};
   yx bgChunkCoord {}, cRChunkCoord {};
 
   // Read files into bgChunk and cRChunk (if they exist.)
-  readInBgChunkFile(bgChunkFileName, bgChunk, chunkSize, bgChunkCoord,
-                    foundBgChunkCoord);
-  readInCRChunkFile(cRChunkFileName, cRChunk, chunkSize, cRChunkCoord,
-		    foundCRChunkCoord);
+  readInBgChunkFile(bgChunkFileName, bgChunk.advanceBeforeModify().data,
+		    chunkSize, bgChunkCoord, foundBgChunkCoord);
+  readInCRChunkFile(cRChunkFileName, cRChunk.advanceBeforeModify().data,
+		    chunkSize, cRChunkCoord, foundCRChunkCoord);
   if(!foundBgChunkCoord)
     {
       // Chunk coord not found i.e. file not found. So initialise chunk.
-      fillChunk(bgChunk, chunkSize, (int)editingSettings::emptyCharChar,
+      fillChunk(bgChunk.advanceBeforeModify().data,
+		chunkSize, (int)editingSettings::emptyCharChar,
 		[](auto & element, const int filler)
 		{
 		  element.ch = filler;
@@ -212,7 +223,8 @@ void editMode
   if(!foundCRChunkCoord)
     {
       // Chunk coord not found i.e. file not found. So initialise chunk.
-      fillChunk(cRChunk, chunkSize, editingSettings::rulesChars::nullRule,
+      fillChunk(cRChunk.advanceBeforeModify().data, chunkSize,
+		editingSettings::rulesChars::nullRule,
 		[](auto & element, const char filler)
 		{
 		  element = filler;
@@ -247,8 +259,9 @@ void editMode
 }
 
 
-void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidth],
-		    char cRChunk[][xWidth], const yx chunkSize)
+void editModeProper
+(const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+ chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize)
 {
   editingState edState
     {
@@ -268,11 +281,11 @@ void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidt
       actOnInput(bgChunk, cRChunk, chunkSize, edState);
 
       // We always print the background chunk.
-      printBgChunk(bgChunk, chunkSize);
+      printBgChunk(bgChunk.getChunk().data, chunkSize);
       if(edState.cRChunkToggle)
 	{
 	  // We want to print coord rules over the bg chunk.
-	  printCRChunk(cRChunk, chunkSize);
+	  printCRChunk(cRChunk.getChunk().data, chunkSize);
 	}
 
 	// The cursor should always be visible, so print last.
@@ -296,7 +309,8 @@ void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidt
 
 
 void actOnInput
-(backgroundChunkCharInfo bgChunk[][xWidth], char cRChunk[][xWidth], const yx chunkSize,
+(chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+ chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize,
  editingState & edState)
 {
   using namespace editingSettings::editChars;
@@ -308,13 +322,13 @@ void actOnInput
 	case performActionAtPos:
 	  if(edState.cRChunkToggle)
 	    {
-	      cRChunk[edState.cursorPos.y][edState.cursorPos.x] = edState.currentCRChar;
+	      cRChunk.advanceBeforeModify().data[edState.cursorPos.y][edState.cursorPos.x] = edState.currentCRChar;
 	    }
 	  else
 	    {
-	      bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch =
+	      bgChunk.advanceBeforeModify().data[edState.cursorPos.y][edState.cursorPos.x].ch =
 		edState.getCurrentBgChar();
-	      bgChunk[edState.cursorPos.y][edState.cursorPos.x].set = true;
+	      bgChunk.getChunk().data[edState.cursorPos.y][edState.cursorPos.x].set = true;
 	    }
 	  break;
 	case toggleBetweenCRandBg:
@@ -360,13 +374,20 @@ void actOnInput
 	  if(!edState.cRChunkToggle)
 	    {
 	      edState.setCurrentBgChar
-		(bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch);
+		(bgChunk.getChunk().data
+		 [edState.cursorPos.y][edState.cursorPos.x].ch);
+	    }
+	  break;
+	case bgFloodFill:
+	  if(!edState.cRChunkToggle)
+	    {
+	      floodFill(bgChunk.advanceBeforeModify().data, chunkSize, edState);
 	    }
 	  break;
 	case bgShowUnsetChars:
 	  if(!edState.cRChunkToggle)
 	    {
-	      showUnsetBgChars(bgChunk, chunkSize, edState);
+	      showUnsetBgChars(bgChunk.getChunk().data, chunkSize, edState);
 	    }
 	  break;
 	case toggleHelpMsg:
@@ -510,9 +531,9 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 		case performActionAtPos:
 		  const int charColorOffset {maxCharNum * (colorPair -1)};
 		  /* As far as we know there is no direct way to tell if a
-		     character on in the view port is an ASCII character or an ACS
-		     character. We use the cursor position to determine which
-		     character set we are dealing with. */
+		     character on in the view port is an ASCII character or an
+		     ACS character. We use the cursor position to determine
+		     which character set we are dealing with. */
 		  if(edState.cursorPos.y == printACSAtY)
 		    {
 		      bool foundACS {false};
@@ -522,7 +543,6 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 			  if(acs_map[charAtPos & A_CHARTEXT] ==
 			     aCSChars[aCSIter])
 			    {
-			      // edState.setastBgChar = edState.getCurrentBgChar();
 			      edState.setCurrentBgChar
 				(charColorOffset + ASCII_CH_MAX + aCSIter +1);
 			      foundACS = true;
@@ -538,7 +558,6 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 		    }
 		  else
 		    {
-		      // edState.lastBgChar = edState.getCurrentBgChar();
 		      edState.setCurrentBgChar
 			(charColorOffset + (charAtPos & A_CHARTEXT));
 		    }
@@ -701,6 +720,91 @@ void safeScreenExit(editingState & edState)
 {
   sleep(editingSettings::editSubMenuSleepTimeMs);
   edState.input = getch();
+}
+
+
+void floodFill
+(backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
+ editingState & edState)
+{
+  /*
+    Sudo code:
+        function floodFill(image, x, y, targetColor, replacementColor):
+          if pixel at (x, y) is not the targetColor:
+              return
+
+          create a stack data structure
+          push (x, y) onto the stack
+
+          while stack is not empty:
+              currentPixel = pop from stack
+              if pixel at currentPixel is the targetColor:
+                  set pixel at currentPixel to replacementColor
+
+                  push neighboring pixels that are the targetColor onto the stack
+                  (x, y) = currentPixel
+                  push (x+1, y), (x-1, y), (x, y+1), (x, y-1) onto the stack
+
+          return
+  */
+  const int targetCharToReplace
+    {bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch};
+		   
+  if(edState.getCurrentBgChar() != targetCharToReplace)
+    {
+      std::stack<yx> locationsToSet {};
+      locationsToSet.push(edState.cursorPos);
+
+      while(locationsToSet.size() > 0)
+	{
+	  yx currentPos = locationsToSet.top();
+	  // Pop doesn't return anything, so we use top as seen above.
+	  locationsToSet.pop();
+	  if(bgChunk[currentPos.y][currentPos.x].ch == targetCharToReplace)
+	    {
+	      /* Current location is equal to targetCharToReplace. Set current
+		 location to edState.getCurrentBgChar(). */
+	      bgChunk[currentPos.y][currentPos.x].ch =
+		edState.getCurrentBgChar();
+	      bgChunk[currentPos.y][currentPos.x].set = true;
+
+	      /* Add adjoining locations (if they are equal to
+		 targetCharToReplace) */
+	      if(currentPos.y - 1 >= 0 &&
+		 bgChunk[currentPos.y - 1][currentPos.x].ch ==
+		 targetCharToReplace)
+		{
+		  locationsToSet.push(yx{currentPos.y - 1, currentPos.x});
+		}
+	      if(currentPos.y + 1 < chunkSize.y &&
+		 bgChunk[currentPos.y + 1][currentPos.x].ch ==
+		 targetCharToReplace)
+		{
+		  locationsToSet.push(yx{currentPos.y + 1, currentPos.x});
+		}
+	      if(currentPos.x - 1 >= 0 &&
+		 bgChunk[currentPos.y][currentPos.x - 1].ch ==
+		 targetCharToReplace)
+		{
+		  locationsToSet.push(yx{currentPos.y, currentPos.x - 1});
+		}
+	      if(currentPos.x + 1 < chunkSize.x &&
+		 bgChunk[currentPos.y][currentPos.x + 1].ch ==
+		 targetCharToReplace)
+		{
+		  locationsToSet.push(yx{currentPos.y, currentPos.x + 1});
+		}
+	    }
+
+	  if(locationsToSet.size() < 750)
+	    {
+	      printBgChunk(bgChunk, chunkSize);
+	      editingSettings::colorMode.setColor(editingSettings::helpColor);
+	      mvprintw(0, 0, "%d", locationsToSet.size());
+	      refresh();
+	    }
+	}
+    }
 }
 
 

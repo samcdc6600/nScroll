@@ -2,7 +2,6 @@
 #define EDITMODE_HPP_
 
 
-// #include <string>
 #include "utils.hpp"
 #include "colorS.hpp"
 
@@ -58,11 +57,115 @@ namespace editingSettings
     constexpr char boarder	{'b'};
     constexpr char platform	{'p'};
   }
-
-  namespace bgChars
-  {
-  }
 }
+
+
+/* We need this to return an array as opposed to just a pointer (basically we
+   return this struct and then we can access data and it will be an array.) */
+template <typename T1, int yHeight, int xWidth>
+struct array2D {
+  T1 data[yHeight][xWidth];
+};
+
+
+/* This class is used to store chunks for editing. It is designed to store
+   multiple copies so that undo / redo can be implemented. The class exposes
+   more than it probably should so it has to be used properly (see the comments
+   for the member functions.) */
+template<typename T, int yHeight, int xWidth>
+class chunk
+{
+private:
+  static constexpr int undoBuffers		{100};
+  // T tmpChunk[yHeight][xWidth]			{};
+  // T chunks[undoBuffers][yHeight][xWidth]	{};
+  array2D<T, yHeight, xWidth> tmpChunk	       	{};
+  array2D<T, yHeight, xWidth> chunks[undoBuffers] {};
+  int currentChunk				{};
+
+  void copyToTmp()
+  {
+    for(int yIter {}; yIter < yHeight; ++yIter)
+      {
+	for(int xIter {}; xIter < xWidth; ++xIter)
+	  {
+	    tmpChunk.data[yIter][xIter] =
+	      chunks[currentChunk].data[yIter][xIter];
+	  }
+      }
+  }
+    
+  void copyFromTmp()
+  {
+    for(int yIter {}; yIter < yHeight; ++yIter)
+      {
+	for(int xIter {}; xIter < xWidth; ++xIter)
+	  {
+	    chunks[currentChunk].data[yIter][xIter] =
+	      tmpChunk.data[yIter][xIter];
+	  }
+      }
+  }
+
+public:
+  chunk(const T filler)
+  {
+    for(int yIter {}; yIter < yHeight; ++yIter)
+      {
+	for(int xIter {}; xIter < xWidth; ++xIter)
+	  {
+	    tmpChunk.data[yIter][xIter] = filler;
+	  }
+      }
+
+    for(int chunkIter {}; chunkIter < undoBuffers; ++chunkIter)
+      {
+	for(int yIter {}; yIter < yHeight; ++yIter)
+	  {
+	    for(int xIter {}; xIter < xWidth; ++xIter)
+	      {
+		chunks[chunkIter].data[yIter][xIter] = filler;
+	      }
+	  }
+      }
+  }
+  
+  /* Should be used when the chunk is needed for display, but not for
+     modification. */
+  array2D<T, yHeight, xWidth> & getChunk()
+  {
+    return chunks[currentChunk];
+  }
+
+  // This function should be called before modifying the chunk.
+  array2D<T, yHeight, xWidth> & advanceBeforeModify()
+  {
+    // Backup chunk.
+    copyToTmp();
+    // Advance.
+    currentChunk < undoBuffers -1 ? currentChunk++:
+      currentChunk = 0;
+    // Copy over new current chunk.
+    copyFromTmp();
+    // Return new copy for modification.
+    return chunks[currentChunk];
+  }
+
+  // This function essentially implements a "redo" function.
+  void forward()
+  {
+    currentChunk < undoBuffers -1 ? currentChunk++:
+      currentChunk = 0;
+  }
+
+  // This function essentially implements an "undo" function.
+  void backward()
+  {
+    currentChunk == 0 ?
+      currentChunk = undoBuffers - 1:
+      currentChunk--;
+  }
+};
 
 
 struct backgroundChunkCharInfo
@@ -77,8 +180,8 @@ struct backgroundChunkCharInfo
  Finally call editModeProper(). */
 void editMode
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
- backgroundChunkCharInfo bgChunk[][xWidth], char cRChunk[][xWidth],
- const yx chunkSize);
+ chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+ chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize);
 
 
 #endif
