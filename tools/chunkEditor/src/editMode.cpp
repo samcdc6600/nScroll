@@ -23,8 +23,61 @@ struct editingState
   int input;
   yx cursorPos;
   // The bg char that will be saved to bgChunk if we press space.
-  int currentBgChar;
+
+private:
+  // Buffer to remember x of the last bg chars.
+  static constexpr int bgCharsBufferSize {16};
+  int bgCharsRingBuffer [bgCharsBufferSize] {};
+  int currentBgCharIndex {};
+  // The user can switch between the current and last bg chars.
+  // int lastBgChar;
+
+public:
   char currentCRChar;
+
+  editingState
+  (const bool cRChunkToggle, const bool cursorOn,
+   const std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast,
+   const int input, const yx cursorPos, const int currentBgChar,
+   const int currentCRChar)
+  {
+    this->cRChunkToggle = cRChunkToggle;
+    this->cursorOn = cursorOn;
+    this->cursorVisibilityChangeTimeLast = cursorVisibilityChangeTimeLast;
+    this->input = input;
+    this->cursorPos = cursorPos;
+    for(int iter {}; iter < bgCharsBufferSize; ++iter)
+      {
+	bgCharsRingBuffer[iter] = currentBgChar;
+      }
+    this->currentCRChar = currentCRChar;
+  }
+  
+  int getCurrentBgChar()
+  {
+    return bgCharsRingBuffer[currentBgCharIndex];
+  }
+
+  void setCurrentBgChar(const int newChar)
+  {
+    // Cycle back to zero if index goes out of range.
+    currentBgCharIndex < bgCharsBufferSize -1 ? currentBgCharIndex++:
+      currentBgCharIndex = 0;
+    bgCharsRingBuffer[currentBgCharIndex] = newChar;
+  }
+
+  void recallNextBgChar()
+  {
+    currentBgCharIndex < bgCharsBufferSize -1 ? currentBgCharIndex++:
+      currentBgCharIndex = 0;
+  }
+
+  void recallLastBgChar()
+  {
+    currentBgCharIndex == 0 ?
+      currentBgCharIndex = bgCharsBufferSize - 1:
+      currentBgCharIndex--;
+  }
 };
 
 
@@ -224,7 +277,7 @@ void editModeProper(const yx chunkCoord, backgroundChunkCharInfo bgChunk[][xWidt
       else
 	{
 	  printCursorForBgEditMode
-	    (edState.cursorPos, edState.currentBgChar);
+	    (edState.cursorPos, edState.getCurrentBgChar());
 	}
 
       edState.cursorVisibilityChangeTimeLast =
@@ -254,26 +307,54 @@ void actOnInput
 	  else
 	    {
 	      bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch =
-		edState.currentBgChar;
+		edState.getCurrentBgChar();
 	      bgChunk[edState.cursorPos.y][edState.cursorPos.x].set = true;
 	    }
 	  break;
 	case toggleBetweenCRandBg:
 	  edState.cRChunkToggle = !edState.cRChunkToggle;
 	  break;
-	case eraseCRChar:
-	  edState.currentCRChar = editingSettings::rulesChars::nullRule;
+	case cREraseCRChar:
+	  if(edState.cRChunkToggle)
+	    {
+	      edState.currentCRChar = editingSettings::rulesChars::nullRule;
+	    }
 	  break;
-	case setCRCharToBorder:
-	  edState.currentCRChar = editingSettings::rulesChars::boarder;
+	case cRSetCRCharToBorder:
+	  if(edState.cRChunkToggle)
+	    {
+	      edState.currentCRChar = editingSettings::rulesChars::boarder;
+	    }
 	  break;
-	case setCRCharToPlatform:
-	  edState.currentCRChar = editingSettings::rulesChars::platform;
+	case cRSetCRCharToPlatform:
+	  if(edState.cRChunkToggle)
+	    {
+	      edState.currentCRChar = editingSettings::rulesChars::platform;
+	    }
 	  break;
-	case toggleCharacterSelection:
+	case bGToggleCharacterSelection:
 	  if(!edState.cRChunkToggle)
 	    {
 	      getBgCharFromUser(chunkSize, edState);
+	    }
+	  break;
+	case bgNextCurrentChar:
+	  if(!edState.cRChunkToggle)
+	    {
+	      edState.recallNextBgChar();
+	    }
+	  break;
+	case bgLastCurrentChar:
+	  if(!edState.cRChunkToggle)
+	    {
+	      edState.recallLastBgChar();
+	    }
+	  break;
+	case bgGetCharAtPos:
+	  if(!edState.cRChunkToggle)
+	    {
+	      edState.setCurrentBgChar
+		(bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch);
 	    }
 	  break;
 	case toggleHelpMsg:
@@ -333,8 +414,18 @@ bool updateCursorPos
 void getBgCharFromUser(const yx chunkSize, editingState & edState)
 {
   using namespace editingSettings::editChars;
+
+  const std::vector<long> aCSChars
+    {ACS_ULCORNER,	ACS_LLCORNER,	ACS_LRCORNER,	ACS_LTEE,
+     ACS_RTEE,		ACS_BTEE,	ACS_TTEE,	ACS_HLINE,
+     ACS_VLINE,		ACS_PLUS,      	ACS_S1,		ACS_S3,
+     ACS_S7,       	ACS_S9,		ACS_DIAMOND,	ACS_CKBOARD,
+     ACS_DEGREE,	ACS_PLMINUS,	ACS_BULLET,	ACS_LARROW,
+     ACS_RARROW,	ACS_DARROW,   	ACS_UARROW,	ACS_BOARD,
+     ACS_LANTERN,  	ACS_BLOCK,	ACS_LEQUAL,	ACS_GEQUAL,
+     ACS_PI,		ACS_NEQUAL,	ACS_STERLING};
     
-  auto printAllCharacters = [chunkSize](int printACSAtYPos)
+  auto printAllCharacters = [chunkSize, aCSChars](int printACSAtYPos)
   {
     move(0, 0);
     editingSettings::colorMode.setColor(editingSettings::helpColor);
@@ -350,18 +441,10 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
        printed as we cannot tell just from mvwinch() if a character is an ASCII
        character or an ACS character. */
     move(printACSAtYPos, 0);
-    addch(ACS_ULCORNER),	addch(ACS_LLCORNER),	addch(ACS_LRCORNER),
-      addch(ACS_LTEE),		addch(ACS_RTEE),	addch(ACS_BTEE),
-      addch(ACS_TTEE),		addch(ACS_HLINE),	addch(ACS_VLINE),
-      addch(ACS_PLUS),		addch(ACS_S1),		addch(ACS_S3),
-      addch(ACS_S7),		addch(ACS_S9),		addch(ACS_DIAMOND),
-      addch(ACS_CKBOARD),		addch(ACS_DEGREE),	addch(ACS_PLMINUS),
-      addch(ACS_BULLET),		addch(ACS_LARROW),	addch(ACS_RARROW),
-      addch(ACS_DARROW),		addch(ACS_UARROW),	addch(ACS_BOARD),
-      addch(ACS_LANTERN),		addch(ACS_BLOCK),	addch(ACS_LEQUAL),
-      addch(ACS_GEQUAL),		addch(ACS_PI),		addch(ACS_NEQUAL),
-      addch(ACS_STERLING);
-    
+    for(auto aCSChar: aCSChars)
+      {
+	addch(aCSChar);
+      }
     refresh();
   };
   
@@ -384,6 +467,10 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 
   if(!userQuit)
     {
+      /* We print the characters at the top of the screen so the cursor should
+	 be at the top of the screen too. */
+      edState.cursorPos = {0, 0};
+      
       while(!foundChar && (char)edState.input != quit)
 	{
 	  /* We cannot tell mvwinch() if a character is an ASCII
@@ -416,13 +503,32 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 		     character set we are dealing with. */
 		  if(edState.cursorPos.y == printACSAtY)
 		    {
-		      edState.currentBgChar =
-			charColorOffset + acs_map[charAtPos & A_CHARTEXT];
+		      bool foundACS {false};
+
+		      for(int aCSIter {}; aCSIter < aCSChars.size(); ++aCSIter)
+			{
+			  if(acs_map[charAtPos & A_CHARTEXT] ==
+			     aCSChars[aCSIter])
+			    {
+			      // edState.setastBgChar = edState.getCurrentBgChar();
+			      edState.setCurrentBgChar
+				(charColorOffset + ASCII_CH_MAX + aCSIter +1);
+			      foundACS = true;
+			    }
+			}
+		      if(!foundACS)
+			{
+			  exit(concat("Error (in getBgCharFromUser()) could not"
+				      "find corresponding ACS character in "
+				      "acs_map for ", charAtPos & A_CHARTEXT),
+			       ERROR_CHARACTER_RANGE);
+			}
 		    }
 		  else
 		    {
-		      edState.currentBgChar =
-			charColorOffset + (charAtPos & A_CHARTEXT);
+		      // edState.lastBgChar = edState.getCurrentBgChar();
+		      edState.setCurrentBgChar
+			(charColorOffset + (charAtPos & A_CHARTEXT));
 		    }
 		  foundChar = true;
 		  break;
@@ -435,19 +541,7 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 	  sleep(editingSettings::loopSleepTimeMs);
 	}
     }
-
-      editingSettings::colorMode.setColor(editingSettings::helpColor);
-  mvprintw(10, 10,
-	   concat("colorPair = ", colorPair,
-		  ", currentBgChar = ", edState.currentBgChar,
-		  ", currentBgChar / maxCharNum + 1 = ",
-		  edState.currentBgChar / maxCharNum + 1).c_str());
-  refresh();
-  sleep(200);
-  nodelay(stdscr, FALSE);
-  char c {(char)getch()};
-  nodelay(stdscr, TRUE);
-
+  
   edState.cursorPos = initialCursorPos;
   safeScreenExit(edState);
 }
@@ -645,7 +739,7 @@ void printBgChunk
 		}
 	      else
 		{
-		  mvprintw(yIter, xIter, concat("", ch).c_str());
+		  mvprintw(yIter, xIter, concat("", (char)ch).c_str());
 		}
 	    }
 	  else
@@ -857,9 +951,9 @@ void setRandomColor()
 int getColor(const int ch)
 {
   /* A character is encoded as it's basic value + it's color value -1 times
-     maxCharNum. Since integer division rounds down ch / maxCharNum should give
-     the color code. less 1. */
-  int color {(ch / maxCharNum) +1};
+     maxCharNum. Since integer division rounds down (ch -1) / maxCharNum should
+     give the color code. less 1. */
+  int color {((ch -1) / maxCharNum) +1};
   if(color > colorParams::effectiveGameColorPairsNo)
     {
       exit(concat("Error (in getColor()): encountered colour (", color, ") "

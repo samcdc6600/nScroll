@@ -28,6 +28,9 @@ namespace editingSettings
      setColorMode colorMode {colorParams::defaultColorPair}; */
   namespace editChars
   {
+    /* Where a cR prefix means that the command should be specific to character
+       rules editing mode and a prefix of br means that the command should be
+       specific to background editing mode. */
     constexpr char quit			{'q'};
     constexpr char cursorUp		{'w'};
     constexpr char cursorDown		{'s'};
@@ -35,10 +38,13 @@ namespace editingSettings
     constexpr char cursorRight		{'d'};
     constexpr char performActionAtPos	{' '};
     constexpr char toggleBetweenCRandBg	{'t'};
-    constexpr char eraseCRChar		{'e'};
-    constexpr char setCRCharToBorder	{'b'};
-    constexpr char setCRCharToPlatform	{'p'};
-    constexpr char toggleCharacterSelection {'c'};
+    constexpr char cREraseCRChar       	{'e'};
+    constexpr char cRSetCRCharToBorder	{'b'};
+    constexpr char cRSetCRCharToPlatform	{'p'};
+    constexpr char bGToggleCharacterSelection	{'c'};
+    constexpr char bgNextCurrentChar	{'n'};
+    constexpr char bgLastCurrentChar	{'l'};
+    constexpr char bgGetCharAtPos      	{'g'};
     constexpr char toggleHelpMsg       	{'h'};
   };
 
