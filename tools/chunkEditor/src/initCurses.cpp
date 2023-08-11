@@ -31,8 +31,9 @@ void initialiseCurses(yx & maxyx)
 	 printCharSpeed, afterPrintSleep);
       exit(ERROR_WIN_PARAM);
     }
-  
-  raw();                     // To disable line buffering
+
+  mousemask(0, nullptr);	// Disable mouse input.
+  raw();			// To disable line buffering
   // curs_set(0);               // Make the cursor invisible
   disableBlockingUserInput();
   start_color();             // Start color and initialise color pairs!

@@ -48,8 +48,8 @@ namespace editingSettings
     constexpr char bGToggleCharacterSelection	{'c'};
     constexpr char bgNextCurrentChar	{'n'};
     constexpr char bgLastCurrentChar	{'l'};
-    constexpr char bgUndo		{'u'};
-    constexpr char bgRedo		{'r'};
+    constexpr char undo			{'u'};
+    constexpr char redo			{'r'};
     constexpr char bgGetCharAtPos      	{'g'};
     constexpr char bgFloodFill		{'f'};
     // 'i' for info.
@@ -208,7 +208,7 @@ struct backgroundChunkCharInfo
 void editMode
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize);
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize);
 
 
 #endif

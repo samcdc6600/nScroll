@@ -99,10 +99,10 @@ void readInBgChunkFile
 /* This is the main routine that handles chunk editing. */
 void editModeProper
 (const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize);
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize);
 void actOnInput
 (chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize,
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
  editingState & edState);
 /* Updates the cursors position in edState if edState.input is one of cursorUp,
     cursorDown, cursorLeft or cursorRight and if the cursor will not go outside
@@ -207,7 +207,7 @@ void readInBgChunkFile
 void editMode
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize)
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize)
 {
   bool foundBgChunkCoord {false}, foundCRChunkCoord {false};
   yx bgChunkCoord {}, cRChunkCoord {};
@@ -268,7 +268,7 @@ void editMode
 
 void editModeProper
 (const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize)
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize)
 {
   editingState edState
     {
@@ -322,7 +322,7 @@ void editModeProper
 
 void actOnInput
 (chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize,
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
  editingState & edState)
 {
   using namespace editingSettings::editChars;
@@ -428,16 +428,24 @@ void actOnInput
 	      edState.recallLastBgChar();
 	    }
 	  break;
-	case bgUndo:
+	case undo:
 	  if(!edState.cRChunkToggle)
 	    {
 	      bgChunk.backward();
 	    }
+	  else
+	    {
+	      cRChunk.backward();
+	    }
 	  break;
-	case bgRedo:
+	case redo:
 	  if(!edState.cRChunkToggle)
 	    {
 	      bgChunk.forward();
+	    }
+	  else
+	    {
+	      cRChunk.forward();
 	    }
 	  break;
 	case bgGetCharAtPos:
