@@ -22,11 +22,14 @@ namespace editingSettings
   /* This color pair is used when a character is not yet in the position in
      question. */
   constexpr int invalidCharColorPair {-1}; //noCharColorPair {15};
+  /* Character printed in bg chunk mode when a character is not yet in the
+     position in question (when not in bgShowUnsetChars mode.) Also used for
+     the same purpose for cR chunk mode. */
+  constexpr int emptyCharChar {' '};
   constexpr int blackBgColorPair {15};
   /* TODO: think of better name for this and also maybe replace references to
      help char with it. */
   constexpr int validColorNumber {helpColor};
-  constexpr int emptyCharChar {' '};
   
   /* See editMode.cpp for
      setColorMode colorMode {colorParams::defaultColorPair}; */
@@ -136,7 +139,7 @@ public:
 	  {
 	    for(int xIter {}; xIter < xWidth; ++xIter)
 	      {
-		chunks[chunkIter].data[yIter][xIter] = filler;
+		chunks[chunkIter].data[yIter][xIter] = filler;;
 	      }
 	  }
       }

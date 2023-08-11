@@ -221,7 +221,7 @@ void editMode
     {
       // Chunk coord not found i.e. file not found. So initialise chunk.
       fillChunk(bgChunk.advanceBeforeModify().data,
-		chunkSize, (int)editingSettings::emptyCharChar,
+		chunkSize, (int)editingSettings::invalidCharColorPair,
 		[](auto & element, const int filler)
 		{
 		  element.ch = filler;
@@ -829,8 +829,14 @@ void floodFill
     {bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch};
 
   // endwin();
-  // std::cout<<"targetCharToReplace = "<<targetCharToReplace
-  // 	   <<"edState.getCurrentBgChar() = "<<edState.getCurrentBgChar()<<'\n';
+  // for(int yIter {}; yIter < chunkSize.y; ++yIter)
+  //   {
+  //     for(int xIter {}; xIter < chunkSize.x; ++xIter)
+  // 	{
+  // 	  std::cout<<bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch<<" ";
+  // 	}
+  //     std::cout<<'\n';
+  //   }
   // exit(-1);
 		   
   if(edState.getCurrentBgChar() != targetCharToReplace)
@@ -879,7 +885,7 @@ void floodFill
 		}
 	    }
 
-	  if(locationsToSet.size() < 750)
+	  if(locationsToSet.size() < 1024)
 	    {
 	      printBgChunk(bgChunk, chunkSize);
 	      editingSettings::colorMode.setColor(editingSettings::helpColor);
