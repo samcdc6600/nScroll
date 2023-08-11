@@ -4,6 +4,13 @@
 #include "include/editMode.hpp"
 
 
+//   std::ostream & operator<<(std::ostream & stream, backgroundChunkCharInfo bCCI)
+//   {
+//     stream<<" ch = "<<bCCI.ch<<", set = "<<bCCI.set<<" ";
+//     return stream;
+// }
+
+
 namespace editingSettings
 {    
   setColorMode colorMode {};
@@ -27,7 +34,7 @@ struct editingState
 
 private:
   // Buffer to remember x of the last bg chars.
-  static constexpr int bgCharsBufferSize {64};
+  static constexpr int bgCharsBufferSize {24};
   int bgCharsRingBuffer [bgCharsBufferSize] {};
   int currentBgCharIndex {};
   // The user can switch between the current and last bg chars.
@@ -91,10 +98,10 @@ void readInBgChunkFile
  const yx chunkSize, yx & chunkCoord, bool & foundCoord);
 /* This is the main routine that handles chunk editing. */
 void editModeProper
-(const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+(const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize);
 void actOnInput
-(chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+(chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize,
  editingState & edState);
 /* Updates the cursors position in edState if edState.input is one of cursorUp,
@@ -199,7 +206,7 @@ void readInBgChunkFile
 
 void editMode
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
- chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+ chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize)
 {
   bool foundBgChunkCoord {false}, foundCRChunkCoord {false};
@@ -260,7 +267,7 @@ void editMode
 
 
 void editModeProper
-(const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+(const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize)
 {
   editingState edState
@@ -273,6 +280,9 @@ void editModeProper
       ' ',
       editingSettings::rulesChars::boarder
     };
+
+  // Enable mouse support.
+  // mousemask(BUTTON1_CLICKED | BUTTON3_CLICKED | REPORT_MOUSE_POSITION, NULL);
   
   while(edState.input != editingSettings::editChars::quit)
     {      
@@ -288,15 +298,17 @@ void editModeProper
 	  printCRChunk(cRChunk.getChunk().data, chunkSize);
 	}
 
-	// The cursor should always be visible, so print last.
+	// The cursor should generally always be visible, so print last.
       if(edState.cRChunkToggle)
 	{
 	  printCursorForCREditMode(edState.cursorPos, edState.currentCRChar);
+	  cRChunk.printIndexIfChanged(chunkSize.y -1, 0);
 	}
       else
 	{
 	  printCursorForBgEditMode
 	    (edState.cursorPos, edState.getCurrentBgChar());
+	  bgChunk.printIndexIfChanged(chunkSize.y -1, 0);
 	}
 
       edState.cursorVisibilityChangeTimeLast =
@@ -309,11 +321,57 @@ void editModeProper
 
 
 void actOnInput
-(chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+(chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize,
  editingState & edState)
 {
   using namespace editingSettings::editChars;
+
+  // if(edState.input == KEY_MOUSE)
+  //   {
+  //     MEVENT mouseEvent;
+  //     if(getmouse(&mouseEvent) == OK)
+  // 	{
+  // 	  /* Note that we can only detect a button click or a movement at any
+  // 	     one time and not both. */
+  // 	  if(mouseEvent.bstate & BUTTON1_CLICKED)
+  // 	    {
+  // 	      // Perform action at cursor if left mouse button clicked.
+  // 	      edState.input = performActionAtPos;
+  // 	    }
+  // 	  else if(mouseEvent.bstate & BUTTON3_CLICKED)
+  // 	    {
+  // 	      if(!edState.cRChunkToggle)
+  // 		{
+  // 		  /* Perform get char at pos if right mouse button clicked and in
+  // 		     bg chunk edit mode. */
+  // 		  move(mouseEvent.y, mouseEvent.x);
+  // 		  edState.input = bgGetCharAtPos;
+  // 		}
+  // 	      else
+  // 		{
+  // 		  /* Perform erase char at pos if right mouse button clicked and
+  // 		     in cR chunk edit mode. */
+  // 		  move(mouseEvent.y, mouseEvent.x);
+  // 		  edState.input = cREraseCRChar;
+  // 		}
+  // 	    }
+  // 	  else if(mouseEvent.bstate & REPORT_MOUSE_POSITION)
+  // 	    {
+  // 	      // Update cursor pos if mouse movement detected.
+  // 	      move(mouseEvent.y, mouseEvent.x);
+  // 	      edState.input = ERR; // Signals no input.
+
+  // 	      exit(-1);
+  // 	    }
+  // 	  else
+  // 	    {
+  // 	      // Unsupported mouse event.
+  // 	      edState.input = ERR; // Signals no input.
+  // 	    }
+  // 	}
+  //   }
+  
 
   if(!updateCursorPos(chunkSize, edState))
     {
@@ -368,6 +426,18 @@ void actOnInput
 	  if(!edState.cRChunkToggle)
 	    {
 	      edState.recallLastBgChar();
+	    }
+	  break;
+	case bgUndo:
+	  if(!edState.cRChunkToggle)
+	    {
+	      bgChunk.backward();
+	    }
+	  break;
+	case bgRedo:
+	  if(!edState.cRChunkToggle)
+	    {
+	      bgChunk.forward();
 	    }
 	  break;
 	case bgGetCharAtPos:
@@ -749,6 +819,11 @@ void floodFill
   */
   const int targetCharToReplace
     {bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch};
+
+  // endwin();
+  // std::cout<<"targetCharToReplace = "<<targetCharToReplace
+  // 	   <<"edState.getCurrentBgChar() = "<<edState.getCurrentBgChar()<<'\n';
+  // exit(-1);
 		   
   if(edState.getCurrentBgChar() != targetCharToReplace)
     {
@@ -829,7 +904,7 @@ void showUnsetBgChars
 	    {
 	      if(!bgChunk[yIter][xIter].set)
 		{
-		  int color = rand() % 2 ? noCharColorPair: validColorNumber;
+		  int color = rand() % 2 ? blackBgColorPair: validColorNumber;
 		  colorMode.setColor(color);
 		  mvprintw(yIter, xIter, "%c", emptyCharChar);
 		}
@@ -897,7 +972,7 @@ void printBgChunk
 	  else
 	    {
 	      editingSettings::colorMode.setColor
-		(editingSettings::noCharColorPair);
+		(editingSettings::blackBgColorPair);
 	      mvprintw(yIter, xIter, " ");
 	    }
 	}
@@ -934,7 +1009,7 @@ void printCursorForCREditMode
 {
   // TMP (We want to set the cursor colour to the opposite of the bg
   // colour. No matter which chunk editing mode we are in.)
-  editingSettings::colorMode.setColor(editingSettings::noCharColorPair);
+  editingSettings::colorMode.setColor(editingSettings::blackBgColorPair);
   mvprintw(cursorPos, concat("", currentCRChar).c_str());
   move(cursorPos);
 }

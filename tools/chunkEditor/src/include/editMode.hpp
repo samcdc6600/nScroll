@@ -15,13 +15,17 @@ namespace editingSettings
   */
   constexpr int editSubMenuSleepTimeMs {160};
   constexpr std::chrono::milliseconds cursorBlinkTimeMs {700};
+  constexpr std::chrono::milliseconds showLastChunkAfterUpdateIndexFor {2500};
   extern setColorMode colorMode;
   // Color used for help menu.
   constexpr int helpColor {1};
   /* This color pair is used when a character is not yet in the position in
      question. */
-  constexpr int noCharColorPair {15};
-  constexpr int validColorNumber {1};
+  constexpr int invalidCharColorPair {-1}; //noCharColorPair {15};
+  constexpr int blackBgColorPair {15};
+  /* TODO: think of better name for this and also maybe replace references to
+     help char with it. */
+  constexpr int validColorNumber {helpColor};
   constexpr int emptyCharChar {' '};
   
   /* See editMode.cpp for
@@ -44,6 +48,8 @@ namespace editingSettings
     constexpr char bGToggleCharacterSelection	{'c'};
     constexpr char bgNextCurrentChar	{'n'};
     constexpr char bgLastCurrentChar	{'l'};
+    constexpr char bgUndo		{'u'};
+    constexpr char bgRedo		{'r'};
     constexpr char bgGetCharAtPos      	{'g'};
     constexpr char bgFloodFill		{'f'};
     // 'i' for info.
@@ -76,12 +82,15 @@ template<typename T, int yHeight, int xWidth>
 class chunk
 {
 private:
-  static constexpr int undoBuffers		{100};
+  static constexpr int undoBuffers		{1024};
   // T tmpChunk[yHeight][xWidth]			{};
   // T chunks[undoBuffers][yHeight][xWidth]	{};
   array2D<T, yHeight, xWidth> tmpChunk	       	{};
   array2D<T, yHeight, xWidth> chunks[undoBuffers] {};
   int currentChunk				{};
+  const std::chrono::milliseconds showLastChunkIndexFor {};
+  std::chrono::steady_clock::time_point lastCurrentChunkUpdate {};
+  
 
   void copyToTmp()
   {
@@ -108,12 +117,15 @@ private:
   }
 
 public:
-  chunk(const T filler)
+  chunk(const T filler,
+	const std::chrono::milliseconds showLastCurrentChunkIndexFor):
+  lastCurrentChunkUpdate(std::chrono::steady_clock::now()),
+    showLastChunkIndexFor(showLastCurrentChunkIndexFor)
   {
     for(int yIter {}; yIter < yHeight; ++yIter)
       {
 	for(int xIter {}; xIter < xWidth; ++xIter)
-	  {
+	  { 
 	    tmpChunk.data[yIter][xIter] = filler;
 	  }
       }
@@ -156,6 +168,7 @@ public:
   {
     currentChunk < undoBuffers -1 ? currentChunk++:
       currentChunk = 0;
+    lastCurrentChunkUpdate = std::chrono::steady_clock::now();
   }
 
   // This function essentially implements an "undo" function.
@@ -164,6 +177,18 @@ public:
     currentChunk == 0 ?
       currentChunk = undoBuffers - 1:
       currentChunk--;
+    lastCurrentChunkUpdate = std::chrono::steady_clock::now();
+  }
+
+  void printIndexIfChanged(const int y, const int x)
+  {
+    if(std::chrono::steady_clock::now() - lastCurrentChunkUpdate <
+       showLastChunkIndexFor)
+      {
+	editingSettings::colorMode.setColor(editingSettings::helpColor);
+	mvprintw(y, x, "%d", currentChunk);
+	refresh();
+      }
   }
 };
 
@@ -175,12 +200,14 @@ struct backgroundChunkCharInfo
   bool set;
 };
 
+// std::ostream & operator<<(std::ostream & stream, backgroundChunkCharInfo bCCI);
+
 
 /* Read in and decompress files if they exist, else ask user for coordinates.
  Finally call editModeProper(). */
 void editMode
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
- chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk,
+ chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> cRChunk, const yx chunkSize);
 
 

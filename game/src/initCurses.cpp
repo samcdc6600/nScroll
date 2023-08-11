@@ -9,10 +9,11 @@ void initialiseCurses(yx & maxyx)
   
   if(maxyx.y != yHeight || maxyx.x != xWidth) // Check the window size.                                                
     {
-      std::stringstream e {};
-      e<<"error windows must be "<<yHeight<<" characters high and "<<xWidth<<" characters wide. "
-        "The current height is "<<maxyx.y<<" characters and the current width is "<<maxyx.x<<" characters.\n";
-      exit(e.str(), ERROR_WIN_PARAM);
+      exit(concat
+	   ("error windows must be ", yHeight, " characters high and ", xWidth,
+	    " characters wide. The current height is ", maxyx.y, " characters "
+	    "and the current width is ", maxyx.x, " characters.\n"),
+	   ERROR_WIN_PARAM);
     }
   if(has_colors() == FALSE)  // If the terminal does not support colors                                                
     {
@@ -39,8 +40,10 @@ void initialiseCurses(yx & maxyx)
 		  colorParams::gameColorPairsNo, " color pairs.\n"),
 	   ERROR_WIN_PARAM);
     }
-  
-  nodelay(stdscr, TRUE);     // Dissable blocking while waiting for input (use non blocking sys call.)                 
+
+  // Dissable blocking while waiting for input (use non blocking sys call.)
+  nodelay(stdscr, TRUE);
+    
   initColorPairs();          // Initialise the color pairs                                                             
 }
 

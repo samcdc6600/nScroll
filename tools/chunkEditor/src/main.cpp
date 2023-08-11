@@ -238,8 +238,11 @@ void printHelp(const char * argv [])
 void enterMode(const int mode, const char * argv [], const yx viewPortSize)
 {
   chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk
-    {backgroundChunkCharInfo{editingSettings::noCharColorPair, false}};
-  chunk<char, yHeight, xWidth> cRChunk {editingSettings::emptyCharChar};
+    {backgroundChunkCharInfo{editingSettings::invalidCharColorPair, false},
+     editingSettings::showLastChunkAfterUpdateIndexFor};
+  chunk<char, yHeight, xWidth> cRChunk
+    {editingSettings::emptyCharChar,
+     editingSettings::showLastChunkAfterUpdateIndexFor};
   // backgroundChunkCharInfo bgChunk	[yHeight][xWidth] {};
   // char cRChunk					[yHeight][xWidth] {};
   
