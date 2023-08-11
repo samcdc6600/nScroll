@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <stack>
 #include <curses.h>
+#include <fstream>
 #include "include/editMode.hpp"
 
 
@@ -98,10 +99,17 @@ void readInBgChunkFile
  const yx chunkSize, yx & chunkCoord, bool & foundCoord);
 /* This is the main routine that handles chunk editing. */
 void editModeProper
-(const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+(const std::string bgChunkFileName, const std::string cRChunkFileName,
+ const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize);
+/* If edState.input == editChars::quit then asks the user if they really want
+   to quit. Returns true if they do, false otherwise. */
+bool confirmQuit(const yx viewPortSize, editingState &edState);
+bool getConfirmation(const yx viewPortSize, editingState & edState,
+		     const std::string & question);
 void actOnInput
-(chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+(const std::string bgChunkFileName, const std::string cRChunkFileName,
+ const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
  editingState & edState);
 /* Updates the cursors position in edState if edState.input is one of cursorUp,
@@ -143,6 +151,19 @@ void floodFill
 void showUnsetBgChars
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
  editingState & edState);
+/* Writes contents of bgChunk.getChunk() and cRChunk.getChunk() to the files
+   at bgChunkFileName and cRChunkFileName respectively. Prints error message and
+   waits for user input if there is an error. */
+void writeOutChunks
+(const std::string bgChunkFileName, const std::string cRChunkFileName,
+ const yx chunkCoord, const backgroundChunkCharInfo bgChunk[][xWidth],
+ const char cRChunk[][xWidth], const yx chunkSize);
+void compressAndWriteOutBgChunk
+(std::ofstream & file,
+ const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize);
+void compressAndWriteOutCRChunk
+(std::ofstream & file,
+ const char cRChunk[][xWidth], const yx chunkSize);
 /* Once entered this function will not exit untill one of editChars::quit or
    editChars::toggleHelpMsg is pressed.  */
 void printEditHelp(const yx viewPortSize, editingState & edState);
@@ -255,19 +276,22 @@ void editMode
 		    "coordinates: "), chunkSize, printCharSpeed, 0);
 	}
       disableBlockingUserInput();
-      editModeProper(bgChunkCoord, bgChunk, cRChunk, chunkSize);
+      editModeProper(bgChunkFileName, cRChunkFileName, bgChunkCoord, bgChunk,
+		     cRChunk, chunkSize);
     }
   else
     {
       // Both or just one coord could be valid, so we choose one that is.
-      editModeProper(foundBgChunkCoord? bgChunkCoord: cRChunkCoord,
+      editModeProper(bgChunkFileName, cRChunkFileName,
+		     foundBgChunkCoord? bgChunkCoord: cRChunkCoord,
 		     bgChunk, cRChunk, chunkSize);
     }
 }
 
 
 void editModeProper
-(const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+(const std::string bgChunkFileName, const std::string cRChunkFileName,
+ const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize)
 {
   editingState edState
@@ -280,15 +304,13 @@ void editModeProper
       ' ',
       editingSettings::rulesChars::boarder
     };
-
-  // Enable mouse support.
-  // mousemask(BUTTON1_CLICKED | BUTTON3_CLICKED | REPORT_MOUSE_POSITION, NULL);
   
-  while(edState.input != editingSettings::editChars::quit)
-    {      
+  while(!confirmQuit(chunkSize, edState))
+    {
       edState.input = getch();
 
-      actOnInput(bgChunk, cRChunk, chunkSize, edState);
+      actOnInput(bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk, cRChunk,
+		 chunkSize, edState);
 
       // We always print the background chunk.
       printBgChunk(bgChunk.getChunk().data, chunkSize);
@@ -320,58 +342,59 @@ void editModeProper
 }
 
 
+bool confirmQuit(const yx viewPortSize, editingState & edState)
+{
+  bool quit {false};
+  if(edState.input == editingSettings::editChars::quit)
+    {
+      // editingSettings::colorMode.setColor(editingSettings::helpColor);
+      // progressivePrintMessage
+      // (concat("\tDo you really want to quit y/n?.\t"),
+      //  viewPortSize, 0, 0, false, false);
+      
+      // nodelay(stdscr, FALSE);
+      // safeScreenExit(edState);
+      // nodelay(stdscr, TRUE);
+      // if(edState.input == 'y')
+      // 	{
+      // 	  quit = true;
+      // 	}
+      quit = getConfirmation(viewPortSize, edState,
+			     "\tDo you really want to quit y/n?.\t");
+    }
+
+  return quit;
+}
+
+
+bool getConfirmation(const yx viewPortSize, editingState & edState,
+		     const std::string & question)
+{
+  bool affirmative {false};
+
+  editingSettings::colorMode.setColor(editingSettings::helpColor);
+  progressivePrintMessage
+    (question, viewPortSize, 0, 0, false, false);
+      
+  nodelay(stdscr, FALSE);
+  safeScreenExit(edState);
+  nodelay(stdscr, TRUE);
+  if(edState.input == 'y')
+    {
+      affirmative = true;
+    }
+
+  return affirmative;
+}
+
+
 void actOnInput
-(chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+(const std::string bgChunkFileName, const std::string cRChunkFileName,
+ const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
  editingState & edState)
 {
   using namespace editingSettings::editChars;
-
-  // if(edState.input == KEY_MOUSE)
-  //   {
-  //     MEVENT mouseEvent;
-  //     if(getmouse(&mouseEvent) == OK)
-  // 	{
-  // 	  /* Note that we can only detect a button click or a movement at any
-  // 	     one time and not both. */
-  // 	  if(mouseEvent.bstate & BUTTON1_CLICKED)
-  // 	    {
-  // 	      // Perform action at cursor if left mouse button clicked.
-  // 	      edState.input = performActionAtPos;
-  // 	    }
-  // 	  else if(mouseEvent.bstate & BUTTON3_CLICKED)
-  // 	    {
-  // 	      if(!edState.cRChunkToggle)
-  // 		{
-  // 		  /* Perform get char at pos if right mouse button clicked and in
-  // 		     bg chunk edit mode. */
-  // 		  move(mouseEvent.y, mouseEvent.x);
-  // 		  edState.input = bgGetCharAtPos;
-  // 		}
-  // 	      else
-  // 		{
-  // 		  /* Perform erase char at pos if right mouse button clicked and
-  // 		     in cR chunk edit mode. */
-  // 		  move(mouseEvent.y, mouseEvent.x);
-  // 		  edState.input = cREraseCRChar;
-  // 		}
-  // 	    }
-  // 	  else if(mouseEvent.bstate & REPORT_MOUSE_POSITION)
-  // 	    {
-  // 	      // Update cursor pos if mouse movement detected.
-  // 	      move(mouseEvent.y, mouseEvent.x);
-  // 	      edState.input = ERR; // Signals no input.
-
-  // 	      exit(-1);
-  // 	    }
-  // 	  else
-  // 	    {
-  // 	      // Unsupported mouse event.
-  // 	      edState.input = ERR; // Signals no input.
-  // 	    }
-  // 	}
-  //   }
-  
 
   if(!updateCursorPos(chunkSize, edState))
     {
@@ -468,8 +491,24 @@ void actOnInput
 	      showUnsetBgChars(bgChunk.getChunk().data, chunkSize, edState);
 	    }
 	  break;
+	case saveChunks:
+	  if(getConfirmation(chunkSize, edState,
+			     "\tdo you really want to save?\t"))
+	    {
+	      progressivePrintMessage
+	      (concat("\tSaving chunks...\t"),
+	       chunkSize, 0, 0, false, false);
+	      writeOutChunks(bgChunkFileName, cRChunkFileName, chunkCoord,
+			     bgChunk.getChunk().data, cRChunk.getChunk().data,
+			     chunkSize);
+	      progressivePrintMessage
+		(concat("\tChunks saved...\t"),
+		 chunkSize, 0, afterPrintSleep, false, false);
+	    }
+	  break;
 	case toggleHelpMsg:
 	  printEditHelp(chunkSize, edState);
+	  break;
 	}
     }
 }
@@ -930,6 +969,128 @@ void showUnsetBgChars
       sleep(editSubMenuSleepTimeMs);
     }  
   safeScreenExit(edState);
+}
+
+
+void writeOutChunks
+(const std::string bgChunkFileName, const std::string cRChunkFileName,
+ const yx chunkCoord, const backgroundChunkCharInfo bgChunk[][xWidth],
+ const char cRChunk[][xWidth], const yx chunkSize)
+{
+  std::ofstream file (bgChunkFileName);
+  if (!file.is_open())
+    {
+      progressivePrintMessage
+	(concat("\tError: unable to save background chunk to file \"",
+		bgChunkFileName, "\"\t"),
+	 chunkSize, 0, editingSettings::editSubMenuSleepTimeMs, false, false);
+    }
+  compressAndWriteOutBgChunk(file, bgChunk, chunkSize);
+  file.close();
+
+  file.open(cRChunkFileName);
+  if (!file.is_open())
+    {
+      progressivePrintMessage
+	(concat("\tError: unable to save coord rules chunk to file \"",
+		cRChunkFileName, "\"\t"),
+	 chunkSize, 0, editingSettings::editSubMenuSleepTimeMs, false, false);
+    }
+  compressAndWriteOutCRChunk(file, cRChunk, chunkSize);
+  file.close();
+
+  
+  //   // Write some data to the file
+  //   outputFile << "Hello, world!" << std::endl;
+  //   outputFile << "This is a test." << std::endl;
+
+  //   // Close the file
+  //   outputFile.close();
+}
+
+
+void compressAndWriteOutBgChunk
+(std::ofstream & file,
+ const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize)    
+{
+  /* The point after which we will gain an advantage from our run length
+     compression scheme compression.
+     RunLengthSequenceSignifier + length + character = 3. */
+  constexpr int compressionAdvantagePoint {3};
+  std::vector<std::vector<backgroundChunkCharType>> compressedChunk {};
+  
+  auto addLookAhead = [compressionAdvantagePoint]
+    (std::vector<backgroundChunkCharType> & lookAhead,
+     std::vector<backgroundChunkCharType> & currentLine)
+  {
+    if(lookAhead.size() > compressionAdvantagePoint)
+      {
+	// We will gain an advantage from compressing lookAhead.
+	currentLine.push_back
+	  (editingSettings::runLengthSequenceSignifier);
+	currentLine.push_back(lookAhead.size());
+	currentLine.push_back(lookAhead[0]);
+      }
+    else
+      {
+	// No advantage from compression. Append lookAhead to currentLine.
+	currentLine.insert
+	  (currentLine.end(), lookAhead.begin(), lookAhead.end());
+      }
+
+    lookAhead.clear();
+  };
+ 
+
+  for(int yIter {}; yIter < chunkSize.y; ++yIter)
+    {
+      std::vector<backgroundChunkCharType> currentLine;
+      std::vector<backgroundChunkCharType> lookAhead {};
+	
+      for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	{
+	  if(!lookAhead.empty())
+	    {
+	      if(lookAhead.back() == bgChunk[yIter][xIter].ch)
+		{
+		  lookAhead.push_back(bgChunk[yIter][xIter].ch);
+		}
+	      else
+		{
+		  addLookAhead(lookAhead, currentLine);
+		}
+	    }
+	  else
+	    {
+	      lookAhead.push_back(bgChunk[yIter][xIter].ch);
+	    }
+	}
+      
+      if(lookAhead.size() > 0)
+	{
+	  addLookAhead(lookAhead, currentLine);
+	}
+      compressedChunk.push_back(currentLine);
+      currentLine.clear();
+    }
+
+  // Write out vector (inserting '\n' between lines.)
+  endwin();
+  for(int yIter {}; yIter < chunkSize.y; ++yIter)
+    {
+      for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	{
+	  file<<compressedChunk[yIter][xIter]<<' ';
+	}
+      file<<'\n';
+    }  
+  exit(-1);
+}
+
+
+void compressAndWriteOutCRChunk
+(std::ofstream & file, const char cRChunk[][xWidth], const yx chunkSize)
+{
 }
 
 

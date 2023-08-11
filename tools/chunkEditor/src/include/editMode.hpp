@@ -6,8 +6,22 @@
 #include "colorS.hpp"
 
 
+/* TODO: find and update any code still using int directory in situations
+   where this type should be used. */
+typedef int backgroundChunkCharType;
+
+struct backgroundChunkCharInfo
+{
+  backgroundChunkCharType ch;
+  // Tells if ch has been set yet.
+  bool set;
+};
+
+
 namespace editingSettings
 {
+  constexpr backgroundChunkCharType
+  runLengthSequenceSignifier {std::numeric_limits<int>::max()};
   constexpr int loopSleepTimeMs {5};
   /* Sleep for this time when exiting a sub menu so that the character the user
      is pressing isn't read in as an input to the "screen" "above" the
@@ -16,6 +30,7 @@ namespace editingSettings
   constexpr int editSubMenuSleepTimeMs {160};
   constexpr std::chrono::milliseconds cursorBlinkTimeMs {700};
   constexpr std::chrono::milliseconds showLastChunkAfterUpdateIndexFor {2500};
+  constexpr int afterFileErrorPrintSleep {3500};
   extern setColorMode colorMode;
   // Color used for help menu.
   constexpr int helpColor {1};
@@ -57,6 +72,7 @@ namespace editingSettings
     constexpr char bgFloodFill		{'f'};
     // 'i' for info.
     constexpr char bgShowUnsetChars	{'i'};
+    constexpr char saveChunks		{'o'};
     constexpr char toggleHelpMsg       	{'h'};
   };
 
@@ -194,16 +210,6 @@ public:
       }
   }
 };
-
-
-struct backgroundChunkCharInfo
-{
-  int ch;
-  // Tells if ch has been set yet.
-  bool set;
-};
-
-// std::ostream & operator<<(std::ostream & stream, backgroundChunkCharInfo bCCI);
 
 
 /* Read in and decompress files if they exist, else ask user for coordinates.
