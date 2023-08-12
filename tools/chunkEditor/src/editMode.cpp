@@ -1058,6 +1058,7 @@ void compressAndWriteOutBgChunk
 	      else
 		{
 		  addLookAhead(lookAhead, currentLine);
+		  lookAhead.push_back(bgChunk[yIter][xIter].ch);
 		}
 	    }
 	  else
@@ -1076,14 +1077,15 @@ void compressAndWriteOutBgChunk
 
   // Write out vector (inserting '\n' between lines.)
   endwin();
-  for(int yIter {}; yIter < chunkSize.y; ++yIter)
+  for(std::vector<backgroundChunkCharType> line: compressedChunk)
     {
-      for(int xIter {}; xIter < chunkSize.x; ++xIter)
+      for(backgroundChunkCharType ch: line)
 	{
-	  file<<compressedChunk[yIter][xIter]<<' ';
+	  file<<ch<<' ';
 	}
       file<<'\n';
-    }  
+    }
+  file.close();
   exit(-1);
 }
 
