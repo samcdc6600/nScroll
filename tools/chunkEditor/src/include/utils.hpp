@@ -15,6 +15,24 @@
 #endif
 
 
+/* TODO: find and update any code still using int directory in situations
+   where this type should be used. */
+typedef int backgroundChunkCharType;
+
+struct backgroundChunkCharInfo
+{
+  backgroundChunkCharType ch;
+  // Tells if ch has been set yet.
+  bool set;
+};
+
+constexpr backgroundChunkCharType
+runLengthSequenceSignifier {std::numeric_limits<int>::max()};
+/* The point after which we will gain an advantage from our run length
+   compression scheme compression.
+   RunLengthSequenceSignifier + length + character = 3. */
+constexpr int compressionAdvantagePoint {3};
+
 struct yx
 {
   int y {};
@@ -212,8 +230,8 @@ double readSingleRNum
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg);
 void readInBgChunkFile
-(const std::string fileName, int chunk[yHeight][xWidth], const yx chunkSize,
- yx & chunkCoord, bool & foundCoord);
+(const std::string fileName, backgroundChunkCharType chunk[yHeight][xWidth],
+ const yx chunkSize, yx & chunkCoord, bool & foundCoord);
 void readInCRChunkFile
 (const std::string fileName, char cRChunk[][xWidth], const yx chunkSize,
  yx & chunkCoord, bool & foundCoord);
@@ -222,8 +240,15 @@ void readInCRChunkFile
    expected number of lines the file should have and chunkCoord is the chunk
    coordinates read from the file (if any.)*/
 void getBgChunk
-(std::fstream & file, int chunk[][xWidth], const int expectedNumberOfLines,
+(std::fstream & file, backgroundChunkCharType chunk[][xWidth],
+ const int expectedNumberOfLines,
  yx & chunkCoord, const std::string & eMsg);
+void compressAndWriteOutBgChunk
+(std::ofstream & file,
+ const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize);
+void compressAndWriteOutCRChunk
+(std::ofstream & file,
+ const char cRChunk[][xWidth], const yx chunkSize);
 void getChunk
 (const std::string & data, std::string::const_iterator & buffPos,
  const std::string & eMsg, std::string & chunk, const yx expectedChunkSize);

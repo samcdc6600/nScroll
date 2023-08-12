@@ -478,8 +478,8 @@ double readSingleRNum
 
 
 void readInBgChunkFile
-(const std::string fileName, int chunk[yHeight][xWidth], const yx chunkSize,
- yx & chunkCoord, bool & foundCoord)
+(const std::string fileName, backgroundChunkCharType chunk[yHeight][xWidth],
+ const yx chunkSize, yx & chunkCoord, bool & foundCoord)
 {
   std::fstream chunkFile;
 
@@ -496,6 +496,7 @@ void readInBgChunkFile
       progressivePrintMessage(concat("", fileName, " not found. Creating new"
 			  " file..."), chunkSize, printCharSpeed,
 		   afterPrintSleep);
+      chunkFile.close();
       foundCoord = false;
     }
   else
@@ -504,6 +505,7 @@ void readInBgChunkFile
       getBgChunk(chunkFile, chunk, chunkSize.y + 1, chunkCoord,
 		 concat("Error: trying to read in background chunk file ",
 			fileName, ". "));
+      chunkFile.close();
       foundCoord = true;
     }
 }
@@ -526,61 +528,184 @@ void readInCRChunkFile
       progressivePrintMessage(concat("", fileName, " not found. Creating new"
 			  " file..."), chunkSize, printCharSpeed,
 		   afterPrintSleep);
+      chunkFile.close();
       foundCoord = false;
     }
   else
     {
       // File already exists, try reading in and decompressing contents.
+      chunkFile.close();
       foundCoord = true;
     }
 }
 
 
 void getBgChunk
-(std::fstream & file, int chunk[][xWidth], const int expectedNumberOfLines,
+(std::fstream & file, backgroundChunkCharType chunk[][xWidth],
+ const int expectedNumberOfLines,
  yx & chunkCoord, const std::string & eMsg)
 {
-  int linesRead {};
-  std::string line {};
-  char bgChar {};
+  int newLines {};
+  char newLineChar {};
+  backgroundChunkCharType bgChar {};
+
+  int xx {};
   
-  if(!std::getline(file, line))
+  while(file.read(reinterpret_cast<char *>(& bgChar), sizeof(newLineChar)))
     {
-      // Error reading chunk coord (file malformed.)
-      exit(concat(eMsg, "Malformed file (file empty)."), ERROR_MALFORMED_FILE);
-    }
-  else
-    {
-      // TODO: fully implement code in this else block.
-      while(std::getline(file, line))
+      if(newLineChar == '\n')
 	{
-	  if(line.size() % sizeof(int) != 0)
+	  newLines++;
+	}
+      else
+	{
+	  xx++;
+	}
+    }
+
+  endwin();
+  std::cout<<"newLines = "<<xx<<'\n';
+  exit(-1);
+  
+  // int linesRead {};
+  // std::string line {};
+  // char bgChar {};
+  
+  // if(!std::getline(file, line))
+  //   {
+  //     // Error reading chunk coord (file malformed.)
+  //     exit(concat(eMsg, "Malformed file (file empty)."), ERROR_MALFORMED_FILE);
+  //   }
+  // else
+  //   {
+  //     // TODO: fully implement code in this else block.
+  //     while(std::getline(file, line))
+  // 	{
+  // 	  if(line.size() % sizeof(backgroundChunkCharType) != 0)
+  // 	    {
+  // 	      /* Error apart from new lines and chunk coords bg files store
+  // 		 ints. */
+  // 	      endwin();
+  // 	      std::cout<<"Error in line size!\n";
+  // 	      exit(-1);
+  // 	    }
+  // 	  else
+  // 	    {
+  // 	      	      endwin();
+  // 	      for(int bgCharIter {}; bgCharIter < line.size();
+  // 		  bgCharIter += sizeof(backgroundChunkCharType))
+  // 		{
+  // 		  /* TODO: check for largest int value (which will indicate the
+  // 		     start of a run length number (the next int). */
+  // 		  bgChar |= line[bgCharIter];
+  // 		  bgChar <<= 8;
+  // 		  bgChar |= line[bgCharIter];
+  // 		  bgChar <<= 8;
+  // 		  bgChar |= line[bgCharIter];
+  // 		  bgChar <<= 8;
+  // 		  bgChar |= line[bgCharIter];
+
+  // 		  if(bgChar == runLengthSequenceSignifier)
+  // 		    {
+  // 		      endwin();
+  // 		      std::cout<<"Hello"<<'\n';
+  // 		      exit(-1);
+  // 		    }
+
+  // 		  std::cout<<bgChar<<", ";
+  // 		}
+  // 	      std::cout<<'\n';
+  // 	    }
+  // 	  linesRead++;
+  // 	}
+  //     if(linesRead != expectedNumberOfLines)
+  // 	{
+  // 	  // Error file malformed.
+  // 	}
+  //   }
+}
+
+
+void compressAndWriteOutBgChunk
+(std::ofstream & file,
+ const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize)    
+{
+  std::vector<std::vector<backgroundChunkCharType>> compressedChunk {};
+  
+  auto addLookAhead = [](std::vector<backgroundChunkCharType> & lookAhead,
+			 std::vector<backgroundChunkCharType> & currentLine)
+  {
+    if(lookAhead.size() > compressionAdvantagePoint)
+      {
+	// We will gain an advantage from compressing lookAhead.
+	currentLine.push_back
+	  (runLengthSequenceSignifier);
+	currentLine.push_back(lookAhead.size());
+	currentLine.push_back(lookAhead[0]);
+      }
+    else
+      {
+	// No advantage from compression. Append lookAhead to currentLine.
+	currentLine.insert
+	  (currentLine.end(), lookAhead.begin(), lookAhead.end());
+      }
+
+    lookAhead.clear();
+  };
+ 
+
+  for(int yIter {}; yIter < chunkSize.y; ++yIter)
+    {
+      std::vector<backgroundChunkCharType> currentLine;
+      std::vector<backgroundChunkCharType> lookAhead {};
+	
+      for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	{
+	  if(!lookAhead.empty())
 	    {
-	      // Error apart from new lines and chunk coord files stores ints.
+	      if(lookAhead.back() == bgChunk[yIter][xIter].ch)
+		{
+		  lookAhead.push_back(bgChunk[yIter][xIter].ch);
+		}
+	      else
+		{
+		  addLookAhead(lookAhead, currentLine);
+		  lookAhead.push_back(bgChunk[yIter][xIter].ch);
+		}
 	    }
 	  else
 	    {
-	      for(int bgCharIter {}; bgCharIter < line.size();
-		  bgCharIter += sizeof(int))
-		{
-		  /* TODO: check for largest int value (which will indicate the
-		     start of a run length number (the next int). */
-		  bgChar |= line[bgCharIter];
-		  bgChar <<= 8;
-		  bgChar |= line[bgCharIter];
-		  bgChar <<= 8;
-		  bgChar |= line[bgCharIter];
-		  bgChar <<= 8;
-		  bgChar |= line[bgCharIter];
-		}
+	      lookAhead.push_back(bgChunk[yIter][xIter].ch);
 	    }
-	  linesRead++;
 	}
-      if(linesRead != expectedNumberOfLines)
+      
+      if(lookAhead.size() > 0)
 	{
-	  // Error file malformed.
+	  addLookAhead(lookAhead, currentLine);
+	}
+      compressedChunk.push_back(currentLine);
+      currentLine.clear();
+    }
+
+  for(int lineIter {}; lineIter < compressedChunk.size(); ++lineIter)
+    {
+      for(backgroundChunkCharType ch: compressedChunk[lineIter])
+	{
+	  // Write out bits for ch.
+	  file.write(reinterpret_cast<const char *>(&ch),
+		     sizeof(backgroundChunkCharType));
+	}
+      if(lineIter != compressedChunk.size() -1)
+	{
+	  file.put('\n');
 	}
     }
+}
+
+
+void compressAndWriteOutCRChunk
+(std::ofstream & file, const char cRChunk[][xWidth], const yx chunkSize)
+{
 }
 
 

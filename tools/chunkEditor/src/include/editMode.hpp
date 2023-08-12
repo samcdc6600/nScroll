@@ -6,22 +6,8 @@
 #include "colorS.hpp"
 
 
-/* TODO: find and update any code still using int directory in situations
-   where this type should be used. */
-typedef int backgroundChunkCharType;
-
-struct backgroundChunkCharInfo
-{
-  backgroundChunkCharType ch;
-  // Tells if ch has been set yet.
-  bool set;
-};
-
-
 namespace editingSettings
 {
-  constexpr backgroundChunkCharType
-  runLengthSequenceSignifier {std::numeric_limits<int>::max()};
   constexpr int loopSleepTimeMs {5};
   /* Sleep for this time when exiting a sub menu so that the character the user
      is pressing isn't read in as an input to the "screen" "above" the

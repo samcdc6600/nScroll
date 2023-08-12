@@ -158,12 +158,6 @@ void writeOutChunks
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  const yx chunkCoord, const backgroundChunkCharInfo bgChunk[][xWidth],
  const char cRChunk[][xWidth], const yx chunkSize);
-void compressAndWriteOutBgChunk
-(std::ofstream & file,
- const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize);
-void compressAndWriteOutCRChunk
-(std::ofstream & file,
- const char cRChunk[][xWidth], const yx chunkSize);
 /* Once entered this function will not exit untill one of editChars::quit or
    editChars::toggleHelpMsg is pressed.  */
 void printEditHelp(const yx viewPortSize, editingState & edState);
@@ -977,7 +971,7 @@ void writeOutChunks
  const yx chunkCoord, const backgroundChunkCharInfo bgChunk[][xWidth],
  const char cRChunk[][xWidth], const yx chunkSize)
 {
-  std::ofstream file (bgChunkFileName);
+  std::ofstream file (bgChunkFileName, std::ios::binary);
   if (!file.is_open())
     {
       progressivePrintMessage
@@ -988,7 +982,7 @@ void writeOutChunks
   compressAndWriteOutBgChunk(file, bgChunk, chunkSize);
   file.close();
 
-  file.open(cRChunkFileName);
+  file.open(cRChunkFileName, std::ios::binary);
   if (!file.is_open())
     {
       progressivePrintMessage
@@ -1006,93 +1000,6 @@ void writeOutChunks
 
   //   // Close the file
   //   outputFile.close();
-}
-
-
-void compressAndWriteOutBgChunk
-(std::ofstream & file,
- const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize)    
-{
-  /* The point after which we will gain an advantage from our run length
-     compression scheme compression.
-     RunLengthSequenceSignifier + length + character = 3. */
-  constexpr int compressionAdvantagePoint {3};
-  std::vector<std::vector<backgroundChunkCharType>> compressedChunk {};
-  
-  auto addLookAhead = [compressionAdvantagePoint]
-    (std::vector<backgroundChunkCharType> & lookAhead,
-     std::vector<backgroundChunkCharType> & currentLine)
-  {
-    if(lookAhead.size() > compressionAdvantagePoint)
-      {
-	// We will gain an advantage from compressing lookAhead.
-	currentLine.push_back
-	  (editingSettings::runLengthSequenceSignifier);
-	currentLine.push_back(lookAhead.size());
-	currentLine.push_back(lookAhead[0]);
-      }
-    else
-      {
-	// No advantage from compression. Append lookAhead to currentLine.
-	currentLine.insert
-	  (currentLine.end(), lookAhead.begin(), lookAhead.end());
-      }
-
-    lookAhead.clear();
-  };
- 
-
-  for(int yIter {}; yIter < chunkSize.y; ++yIter)
-    {
-      std::vector<backgroundChunkCharType> currentLine;
-      std::vector<backgroundChunkCharType> lookAhead {};
-	
-      for(int xIter {}; xIter < chunkSize.x; ++xIter)
-	{
-	  if(!lookAhead.empty())
-	    {
-	      if(lookAhead.back() == bgChunk[yIter][xIter].ch)
-		{
-		  lookAhead.push_back(bgChunk[yIter][xIter].ch);
-		}
-	      else
-		{
-		  addLookAhead(lookAhead, currentLine);
-		  lookAhead.push_back(bgChunk[yIter][xIter].ch);
-		}
-	    }
-	  else
-	    {
-	      lookAhead.push_back(bgChunk[yIter][xIter].ch);
-	    }
-	}
-      
-      if(lookAhead.size() > 0)
-	{
-	  addLookAhead(lookAhead, currentLine);
-	}
-      compressedChunk.push_back(currentLine);
-      currentLine.clear();
-    }
-
-  // Write out vector (inserting '\n' between lines.)
-  endwin();
-  for(std::vector<backgroundChunkCharType> line: compressedChunk)
-    {
-      for(backgroundChunkCharType ch: line)
-	{
-	  file<<ch<<' ';
-	}
-      file<<'\n';
-    }
-  file.close();
-  exit(-1);
-}
-
-
-void compressAndWriteOutCRChunk
-(std::ofstream & file, const char cRChunk[][xWidth], const yx chunkSize)
-{
 }
 
 
