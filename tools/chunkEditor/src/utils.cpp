@@ -542,15 +542,36 @@ void getBgChunk
 (std::fstream & file, backgroundChunkCharType chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName)
 {
-  std::vector<backgroundChunkCharType> newChunk {};
-  backgroundChunkCharType bgChar {};
-
   // Read in chunkCoord.
   chunkCoord = yx{0, 0};	// TMP
-
+  
   // Read in chunk body.
+  int yIter {}, xIter {};
+  backgroundChunkCharType bgChar {};
   while(file.read(reinterpret_cast<char*>(&bgChar), sizeof(int)))
     {
+      /* Used to update yIter and xIter. */
+      auto updateVirtualNestedYXLoop = [& xIter, & yIter, chunkSize]()
+      {
+	xIter++;
+	if(xIter > chunkSize.x -1)
+	  {
+	    xIter = 0;
+	    yIter++;
+	  }
+      };
+      /* Used to detect if the chunk is too big. */
+      auto checkYOfVirtualNestedLoop = [xIter, yIter, chunkSize, fileName]()
+      {
+	if(yIter > chunkSize.y - 1)
+	  {
+	    exit(concat
+		 ("Error: background chunk file \"", fileName, "\". Is the "
+		  "wrong size (", yIter * chunkSize.x + xIter, "). It should "
+		  "be ", chunkSize.y * chunkSize.x, "."), ERROR_MALFORMED_FILE);
+	  }
+      };
+
       if(bgChar == runLengthSequenceSignifier)
 	{
 	  int runLength {};
@@ -570,34 +591,19 @@ void getBgChunk
 	    }
 	  for(int iter {}; iter < runLength; iter++)
 	    {
-	      newChunk.push_back(bgChar);
+	      checkYOfVirtualNestedLoop();
+	      chunk[yIter][xIter] = bgChar;
+	      updateVirtualNestedYXLoop();
 	    }
 	}
       else
 	{
-	  newChunk.push_back(bgChar);
+	  checkYOfVirtualNestedLoop();
+	  chunk[yIter][xIter] = bgChar;
+	  updateVirtualNestedYXLoop();
+	  
 	}
     }
-
-  if(newChunk.size() != chunkSize.y * chunkSize.x)
-    {
-      exit(concat("Error: background chunk file \"", fileName, "\". Is the "
-		  "wrong size (", newChunk.size(), "). It should be ",
-		  chunkSize.y * chunkSize.x, "."), ERROR_MALFORMED_FILE);
-    }
-
-  // endwin();
-  for(int yIter {}, newChunkIter {}; yIter < chunkSize.y;
-      yIter++, newChunkIter++)
-    {
-      for(int xIter {}; xIter < chunkSize.x; xIter++)
-	{
-	  chunk[yIter][xIter] = newChunk[newChunkIter];
-	  // std::cout<<newChunk[newChunkIter]<<' ';
-	}
-      // std::cout<<'\n';
-    }
-  // exit(-1);
 }
 
 
