@@ -611,35 +611,32 @@ void compressAndWriteOutBgChunk
 (std::ofstream & file,
  const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize)    
 {
-  std::vector<std::vector<backgroundChunkCharType>> compressedChunk {};
+  std::vector<backgroundChunkCharType> compressedChunk {};
   
   auto addLookAhead = [](std::vector<backgroundChunkCharType> & lookAhead,
-			 std::vector<backgroundChunkCharType> & currentLine)
+			 std::vector<backgroundChunkCharType> & compressedChunk)
   {
     if(lookAhead.size() > compressionAdvantagePoint)
       {
 	// We will gain an advantage from compressing lookAhead.
-	currentLine.push_back
+	compressedChunk.push_back
 	  (runLengthSequenceSignifier);
-	currentLine.push_back(lookAhead.size());
-	currentLine.push_back(lookAhead[0]);
+	compressedChunk.push_back(lookAhead.size());
+	compressedChunk.push_back(lookAhead[0]);
       }
     else
       {
-	// No advantage from compression. Append lookAhead to currentLine.
-	currentLine.insert
-	  (currentLine.end(), lookAhead.begin(), lookAhead.end());
+	// No advantage from compression. Append lookAhead to compressedChunk.
+	compressedChunk.insert
+	  (compressedChunk.end(), lookAhead.begin(), lookAhead.end());
       }
 
     lookAhead.clear();
   };
  
-
+  std::vector<backgroundChunkCharType> lookAhead {};
   for(int yIter {}; yIter < chunkSize.y; ++yIter)
     {
-      std::vector<backgroundChunkCharType> currentLine;
-      std::vector<backgroundChunkCharType> lookAhead {};
-	
       for(int xIter {}; xIter < chunkSize.x; ++xIter)
 	{
 	  if(!lookAhead.empty())
@@ -650,7 +647,7 @@ void compressAndWriteOutBgChunk
 		}
 	      else
 		{
-		  addLookAhead(lookAhead, currentLine);
+		  addLookAhead(lookAhead, compressedChunk);
 		  lookAhead.push_back(bgChunk[yIter][xIter].ch);
 		}
 	    }
@@ -659,27 +656,17 @@ void compressAndWriteOutBgChunk
 	      lookAhead.push_back(bgChunk[yIter][xIter].ch);
 	    }
 	}
-      
-      if(lookAhead.size() > 0)
-	{
-	  addLookAhead(lookAhead, currentLine);
-	}
-      compressedChunk.push_back(currentLine);
-      currentLine.clear();
+    }
+  if(lookAhead.size() > 0)
+    {
+      addLookAhead(lookAhead, compressedChunk);
     }
 
-  for(int lineIter {}; lineIter < compressedChunk.size(); ++lineIter)
+  for(backgroundChunkCharType ch: compressedChunk)
     {
-      for(backgroundChunkCharType ch: compressedChunk[lineIter])
-	{
-	  // Write out bits for ch.
-	  file.write(reinterpret_cast<const char *>(&ch),
-		     sizeof(backgroundChunkCharType));
-	}
-      // if(lineIter != compressedChunk.size() -1)
-      // 	{
-      // 	  file.put('\n');
-      // 	}
+      // Write out bits for ch.
+      file.write(reinterpret_cast<const char *>(&ch),
+		 sizeof(backgroundChunkCharType));
     }
 }
 
