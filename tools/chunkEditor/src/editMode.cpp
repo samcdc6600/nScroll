@@ -154,7 +154,7 @@ void showUnsetBgChars
 /* Writes contents of bgChunk.getChunk() and cRChunk.getChunk() to the files
    at bgChunkFileName and cRChunkFileName respectively. Prints error message and
    waits for user input if there is an error. */
-void writeOutChunks
+bool writeOutChunks
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  const yx chunkCoord, const backgroundChunkCharInfo bgChunk[][xWidth],
  const char cRChunk[][xWidth], const yx chunkSize);
@@ -213,7 +213,14 @@ void readInBgChunkFile
       for(int xIter {}; xIter < chunkSize.x; xIter++)
 	{
 	  chunk[yIter][xIter].ch = rawChunk[yIter][xIter];
-	  chunk[yIter][xIter].set = false;
+	  if(foundCoord)
+	    {
+	      chunk[yIter][xIter].set = true;
+	    }
+	  else
+	    {
+	      chunk[yIter][xIter].set = false;
+	    }
 	}
     }
 }
@@ -492,12 +499,14 @@ void actOnInput
 	      progressivePrintMessage
 	      (concat("\tSaving chunks...\t"),
 	       chunkSize, 0, 0, false, false);
-	      writeOutChunks(bgChunkFileName, cRChunkFileName, chunkCoord,
-			     bgChunk.getChunk().data, cRChunk.getChunk().data,
-			     chunkSize);
-	      progressivePrintMessage
-		(concat("\tChunks saved...\t"),
-		 chunkSize, 0, afterPrintSleep, false, false);
+	      if(writeOutChunks(bgChunkFileName, cRChunkFileName, chunkCoord,
+				bgChunk.getChunk().data, cRChunk.getChunk().data,
+				chunkSize))
+		{
+		  progressivePrintMessage
+		    (concat("\tChunks saved...\t"),
+		     chunkSize, 0, afterPrintSleep, false, false);
+		}
 	    }
 	  break;
 	case toggleHelpMsg:
@@ -966,40 +975,62 @@ void showUnsetBgChars
 }
 
 
-void writeOutChunks
+bool writeOutChunks
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  const yx chunkCoord, const backgroundChunkCharInfo bgChunk[][xWidth],
  const char cRChunk[][xWidth], const yx chunkSize)
 {
-  std::ofstream file (bgChunkFileName, std::ios::binary);
-  if (!file.is_open())
-    {
-      progressivePrintMessage
-	(concat("\tError: unable to save background chunk to file \"",
-		bgChunkFileName, "\"\t"),
-	 chunkSize, 0, editingSettings::editSubMenuSleepTimeMs, false, false);
-    }
-  compressAndWriteOutBgChunk(file, bgChunk, chunkSize);
-  file.close();
-
-  file.open(cRChunkFileName, std::ios::binary);
-  if (!file.is_open())
-    {
-      progressivePrintMessage
-	(concat("\tError: unable to save coord rules chunk to file \"",
-		cRChunkFileName, "\"\t"),
-	 chunkSize, 0, editingSettings::editSubMenuSleepTimeMs, false, false);
-    }
-  compressAndWriteOutCRChunk(file, cRChunk, chunkSize);
-  file.close();
-
+  bool saved {false};
+  bool incompleateBgChunk {false};
   
-  //   // Write some data to the file
-  //   outputFile << "Hello, world!" << std::endl;
-  //   outputFile << "This is a test." << std::endl;
+  for(int yIter {}; yIter < chunkSize.y; yIter++)
+    {
+      for(int xIter {}; xIter < chunkSize.x; xIter++)
+	{
+	  if(!bgChunk[yIter][xIter].set)
+	    {
+	      incompleateBgChunk = true;
+	      break;
+	    }
+	}
+    }
 
-  //   // Close the file
-  //   outputFile.close();
+  if(incompleateBgChunk)
+    {
+      progressivePrintMessage
+	("\tError: unable to save chunks as the background chunk is not "
+	 "complete! See help for more info.\t",
+	 chunkSize, 0, editingSettings::afterFileErrorPrintSleep, false, false);
+    }
+  else
+    {
+      std::ofstream file (bgChunkFileName, std::ios::binary);
+      if (!file.is_open())
+	{
+	  progressivePrintMessage
+	    (concat("\tError: unable to save background chunk to file \"",
+		    bgChunkFileName, "\"\t"),
+	     chunkSize, 0,
+	     editingSettings::editSubMenuSleepTimeMs, false, false);
+	}
+      compressAndWriteOutBgChunk(file, bgChunk, chunkSize);
+      file.close();
+
+      file.open(cRChunkFileName, std::ios::binary);
+      if (!file.is_open())
+	{
+	  progressivePrintMessage
+	    (concat("\tError: unable to save coord rules chunk to file \"",
+		    cRChunkFileName, "\"\t"),
+	     chunkSize, 0,
+	     editingSettings::editSubMenuSleepTimeMs, false, false);
+	}
+      compressAndWriteOutCRChunk(file, cRChunk, chunkSize);
+      file.close();
+      saved = true;
+    }
+  
+  return saved;
 }
 
 

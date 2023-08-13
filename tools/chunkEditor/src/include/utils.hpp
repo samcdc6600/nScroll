@@ -236,13 +236,12 @@ void readInCRChunkFile
 (const std::string fileName, char cRChunk[][xWidth], const yx chunkSize,
  yx & chunkCoord, bool & foundCoord);
 /* Read in and decompress a chunk from a bg chunk file, Where file is an already
-   opened chunk file, eMsg is an error message, expectedNumberOfLines is the
-   expected number of lines the file should have and chunkCoord is the chunk
-   coordinates read from the file (if any.)*/
+   opened chunk file,  expectedNumberOfLines is the expected number of lines the
+   file should have and chunkCoord is the chunk coordinates read from the file
+   (if any.) */
 void getBgChunk
 (std::fstream & file, backgroundChunkCharType chunk[][xWidth],
- const int expectedNumberOfLines,
- yx & chunkCoord, const std::string & eMsg);
+ const yx chunkSize, yx & chunkCoord, const std::string & fileName);
 void compressAndWriteOutBgChunk
 (std::ofstream & file,
  const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize);
