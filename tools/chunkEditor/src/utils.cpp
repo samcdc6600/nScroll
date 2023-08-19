@@ -510,7 +510,7 @@ void readInBgChunkFile
 
 
 void readInCRChunkFile
-(const std::string fileName, char cRChunk[][xWidth], const yx chunkSize,
+(const std::string fileName, char chunk[][xWidth], const yx chunkSize,
  yx & chunkCoord, bool & foundCoord)
 {
   std::fstream chunkFile;
@@ -532,6 +532,7 @@ void readInCRChunkFile
   else
     {
       // File already exists, try reading in and decompressing contents.
+      getCRChunk(chunkFile, chunk, chunkSize, chunkCoord, fileName);
       chunkFile.close();
       foundCoord = true;
     }
@@ -572,7 +573,7 @@ void getBgChunk
 	  }
       };
 
-      if(bgChar == runLengthSequenceSignifier)
+      if(bgChar == bgRunLengthSequenceSignifier)
 	{
 	  int runLength {};
 	  if(!file.read(reinterpret_cast<char*>(&runLength), sizeof(int)))
@@ -607,20 +608,61 @@ void getBgChunk
 }
 
 
+void getCRChunk
+(std::fstream & file, char chunk[][xWidth],
+ const yx chunkSize, yx & chunkCoord, const std::string & fileName)
+{
+  // Read in chunkCoord.
+  chunkCoord = yx{0, 0};	// TMP
+
+  // Read in chunk body.
+  int yIter {}, xIter {};
+  char cRChar {};
+  while(file>>cRChar)
+    {
+      /* Used to update yIter and xIter */
+      auto updateVirtualNestedYXLoop = [& xIter, & yIter, chunkSize]()
+      {
+	xIter++;
+	if(xIter > chunkSize.x -1)
+	  {
+	    xIter = 0;
+	    yIter++;
+	  }
+      };
+      /* Used to detect if the chunk is too big. */
+      /* Used to detect if the chunk is too big. */
+      auto checkYOfVirtualNestedLoop = [xIter, yIter, chunkSize, fileName]()
+      {
+	if(yIter > chunkSize.y - 1)
+	  {
+	    exit(concat
+		 ("Error: character rules chunk file \"", fileName, "\". Is "
+		  "the wrong size (", yIter * chunkSize.x + xIter, "). It "
+		  "should be ", chunkSize.y * chunkSize.x, "."),
+		 ERROR_MALFORMED_FILE);
+	  }
+      };
+
+      if(cRChar == cRRunLengthSequenceSignifier)
+	{
+	  finish me!
+	}
+    }
+}
+
+
 void compressAndWriteOutBgChunk
 (std::ofstream & file,
  const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize)    
 {
-  std::vector<backgroundChunkCharType> compressedChunk {};
-  
   auto addLookAhead = [](std::vector<backgroundChunkCharType> & lookAhead,
 			 std::vector<backgroundChunkCharType> & compressedChunk)
   {
-    if(lookAhead.size() > compressionAdvantagePoint)
+    if(lookAhead.size() > bgCompressionAdvantagePoint)
       {
 	// We will gain an advantage from compressing lookAhead.
-	compressedChunk.push_back
-	  (runLengthSequenceSignifier);
+	compressedChunk.push_back(bgRunLengthSequenceSignifier);
 	compressedChunk.push_back(lookAhead.size());
 	compressedChunk.push_back(lookAhead[0]);
       }
@@ -633,7 +675,8 @@ void compressAndWriteOutBgChunk
 
     lookAhead.clear();
   };
- 
+  
+  std::vector<backgroundChunkCharType> compressedChunk {}; 
   std::vector<backgroundChunkCharType> lookAhead {};
   for(int yIter {}; yIter < chunkSize.y; ++yIter)
     {
@@ -674,6 +717,67 @@ void compressAndWriteOutBgChunk
 void compressAndWriteOutCRChunk
 (std::ofstream & file, const char cRChunk[][xWidth], const yx chunkSize)
 {
+  auto addLookAhead = [](std::vector<char> & lookAhead,
+			 std::vector<char> & compressedChunk)
+  {
+    if(lookAhead.size() > bgCompressionAdvantagePoint)
+      {
+	// We will gain an advantage from compressing lookAhead.
+	compressedChunk.push_back(cRRunLengthSequenceSignifier);
+	/* Note that we store the length of a run as two bytes here and as such
+	   if bigger chunks are desired the number of bytes will of course have
+	   to be increased. */
+	char lowByte = lookAhead.size() & 0xFF;
+	char highByte = (lookAhead.size() >> 8) & 0xFF; 
+	compressedChunk.push_back(highByte);
+	compressedChunk.push_back(lowByte);
+	compressedChunk.push_back(lookAhead[0]);
+      }
+    else
+      {
+	// No advantage from compression. Append lookAhead to compressedChunk.
+	compressedChunk.insert
+	  (compressedChunk.end(), lookAhead.begin(), lookAhead.end());
+      }
+
+    lookAhead.clear();
+  };
+  
+  std::vector<char> compressedChunk {};
+  std::vector<char> lookAhead {};
+  for(int yIter {}; yIter < chunkSize.y; ++yIter)
+    {
+      for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	{
+	  if(!lookAhead.empty())
+	    {
+	      if(lookAhead.back() == cRChunk[yIter][xIter])
+		{
+		  lookAhead.push_back(cRChunk[yIter][xIter]);
+		}
+	      else
+		{
+		  addLookAhead(lookAhead, compressedChunk);
+		  lookAhead.push_back(cRChunk[yIter][xIter]);
+		}
+	    }
+	  else
+	    {
+	      lookAhead.push_back(cRChunk[yIter][xIter]);
+	    }
+	}
+    }
+  if(lookAhead.size() > 0)
+    {
+      addLookAhead(lookAhead, compressedChunk);
+    }
+
+  for(char ch: compressedChunk)
+    {
+      // Write out bits for ch.
+      file<<ch;// .write(reinterpret_cast<const char *>(&ch),
+	       // 	 sizeof(backgroundChunkCharType));
+    }
 }
 
 

@@ -26,12 +26,20 @@ struct backgroundChunkCharInfo
   bool set;
 };
 
-constexpr backgroundChunkCharType
-runLengthSequenceSignifier {std::numeric_limits<int>::max()};
+/* These constants are special values that signify the start of run length
+   sequences. */
+constexpr backgroundChunkCharType bgRunLengthSequenceSignifier
+  {std::numeric_limits<int>::max()};
+constexpr char cRRunLengthSequenceSignifier {'R'};
 /* The point after which we will gain an advantage from our run length
    compression scheme compression.
    RunLengthSequenceSignifier + length + character = 3. */
-constexpr int compressionAdvantagePoint {3};
+constexpr int bgCompressionAdvantagePoint{3};
+/* We need to be able to store lengths of at least 8160 (our chunk size 170x48)
+   For this we will need two chars. Thus a run length sequence will take up
+   RunLengthSequenceSignifier + lengthComp1 + lengthComp2 + character
+   characters. */
+constexpr int cRCompressionAdvantagePoint {4};
 
 struct yx
 {
@@ -233,14 +241,16 @@ void readInBgChunkFile
 (const std::string fileName, backgroundChunkCharType chunk[yHeight][xWidth],
  const yx chunkSize, yx & chunkCoord, bool & foundCoord);
 void readInCRChunkFile
-(const std::string fileName, char cRChunk[][xWidth], const yx chunkSize,
+(const std::string fileName, char chunk[][xWidth], const yx chunkSize,
  yx & chunkCoord, bool & foundCoord);
 /* Read in and decompress a chunk from a bg chunk file, Where file is an already
-   opened chunk file,  expectedNumberOfLines is the expected number of lines the
-   file should have and chunkCoord is the chunk coordinates read from the file
-   (if any.) */
+   opened chunk file, chunk is where the chunk read in will be stored and
+   chunkCoord is the chunk coordinates read from the file. */
 void getBgChunk
 (std::fstream & file, backgroundChunkCharType chunk[][xWidth],
+ const yx chunkSize, yx & chunkCoord, const std::string & fileName);
+void getCRChunk
+(std::fstream & file, char chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName);
 void compressAndWriteOutBgChunk
 (std::ofstream & file,
@@ -370,66 +380,6 @@ void insertChunk
 	   ERROR_DUPLICATE_COORDINATE);
     }
 }
-
-
-/* Pushes sucessive characters from secondStageDrawBuffer (starting at
-   buffIndex) into contiguouscolorchars untill either reaching the end of
-   secondStageDrawBuffer, reaching a character that has a different colour or
-   an ACS character. If a the end of secondStageDrawBuffer is reached or a
-   character with a different colour is reached returns false with
-   contiguousColorChars populated and buffIndex pointing to the character after
-   the last that was pushed into contiguousColorChars. If an ACS
-   character is encountered returns true with acsChar set to the character
-   found and with contiguousColorChars and buffIndex set as they are with the
-   situation where an ACS character isn't found. */
-// inline bool getContiguouslyColordString
-// (char const drawBuffer[][xWidth],
-//  yx & buffIndex, const yx viewPortSize, std::string & contiguousColorChars,
-//  unsigned short & acsCode)
-// {
-//   const unsigned short startColorCode =
-//     getColor(drawBuffer[buffIndex]);
-//   // const int startIndex {buffIndex};
-
-
-//   for( ; buffIndex < (viewPortSize.y * viewPortSize.x) &&
-// 	 getColor(drawBuffer[buffIndex]) == startColorCode;
-//        buffIndex++)
-//     {
-//       unsigned short ch;
-//       ch = drawBuffer[buffIndex];
-
-//       // Remove colour information (if any) from ch.
-//       if(inColorRange(ch))
-// 	{
-// 	  ch -= (getColor(ch) * (maxCharNum + 1));
-// 	}
-
-//       if(ch <= ASCII_CH_MAX)
-// 	{
-// 	  // We have an ASCII char.
-// 	  contiguousColorChars.push_back(ch);
-// 	}
-//       else if(ch <= maxCharNum)
-// 	{
-// 	  // We have an ACS char. 
-// 	  acsCode = ch;
-// 	  return true;
-// 	}
-//       else
-// 	{
-// 	  exit(concat("Error: encountered default colour character (",
-// 		      (int)ch, ") that is greater than ", maxCharNum,".!"),
-// 	       ERROR_CHARACTER_RANGE);
-// 	}
-//     }
-
-//   /* We must decrement buffIndex here because it is incremented at the end of
-//      the loop but the loop isn't run again and thus the next character isn't
-//      added. */
-//   buffIndex--;
-//   return false;
-// }
 
 
 #endif

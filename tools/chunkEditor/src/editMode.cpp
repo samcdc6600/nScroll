@@ -500,8 +500,8 @@ void actOnInput
 	      (concat("\tSaving chunks...\t"),
 	       chunkSize, 0, 0, false, false);
 	      if(writeOutChunks(bgChunkFileName, cRChunkFileName, chunkCoord,
-				bgChunk.getChunk().data, cRChunk.getChunk().data,
-				chunkSize))
+				bgChunk.getChunk().data,
+				cRChunk.getChunk().data, chunkSize))
 		{
 		  progressivePrintMessage
 		    (concat("\tChunks saved...\t"),
