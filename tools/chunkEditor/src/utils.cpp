@@ -515,8 +515,11 @@ void readInCRChunkFile
 {
   std::fstream chunkFile;
 
+  chunkFile.open(fileName, std::ios::in);
+
   if(!chunkFile.is_open())
     {
+      // exit(-1);
       chunkFile.open(fileName, std::ios::out);
       if(!chunkFile.is_open())
 	{
@@ -550,7 +553,7 @@ void getBgChunk
   int yIter {}, xIter {};
   backgroundChunkCharType bgChar {};
   while(file.read(reinterpret_cast<char*>(&bgChar), sizeof(int)))
-    {
+    {      
       /* Used to update yIter and xIter. */
       auto updateVirtualNestedYXLoop = [& xIter, & yIter, chunkSize]()
       {
@@ -579,14 +582,14 @@ void getBgChunk
 	  if(!file.read(reinterpret_cast<char*>(&runLength), sizeof(int)))
 	    {
 	      exit(concat("Error: trying to read in background chunk file \"",
-			  fileName, "\". File ends after Run-length sequence "
+			  fileName, "\". File ends after run-length sequence "
 			  "signifier (or an IO error has occurred.)"),
 		   ERROR_MALFORMED_FILE);
 	    }
 	  if(!file.read(reinterpret_cast<char*>(&bgChar), sizeof(int)))
 	    {
 	      exit(concat("Error: trying to read in background chunk file \"",
-			  fileName, "\". File ends after Run-length sequence "
+			  fileName, "\". File ends after run-length sequence "
 			  "signifier and length (or an IO error has "
 			  "occurred.)"), ERROR_MALFORMED_FILE);
 	    }
@@ -605,6 +608,9 @@ void getBgChunk
 	  
 	}
     }
+
+  /* TODO: add code here and above to make sure that chunk has been fully
+     filled! */
 }
 
 
@@ -646,9 +652,53 @@ void getCRChunk
 
       if(cRChar == cRRunLengthSequenceSignifier)
 	{
-	  finish me!
+	  char highByte {}, lowByte {};
+	  if(file.read(&highByte, sizeof(char)))//!file>>highByte)
+	    {
+	      exit(concat("Error: trying to read in character rules chunk file "
+			  "\"", fileName, "\". File ends after run-length "
+			  "sequence signifier and length (or an IO error has "
+			  "occurred.)"), ERROR_MALFORMED_FILE);
+	    }
+	  if(file.read(&lowByte, sizeof(char)))//!file>>lowByte)
+	    {
+	      exit(concat("Error: trying to read in character rules chunk file "
+			  "\"", fileName, "\". File ends after first byte of "
+			  "run-length sequence signifier and length (or an IO "
+			  "error has occurred.)"), ERROR_MALFORMED_FILE);
+	    }
+	  if(!file>>cRChar)
+	    {
+	      exit(concat("Error: trying to read in character rules chunk file "
+			  "\"", fileName, "\". File ends after run-length "
+			  "sequence signifier and length bytes (or an IO error "
+			  "has occurred."), ERROR_MALFORMED_FILE);
+	    }
+
+	  	      std::cout<<((static_cast<unsigned char>(highByte) << 8) |
+			  static_cast<unsigned char>(lowByte))
+			       <<'\n';
+	  //	int runLength {(highByte << 8) & lowByte};
+	  for(int iter {}; iter < ((static_cast<unsigned char>(highByte) << 8) |
+				   static_cast<unsigned char>(lowByte)); iter++)
+	    {
+	      checkYOfVirtualNestedLoop();
+	      chunk[yIter][xIter] = cRChar;
+	      updateVirtualNestedYXLoop();
+	    }
+	}
+      else
+	{
+	  checkYOfVirtualNestedLoop();
+	  chunk[yIter][xIter] = cRChar;
+	  updateVirtualNestedYXLoop();
 	}
     }
+
+  exit(-1);
+  
+  /* TODO: add code here and above to make sure that chunk has been fully
+     filled! */
 }
 
 
@@ -720,15 +770,20 @@ void compressAndWriteOutCRChunk
   auto addLookAhead = [](std::vector<char> & lookAhead,
 			 std::vector<char> & compressedChunk)
   {
-    if(lookAhead.size() > bgCompressionAdvantagePoint)
+    if(lookAhead.size() > cRCompressionAdvantagePoint)
       {
 	// We will gain an advantage from compressing lookAhead.
 	compressedChunk.push_back(cRRunLengthSequenceSignifier);
 	/* Note that we store the length of a run as two bytes here and as such
 	   if bigger chunks are desired the number of bytes will of course have
 	   to be increased. */
-	char lowByte = lookAhead.size() & 0xFF;
-	char highByte = (lookAhead.size() >> 8) & 0xFF; 
+	char lowByte = static_cast<char>(lookAhead.size() & 0xFF);
+	char highByte = static_cast<char>((lookAhead.size() >> 8) & 0xFF);
+	
+	// std::cout<<", "<<((static_cast<unsigned char>(highByte) << 8) |
+	// 		  static_cast<unsigned char>(lowByte));
+	// std::cout<<", "<<lookAhead.size()<<'\n';
+	
 	compressedChunk.push_back(highByte);
 	compressedChunk.push_back(lowByte);
 	compressedChunk.push_back(lookAhead[0]);
@@ -778,6 +833,8 @@ void compressAndWriteOutCRChunk
       file<<ch;// .write(reinterpret_cast<const char *>(&ch),
 	       // 	 sizeof(backgroundChunkCharType));
     }
+
+  // exit(-1);
 }
 
 

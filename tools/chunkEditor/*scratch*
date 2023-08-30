@@ -1,0 +1,33 @@
+;; This buffer is for text that is not saved, and for Lisp evaluation.
+;; To create a file, visit it with C-x C-f and enter text in its buffer.
+
+
+I have the code:
+
+
+	char lowByte = static_cast<char>(lookAhead.size() & 0xFF);
+	char highByte = static_cast<char>((lookAhead.size() >> 8) & 0xFF);
+	
+	compressedChunk.push_back(highByte);
+	compressedChunk.push_back(lowByte);
+
+
+where compressedChunk is a vector of chars that is saved to a file.
+
+This file is then read in.
+Here is some of the code that reads in the file.
+
+Assuming that the current position in the file is the first byte of
+lookAhead.size() that written out.
+
+The print statement should output the value of lookAhead.size() that was saved
+to the file. However it doesn't. What do you think the problem is?
+
+
+	char highByte {}, lowByte {};
+	file>>highByte;
+	file>>lowByte;
+
+	std::cout<<((static_cast<unsigned char>(highByte) << 8) |
+			  static_cast<unsigned char>(lowByte))
+			       <<'\n';
