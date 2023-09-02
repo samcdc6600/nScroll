@@ -22,6 +22,21 @@ std::ostream & operator<<(std::ostream &lhs, const yx rhs)
 }
 
 
+/* Used to update yIter and xIter for loop in get chunk functions. */
+void updateVirtualNestedYXLoop(int & xIter, int & yIter, const yx chunkSize);
+/* Used to detect if the chunk is too big in get chunk functions. */
+void checkYOfVirtualNestedLoop(int & xIter, int & yIter, const yx chunkSize,
+                               const std::string & fileName,
+                               const std::string & eMsgStart);
+/* Attempts to write out chunkCoord to file (which should be open) at the
+   current position. Prints an error message and exits if there is an error. */
+void writeOutChunkCoordToFile
+(const std::string & fileName, std::ofstream & file, const yx chunkCoord);
+/* Attempts to read in a chunk coord from file (which should be open) at the
+   current position. Prints an error message and exits if there is an error,
+   otherwise reruns chunk coord. */
+yx readInChunkCoordFromFile    
+(const std::string & fileName, std::fstream & file);
 /* NOTE THAT WE DECLARE THIS HEADING HERE BECAUSE A FUNCTION WITH THE SAME
    SIGNATURE (OR AT LEAST THIS WOULD BE THE CASE, BUT APPARENTLY THE LINKER
    DOESN'T LIKE IT WHEN TWO FUNCTIONS HAVE THE SAME SIGNATURE EVEN IF THEIR
@@ -63,6 +78,80 @@ namespace boarderRuleChars
 /* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player
    cannot be started at a position with a number with more places than this. */
 constexpr int MAX_COORD_LEN{10};
+
+
+void updateVirtualNestedYXLoop(int & xIter, int & yIter, const yx chunkSize)
+{
+  xIter++;
+  if(xIter > chunkSize.x -1)
+    {
+      xIter = 0;
+      yIter++;
+    }
+}
+
+
+void checkYOfVirtualNestedLoop
+(int & xIter, int & yIter, const yx chunkSize, const std::string & fileName,
+ const std::string & eMsgStart)
+{
+  if(yIter > chunkSize.y - 1)
+    {
+      exit(concat(eMsgStart, "Chunk is too large (",
+		  yIter * chunkSize.x + xIter +1, ") It should be ",
+		  chunkSize.y * chunkSize.x, "."),
+	   ERROR_MALFORMED_FILE);
+    }
+}
+
+
+void writeOutChunkCoordToFile
+(const std::string & fileName, std::ofstream & file, const yx chunkCoord)
+{
+  auto intOut = [& fileName, & file, & chunkCoord] (const int a)
+  {
+    for(int iter {}; iter < sizeof(int); ++iter)
+      {
+	char outputChar {};
+	outputChar = a << (8 * (sizeof(int) - iter));
+	if(!file.write(reinterpret_cast<const char *>(&outputChar),
+		       sizeof(char)))
+	  {
+	    exit(concat("Error: trying to write chunkCoord (", chunkCoord, ")",
+			" to \"", fileName, "\"."), ERROR_WRITING_TO_FILE);
+	  }
+      }
+  };
+
+  intOut(chunkCoord.y);
+  intOut(chunkCoord.x);
+}
+
+
+yx readInChunkCoordFromFile
+(const std::string & fileName, std::fstream & file)
+{
+  yx ret;
+  char bytes[4];
+  if(!file.read(bytes, 4))
+    {
+      exit(concat("Error: trying to read int from \"", fileName, "\". The file "
+		  "size may be of note."),
+	   ERROR_MALFORMED_FILE);
+    }
+  
+  ret.y =
+    (static_cast<unsigned char>(bytes[3]) << 24) |
+    (static_cast<unsigned char>(bytes[2]) << 16) |
+    (static_cast<unsigned char>(bytes[1]) << 8)  |
+    (static_cast<unsigned char>(bytes[0]) << 0);
+  ret.x =
+    (static_cast<unsigned char>(bytes[3]) << 24) |
+    (static_cast<unsigned char>(bytes[2]) << 16) |
+    (static_cast<unsigned char>(bytes[1]) << 8)  |
+    (static_cast<unsigned char>(bytes[0]) << 0);
+  return ret;
+}
 
 
 void disableBlockingUserInput()
@@ -515,11 +604,12 @@ void readInCRChunkFile
 {
   std::fstream chunkFile;
 
+  /* NOTE: here we would ideally like to use std::ios::binary, however when we
+     do the next if statement is false! We have no idea why this is the case! */
   chunkFile.open(fileName, std::ios::in);
 
   if(!chunkFile.is_open())
     {
-      // exit(-1);
       chunkFile.open(fileName, std::ios::out);
       if(!chunkFile.is_open())
 	{
@@ -546,71 +636,58 @@ void getBgChunk
 (std::fstream & file, backgroundChunkCharType chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName)
 {
+  const std::string eMsgStart
+    {concat("Error: trying to read in background chunk file \"", fileName,
+	    "\". ")};
   // Read in chunkCoord.
   chunkCoord = yx{0, 0};	// TMP
   
   // Read in chunk body.
   int yIter {}, xIter {};
   backgroundChunkCharType bgChar {};
+  int chunkCharsFound {};
   while(file.read(reinterpret_cast<char*>(&bgChar), sizeof(int)))
     {      
-      /* Used to update yIter and xIter. */
-      auto updateVirtualNestedYXLoop = [& xIter, & yIter, chunkSize]()
-      {
-	xIter++;
-	if(xIter > chunkSize.x -1)
-	  {
-	    xIter = 0;
-	    yIter++;
-	  }
-      };
-      /* Used to detect if the chunk is too big. */
-      auto checkYOfVirtualNestedLoop = [xIter, yIter, chunkSize, fileName]()
-      {
-	if(yIter > chunkSize.y - 1)
-	  {
-	    exit(concat
-		 ("Error: background chunk file \"", fileName, "\". Is the "
-		  "wrong size (", yIter * chunkSize.x + xIter, "). It should "
-		  "be ", chunkSize.y * chunkSize.x, "."), ERROR_MALFORMED_FILE);
-	  }
-      };
-
       if(bgChar == bgRunLengthSequenceSignifier)
 	{
 	  int runLength {};
 	  if(!file.read(reinterpret_cast<char*>(&runLength), sizeof(int)))
 	    {
-	      exit(concat("Error: trying to read in background chunk file \"",
-			  fileName, "\". File ends after run-length sequence "
+	      exit(concat(eMsgStart, "File ends after run-length sequence "
 			  "signifier (or an IO error has occurred.)"),
 		   ERROR_MALFORMED_FILE);
 	    }
 	  if(!file.read(reinterpret_cast<char*>(&bgChar), sizeof(int)))
 	    {
-	      exit(concat("Error: trying to read in background chunk file \"",
-			  fileName, "\". File ends after run-length sequence "
-			  "signifier and length (or an IO error has "
-			  "occurred.)"), ERROR_MALFORMED_FILE);
+	      exit(concat(eMsgStart, "File ends after run-length sequence "
+			  "signifier and length (or an IO error has occurred.)"
+			  ), ERROR_MALFORMED_FILE);
 	    }
 	  for(int iter {}; iter < runLength; iter++)
 	    {
-	      checkYOfVirtualNestedLoop();
+	      checkYOfVirtualNestedLoop
+		(xIter, yIter, chunkSize, fileName, eMsgStart);
 	      chunk[yIter][xIter] = bgChar;
-	      updateVirtualNestedYXLoop();
+	      chunkCharsFound++;
+	      updateVirtualNestedYXLoop(xIter, yIter, chunkSize);
 	    }
 	}
       else
 	{
-	  checkYOfVirtualNestedLoop();
+	  checkYOfVirtualNestedLoop
+	    (xIter, yIter, chunkSize, fileName, eMsgStart);
 	  chunk[yIter][xIter] = bgChar;
-	  updateVirtualNestedYXLoop();
-	  
+	  chunkCharsFound++;
+	  updateVirtualNestedYXLoop(xIter, yIter, chunkSize);
 	}
     }
 
-  /* TODO: add code here and above to make sure that chunk has been fully
-     filled! */
+  if(chunkCharsFound != chunkSize.y * chunkSize.x)
+    {
+      exit(concat(eMsgStart, "Chunk is too small (", chunkCharsFound, ") "
+		  "It should be ", chunkSize.y * chunkSize.x, "."),
+	   ERROR_MALFORMED_FILE);
+    }
 }
 
 
@@ -618,93 +695,61 @@ void getCRChunk
 (std::fstream & file, char chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName)
 {
-  // Read in chunkCoord.
-  chunkCoord = yx{0, 0};	// TMP
+  const std::string eMsgStart
+    {concat("Error: trying to read in character rules chunk file "
+	    "\"", fileName, "\". ")};
+  
+  chunkCoord = readInChunkCoordFromFile(fileName, file);
 
   // Read in chunk body.
   int yIter {}, xIter {};
   char cRChar {};
-  while(file>>cRChar)
+  while(file.read(&cRChar, sizeof(char)))
     {
-      /* Used to update yIter and xIter */
-      auto updateVirtualNestedYXLoop = [& xIter, & yIter, chunkSize]()
-      {
-	xIter++;
-	if(xIter > chunkSize.x -1)
-	  {
-	    xIter = 0;
-	    yIter++;
-	  }
-      };
-      /* Used to detect if the chunk is too big. */
-      /* Used to detect if the chunk is too big. */
-      auto checkYOfVirtualNestedLoop = [xIter, yIter, chunkSize, fileName]()
-      {
-	if(yIter > chunkSize.y - 1)
-	  {
-	    exit(concat
-		 ("Error: character rules chunk file \"", fileName, "\". Is "
-		  "the wrong size (", yIter * chunkSize.x + xIter, "). It "
-		  "should be ", chunkSize.y * chunkSize.x, "."),
-		 ERROR_MALFORMED_FILE);
-	  }
-      };
-
       if(cRChar == cRRunLengthSequenceSignifier)
 	{
 	  char highByte {}, lowByte {};
-	  if(file.read(&highByte, sizeof(char)))//!file>>highByte)
+	  if(!file.read(&highByte, sizeof(char)))
 	    {
-	      exit(concat("Error: trying to read in character rules chunk file "
-			  "\"", fileName, "\". File ends after run-length "
-			  "sequence signifier and length (or an IO error has "
-			  "occurred.)"), ERROR_MALFORMED_FILE);
+	      exit(concat(eMsgStart, "File ends after run-length sequence "
+			  "signifier (or an IO error has occurred.)"),
+		   ERROR_MALFORMED_FILE);
 	    }
-	  if(file.read(&lowByte, sizeof(char)))//!file>>lowByte)
+	  if(!file.read(&lowByte, sizeof(char)))
 	    {
-	      exit(concat("Error: trying to read in character rules chunk file "
-			  "\"", fileName, "\". File ends after first byte of "
-			  "run-length sequence signifier and length (or an IO "
-			  "error has occurred.)"), ERROR_MALFORMED_FILE);
+	      exit(concat(eMsgStart, "File ends after run-length sequence "
+			  "signifier and first byte of length (or an IO error "
+			  "has occurred.)"), ERROR_MALFORMED_FILE);
 	    }
-	  if(!file>>cRChar)
+	  if(!file.read(&cRChar, sizeof(char)))
 	    {
-	      exit(concat("Error: trying to read in character rules chunk file "
-			  "\"", fileName, "\". File ends after run-length "
+	      exit(concat(eMsgStart, "File ends after run-length "
 			  "sequence signifier and length bytes (or an IO error "
-			  "has occurred."), ERROR_MALFORMED_FILE);
+			  "has occurred.)"), ERROR_MALFORMED_FILE);
 	    }
-
-	  	      std::cout<<((static_cast<unsigned char>(highByte) << 8) |
-			  static_cast<unsigned char>(lowByte))
-			       <<'\n';
-	  //	int runLength {(highByte << 8) & lowByte};
 	  for(int iter {}; iter < ((static_cast<unsigned char>(highByte) << 8) |
 				   static_cast<unsigned char>(lowByte)); iter++)
 	    {
-	      checkYOfVirtualNestedLoop();
+	      checkYOfVirtualNestedLoop
+		(xIter, yIter, chunkSize, fileName, eMsgStart);
 	      chunk[yIter][xIter] = cRChar;
-	      updateVirtualNestedYXLoop();
+	      updateVirtualNestedYXLoop(xIter, yIter, chunkSize);
 	    }
 	}
       else
 	{
-	  checkYOfVirtualNestedLoop();
+	  checkYOfVirtualNestedLoop
+	    (xIter, yIter, chunkSize, fileName, eMsgStart);
 	  chunk[yIter][xIter] = cRChar;
-	  updateVirtualNestedYXLoop();
+	  updateVirtualNestedYXLoop(xIter, yIter, chunkSize);
 	}
     }
-
-  exit(-1);
-  
-  /* TODO: add code here and above to make sure that chunk has been fully
-     filled! */
 }
 
 
 void compressAndWriteOutBgChunk
-(std::ofstream & file,
- const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize)    
+(const std::string & fileName, std::ofstream & file, const yx chunkCoord,
+ const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize)
 {
   auto addLookAhead = [](std::vector<backgroundChunkCharType> & lookAhead,
 			 std::vector<backgroundChunkCharType> & compressedChunk)
@@ -765,7 +810,8 @@ void compressAndWriteOutBgChunk
 
 
 void compressAndWriteOutCRChunk
-(std::ofstream & file, const char cRChunk[][xWidth], const yx chunkSize)
+(const std::string & fileName, std::ofstream & file, const yx chunkCoord,
+ const char cRChunk[][xWidth], const yx chunkSize)
 {
   auto addLookAhead = [](std::vector<char> & lookAhead,
 			 std::vector<char> & compressedChunk)
@@ -779,11 +825,6 @@ void compressAndWriteOutCRChunk
 	   to be increased. */
 	char lowByte = static_cast<char>(lookAhead.size() & 0xFF);
 	char highByte = static_cast<char>((lookAhead.size() >> 8) & 0xFF);
-	
-	// std::cout<<", "<<((static_cast<unsigned char>(highByte) << 8) |
-	// 		  static_cast<unsigned char>(lowByte));
-	// std::cout<<", "<<lookAhead.size()<<'\n';
-	
 	compressedChunk.push_back(highByte);
 	compressedChunk.push_back(lowByte);
 	compressedChunk.push_back(lookAhead[0]);
@@ -797,9 +838,11 @@ void compressAndWriteOutCRChunk
 
     lookAhead.clear();
   };
-  
+
   std::vector<char> compressedChunk {};
   std::vector<char> lookAhead {};
+
+  writeOutChunkCoordToFile(fileName, file, yx{15, 32});
   for(int yIter {}; yIter < chunkSize.y; ++yIter)
     {
       for(int xIter {}; xIter < chunkSize.x; ++xIter)
@@ -830,11 +873,9 @@ void compressAndWriteOutCRChunk
   for(char ch: compressedChunk)
     {
       // Write out bits for ch.
-      file<<ch;// .write(reinterpret_cast<const char *>(&ch),
-	       // 	 sizeof(backgroundChunkCharType));
+      file.write(reinterpret_cast<const char *>(&ch),
+		 sizeof(backgroundChunkCharType));
     }
-
-  // exit(-1);
 }
 
 

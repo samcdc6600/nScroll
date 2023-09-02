@@ -1013,7 +1013,8 @@ bool writeOutChunks
 	     chunkSize, 0,
 	     editingSettings::editSubMenuSleepTimeMs, false, false);
 	}
-      compressAndWriteOutBgChunk(file, bgChunk, chunkSize);
+      compressAndWriteOutBgChunk
+	(bgChunkFileName, file, chunkCoord, bgChunk, chunkSize);
       file.close();
 
       file.open(cRChunkFileName, std::ios::binary);
@@ -1025,7 +1026,8 @@ bool writeOutChunks
 	     chunkSize, 0,
 	     editingSettings::editSubMenuSleepTimeMs, false, false);
 	}
-      compressAndWriteOutCRChunk(file, cRChunk, chunkSize);
+      compressAndWriteOutCRChunk
+	(cRChunkFileName, file, chunkCoord, cRChunk, chunkSize);
       file.close();
       saved = true;
     }

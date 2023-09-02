@@ -144,6 +144,7 @@ enum errorsCodes {                     /* Error codes. */
                    ERROR_INVALID_DIRECTION, // Direction character found not to
                                             // be valid.
                    ERROR_OPENING_FILE,      // Error opening file.
+		   ERROR_WRITING_TO_FILE,
 		   ERROR_MALFORMED_FILE,
                    ERROR_CHARACTER_RANGE,   // Character out of range.
                    ERROR_COLOR_CODE_RANGE,  // Color code out of range.
@@ -253,10 +254,10 @@ void getCRChunk
 (std::fstream & file, char chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName);
 void compressAndWriteOutBgChunk
-(std::ofstream & file,
+(const std::string & fileName, std::ofstream & file, const yx chunkCoord,
  const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize);
 void compressAndWriteOutCRChunk
-(std::ofstream & file,
+(const std::string & fileName, std::ofstream & file, const yx chunkCoord,
  const char cRChunk[][xWidth], const yx chunkSize);
 void getChunk
 (const std::string & data, std::string::const_iterator & buffPos,
