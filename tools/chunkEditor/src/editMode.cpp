@@ -100,7 +100,7 @@ void readInBgChunkFile
 /* This is the main routine that handles chunk editing. */
 void editModeProper
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
- const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+ yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize);
 /* If edState.input == editChars::quit then asks the user if they really want
    to quit. Returns true if they do, false otherwise. */
@@ -109,7 +109,7 @@ bool getConfirmation(const yx viewPortSize, editingState & edState,
 		     const std::string & question);
 void actOnInput
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
- const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+ yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
  editingState & edState);
 /* Updates the cursors position in edState if edState.input is one of cursorUp,
@@ -151,6 +151,11 @@ void floodFill
 void showUnsetBgChars
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
  editingState & edState);
+/* Prints a message showing the current coordinates and asking the user to
+   enter new coordinates, can be aborted using editChars::quit. New coordinates
+   are only saved when writeOutChunks is called. */
+void showAndChangeCoorinates
+(const yx viewPortSize, editingState & edState, yx & chunkCoord);
 /* Writes contents of bgChunk.getChunk() and cRChunk.getChunk() to the files
    at bgChunkFileName and cRChunkFileName respectively. Prints error message and
    waits for user input if there is an error. */
@@ -292,7 +297,7 @@ void editMode
 
 void editModeProper
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
- const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+ yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize)
 {
   editingState edState
@@ -391,7 +396,7 @@ bool getConfirmation(const yx viewPortSize, editingState & edState,
 
 void actOnInput
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
- const yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+ yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
  editingState & edState)
 {
@@ -491,6 +496,9 @@ void actOnInput
 	    {
 	      showUnsetBgChars(bgChunk.getChunk().data, chunkSize, edState);
 	    }
+	  break;
+	case changeCoordinates:
+	  showAndChangeCoorinates(chunkSize, edState, chunkCoord);
 	  break;
 	case saveChunks:
 	  if(getConfirmation(chunkSize, edState,
@@ -971,6 +979,37 @@ void showUnsetBgChars
       edState.input = getch();
       sleep(editSubMenuSleepTimeMs);
     }  
+  safeScreenExit(edState);
+}
+
+
+void showAndChangeCoorinates
+(const yx viewPortSize, editingState & edState, yx & chunkCoord)
+{
+  using namespace editingSettings::editChars;
+
+  std::string msg {concat
+      ("\tThe current chunk coordinates are ", chunkCoord, ". Please enter new "
+       "chunk coordinates (note that these coordinates will not be saved until "
+       "the chunks are saved.): ")};
+  
+  editingSettings::colorMode.setColor(editingSettings::helpColor);
+  
+  progressivePrintMessage
+    (msg, viewPortSize, 0, 200, false, false);
+
+  enableBlockingUserInput();
+  while(scanw("%d %d", &chunkCoord.y, &chunkCoord.x) != 2)
+    {
+      progressivePrintMessage
+	(concat("Error: you must enter a chunk coordinate in the form of a "
+		"y and x coordinate seperated by a space. Please enter "
+		"coordinates: "), viewPortSize, printCharSpeed,
+	 editingSettings::afterIncorrectCoordInputSleep);
+      progressivePrintMessage
+	(msg, viewPortSize, 0, 200, false, false);
+    }
+  disableBlockingUserInput();
   safeScreenExit(edState);
 }
 

@@ -137,8 +137,8 @@ yx readInChunkCoordFromFile
     char bytes[4];
     if(!file.read(bytes, 4))
       {
-	exit(concat("Error: trying to read int from \"", fileName, "\". The file "
-		    "size may be of note."),
+	exit(concat("Error: trying to read int from \"", fileName, "\". The "
+		    "file size may be of note."),
 	     ERROR_MALFORMED_FILE);
       }
     for(int iter {}; iter < sizeof(int); ++iter)
@@ -640,8 +640,8 @@ void getBgChunk
   const std::string eMsgStart
     {concat("Error: trying to read in background chunk file \"", fileName,
 	    "\". ")};
-  // Read in chunkCoord.
-  chunkCoord = yx{0, 0};	// TMP
+  
+  chunkCoord = readInChunkCoordFromFile(fileName, file);
   
   // Read in chunk body.
   int yIter {}, xIter {};
@@ -701,10 +701,6 @@ void getCRChunk
 	    "\"", fileName, "\". ")};
   
   chunkCoord = readInChunkCoordFromFile(fileName, file);
-
-  endwin();
-  std::cout<<chunkCoord<<'\n';
-  exit(-1);
 
   // Read in chunk body.
   int yIter {}, xIter {};
@@ -778,6 +774,8 @@ void compressAndWriteOutBgChunk
   
   std::vector<backgroundChunkCharType> compressedChunk {}; 
   std::vector<backgroundChunkCharType> lookAhead {};
+
+  writeOutChunkCoordToFile(fileName, file, chunkCoord);
   for(int yIter {}; yIter < chunkSize.y; ++yIter)
     {
       for(int xIter {}; xIter < chunkSize.x; ++xIter)
@@ -847,7 +845,7 @@ void compressAndWriteOutCRChunk
   std::vector<char> compressedChunk {};
   std::vector<char> lookAhead {};
 
-  writeOutChunkCoordToFile(fileName, file, yx{15, 32});
+  writeOutChunkCoordToFile(fileName, file, chunkCoord);
   for(int yIter {}; yIter < chunkSize.y; ++yIter)
     {
       for(int xIter {}; xIter < chunkSize.x; ++xIter)
@@ -874,12 +872,12 @@ void compressAndWriteOutCRChunk
     {
       addLookAhead(lookAhead, compressedChunk);
     }
-
+  
   for(char ch: compressedChunk)
     {
       // Write out bits for ch.
       file.write(reinterpret_cast<const char *>(&ch),
-		 sizeof(backgroundChunkCharType));
+		 sizeof(char));
     }
 }
 

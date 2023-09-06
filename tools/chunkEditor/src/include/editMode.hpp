@@ -17,6 +17,7 @@ namespace editingSettings
   constexpr std::chrono::milliseconds cursorBlinkTimeMs {700};
   constexpr std::chrono::milliseconds showLastChunkAfterUpdateIndexFor {2500};
   constexpr int afterFileErrorPrintSleep {3500};
+  constexpr int afterIncorrectCoordInputSleep {4000};
   extern setColorMode colorMode;
   // Color used for help menu.
   constexpr int helpColor {1};
@@ -58,6 +59,7 @@ namespace editingSettings
     constexpr char bgFloodFill		{'f'};
     // 'i' for info.
     constexpr char bgShowUnsetChars	{'i'};
+    constexpr char changeCoordinates    {'k'};
     constexpr char saveChunks		{'o'};
     constexpr char toggleHelpMsg       	{'h'};
   };
