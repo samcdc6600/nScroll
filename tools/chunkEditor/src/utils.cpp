@@ -113,7 +113,7 @@ void writeOutChunkCoordToFile
     for(int iter {}; iter < sizeof(int); ++iter)
       {
 	char outputChar {};
-	outputChar = a << (8 * (sizeof(int) - iter));
+	outputChar = a << (8 * iter);
 	if(!file.write(reinterpret_cast<const char *>(&outputChar),
 		       sizeof(char)))
 	  {
@@ -131,25 +131,26 @@ void writeOutChunkCoordToFile
 yx readInChunkCoordFromFile
 (const std::string & fileName, std::fstream & file)
 {
-  yx ret;
-  char bytes[4];
-  if(!file.read(bytes, 4))
-    {
-      exit(concat("Error: trying to read int from \"", fileName, "\". The file "
-		  "size may be of note."),
-	   ERROR_MALFORMED_FILE);
-    }
+  auto intIn = [& fileName, & file] (int & a)
+  {
+    a = 0;
+    char bytes[4];
+    if(!file.read(bytes, 4))
+      {
+	exit(concat("Error: trying to read int from \"", fileName, "\". The file "
+		    "size may be of note."),
+	     ERROR_MALFORMED_FILE);
+      }
+    for(int iter {}; iter < sizeof(int); ++iter)
+      {
+	a |=  (bytes[iter] << (8 * iter));
+      }
+  };
+
+  yx ret {};
+  intIn(ret.y);
+  intIn(ret.x);
   
-  ret.y =
-    (static_cast<unsigned char>(bytes[3]) << 24) |
-    (static_cast<unsigned char>(bytes[2]) << 16) |
-    (static_cast<unsigned char>(bytes[1]) << 8)  |
-    (static_cast<unsigned char>(bytes[0]) << 0);
-  ret.x =
-    (static_cast<unsigned char>(bytes[3]) << 24) |
-    (static_cast<unsigned char>(bytes[2]) << 16) |
-    (static_cast<unsigned char>(bytes[1]) << 8)  |
-    (static_cast<unsigned char>(bytes[0]) << 0);
   return ret;
 }
 
@@ -700,6 +701,10 @@ void getCRChunk
 	    "\"", fileName, "\". ")};
   
   chunkCoord = readInChunkCoordFromFile(fileName, file);
+
+  endwin();
+  std::cout<<chunkCoord<<'\n';
+  exit(-1);
 
   // Read in chunk body.
   int yIter {}, xIter {};
