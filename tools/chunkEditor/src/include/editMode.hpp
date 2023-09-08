@@ -47,6 +47,7 @@ namespace editingSettings
     constexpr char cursorRight		{'d'};
     constexpr char performActionAtPos	{' '};
     constexpr char toggleBetweenCRandBg	{'t'};
+    constexpr char toggleReferenceChunkView	{'R'};
     constexpr char cREraseCRChar       	{'e'};
     constexpr char cRSetCRCharToBorder	{'b'};
     constexpr char cRSetCRCharToPlatform	{'p'};
@@ -204,8 +205,10 @@ public:
  Finally call editModeProper(). */
 void editMode
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
+ const std::string refBgChunkFileName, const std::string refCRChunkFileName,
  chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize);
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
+ const bool usingReferences);
 
 
 #endif

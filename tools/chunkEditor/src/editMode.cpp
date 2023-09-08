@@ -22,24 +22,19 @@ struct editingState
 {
   // Are we editing the cRChunk or the bgChunk?
   bool cRChunkToggle;
-  // // Show character selection screen?
-  // bool characterSelection;
-  // // Show help screen.
-  // bool help;
-  // Used for blinking the cursor.
+  /* Show reference chunk (note that the chunk show is dependant on the state of
+     cRChunkToggle */
+  bool refrenceChunkToggle;
   bool cursorOn;
   std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast;
   int input;
   yx cursorPos;
-  // The bg char that will be saved to bgChunk if we press space.
-
+  
 private:
   // Buffer to remember x of the last bg chars.
   static constexpr int bgCharsBufferSize {24};
   int bgCharsRingBuffer [bgCharsBufferSize] {};
   int currentBgCharIndex {};
-  // The user can switch between the current and last bg chars.
-  // int lastBgChar;
 
 public:
   char currentCRChar;
@@ -51,6 +46,7 @@ public:
    const int currentCRChar)
   {
     this->cRChunkToggle = cRChunkToggle;
+    this->refrenceChunkToggle = false;
     this->cursorOn = cursorOn;
     this->cursorVisibilityChangeTimeLast = cursorVisibilityChangeTimeLast;
     this->input = input;
@@ -101,13 +97,21 @@ void readInBgChunkFile
 void editModeProper
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize);
+ chunk<char, yHeight, xWidth> & cRChunk,
+ const backgroundChunkCharType refBgChunk[yHeight][xWidth],
+ const char refCRChunk[yHeight][xWidth], const yx chunkSize,
+ const bool usingReferences);
 /* If edState.input == editChars::quit then asks the user if they really want
    to quit. Returns true if they do, false otherwise. */
 bool confirmQuit(const yx viewPortSize, editingState &edState);
 bool getConfirmation(const yx viewPortSize, editingState & edState,
 		     const std::string & question);
-void actOnInput
+void actOnInputLayer1
+(const std::string bgChunkFileName, const std::string cRChunkFileName,
+ yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
+ const bool usingReferences, editingState & edState);
+void actOnInputLayer2
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
@@ -168,6 +172,8 @@ bool writeOutChunks
 void printEditHelp(const yx viewPortSize, editingState & edState);
 void printBgChunk
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx viewPortSize);
+void printRefBgChunk
+(const backgroundChunkCharType bgChunk[][xWidth], const yx viewPortSize);
 void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize);
 void printRandomColorAtCursoPos(editingState & edState);
 void printCursorForCREditMode(const yx cursorPos, const char currentCRChar);
@@ -233,11 +239,14 @@ void readInBgChunkFile
 
 void editMode
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
+ const std::string refBgChunkFileName, const std::string refCRChunkFileName,
  chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize)
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
+ const bool usingReferences)
 {
-  bool foundBgChunkCoord {false}, foundCRChunkCoord {false};
-  yx bgChunkCoord {}, cRChunkCoord {};
+  bool foundBgChunkCoord {false}, foundCRChunkCoord {false},
+    foundRefBgChunkCoord {false}, foundRefCRChunkCoord {false};
+  yx bgChunkCoord {}, cRChunkCoord {}, dummyCoord;
 
   // Read files into bgChunk and cRChunk (if they exist.)
   readInBgChunkFile(bgChunkFileName, bgChunk.advanceBeforeModify().data,
@@ -264,6 +273,26 @@ void editMode
 		  element = filler;
 		});
     }
+
+  backgroundChunkCharType 	refBgChunk[yHeight][xWidth];
+  char				refCRChunk[yHeight][xWidth];
+  if(usingReferences)
+    {
+      // Read in reference bgChunk and cRChunk files.
+      readInBgChunkFile(refBgChunkFileName, refBgChunk, chunkSize,
+			dummyCoord, foundRefBgChunkCoord);
+      readInCRChunkFile(refCRChunkFileName, refCRChunk, chunkSize,
+			dummyCoord, foundRefCRChunkCoord);
+      if(!foundRefBgChunkCoord || !foundRefCRChunkCoord)
+	{
+	  endwin();
+	  printMessageNoWin("Error: unable to find one or more reference chunk"
+			    " files (see help for more info.) Is the path "
+			    "wrong?", 1, afterPrintSleep);
+	  exit(ERROR_INVALID_CMD_ARGS);
+	}
+    }
+  
   if(!foundBgChunkCoord && !foundCRChunkCoord)
     {
       // No void files were found, so we must ask the user for coordinates.
@@ -282,15 +311,17 @@ void editMode
 		    "coordinates: "), chunkSize, printCharSpeed, 0);
 	}
       disableBlockingUserInput();
-      editModeProper(bgChunkFileName, cRChunkFileName, bgChunkCoord, bgChunk,
-		     cRChunk, chunkSize);
+      editModeProper(bgChunkFileName, cRChunkFileName, bgChunkCoord,
+		     bgChunk, cRChunk, refBgChunk, refCRChunk,
+		     chunkSize, usingReferences);
     }
   else
     {
       // Both or just one coord could be valid, so we choose one that is.
       editModeProper(bgChunkFileName, cRChunkFileName,
 		     foundBgChunkCoord? bgChunkCoord: cRChunkCoord,
-		     bgChunk, cRChunk, chunkSize);
+		     bgChunk, cRChunk,  refBgChunk, refCRChunk,
+		     chunkSize, usingReferences);
     }
 }
 
@@ -298,7 +329,10 @@ void editMode
 void editModeProper
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize)
+ chunk<char, yHeight, xWidth> & cRChunk,
+ const backgroundChunkCharType refBgChunk[yHeight][xWidth],
+ const char refCRChunk[yHeight][xWidth], const yx chunkSize,
+ const bool usingReferences)
 {
   editingState edState
     {
@@ -315,16 +349,45 @@ void editModeProper
     {
       edState.input = getch();
 
-      actOnInput(bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk, cRChunk,
-		 chunkSize, edState);
+      // Perform some action based on input.
+      actOnInputLayer1(bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk,
+		       cRChunk, chunkSize, usingReferences, edState);
 
       // We always print the background chunk.
-      printBgChunk(bgChunk.getChunk().data, chunkSize);
-      if(edState.cRChunkToggle)
+      if(!edState.refrenceChunkToggle)
 	{
-	  // We want to print coord rules over the bg chunk.
-	  printCRChunk(cRChunk.getChunk().data, chunkSize);
+	  printBgChunk(bgChunk.getChunk().data, chunkSize);
+	  if(edState.cRChunkToggle)
+	    {
+	      printCRChunk(cRChunk.getChunk().data, chunkSize);
+	    }
 	}
+      else
+	{
+	  printRefBgChunk(refBgChunk, chunkSize);
+	  if(edState.cRChunkToggle)
+	    {
+	      printCRChunk(refCRChunk, chunkSize);
+	    }
+	}
+
+
+      // printBgChunk(bgChunk.getChunk().data, chunkSize);
+      // if(edState.refrenceChunkToggle && !edState.cRChunkToggle)
+      // 	{
+      // 	  // Print bg reference chunk.
+      // 	  printRefBgChunk(refBgChunk, chunkSize);
+      // 	}
+      // else if(edState.cRChunkToggle)
+      // 	{
+      // 	  // We want to print coord rules over the bg chunk.
+      // 	  printCRChunk(cRChunk.getChunk().data, chunkSize);
+      // 	  if(edState.refrenceChunkToggle)
+      // 	    {
+      // 	      // Print cR reference chunk.
+      // 	      printCRChunk(refCRChunk, chunkSize);
+      // 	    }
+      // 	}
 
 	// The cursor should generally always be visible, so print last.
       if(edState.cRChunkToggle)
@@ -353,18 +416,6 @@ bool confirmQuit(const yx viewPortSize, editingState & edState)
   bool quit {false};
   if(edState.input == editingSettings::editChars::quit)
     {
-      // editingSettings::colorMode.setColor(editingSettings::helpColor);
-      // progressivePrintMessage
-      // (concat("\tDo you really want to quit y/n?.\t"),
-      //  viewPortSize, 0, 0, false, false);
-      
-      // nodelay(stdscr, FALSE);
-      // safeScreenExit(edState);
-      // nodelay(stdscr, TRUE);
-      // if(edState.input == 'y')
-      // 	{
-      // 	  quit = true;
-      // 	}
       quit = getConfirmation(viewPortSize, edState,
 			     "\tDo you really want to quit y/n?.\t");
     }
@@ -394,133 +445,163 @@ bool getConfirmation(const yx viewPortSize, editingState & edState,
 }
 
 
-void actOnInput
+void actOnInputLayer1
+(const std::string bgChunkFileName, const std::string cRChunkFileName,
+ yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
+ const bool usingReferences, editingState & edState)
+{
+  if(!updateCursorPos(chunkSize, edState))
+    {
+      switch(edState.input)
+	{
+	case editingSettings::editChars::toggleBetweenCRandBg:
+	  edState.cRChunkToggle = !edState.cRChunkToggle;
+	  break;
+	case editingSettings::editChars::toggleReferenceChunkView:
+	  // Only try and show reference chunks if they actually exist.
+	  if(usingReferences)
+	    {
+	      edState.refrenceChunkToggle = !edState.refrenceChunkToggle;
+	    }
+	  break;
+	case editingSettings::editChars::toggleHelpMsg:
+	  printEditHelp(chunkSize, edState);
+	  break;
+	default:
+	  if(!edState.refrenceChunkToggle)
+	    {
+	      actOnInputLayer2(bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk,
+			       cRChunk, chunkSize, edState);
+	    }
+	};
+    }
+}
+
+
+void actOnInputLayer2
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
  editingState & edState)
 {
   using namespace editingSettings::editChars;
-
-  if(!updateCursorPos(chunkSize, edState))
+  
+  switch(edState.input)
     {
-      switch(edState.input)
+    case performActionAtPos:
+      if(edState.cRChunkToggle)
 	{
-	case performActionAtPos:
-	  if(edState.cRChunkToggle)
-	    {
-	      cRChunk.advanceBeforeModify().data[edState.cursorPos.y][edState.cursorPos.x] = edState.currentCRChar;
-	    }
-	  else
-	    {
-	      bgChunk.advanceBeforeModify().data[edState.cursorPos.y][edState.cursorPos.x].ch =
-		edState.getCurrentBgChar();
-	      bgChunk.getChunk().data[edState.cursorPos.y][edState.cursorPos.x].set = true;
-	    }
-	  break;
-	case toggleBetweenCRandBg:
-	  edState.cRChunkToggle = !edState.cRChunkToggle;
-	  break;
-	case cREraseCRChar:
-	  if(edState.cRChunkToggle)
-	    {
-	      edState.currentCRChar = editingSettings::rulesChars::nullRule;
-	    }
-	  break;
-	case cRSetCRCharToBorder:
-	  if(edState.cRChunkToggle)
-	    {
-	      edState.currentCRChar = editingSettings::rulesChars::boarder;
-	    }
-	  break;
-	case cRSetCRCharToPlatform:
-	  if(edState.cRChunkToggle)
-	    {
-	      edState.currentCRChar = editingSettings::rulesChars::platform;
-	    }
-	  break;
-	case bGToggleCharacterSelection:
-	  if(!edState.cRChunkToggle)
-	    {
-	      getBgCharFromUser(chunkSize, edState);
-	    }
-	  break;
-	case bgNextCurrentChar:
-	  if(!edState.cRChunkToggle)
-	    {
-	      edState.recallNextBgChar();
-	    }
-	  break;
-	case bgLastCurrentChar:
-	  if(!edState.cRChunkToggle)
-	    {
-	      edState.recallLastBgChar();
-	    }
-	  break;
-	case undo:
-	  if(!edState.cRChunkToggle)
-	    {
-	      bgChunk.backward();
-	    }
-	  else
-	    {
-	      cRChunk.backward();
-	    }
-	  break;
-	case redo:
-	  if(!edState.cRChunkToggle)
-	    {
-	      bgChunk.forward();
-	    }
-	  else
-	    {
-	      cRChunk.forward();
-	    }
-	  break;
-	case bgGetCharAtPos:
-	  if(!edState.cRChunkToggle)
-	    {
-	      edState.setCurrentBgChar
-		(bgChunk.getChunk().data
-		 [edState.cursorPos.y][edState.cursorPos.x].ch);
-	    }
-	  break;
-	case bgFloodFill:
-	  if(!edState.cRChunkToggle)
-	    {
-	      floodFill(bgChunk.advanceBeforeModify().data, chunkSize, edState);
-	    }
-	  break;
-	case bgShowUnsetChars:
-	  if(!edState.cRChunkToggle)
-	    {
-	      showUnsetBgChars(bgChunk.getChunk().data, chunkSize, edState);
-	    }
-	  break;
-	case changeCoordinates:
-	  showAndChangeCoorinates(chunkSize, edState, chunkCoord);
-	  break;
-	case saveChunks:
-	  if(getConfirmation(chunkSize, edState,
-			     "\tdo you really want to save?\t"))
+	  cRChunk.advanceBeforeModify().
+	    data[edState.cursorPos.y][edState.cursorPos.x] =
+	    edState.currentCRChar;
+	}
+      else
+	{
+	  bgChunk.advanceBeforeModify().
+	    data[edState.cursorPos.y][edState.cursorPos.x].ch =
+	    edState.getCurrentBgChar();
+	  bgChunk.getChunk().
+	    data[edState.cursorPos.y][edState.cursorPos.x].set = true;
+	}
+      break;
+    case cREraseCRChar:
+      if(edState.cRChunkToggle)
+	{
+	  edState.currentCRChar = editingSettings::rulesChars::nullRule;
+	}
+      break;
+    case cRSetCRCharToBorder:
+      if(edState.cRChunkToggle)
+	{
+	  edState.currentCRChar = editingSettings::rulesChars::boarder;
+	}
+      break;
+    case cRSetCRCharToPlatform:
+      if(edState.cRChunkToggle)
+	{
+	  edState.currentCRChar = editingSettings::rulesChars::platform;
+	}
+      break;
+    case bGToggleCharacterSelection:
+      if(!edState.cRChunkToggle)
+	{
+	  getBgCharFromUser(chunkSize, edState);
+	}
+      break;
+    case bgNextCurrentChar:
+      if(!edState.cRChunkToggle)
+	{
+	  edState.recallNextBgChar();
+	}
+      break;
+    case bgLastCurrentChar:
+      if(!edState.cRChunkToggle)
+	{
+	  edState.recallLastBgChar();
+	}
+      break;
+    case undo:
+      if(!edState.cRChunkToggle)
+	{
+	  bgChunk.backward();
+	}
+      else
+	{
+	  cRChunk.backward();
+	}
+      break;
+    case redo:
+      if(!edState.cRChunkToggle)
+	{
+	  bgChunk.forward();
+	}
+      else
+	{
+	  cRChunk.forward();
+	}
+      break;
+    case bgGetCharAtPos:
+      if(!edState.cRChunkToggle)
+	{
+	  edState.setCurrentBgChar
+	    (bgChunk.getChunk().data
+	     [edState.cursorPos.y][edState.cursorPos.x].ch);
+	}
+      break;
+    case bgFloodFill:
+      if(!edState.cRChunkToggle)
+	{
+	  floodFill
+	    (bgChunk.advanceBeforeModify().data, chunkSize, edState);
+	}
+      break;
+    case bgShowUnsetChars:
+      if(!edState.cRChunkToggle)
+	{
+	  showUnsetBgChars(bgChunk.getChunk().data, chunkSize, edState);
+	}
+      break;
+    case changeCoordinates:
+      showAndChangeCoorinates(chunkSize, edState, chunkCoord);
+      break;
+    case saveChunks:
+      if(getConfirmation(chunkSize, edState,
+			 "\tdo you really want to save?\t"))
+	{
+	  progressivePrintMessage
+	    (concat("\tSaving chunks...\t"),
+	     chunkSize, 0, 0, false, false);
+	  if(writeOutChunks(bgChunkFileName, cRChunkFileName,
+			    chunkCoord, bgChunk.getChunk().data,
+			    cRChunk.getChunk().data, chunkSize))
 	    {
 	      progressivePrintMessage
-	      (concat("\tSaving chunks...\t"),
-	       chunkSize, 0, 0, false, false);
-	      if(writeOutChunks(bgChunkFileName, cRChunkFileName, chunkCoord,
-				bgChunk.getChunk().data,
-				cRChunk.getChunk().data, chunkSize))
-		{
-		  progressivePrintMessage
-		    (concat("\tChunks saved...\t"),
-		     chunkSize, 0, afterPrintSleep, false, false);
-		}
+		(concat("\tChunks saved...\t"),
+		 chunkSize, 0, afterPrintSleep, false, false);
 	    }
-	  break;
-	case toggleHelpMsg:
-	  printEditHelp(chunkSize, edState);
-	  break;
 	}
+      break;
     }
 }
 
@@ -1130,6 +1211,32 @@ void printBgChunk
 	      editingSettings::colorMode.setColor
 		(editingSettings::blackBgColorPair);
 	      mvprintw(yIter, xIter, " ");
+	    }
+	}
+    }
+}
+
+
+void printRefBgChunk
+(const backgroundChunkCharType bgChunk[][xWidth], const yx viewPortSize)
+{
+  for(int yIter {}; yIter < viewPortSize.y; yIter++)
+    {
+      for(int xIter {}; xIter < viewPortSize.x; xIter++)
+	{
+	  int ch;
+	  bool foundACSCode;
+	      
+	  setColorFromChar(bgChunk[yIter][xIter]);
+	  ch = getChar(bgChunk[yIter][xIter], foundACSCode);
+
+	  if(foundACSCode)
+	    {
+	      printACS(yx{yIter, xIter}, ch);
+	    }
+	  else
+	    {
+	      mvprintw(yIter, xIter, concat("", (char)ch).c_str());
 	    }
 	}
     }
