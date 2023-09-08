@@ -37,6 +37,8 @@ tools/benchmarking/*#
 tools/benchmarking/#*
 tools/chunkEditor/*.bgchunk
 tools/chunkEditor/*.crchunk
+tools/chunkEditor/*.levbg
+tools/chunkEditor/*.levcr
 tools/chunkEditor/chunked
 tools/chunkEditor/*.core
 tools/chunkEditor/.tmp

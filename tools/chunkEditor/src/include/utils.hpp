@@ -127,8 +127,8 @@ constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR{27};
 // constexpr int BACKGROUND_HEIGHT {33};
 
-constexpr char BACKGROUND_FILE_EXTENSION [] {".background.lev"};
-constexpr char COORD_RULES_FILE_EXTENSION [] {".coordRules.lev"};
+constexpr char BACKGROUND_FILE_EXTENSION [] {".levbg"};
+constexpr char COORD_RULES_FILE_EXTENSION [] {".levcr"};
 constexpr char BACKGROUND_CHUNK_FILE_EXTENSION [] {".bgchunk"};
 constexpr char COORD_RULES_CHUNK_FILE_EXTENSION[] {".crchunk"};
 // constexpr char RULES_CONFIG_FILE_EXTENSION [] {".rules.lev"};

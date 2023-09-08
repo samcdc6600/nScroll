@@ -206,9 +206,7 @@ public:
 void editMode
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  const std::string refBgChunkFileName, const std::string refCRChunkFileName,
- chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
- const bool usingReferences);
+ const yx chunkSize, const bool usingReferences);
 
 
 #endif

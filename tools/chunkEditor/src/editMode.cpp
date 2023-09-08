@@ -240,10 +240,15 @@ void readInBgChunkFile
 void editMode
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  const std::string refBgChunkFileName, const std::string refCRChunkFileName,
- chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
- const bool usingReferences)
+ const yx chunkSize, const bool usingReferences)
 {
+  chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk
+    {backgroundChunkCharInfo{editingSettings::invalidCharColorPair, false},
+     editingSettings::showLastChunkAfterUpdateIndexFor};
+  chunk<char, yHeight, xWidth> cRChunk
+    {editingSettings::emptyCharChar,
+     editingSettings::showLastChunkAfterUpdateIndexFor};
+  
   bool foundBgChunkCoord {false}, foundCRChunkCoord {false},
     foundRefBgChunkCoord {false}, foundRefCRChunkCoord {false};
   yx bgChunkCoord {}, cRChunkCoord {}, dummyCoord;

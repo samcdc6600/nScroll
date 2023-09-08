@@ -1,6 +1,7 @@
 #include "include/initCurses.hpp"
 #include "include/utils.hpp"
 #include "include/editMode.hpp"
+#include "include/appendExtract.hpp"
 
 
 /* Verifies that the CMD args in argv conform to one of the modes (see the
@@ -264,16 +265,7 @@ void printHelp(const char * argv [])
 
 
 void enterMode(const int mode, const char * argv [], const yx viewPortSize)
-{
-  chunk<backgroundChunkCharInfo, yHeight, xWidth> bgChunk
-    {backgroundChunkCharInfo{editingSettings::invalidCharColorPair, false},
-     editingSettings::showLastChunkAfterUpdateIndexFor};
-  chunk<char, yHeight, xWidth> cRChunk
-    {editingSettings::emptyCharChar,
-     editingSettings::showLastChunkAfterUpdateIndexFor};
-  // backgroundChunkCharInfo bgChunk	[yHeight][xWidth] {};
-  // char cRChunk					[yHeight][xWidth] {};
-  
+{  
   switch(mode)
     {
     case 1:
@@ -281,26 +273,25 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
       progressivePrintMessage
 	("Starting Single Chunk Edit Mode.", viewPortSize, printCharSpeed,
 	 afterPrintSleep);
-      editMode(argv[1], argv[2], "", "", bgChunk, cRChunk, viewPortSize, false);
+      editMode(argv[1], argv[2], "", "", viewPortSize, false);
       break;
     case 2:
+      // Chunk edit mode with reference chunks.
       progressivePrintMessage
 	("Starting Single Chunk Edit Mode with reference chunks.",
 	 viewPortSize, printCharSpeed,
 	 afterPrintSleep);
-      editMode(argv[1], argv[3], argv[2], argv[4], bgChunk, cRChunk,
-	       viewPortSize, true);
+      editMode(argv[1], argv[3], argv[2], argv[4], viewPortSize, true);
       break;
     case 3:
       // Append mode.
       progressivePrintMessage
 	("Starting Append mode.", viewPortSize, printCharSpeed,
 	 afterPrintSleep);
-      clear();
-      refresh();
-      endwin();
-      printMessageNoWin("Error: mode not implemented.", printCharSpeed,
-			afterPrintSleep);
+      append(argv[1], argv[2], viewPortSize);
+      progressivePrintMessage
+	("Finished appending.", viewPortSize, printCharSpeed,
+	 afterPrintSleep);
       break;
     case 4:
       // Extraction mode.
@@ -331,4 +322,8 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
 		  "error."), ERROR_BAD_LOGIC);
       break;
     }
+
+  progressivePrintMessage
+    ("Farewell", viewPortSize, printCharSpeed,
+     afterPrintSleep);
 }
