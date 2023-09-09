@@ -24,10 +24,13 @@ std::ostream & operator<<(std::ostream &lhs, const yx rhs)
 
 /* Used to update yIter and xIter for loop in get chunk functions. */
 void updateVirtualNestedYXLoop(int & xIter, int & yIter, const yx chunkSize);
-/* Used to detect if the chunk is too big in get chunk functions. */
-void checkYOfVirtualNestedLoop(int & xIter, int & yIter, const yx chunkSize,
-                               const std::string & fileName,
-                               const std::string & eMsgStart);
+/* Used to detect if the chunk is too big in get chunk functions. If
+   multiChunkFile is true and yIter is too large the function will return
+   false. Other wise it will return true. If multiChunkfile is false and yIter
+   is too large the function will exit with an error message. */
+bool checkYOfVirtualNestedLoop
+(int & xIter, int & yIter, const yx chunkSize, const std::string & fileName,
+ const bool multiChunkFile, const std::string & eMsgStart);
 /* Attempts to write out chunkCoord to file (which should be open) at the
    current position. Prints an error message and exits if there is an error. */
 void writeOutChunkCoordToFile
@@ -35,8 +38,15 @@ void writeOutChunkCoordToFile
 /* Attempts to read in a chunk coord from file (which should be open) at the
    current position. Prints an error message and exits if there is an error,
    otherwise reruns chunk coord. */
-yx readInChunkCoordFromFile    
+yx readInChunkCoordFromFile
 (const std::string & fileName, std::fstream & file);
+/* Attempts to read in a chunk coord from file (which should be open) at the
+   current position. Returns true if successful. If unsuccessful returns false
+   if exitOnError is true, otherwise returns false. Sets retVal to the
+   coordinate read (if one was successfully read.) */
+// bool readInChunkCoordFromFile
+// (yx & retVal, const std::string & fileName, std::ifstream & file,
+//  const bool exitOnError);
 /* NOTE THAT WE DECLARE THIS HEADING HERE BECAUSE A FUNCTION WITH THE SAME
    SIGNATURE (OR AT LEAST THIS WOULD BE THE CASE, BUT APPARENTLY THE LINKER
    DOESN'T LIKE IT WHEN TWO FUNCTIONS HAVE THE SAME SIGNATURE EVEN IF THEIR
@@ -91,17 +101,27 @@ void updateVirtualNestedYXLoop(int & xIter, int & yIter, const yx chunkSize)
 }
 
 
-void checkYOfVirtualNestedLoop
+bool checkYOfVirtualNestedLoop
 (int & xIter, int & yIter, const yx chunkSize, const std::string & fileName,
- const std::string & eMsgStart)
+ const bool multiChunkFile, const std::string & eMsgStart)
 {
+  bool ret {true};
   if(yIter > chunkSize.y - 1)
     {
-      exit(concat(eMsgStart, "Chunk is too large (",
-		  yIter * chunkSize.x + xIter +1, ") It should be ",
-		  chunkSize.y * chunkSize.x, "."),
-	   ERROR_MALFORMED_FILE);
+      if(!multiChunkFile)
+	{
+	  exit(concat(eMsgStart, "Chunk is too large, equal to or over ",
+		      yIter * chunkSize.x + xIter +1, " It should be ",
+		      chunkSize.y * chunkSize.x, "."),
+	       ERROR_MALFORMED_FILE);
+	}
+      else
+	{
+	  ret = false;
+	}
     }
+
+  return ret;
 }
 
 
@@ -128,31 +148,80 @@ void writeOutChunkCoordToFile
 }
 
 
-yx readInChunkCoordFromFile
-(const std::string & fileName, std::fstream & file)
+// yx readInChunkCoordFromFile
+// (const std::string & fileName, std::fstream & file)
+// {
+//   yx ret;
+//   readInChunkCoordFromFileProper(ret, fileName, file, true);
+//   return ret;
+// }
+
+
+bool readInChunkCoordFromFile
+(yx & retVal, const std::string & fileName, std::ifstream & file,
+ const bool exitOnError)
 {
-  auto intIn = [& fileName, & file] (int & a)
+  auto intIn = [& fileName, & file, exitOnError] (int & a)
   {
     a = 0;
     char bytes[4];
     if(!file.read(bytes, 4))
       {
-	exit(concat("Error: trying to read int from \"", fileName, "\". The "
-		    "file size may be of note."),
-	     ERROR_MALFORMED_FILE);
+	if(exitOnError)
+	  {
+	    exit(concat("Error: trying to read int from \"", fileName, "\". "
+			"The file size may be of note."),
+		 ERROR_MALFORMED_FILE);
+	  }
+	else
+	  {
+	    return false;
+	  }
       }
     for(int iter {}; iter < sizeof(int); ++iter)
       {
 	a |=  (bytes[iter] << (8 * iter));
       }
+
+    return true;
   };
 
-  yx ret {};
-  intIn(ret.y);
-  intIn(ret.x);
+  bool ret;
+
+  if((ret = intIn(retVal.y)))
+    {
+      ret = intIn(retVal.x);
+    }
   
   return ret;
 }
+
+
+// yx readInChunkCoordFromFile
+// (const std::string & fileName, std::fstream & file)
+// {
+//   auto intIn = [& fileName, & file] (int & a)
+//   {
+//     a = 0;
+//     char bytes[4];
+//     if(!file.read(bytes, 4))
+//       {
+// 	exit(concat("Error: trying to read int from \"", fileName, "\". The "
+// 		    "file size may be of note."),
+// 	     ERROR_MALFORMED_FILE);
+//       }
+//     for(int iter {}; iter < sizeof(int); ++iter)
+//       {
+// 	a |=  (bytes[iter] << (8 * iter));
+//       }
+//   };
+
+//   yx ret {};
+//   intIn(ret.y);
+//   intIn(ret.x);
+  
+//   return ret;
+// }
 
 
 void disableBlockingUserInput()
@@ -571,7 +640,7 @@ void readInBgChunkFile
 (const std::string fileName, backgroundChunkCharType chunk[yHeight][xWidth],
  const yx chunkSize, yx & chunkCoord, bool & foundCoord)
 {
-  std::fstream chunkFile;
+  std::ifstream chunkFile;
 
   chunkFile.open(fileName, std::ios::in);
 
@@ -603,7 +672,7 @@ void readInCRChunkFile
 (const std::string fileName, char chunk[][xWidth], const yx chunkSize,
  yx & chunkCoord, bool & foundCoord)
 {
-  std::fstream chunkFile;
+  std::ifstream chunkFile;
 
   /* NOTE: here we would ideally like to use std::ios::binary, however when we
      do the next if statement is false! We have no idea why this is the case! */
@@ -633,15 +702,21 @@ void readInCRChunkFile
 }
 
 
-void getBgChunk
-(std::fstream & file, backgroundChunkCharType chunk[][xWidth],
- const yx chunkSize, yx & chunkCoord, const std::string & fileName)
+// Note that multiChunkFile has a default value of false.
+bool getBgChunk
+(std::ifstream & file, backgroundChunkCharType chunk[][xWidth],
+ const yx chunkSize, yx & chunkCoord, const std::string & fileName,
+ const bool multiChunkFile)
 {
   const std::string eMsgStart
     {concat("Error: trying to read in background chunk file \"", fileName,
 	    "\". ")};
   
-  chunkCoord = readInChunkCoordFromFile(fileName, file);
+  
+  if(!readInChunkCoordFromFile(chunkCoord, fileName, file, !multiChunkFile))
+    {
+      return false;
+    }
   
   // Read in chunk body.
   int yIter {}, xIter {};
@@ -666,8 +741,14 @@ void getBgChunk
 	    }
 	  for(int iter {}; iter < runLength; iter++)
 	    {
-	      checkYOfVirtualNestedLoop
-		(xIter, yIter, chunkSize, fileName, eMsgStart);
+	      if(!checkYOfVirtualNestedLoop
+		 (xIter, yIter, chunkSize, fileName, multiChunkFile, eMsgStart))
+		{
+		  /* This is a multi chunk file and we've just read past the end
+		     of a chunk so we need to back up. */
+		  file.seekg(-sizeof(int), std::ios::cur);
+		  goto MEGA_BREAK;
+		}
 	      chunk[yIter][xIter] = bgChar;
 	      chunkCharsFound++;
 	      updateVirtualNestedYXLoop(xIter, yIter, chunkSize);
@@ -675,36 +756,58 @@ void getBgChunk
 	}
       else
 	{
-	  checkYOfVirtualNestedLoop
-	    (xIter, yIter, chunkSize, fileName, eMsgStart);
+	  if(!checkYOfVirtualNestedLoop
+	     (xIter, yIter, chunkSize, fileName, multiChunkFile, eMsgStart))
+	    {
+	      /* This is a multi chunk file and we've just read past the end
+		 of a chunk so we need to back up. */
+	      file.seekg(-sizeof(int), std::ios::cur);
+	      goto MEGA_BREAK;
+	    }
 	  chunk[yIter][xIter] = bgChar;
 	  chunkCharsFound++;
 	  updateVirtualNestedYXLoop(xIter, yIter, chunkSize);
 	}
     }
 
-  if(chunkCharsFound != chunkSize.y * chunkSize.x)
+ MEGA_BREAK:
+  if(chunkCharsFound < chunkSize.y * chunkSize.x)
     {
-      exit(concat(eMsgStart, "Chunk is too small (", chunkCharsFound, ") "
-		  "It should be ", chunkSize.y * chunkSize.x, "."),
-	   ERROR_MALFORMED_FILE);
+      if(multiChunkFile)
+	{
+	  return false;
+	}
+      else
+	{
+	  exit(concat(eMsgStart, "Chunk is too small (", chunkCharsFound, ") "
+		      "It should be ", chunkSize.y * chunkSize.x, "."),
+	       ERROR_MALFORMED_FILE);
+	}
     }
+
+  return true;
 }
 
 
-void getCRChunk
-(std::fstream & file, char chunk[][xWidth],
- const yx chunkSize, yx & chunkCoord, const std::string & fileName)
+// Note that multiChunkFile has a default value of false.
+bool getCRChunk
+(std::ifstream & file, char chunk[][xWidth],
+ const yx chunkSize, yx & chunkCoord, const std::string & fileName,
+ const bool multiChunkFile)
 {
   const std::string eMsgStart
     {concat("Error: trying to read in character rules chunk file "
 	    "\"", fileName, "\". ")};
   
-  chunkCoord = readInChunkCoordFromFile(fileName, file);
+  if(!readInChunkCoordFromFile(chunkCoord, fileName, file, !multiChunkFile))
+    {
+      return false;
+    }
 
   // Read in chunk body.
   int yIter {}, xIter {};
   char cRChar {};
+  int chunkCharsFound {};
   while(file.read(&cRChar, sizeof(char)))
     {
       if(cRChar == cRRunLengthSequenceSignifier)
@@ -731,20 +834,44 @@ void getCRChunk
 	  for(int iter {}; iter < ((static_cast<unsigned char>(highByte) << 8) |
 				   static_cast<unsigned char>(lowByte)); iter++)
 	    {
-	      checkYOfVirtualNestedLoop
-		(xIter, yIter, chunkSize, fileName, eMsgStart);
+	      if(!checkYOfVirtualNestedLoop
+		 (xIter, yIter, chunkSize, fileName, multiChunkFile, eMsgStart))
+		{
+		  break;
+		}
 	      chunk[yIter][xIter] = cRChar;
+	      chunkCharsFound++;
 	      updateVirtualNestedYXLoop(xIter, yIter, chunkSize);
 	    }
 	}
       else
 	{
-	  checkYOfVirtualNestedLoop
-	    (xIter, yIter, chunkSize, fileName, eMsgStart);
+	  if(!checkYOfVirtualNestedLoop
+	     (xIter, yIter, chunkSize, fileName, multiChunkFile, eMsgStart))
+	    {
+	      break;
+	    }
 	  chunk[yIter][xIter] = cRChar;
+	  chunkCharsFound++;
 	  updateVirtualNestedYXLoop(xIter, yIter, chunkSize);
 	}
     }
+
+  if(chunkCharsFound < chunkSize.y * chunkSize.x)
+    {
+      if(multiChunkFile)
+	{
+	  return false;
+	}
+      else
+	{
+	  exit(concat(eMsgStart, "Chunk is too small (", chunkCharsFound, ") "
+		      "It should be ", chunkSize.y * chunkSize.x, "."),
+	       ERROR_MALFORMED_FILE);
+	}
+    }
+
+  return true;
 }
 
 

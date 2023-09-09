@@ -11,6 +11,17 @@
  ensure that they are the right type of files and in the right order and
  combination. */
 void append(const std::string singleChunkFileName,
-	    const std::string multiChunkFileName, const yx viewPortSize);
+            const std::string multiChunkFileName, const yx viewPortSize);
+/* Calls:
+   extract(const std::string multiChunkFileName,
+           const std::string singleChunkFileName, const yx coord,
+           const yx viewPortSize).
+   See appendExtract.cpp. */
+void extract(const std::string multiChunkFileName,
+	     const std::string singleChunkFileName,
+	     const std::string yCoord, const std::string xCoord,
+	     const yx viewPortSize);
+
+
 
 #endif

@@ -298,11 +298,10 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
       progressivePrintMessage
 	("Starting Extraction Mode.", viewPortSize, printCharSpeed,
 	 afterPrintSleep);
-      clear();
-      refresh();
-      endwin();
-      printMessageNoWin("Error: mode not implemented.", printCharSpeed,
-			afterPrintSleep);
+      extract(argv[1], argv[2], argv[3], argv[4], viewPortSize);
+      progressivePrintMessage
+	("Finished extracting.", viewPortSize, printCharSpeed,
+	 afterPrintSleep);
       break;
     case 5:
       // Map view mode.

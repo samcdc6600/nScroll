@@ -244,15 +244,21 @@ void readInBgChunkFile
 void readInCRChunkFile
 (const std::string fileName, char chunk[][xWidth], const yx chunkSize,
  yx & chunkCoord, bool & foundCoord);
-/* Read in and decompress a chunk from a bg chunk file, Where file is an already
-   opened chunk file, chunk is where the chunk read in will be stored and
-   chunkCoord is the chunk coordinates read from the file. */
-void getBgChunk
-(std::fstream & file, backgroundChunkCharType chunk[][xWidth],
- const yx chunkSize, yx & chunkCoord, const std::string & fileName);
-void getCRChunk
-(std::fstream & file, char chunk[][xWidth],
- const yx chunkSize, yx & chunkCoord, const std::string & fileName);
+/* Reads in and decompress a chunk from a file. The file should already be
+   open. If it is a multi chunk file, multiChunkFile should be set to true. In
+   this case if there is an error the function will return false. However if
+   multiChunkFile is false an error message will be printed and the program
+   exited upon error. File should be an already opened chunk file, chunk is
+   where the chunk read in will be stored and chunkCoord is the chunk
+   coordinates read from the file. */
+bool getBgChunk
+(std::ifstream & file, backgroundChunkCharType chunk[][xWidth],
+ const yx chunkSize, yx & chunkCoord, const std::string & fileName,
+ const bool multiChunkFile = false);
+bool getCRChunk
+(std::ifstream & file, char chunk[][xWidth],
+ const yx chunkSize, yx & chunkCoord, const std::string & fileName,
+ const bool multiChunkFile = false);
 void compressAndWriteOutBgChunk
 (const std::string & fileName, std::ofstream & file, const yx chunkCoord,
  const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize);
