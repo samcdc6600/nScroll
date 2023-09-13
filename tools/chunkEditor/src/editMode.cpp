@@ -103,7 +103,7 @@ void editModeProper
  const bool usingReferences);
 /* If edState.input == editChars::quit then asks the user if they really want
    to quit. Returns true if they do, false otherwise. */
-bool confirmQuit(const yx viewPortSize, editingState &edState);
+bool confirmQuit(const yx viewPortSize, editingState & edState);
 bool getConfirmation(const yx viewPortSize, editingState & edState,
 		     const std::string & question);
 void actOnInputLayer1
@@ -137,11 +137,11 @@ void getBgCharFromUser(const yx chunkSize, editingState &edState);
    prints a help message. */
 int getColorPairFromUser(const yx chunkSize, editingState & edState,
 			 bool & userQuit, std::function<void()> printHelpMsg);
-/* Should be called when exiting an interactive "screen" or "menu". Sleeps for
-   editingSettings::editSubMenuSleepTimeMs and then sets edState.input to the
-   value returned from getch(). This give the user some time to take their
-   finger off of editChars::quit. */
-void safeScreenExit(editingState &edState);
+// /* Should be called when exiting an interactive "screen" or "menu". Sleeps for
+//    editingSettings::editSubMenuSleepTimeMs and then sets edState.input to the
+//    value returned from getch(). This give the user some time to take their
+//    finger off of editChars::quit. */
+void safeScreenExit(editingState & edState);
 /* If the character at edState.cursorPos is different from
    edState.getCurrentBgChar() then all characters equal to the character at
    edState.cursorPos that are contiguous with it will be set to
@@ -432,21 +432,10 @@ bool confirmQuit(const yx viewPortSize, editingState & edState)
 bool getConfirmation(const yx viewPortSize, editingState & edState,
 		     const std::string & question)
 {
-  bool affirmative {false};
-
-  editingSettings::colorMode.setColor(editingSettings::helpColor);
-  progressivePrintMessage
-    (question, viewPortSize, 0, 0, false, false);
-      
-  nodelay(stdscr, FALSE);
-  safeScreenExit(edState);
-  nodelay(stdscr, TRUE);
-  if(edState.input == 'y')
-    {
-      affirmative = true;
-    }
-
-  return affirmative;
+  return getConfirmation(viewPortSize, editingSettings::helpColor,
+			 edState.input,
+			 editingSettings::editSubMenuSleepTimeMs,
+			 question);
 }
 
 
@@ -932,8 +921,7 @@ int getColorPairFromUser(const yx chunkSize, editingState & edState,
 
 void safeScreenExit(editingState & edState)
 {
-  sleep(editingSettings::editSubMenuSleepTimeMs);
-  edState.input = getch();
+  safeScreenExit(edState.input, editingSettings::editSubMenuSleepTimeMs);
 }
 
 

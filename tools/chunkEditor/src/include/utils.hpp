@@ -123,6 +123,8 @@ constexpr int ASCII_CH_MAX {127};
 /* Numerical value of highest character using color pair 1.  */
 constexpr int maxCharNum {158};
 constexpr int COLOR_CH_MAX {63};
+constexpr int subMenuSleepTimeMs {160};
+constexpr int helpColorPair {1};
 constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR{27};
 // constexpr int BACKGROUND_HEIGHT {33};
@@ -211,6 +213,10 @@ void progressivePrintMessage
 void printMessageNoWin
 (const std::string & msg, const int interCharacterSleep,
  const int afterMsgSleep);
+bool getConfirmation
+(const yx viewPortSize, const int msgColorPair, int & userInput,
+ const int editSubMenuSleepTimeMs, const std::string & question);
+void safeScreenExit(int & userInput, const int editSubMenuSleepTimeMs);
 void sleep(const unsigned long long t);
 bool isNum(const char c);
 /* Returns false if a is not range [min, max). */
@@ -220,6 +226,10 @@ bool checkRange(const int a, const int min, const int max);
 bool inSingleDigitRange(const int a, const int offset);
 void loadFileIntoString(const char name[], std::string & buff,
 			const std::string & eMsg);
+void createFileIfNoneExists
+(const std::string & fileName, const std::string & eMsg);
+bool fileExists(const std::string & fileName);
+void createFile(const std::string & fileName, const std::string & eMsg);
 /* First checks if buffPos is in range. Returns false if it is not. Otherwise
    attempts to read the coordinates into chunkCoord. If this succeeds returns
    true (with chunkCoord being set to the coordinates read.) If there is a
@@ -252,11 +262,18 @@ void readInCRChunkFile
    where the chunk read in will be stored and chunkCoord is the chunk
    coordinates read from the file. */
 bool getBgChunk
-(std::ifstream & file, backgroundChunkCharType chunk[][xWidth],
+(std::fstream & file, backgroundChunkCharType chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
  const bool multiChunkFile = false);
+/* Attempts to read in a chunk coord from file (which should be open) at the
+   current position. Returns true if successful. If unsuccessful returns false
+   if exitOnError is true, otherwise returns false. Sets retVal to the
+   coordinate read (if one was successfully read.) */
+bool readInChunkCoordFromFile
+(yx & retVal, const std::string & fileName, std::fstream & file,
+ const bool exitOnError);
 bool getCRChunk
-(std::ifstream & file, char chunk[][xWidth],
+(std::fstream & file, char chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
  const bool multiChunkFile = false);
 void compressAndWriteOutBgChunk

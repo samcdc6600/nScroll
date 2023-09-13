@@ -13,14 +13,14 @@ namespace editingSettings
      is pressing isn't read in as an input to the "screen" "above" the
      menu. This is especially important as the character my be editChars::quit.
   */
-  constexpr int editSubMenuSleepTimeMs {160};
+  constexpr int editSubMenuSleepTimeMs {subMenuSleepTimeMs};
   constexpr std::chrono::milliseconds cursorBlinkTimeMs {700};
   constexpr std::chrono::milliseconds showLastChunkAfterUpdateIndexFor {2500};
   constexpr int afterFileErrorPrintSleep {3500};
   constexpr int afterIncorrectCoordInputSleep {4000};
   extern setColorMode colorMode;
   // Color used for help menu.
-  constexpr int helpColor {1};
+  constexpr int helpColor {helpColorPair};
   /* This color pair is used when a character is not yet in the position in
      question. */
   constexpr int invalidCharColorPair {-1}; //noCharColorPair {15};

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
 #include "include/utils.hpp"
 #include "include/colorS.hpp"
 
@@ -36,17 +37,9 @@ bool checkYOfVirtualNestedLoop
 void writeOutChunkCoordToFile
 (const std::string & fileName, std::ofstream & file, const yx chunkCoord);
 /* Attempts to read in a chunk coord from file (which should be open) at the
-   current position. Prints an error message and exits if there is an error,
-   otherwise reruns chunk coord. */
-yx readInChunkCoordFromFile
-(const std::string & fileName, std::fstream & file);
-/* Attempts to read in a chunk coord from file (which should be open) at the
    current position. Returns true if successful. If unsuccessful returns false
    if exitOnError is true, otherwise returns false. Sets retVal to the
    coordinate read (if one was successfully read.) */
-// bool readInChunkCoordFromFile
-// (yx & retVal, const std::string & fileName, std::ifstream & file,
-//  const bool exitOnError);
 /* NOTE THAT WE DECLARE THIS HEADING HERE BECAUSE A FUNCTION WITH THE SAME
    SIGNATURE (OR AT LEAST THIS WOULD BE THE CASE, BUT APPARENTLY THE LINKER
    DOESN'T LIKE IT WHEN TWO FUNCTIONS HAVE THE SAME SIGNATURE EVEN IF THEIR
@@ -148,17 +141,8 @@ void writeOutChunkCoordToFile
 }
 
 
-// yx readInChunkCoordFromFile
-// (const std::string & fileName, std::fstream & file)
-// {
-//   yx ret;
-//   readInChunkCoordFromFileProper(ret, fileName, file, true);
-//   return ret;
-// }
-
-
 bool readInChunkCoordFromFile
-(yx & retVal, const std::string & fileName, std::ifstream & file,
+(yx & retVal, const std::string & fileName, std::fstream & file,
  const bool exitOnError)
 {
   auto intIn = [& fileName, & file, exitOnError] (int & a)
@@ -195,33 +179,6 @@ bool readInChunkCoordFromFile
   
   return ret;
 }
-
-
-// yx readInChunkCoordFromFile
-// (const std::string & fileName, std::fstream & file)
-// {
-//   auto intIn = [& fileName, & file] (int & a)
-//   {
-//     a = 0;
-//     char bytes[4];
-//     if(!file.read(bytes, 4))
-//       {
-// 	exit(concat("Error: trying to read int from \"", fileName, "\". The "
-// 		    "file size may be of note."),
-// 	     ERROR_MALFORMED_FILE);
-//       }
-//     for(int iter {}; iter < sizeof(int); ++iter)
-//       {
-// 	a |=  (bytes[iter] << (8 * iter));
-//       }
-//   };
-
-//   yx ret {};
-//   intIn(ret.y);
-//   intIn(ret.x);
-  
-//   return ret;
-// }
 
 
 void disableBlockingUserInput()
@@ -334,6 +291,36 @@ void printMessageNoWin
 }
 
 
+bool getConfirmation
+(const yx viewPortSize, const int msgColorPair, int & userInput,
+ const int editSubMenuSleepTimeMs, const std::string & question)
+{
+  bool affirmative {false};
+  
+  setColorMode colorMode {};
+  colorMode.setColor(msgColorPair);
+  progressivePrintMessage
+    (question, viewPortSize, 0, 0, false, false);
+      
+  nodelay(stdscr, FALSE);
+  safeScreenExit(userInput, editSubMenuSleepTimeMs);
+  nodelay(stdscr, TRUE);
+  if(userInput == 'y')
+    {
+      affirmative = true;
+    }
+
+  return affirmative;
+}
+
+
+void safeScreenExit(int & userInput, const int editSubMenuSleepTimeMs)
+{
+  sleep(editSubMenuSleepTimeMs);
+  userInput = getch();
+}
+
+
 void sleep(const unsigned long long t)
 {
   std::this_thread::sleep_for(std::chrono::milliseconds(t));
@@ -359,6 +346,41 @@ bool inSingleDigitRange(const int a, const int offset)
   if(((a - offset) < SINGLE_DIGIT_MIN) || ((a - offset) > SINGLE_DIGIT_MAX))
     return false;
   return true;
+}
+
+
+/* TODO: See if this needs to be added anywhere! Ask chatGPT about options when
+   opening files (they effect if a file will be created or not.) */
+void createFileIfNoneExists
+(const std::string & fileName, const std::string & eMsg)
+{
+  if(!fileExists(fileName))
+    {
+      createFile(fileName, eMsg);
+    }
+}
+
+
+///* TODO: add code to call this function and createFile when opening files to see
+//   if they actually exist and create them if they do not (obviously this should
+//   only be done for files that can be considered as valid if they empty.) */
+bool fileExists(const std::string & fileName)
+{
+  return std::__fs::filesystem::exists(fileName);
+}
+
+void createFile(const std::string & fileName, const std::string & eMsg)
+{
+  std::ofstream file(fileName);
+  if(file.is_open())
+    {
+      file.close();
+    }
+  else
+    {
+      exit(concat("Error: failed to create file \"", fileName, "\" when ", eMsg,
+		  "."), ERROR_OPENING_FILE);
+    }
 }
 
 
@@ -640,7 +662,7 @@ void readInBgChunkFile
 (const std::string fileName, backgroundChunkCharType chunk[yHeight][xWidth],
  const yx chunkSize, yx & chunkCoord, bool & foundCoord)
 {
-  std::ifstream chunkFile;
+  std::fstream chunkFile;
 
   chunkFile.open(fileName, std::ios::in);
 
@@ -672,7 +694,7 @@ void readInCRChunkFile
 (const std::string fileName, char chunk[][xWidth], const yx chunkSize,
  yx & chunkCoord, bool & foundCoord)
 {
-  std::ifstream chunkFile;
+  std::fstream chunkFile;
 
   /* NOTE: here we would ideally like to use std::ios::binary, however when we
      do the next if statement is false! We have no idea why this is the case! */
@@ -704,7 +726,7 @@ void readInCRChunkFile
 
 // Note that multiChunkFile has a default value of false.
 bool getBgChunk
-(std::ifstream & file, backgroundChunkCharType chunk[][xWidth],
+(std::fstream & file, backgroundChunkCharType chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
  const bool multiChunkFile)
 {
@@ -791,7 +813,7 @@ bool getBgChunk
 
 // Note that multiChunkFile has a default value of false.
 bool getCRChunk
-(std::ifstream & file, char chunk[][xWidth],
+(std::fstream & file, char chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
  const bool multiChunkFile)
 {
@@ -837,7 +859,10 @@ bool getCRChunk
 	      if(!checkYOfVirtualNestedLoop
 		 (xIter, yIter, chunkSize, fileName, multiChunkFile, eMsgStart))
 		{
-		  break;
+		  /* This is a multi chunk file and we've just read past the end of
+		     a chunk so we need to back up. */
+		  file.seekg(-(sizeof(char) * 2), std::ios::cur);
+		  goto MEGA_BREAK;
 		}
 	      chunk[yIter][xIter] = cRChar;
 	      chunkCharsFound++;
@@ -849,7 +874,10 @@ bool getCRChunk
 	  if(!checkYOfVirtualNestedLoop
 	     (xIter, yIter, chunkSize, fileName, multiChunkFile, eMsgStart))
 	    {
-	      break;
+	      /* This is a multi chunk file and we've just read past the end of
+		 a chunk so we need to back up. */
+	      file.seekg(-(sizeof(char) * 2), std::ios::cur);
+	      goto MEGA_BREAK;
 	    }
 	  chunk[yIter][xIter] = cRChar;
 	  chunkCharsFound++;
@@ -857,6 +885,7 @@ bool getCRChunk
 	}
     }
 
+ MEGA_BREAK:
   if(chunkCharsFound < chunkSize.y * chunkSize.x)
     {
       if(multiChunkFile)
