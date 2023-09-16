@@ -260,7 +260,10 @@ void readInCRChunkFile
    multiChunkFile is false an error message will be printed and the program
    exited upon error. File should be an already opened chunk file, chunk is
    where the chunk read in will be stored and chunkCoord is the chunk
-   coordinates read from the file. */
+   coordinates read from the file.
+   NOTE THAT IF A THE LAST CHUNK IN THE FILE IS READ FILE.FAIL() WILL BE TRUE
+   AND WILL NEED TO BE RESET IF MORE OPERATIONS (AT LEAST FOR SOME POSSIBLE
+   OPERATIONS) NEED TO BE DONE ON FSTREAM. */
 bool getBgChunk
 (std::fstream & file, backgroundChunkCharType chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
@@ -272,6 +275,9 @@ bool getBgChunk
 bool readInChunkCoordFromFile
 (yx & retVal, const std::string & fileName, std::fstream & file,
  const bool exitOnError);
+/* NOTE THAT IF A THE LAST CHUNK IN THE FILE IS READ FILE.FAIL() WILL BE TRUE
+   AND WILL NEED TO BE RESET IF MORE OPERATIONS (AT LEAST FOR SOME POSSIBLE
+   OPERATIONS) NEED TO BE DONE ON FSTREAM. */
 bool getCRChunk
 (std::fstream & file, char chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,

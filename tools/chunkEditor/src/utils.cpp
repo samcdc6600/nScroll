@@ -732,8 +732,7 @@ bool getBgChunk
 {
   const std::string eMsgStart
     {concat("Error: trying to read in background chunk file \"", fileName,
-	    "\". ")};
-  
+	    "\". ")};  
   
   if(!readInChunkCoordFromFile(chunkCoord, fileName, file, !multiChunkFile))
     {
@@ -792,7 +791,7 @@ bool getBgChunk
 	}
     }
 
- MEGA_BREAK:
+ MEGA_BREAK:  
   if(chunkCharsFound < chunkSize.y * chunkSize.x)
     {
       if(multiChunkFile)
@@ -861,7 +860,7 @@ bool getCRChunk
 		{
 		  /* This is a multi chunk file and we've just read past the end of
 		     a chunk so we need to back up. */
-		  file.seekg(-(sizeof(char) * 2), std::ios::cur);
+		  file.seekg(-sizeof(char), std::ios::cur);
 		  goto MEGA_BREAK;
 		}
 	      chunk[yIter][xIter] = cRChar;
@@ -876,7 +875,7 @@ bool getCRChunk
 	    {
 	      /* This is a multi chunk file and we've just read past the end of
 		 a chunk so we need to back up. */
-	      file.seekg(-(sizeof(char) * 2), std::ios::cur);
+	      file.seekg(-sizeof(char), std::ios::cur);
 	      goto MEGA_BREAK;
 	    }
 	  chunk[yIter][xIter] = cRChar;

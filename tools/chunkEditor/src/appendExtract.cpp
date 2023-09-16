@@ -6,7 +6,12 @@
    coordinate is found in file then the corresponding chunk is stored in
    chunk, chunkSeekPos is set to the start of the chunk (start of coordinates)
    and the function returns true. Otherwise the function returns false.
-   Note that file should already be open. And this function won't close it. */
+   Note that file should already be open. And this function won't close it.
+   Also note that if a read was attempted past the end of the file (this will be
+   the case if no chunk was found or the chunk found was the last chunk in the
+   file) file.fail() (this can be reset with file.clear(), which may be needed
+   to do further operations on the file) will be true and file.tellg() will be
+   -1. */
 bool findBgChunk
 (const std::string fileName, std::fstream & file,
  backgroundChunkCharType chunk[][xWidth], const yx targetCoord,
@@ -73,9 +78,28 @@ void append(const std::string singleChunkFileName,
     (std::fstream & compactant, std::streampos & chunkStartSeekPos,
      std::streampos chunkEndSeekPos)
     {
+      if(chunkEndSeekPos == -1)
+	{
+	  /* The matching chunk was the last chunk in the file and thus tellg
+	     returned -1 after the chunk was read. So we need to calculate the
+	     file size + 1 here as chunkEndSeekPos should point one past the end
+	     of the chunk. */	  
+	  /* Trying to read past the end of the file can set compactant.fail to
+	     true. */
+	  if (compactant.fail())
+	    {
+	      compactant.clear();
+	    }
+	  compactant.seekg(0, std::ios::end);
+	  chunkEndSeekPos = compactant.tellg() + static_cast<std::streampos>(1);
+	}
+      
       const std::streamsize sizeOfChunkToRemove
 	{chunkEndSeekPos - chunkStartSeekPos};
       std::vector<char> buffer(sizeOfChunkToRemove);
+          //   	  endwin();
+	  // std::cout<<"Hello!\n chunkEndSeekPos = "<<chunkEndSeekPos<<'\n';
+	  // exit(-1);
 
       while (!compactant.eof())
 	{
@@ -250,9 +274,6 @@ bool findCRChunk
 {
   bool foundChunk {false};
   yx currentCoord;
-
-  endwin();
-  std::cout<<"target Chunk = "<<targetCoord<<'\n';
   
   while(true)
     {
@@ -261,7 +282,6 @@ bool findCRChunk
       if(!getCRChunk(file, chunk, viewPortSize, currentCoord,
 		     fileName, true))
 	{
-	  std::cout<<"didn't find chunk\n";
 	  break;
 	}
       else if(currentCoord == targetCoord)
@@ -269,11 +289,7 @@ bool findCRChunk
 	  foundChunk = true;
 	  break;
 	}
-
-      std::cout<<"found chunk "<<currentCoord<<'\n';
     }
-
-  exit(-1);
 
   return foundChunk;
 }
