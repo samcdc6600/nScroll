@@ -1,7 +1,24 @@
 #include <fstream>
-#include "include/appendExtract.hpp"
+#include "include/appendExtractDelete.hpp"
 
-
+/* Checks for a chunk with coordinates searchCoord in file multiChunkFile. If
+   one is found set's duplicatChunkCoordFound to true (sets it to false
+   otherwise.) DestChunkSeekPos is set to the start position of the last chunk
+   read. So if a chunk is found it will be set to the start of that chunk. */
+void checkForDuplicateChunk
+(const std::string multiChunkFileName, std::fstream & multiChunkFile,
+ const yx searchCoord, bool & duplicatChunkCoordFound,
+ std::streampos & destChunkSeekPos, const yx viewPortSize);
+/* Essentially does the same thing as checkForDuplicateChunk(), however only
+   for multi Bg chunk files. */
+bool duplicateCoordInBgDest
+  (const std::string multiChunkFileName, std::fstream & multiChunkFile,
+   const yx searchCoord, std::streampos & destChunkSeekPos,
+   const yx viewPortSize);
+bool duplicateCoordInCRDest
+(const std::string multiChunkFileName, std::fstream & multiChunkFile,
+ const yx searchCoord, std::streampos & destChunkSeekPos,
+ const yx viewPortSize);
 /* Searches for a background chunk with coord as it's coordinate in file. If the
    coordinate is found in file then the corresponding chunk is stored in
    chunk, chunkSeekPos is set to the start of the chunk (start of coordinates)
@@ -20,6 +37,12 @@ bool findCRChunk
 (const std::string fileName, std::fstream & file,
  char chunk[][xWidth], const yx targetCoord, std::streampos & chunkSeekPos,
  const yx viewPortSize);
+/* Compactant should be open (using std::ios::in | std::ios::out |
+   std::ios::binary). */
+void compactDestFileInPlace
+(const std::string & compactantFileName, std::fstream & compactant,
+ std::streampos & chunkStartSeekPos, std::streampos chunkEndSeekPos,
+ const yx viewPortSize, const std::string eMsg);
 /* Extracts chunk with coordinates coord from multiChunkFileName and saves it
    in singleChunkFile. Exits with error message if no chunk with coord can be
    found in multiChunkFileName or there is some file writing / reading related
@@ -35,30 +58,12 @@ void extract(const std::string multiChunkFileName,
 void append(const std::string singleChunkFileName,
 	    const std::string multiChunkFileName, const yx viewPortSize)
 {
-  auto duplicateCoordInBgDest =
+  auto checkForDuplicateChunkLocal =
     [& singleChunkFileName, & multiChunkFileName, viewPortSize]
     (std::fstream & source, std::fstream & dest,
      std::streampos & destChunkSeekPos)
     {
-      backgroundChunkCharType chunk[yHeight][xWidth];
-      yx sourceChunkCoord;
-      
-      readInChunkCoordFromFile
-	(sourceChunkCoord, singleChunkFileName, source, true);
-      
-      // Seek back to the start of the source file.
-      source.seekg(0, std::ios::beg);
-      return findBgChunk
-	(multiChunkFileName, dest, chunk, sourceChunkCoord, destChunkSeekPos,
-	 viewPortSize); 
-    };
-
-  auto duplicateCoordInCRDest =
-    [& singleChunkFileName, & multiChunkFileName, viewPortSize]
-    (std::fstream & source, std::fstream & dest,
-     std::streampos & destChunkSeekPos)
-    {
-      char chunk[yHeight][xWidth];
+      bool retDuplicatChunkCoordFound {};
       yx sourceChunkCoord;
 
       readInChunkCoordFromFile
@@ -66,76 +71,11 @@ void append(const std::string singleChunkFileName,
 
       // Seek back to the start of the source file.
       source.seekg(0, std::ios::beg);
-      return findCRChunk
-	(multiChunkFileName, dest, chunk, sourceChunkCoord, destChunkSeekPos,
-	 viewPortSize);
-    };
-
-  /* Compactant should be open (using std::ios::in | std::ios::out |
-     std::ios::binary). */
-  auto compactDestFileInPlace =
-    [& singleChunkFileName, & multiChunkFileName, viewPortSize]
-    (std::fstream & compactant, std::streampos & chunkStartSeekPos,
-     std::streampos chunkEndSeekPos)
-    {
-      if(chunkEndSeekPos == -1)
-	{
-	  /* The matching chunk was the last chunk in the file and thus tellg
-	     returned -1 after the chunk was read. So we need to calculate the
-	     file size + 1 here as chunkEndSeekPos should point one past the end
-	     of the chunk. */	  
-	  /* Trying to read past the end of the file can set compactant.fail to
-	     true. */
-	  if (compactant.fail())
-	    {
-	      compactant.clear();
-	    }
-	  compactant.seekg(0, std::ios::end);
-	  chunkEndSeekPos = compactant.tellg() + static_cast<std::streampos>(1);
-	}
+      checkForDuplicateChunk
+	(multiChunkFileName, dest, sourceChunkCoord, retDuplicatChunkCoordFound,
+	 destChunkSeekPos, viewPortSize);
       
-      const std::streamsize sizeOfChunkToRemove
-	{chunkEndSeekPos - chunkStartSeekPos};
-      std::vector<char> buffer(sizeOfChunkToRemove);
-          //   	  endwin();
-	  // std::cout<<"Hello!\n chunkEndSeekPos = "<<chunkEndSeekPos<<'\n';
-	  // exit(-1);
-
-      while (!compactant.eof())
-	{
-	  /* Read a chunk of data from the position after the deleted record. */
-	  compactant.seekg(chunkEndSeekPos);
-	  compactant.read(buffer.data(), sizeOfChunkToRemove);
-
-	  /* If we've reached the end of the file, resize the buffer. */
-	  if (compactant.gcount() < sizeOfChunkToRemove)
-	    {
-	      buffer.resize(compactant.gcount());
-	    }
-
-	  /* Write the chunk of data at the start position of the deleted
-	     record */
-	  compactant.seekp(chunkStartSeekPos);
-	  compactant.write(buffer.data(), buffer.size());
-
-	  // Update the start and end positions.
-	  chunkStartSeekPos += compactant.gcount();
-	  chunkEndSeekPos += compactant.gcount();
-	}
-
-      // truncate the file at the new end position
-      compactant.close();
-      compactant.open(multiChunkFileName, std::ios::in | std::ios::out |
-		std::ios::trunc);
-      if(!compactant)
-	{
-	  exit(concat("Error: failed to open destination file \"",
-		      multiChunkFileName, "\" (for truncation after "
-		      "compaction) when trying to append file \"",
-		      singleChunkFileName, "\" to it."), ERROR_OPENING_FILE);
-	}
-      compactant.seekp(chunkStartSeekPos);
-      compactant.close();
+      return retDuplicatChunkCoordFound;
     };
 
   // ======================== LOCAL LAMBDA FUNCTIONS END =======================
@@ -167,21 +107,8 @@ void append(const std::string singleChunkFileName,
     bool duplicatChunkCoordFound {false}, addDuplicateChunk {false};
     std::streampos destChunkSeekPos;
 
-    /* We need to decompress chunks to find out if there is a chunk with a
-       duplicate coordinate. This is done slightly differently for each type of
-       file. */
-    if(checkForPostfix(multiChunkFileName.c_str(), BACKGROUND_FILE_EXTENSION))
-      {
-	// We're appending to a background file.
-	duplicatChunkCoordFound = duplicateCoordInBgDest(source, dest,
-							 destChunkSeekPos);
-      }
-    else
-      {
-	// We're appending to a character rules file.
-	duplicatChunkCoordFound = duplicateCoordInCRDest(source, dest,
-							 destChunkSeekPos);
-      }
+    duplicatChunkCoordFound =
+      checkForDuplicateChunkLocal(source, dest, destChunkSeekPos);
 
     if(duplicatChunkCoordFound)
       {
@@ -199,7 +126,12 @@ void append(const std::string singleChunkFileName,
 	if(addDuplicateChunk)
 	  {
 	    // CompactBgDestFileInPlace() closes dest.
-	    compactDestFileInPlace(dest, destChunkSeekPos, dest.tellg());
+	    compactDestFileInPlace
+	      (multiChunkFileName, dest, destChunkSeekPos, dest.tellg(),
+	       viewPortSize,
+	       concat("trying to replace chunk with matching coordinates in \"",
+		      multiChunkFileName, "\" with chunk in \"",
+		      singleChunkFileName, "\""));
 	  }
 	    
       }
@@ -237,6 +169,54 @@ void append(const std::string singleChunkFileName,
     source.close();
     dest.close();
 }
+
+
+void checkForDuplicateChunk
+(const std::string multiChunkFileName, std::fstream & multiChunkFile,
+ const yx searchCoord, bool & duplicatChunkCoordFound,
+ std::streampos & destChunkSeekPos, const yx viewPortSize)
+{
+  if(checkForPostfix(multiChunkFileName.c_str(), BACKGROUND_FILE_EXTENSION))
+    {
+      // We're appending to a background file.
+      duplicatChunkCoordFound = duplicateCoordInBgDest
+	(multiChunkFileName, multiChunkFile, searchCoord, destChunkSeekPos,
+	 viewPortSize);
+    }
+  else
+    {
+      // We're appending to a character rules file.
+      duplicatChunkCoordFound = duplicateCoordInCRDest
+	(multiChunkFileName, multiChunkFile, searchCoord, destChunkSeekPos,
+	 viewPortSize);
+    }
+}
+
+
+bool duplicateCoordInBgDest
+(const std::string multiChunkFileName, std::fstream & multiChunkFile,
+ const yx searchCoord, std::streampos & destChunkSeekPos,
+ const yx viewPortSize)
+{
+  backgroundChunkCharType chunk[yHeight][xWidth];
+
+  return findBgChunk
+    (multiChunkFileName, multiChunkFile, chunk, searchCoord,
+     destChunkSeekPos, viewPortSize);
+}
+
+
+bool duplicateCoordInCRDest
+(const std::string multiChunkFileName, std::fstream & multiChunkFile,
+ const yx searchCoord, std::streampos & destChunkSeekPos,
+ const yx viewPortSize)
+{
+  char chunk[yHeight][xWidth];
+
+  return findCRChunk
+    (multiChunkFileName, multiChunkFile, chunk, searchCoord, destChunkSeekPos,
+     viewPortSize);
+};
 
 
 bool findBgChunk
@@ -289,10 +269,93 @@ bool findCRChunk
 	  foundChunk = true;
 	  break;
 	}
-    }
 
+      // endwin();
+      // std::cout<<"currentCoord = "<<currentCoord<<'\n';
+    }
+  //       std::cout<<"currentCoord = "<<currentCoord<<'\n';
+  // 	std::cout<<"targetCoord = "<<targetCoord<<'\n';
+
+  // 	if(foundChunk)
+  // 	  {
+  // 	    std::cout<<"Found chunk!\n";
+  // 	  }
+  // exit(-1);
+  
   return foundChunk;
 }
+
+
+/* Compactant should be open (using std::ios::in | std::ios::out |
+   std::ios::binary). */
+void compactDestFileInPlace
+(const std::string & compactantFileName, std::fstream & compactant,
+ std::streampos & chunkStartSeekPos, std::streampos chunkEndSeekPos,
+ const yx viewPortSize, const std::string eMsg)
+{
+  if(chunkEndSeekPos == -1)
+    {
+      /* The matching chunk was the last chunk in the file and thus tellg
+	 returned -1 after the chunk was read. So all we need to do is truncate
+	 the file from the start of this last chunk (chunkStartSeekPos.) */
+      /* Trying to read past the end of the file can set compactant.fail to
+	 true. */
+      if(compactant.fail())
+	{
+	  compactant.clear();
+	}
+    }
+  else
+    {
+      /* The matching chunk has other chunks after it. So we must move those
+	 other chunks down by the size of the chunk at chunkStartSeekPos (The
+	 chunk to be removed.) */
+      const std::streamsize sizeOfChunkToRemove
+	{chunkEndSeekPos - chunkStartSeekPos};
+      std::vector<char> buffer(sizeOfChunkToRemove);
+      
+      while (!compactant.eof())
+	{
+	  /* Read a chunk of data from the position after the deleted record. */
+	  compactant.seekg(chunkEndSeekPos);
+	  compactant.read(buffer.data(), sizeOfChunkToRemove);
+
+	  /* If we've reached the end of the file, resize the buffer. */
+	  if (compactant.gcount() < sizeOfChunkToRemove)
+	    {
+	      buffer.resize(compactant.gcount());
+	      /* We must reset compactants error flags (which are almost
+		 certainly set because we tried to read past the end of the
+		 file.) to do the final write. */
+	      if (compactant.fail())
+		{
+		  compactant.clear();
+		}
+	      compactant.write(buffer.data(), buffer.size());
+	      chunkStartSeekPos += compactant.gcount();
+	      break;
+	    }
+
+	  /* Write the chunk of data at the start position of the deleted
+	     record */
+	  compactant.seekp(chunkStartSeekPos);
+	  compactant.write(buffer.data(), buffer.size());
+	  
+	  // Update the start and end positions.
+	  chunkStartSeekPos += compactant.gcount();
+	  chunkEndSeekPos += compactant.gcount();
+	}
+    }
+  compactant.close();
+  
+  // truncate the file at the new end position
+  if(truncate(compactantFileName.c_str(), chunkStartSeekPos) != 0)
+    {
+      exit(concat("Error: failed to open file \"", compactantFileName, "\""
+		  " for truncation after first step of compaction when ",
+		  eMsg, "."), ERROR_OPENING_FILE);
+    }
+};
 
 
 void extract(const std::string multiChunkFileName,
@@ -412,4 +475,45 @@ void extract(const std::string multiChunkFileName,
 	  exit(chunkNotFoundMsg, ERROR_INVALID_CMD_ARGS);
 	}
     }
+}
+
+
+void deleteChunk
+(const std::string multiChunkFileName, const std::string yCoord,
+ const std::string xCoord, const yx viewPortSize)
+{
+  std::fstream multiChunkFile
+    {multiChunkFileName, std::ios::in | std::ios::out | std::ios::binary};
+  if(!multiChunkFile)
+    {
+      exit(concat("Error: failed to open file \"", multiChunkFileName,
+		  "\" when attempting to delete chunk (", yCoord, ", ",
+		  xCoord, ") from file."), ERROR_OPENING_FILE);
+    }
+  auto yCoordIter {yCoord.begin()}, xCoordIter {xCoord.begin()};
+  /* This function should have already been called for both yCoord and
+     xCoord. So the error message shouldn't ever be printed if we get to
+     this point, but we supply one none the less. */
+  const yx searchCoord
+    {readSingleNum(yCoord, yCoordIter, "trying to read 2nd argument "
+		   "(chunk y position)", true),
+     readSingleNum(xCoord, xCoordIter, "trying to read 3rd argument "
+		   "(chunk x position)", true)};
+
+
+      bool duplicatChunkCoordFound {false};
+      std::streampos destChunkSeekPos;
+
+      checkForDuplicateChunk
+	(multiChunkFileName, multiChunkFile, searchCoord, duplicatChunkCoordFound,
+	 destChunkSeekPos, viewPortSize);
+
+      if(!duplicatChunkCoordFound)
+	{
+	  // Remove duplicate chunk.
+	}
+      else
+	{
+	  // Print error message.
+	}
 }

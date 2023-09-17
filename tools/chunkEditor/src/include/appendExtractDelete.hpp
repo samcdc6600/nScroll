@@ -21,7 +21,12 @@ void extract(const std::string multiChunkFileName,
 	     const std::string singleChunkFileName,
 	     const std::string yCoord, const std::string xCoord,
 	     const yx viewPortSize);
-
+/* Deletes chunk with coordinate (yCoord, xCoord) from multichunkfilename (if
+   it exists.) Exits with error otherwise. If chunk (yCoord, xCoord) is not the
+   last chunk the file is compacted. */
+void deleteChunk
+(const std::string multiChunkFileName, const std::string yCoord,
+ const std::string xCoord, const yx viewPortSize);
 
 
 #endif

@@ -1,7 +1,7 @@
 #include "include/initCurses.hpp"
 #include "include/utils.hpp"
 #include "include/editMode.hpp"
-#include "include/appendExtract.hpp"
+#include "include/appendExtractDelete.hpp"
 
 
 /* Verifies that the CMD args in argv conform to one of the modes (see the
@@ -46,7 +46,7 @@ int verifyCmdArgsAndGetMode(const int argc, const char * argv [])
      chunked x.background.lev x.bgchunk y x
      (and again for rules.)
 
-     If argc == argNumForMode_5 check for form like:
+     If argc == argNumForMode_6 check for form like:
      chunked x.background.lev
      (and again for rules.) */
   /* Print help message and exit if arguments in argv don't correspond to
@@ -116,38 +116,68 @@ int verifyCmdArgsAndGetMode(const int argc, const char * argv [])
 	exit(ERROR_INVALID_CMD_ARGS);
       }
   };
+
+
+  auto testMode5Args = [argv, & modeFound]() -> void
+  {
+    if(checkForPostfix(argv[1], BACKGROUND_FILE_EXTENSION) ||
+       checkForPostfix(argv[1], COORD_RULES_FILE_EXTENSION))
+      {
+	const std::string yArg {argv[2]}, xArg {argv[3]};
+	auto yIter {yArg.begin()}, xIter {xArg.begin()};
+	/* This isn't the best solution as printHelp() will not be called and
+	   also there can be non number characters after a number, but for now
+	   it will be fine. ReadSingleNum() will print an error and exit message
+	   if no number is found. */
+	readSingleNum(yArg, yIter, "trying to read 2nd argument (chunk y "
+		      "position)", true);
+	readSingleNum(xArg, xIter, "trying to read 3rd argument (chunk x "
+		      "position)", true);
+	modeFound = 5;
+      }
+    else
+      {
+	// Argument number corresponds to mode 5, but values don't.
+	printHelp(argv);
+	exit(ERROR_INVALID_CMD_ARGS);
+      }
+  };
       
   
   constexpr int argNumForModes_1_and_3 {3}, argNumForModes_2_and_4 {5},
-    argNumForMode_5 {2};
+    argNumForMode_5 {4}, argNumForMode_6 {2};
 
-  if(argc != argNumForModes_1_and_3 && argc != argNumForModes_2_and_4 &&
-     argc != argNumForMode_5)
+  switch(argc)
     {
+    case argNumForModes_1_and_3:
+      testMode1And3Args();
+      break;
+    case argNumForModes_2_and_4:
+      testMode2And4Args();
+      break;
+    case argNumForMode_5:
+      testMode5Args();
+      break;
+    case argNumForMode_6:
+      if((!checkForPostfix(argv[1], BACKGROUND_FILE_EXTENSION) &&
+	  !checkForPostfix(argv[1], COORD_RULES_FILE_EXTENSION)))
+	{
+	  // Argument number corresponds to mode 6, but value doesn't.
+	  printHelp(argv);
+	  exit(ERROR_INVALID_CMD_ARGS);
+	}
+      else
+	{
+	  modeFound = 6;
+	}
+      break;
+    default:
       // Incorrect number of argument supplied.
       printHelp(argv);
       exit(ERROR_INVALID_CMD_ARGS);
+      break;
     }
-  else if(argc == argNumForModes_1_and_3)
-    {
-      testMode1And3Args();
-    }
-  else if(argc == argNumForModes_2_and_4)
-    {
-      testMode2And4Args();
-    }
-  else if(argc == argNumForMode_5 &&
-	  (!checkForPostfix(argv[1], BACKGROUND_FILE_EXTENSION) &&
-	   !checkForPostfix(argv[1], COORD_RULES_FILE_EXTENSION)))
-    {
-      // Argument number corresponds to mode 5, but value doesn't.
-      printHelp(argv);
-      exit(ERROR_INVALID_CMD_ARGS);
-    }
-  else
-    {
-      modeFound = 5;
-    }
+  
 
   return modeFound;
 }
@@ -247,9 +277,16 @@ void printHelp(const char * argv [])
           " file and finally by the\n\tdesired y and x coordinate of the "
 	  "chunk to be extracted.\n\t    Example:\n\t\t", argv[0],
 	  " splendid", BACKGROUND_FILE_EXTENSION, " superGood",
-	  BACKGROUND_CHUNK_FILE_EXTENSION, " 11, -3"
+	  BACKGROUND_CHUNK_FILE_EXTENSION, " 11 -3"
 	  "\n\n"
-	  "    5th mode:\n\tThis mode is known as map View Mode. In this mode "
+	  "    5th mode:\n\tThis mode is known as Delete Mode. Chunks can be "
+	  "removed from \"", BACKGROUND_FILE_EXTENSION, "\"\n\tand \"",
+	  COORD_RULES_FILE_EXTENSION, "\" files. A valid chunk coordinate for "
+	  "a chunk to be removed\n\tshould be supplied."
+	  "\n\t    Example:\n\t\t", argv[0], " splendid",
+	  BACKGROUND_FILE_EXTENSION, " 11 -3"
+	  "\n\n"
+	  "    6th mode:\n\tThis mode is known as map View Mode. In this mode "
 	  "a ", BACKGROUND_FILE_EXTENSION, "\n\tfile or a ",
 	  COORD_RULES_FILE_EXTENSION, " file can be viewed in a zoomed out "
 	  "mammer,\n\twith one character corresponding to 1 chunk. If the "
@@ -304,6 +341,16 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
 	 afterPrintSleep);
       break;
     case 5:
+      // Delete mode.
+      progressivePrintMessage
+	("Starting Delete Mode.", viewPortSize, printCharSpeed,
+	 afterPrintSleep);
+      deleteChunk(argv[1], argv[2], argv[3], viewPortSize);
+      progressivePrintMessage
+	("Finished deleting.", viewPortSize, printCharSpeed,
+	 afterPrintSleep);
+      break;
+    case 6:
       // Map view mode.
       refresh();
       progressivePrintMessage
