@@ -61,18 +61,17 @@ void append(const std::string singleChunkFileName,
   auto checkForDuplicateChunkLocal =
     [& singleChunkFileName, & multiChunkFileName, viewPortSize]
     (std::fstream & source, std::fstream & dest,
-     std::streampos & destChunkSeekPos)
+     std::streampos & destChunkSeekPos, yx & sourceCoordFound)
     {
       bool retDuplicatChunkCoordFound {};
-      yx sourceChunkCoord;
 
       readInChunkCoordFromFile
-	(sourceChunkCoord, singleChunkFileName, source, true);
+	(sourceCoordFound, singleChunkFileName, source, true);
 
       // Seek back to the start of the source file.
       source.seekg(0, std::ios::beg);
       checkForDuplicateChunk
-	(multiChunkFileName, dest, sourceChunkCoord, retDuplicatChunkCoordFound,
+	(multiChunkFileName, dest, sourceCoordFound, retDuplicatChunkCoordFound,
 	 destChunkSeekPos, viewPortSize);
       
       return retDuplicatChunkCoordFound;
@@ -106,9 +105,10 @@ void append(const std::string singleChunkFileName,
 
     bool duplicatChunkCoordFound {false}, addDuplicateChunk {false};
     std::streampos destChunkSeekPos;
+    yx sourceCoord {};
 
     duplicatChunkCoordFound =
-      checkForDuplicateChunkLocal(source, dest, destChunkSeekPos);
+      checkForDuplicateChunkLocal(source, dest, destChunkSeekPos, sourceCoord);
 
     if(duplicatChunkCoordFound)
       {
@@ -118,7 +118,8 @@ void append(const std::string singleChunkFileName,
 	addDuplicateChunk = getConfirmation
 	  (viewPortSize, helpColorPair, input, subMenuSleepTimeMs,
 	   concat
-	   ("\t", yx{}, " already exists in the file \"", multiChunkFileName,
+	   ("\t", sourceCoord, " already exists in the file \"",
+	    multiChunkFileName,
 	    "\". Appending the chunk from file \"", singleChunkFileName, "\" "
 	    "will override the existing chunk with the same coordinate in \"",
 	    multiChunkFileName, "\". Do you still want to append the chunk "
@@ -269,18 +270,7 @@ bool findCRChunk
 	  foundChunk = true;
 	  break;
 	}
-
-      // endwin();
-      // std::cout<<"currentCoord = "<<currentCoord<<'\n';
     }
-  //       std::cout<<"currentCoord = "<<currentCoord<<'\n';
-  // 	std::cout<<"targetCoord = "<<targetCoord<<'\n';
-
-  // 	if(foundChunk)
-  // 	  {
-  // 	    std::cout<<"Found chunk!\n";
-  // 	  }
-  // exit(-1);
   
   return foundChunk;
 }
@@ -314,30 +304,30 @@ void compactDestFileInPlace
 	{chunkEndSeekPos - chunkStartSeekPos};
       std::vector<char> buffer(sizeOfChunkToRemove);
       
-      while (!compactant.eof())
+      while(!compactant.eof())
 	{
-	  /* Read a chunk of data from the position after the deleted record. */
+	  /* Read data from the position after the deleted record. */
 	  compactant.seekg(chunkEndSeekPos);
 	  compactant.read(buffer.data(), sizeOfChunkToRemove);
 
 	  /* If we've reached the end of the file, resize the buffer. */
-	  if (compactant.gcount() < sizeOfChunkToRemove)
+	  if(compactant.gcount() < sizeOfChunkToRemove)
 	    {
 	      buffer.resize(compactant.gcount());
 	      /* We must reset compactants error flags (which are almost
 		 certainly set because we tried to read past the end of the
 		 file.) to do the final write. */
-	      if (compactant.fail())
+	      if(compactant.fail())
 		{
 		  compactant.clear();
 		}
+	      // Seek to next position to start writing to.
+	      compactant.seekp(chunkStartSeekPos);
 	      compactant.write(buffer.data(), buffer.size());
 	      chunkStartSeekPos += compactant.gcount();
 	      break;
 	    }
-
-	  /* Write the chunk of data at the start position of the deleted
-	     record */
+	  // Seek to next position to start writing to.
 	  compactant.seekp(chunkStartSeekPos);
 	  compactant.write(buffer.data(), buffer.size());
 	  
