@@ -118,12 +118,12 @@ void initColorPairs()
   /* CALCULATE INDEXES OF COLORS FOR COLOR PAIRS. ==============================
      These will be used to index into the newColors vector when creating color
      pairs. */
-    std::vector<yx> indexesOfColorsForPairs {};
+  std::vector<yx> indexesOfColorsForPairs {};
 
   // We can have 253 color pairs (506 with inversion) if we have 23 colors.
-  for(int fIter {}; fIter < newColors.size(); ++fIter)
+  for(int fIter {}; (size_t)fIter < newColors.size(); ++fIter)
     {
-      for(int bIter {}; bIter < newColors.size(); ++bIter)
+      for(int bIter {}; (size_t)bIter < newColors.size(); ++bIter)
 	{
 	  indexesOfColorsForPairs.push_back(yx{fIter, bIter});
 	}
@@ -142,9 +142,9 @@ void initColorPairs()
 
   /* Size of colors after for loop will be (cS * cS) / 2 - (cS / 2), where cS
      is indexesOfColorsForPairs.size() before the loop. */
-  for(int oIter {}; oIter < indexesOfColorsForPairs.size(); ++oIter)
+  for(int oIter {}; (size_t)oIter < indexesOfColorsForPairs.size(); ++oIter)
     {
-      for(int iIter {}; iIter < indexesOfColorsForPairs.size(); ++iIter)
+      for(int iIter {}; (size_t)iIter < indexesOfColorsForPairs.size(); ++iIter)
 	{
 	  if(oIter != iIter &&
 	     indexesOfColorsForPairs[oIter].y ==

@@ -127,8 +127,8 @@ private:
 public:
   chunk(const T filler,
 	const std::chrono::milliseconds showLastCurrentChunkIndexFor):
-  lastCurrentChunkUpdate(std::chrono::steady_clock::now()),
-    showLastChunkIndexFor(showLastCurrentChunkIndexFor)
+    showLastChunkIndexFor(showLastCurrentChunkIndexFor),
+    lastCurrentChunkUpdate(std::chrono::steady_clock::now())
   {
     for(int yIter {}; yIter < yHeight; ++yIter)
       {

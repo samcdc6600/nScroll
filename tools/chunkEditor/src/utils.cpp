@@ -30,41 +30,12 @@ void updateVirtualNestedYXLoop(int & xIter, int & yIter, const yx chunkSize);
    false. Other wise it will return true. If multiChunkfile is false and yIter
    is too large the function will exit with an error message. */
 bool checkYOfVirtualNestedLoop
-(int & xIter, int & yIter, const yx chunkSize, const std::string & fileName,
- const bool multiChunkFile, const std::string & eMsgStart);
+(int & xIter, int & yIter, const yx chunkSize, const bool multiChunkFile,
+ const std::string & eMsgStart);
 /* Attempts to write out chunkCoord to file (which should be open) at the
    current position. Prints an error message and exits if there is an error. */
 void writeOutChunkCoordToFile
 (const std::string & fileName, std::ofstream & file, const yx chunkCoord);
-/* Attempts to read in a chunk coord from file (which should be open) at the
-   current position. Returns true if successful. If unsuccessful returns false
-   if exitOnError is true, otherwise returns false. Sets retVal to the
-   coordinate read (if one was successfully read.) */
-/* NOTE THAT WE DECLARE THIS HEADING HERE BECAUSE A FUNCTION WITH THE SAME
-   SIGNATURE (OR AT LEAST THIS WOULD BE THE CASE, BUT APPARENTLY THE LINKER
-   DOESN'T LIKE IT WHEN TWO FUNCTIONS HAVE THE SAME SIGNATURE EVEN IF THEIR
-   SCOPE DOESN'T OVERLAP.) IS DECLARED IN levelRules.hpp AND WE ONLY NEED THIS
-   FUNCTION IN THIS FILE. SkipSpace suppresses the skipping of spaces before the
-   opening
-   terminal "(". */
-void readSingleCoordSectionUtils
-(const std::string & buff,
- std::string::const_iterator & buffPos,
- const std::string & eMsg, const bool useIntegers,
- void *coord, const std::string typeOfNumber,
- const bool skipSpace = true);
-/* NOTE AGAIN THAT AS WITH THE ABOVE A FUNCTION WITH THE SAME SIGNATURE IS
-   DEFINED ELSE WHERE. Attempts to read the bracket at the start of a section. Calls exit
-   with eMsg and section if there is an error. */
-void readSectionOpeningBracketUtils
-(const std::string &buff, std::string::const_iterator &buffPos,
- const std::string &eMsg, const std::string &section, const bool skipSpace);
-/* NOTE AGAIN THAT AS WITH THE ABOVE A FUNCTION WITH THE SAME SIGNATURE IS
-   DEFINED ELSE WHERE. Attempts to read the bracket at the end of a
-   section. Calls exit with eMsg and section if there is an error. */
-void readSectionEndingBracketUtils
-(const std::string & buff, std::string::const_iterator & buffPos,
- const std::string & eMsg, const std::string & section);
 
 
 namespace boarderRuleChars
@@ -95,7 +66,7 @@ void updateVirtualNestedYXLoop(int & xIter, int & yIter, const yx chunkSize)
 
 
 bool checkYOfVirtualNestedLoop
-(int & xIter, int & yIter, const yx chunkSize, const std::string & fileName,
+(int & xIter, int & yIter, const yx chunkSize,
  const bool multiChunkFile, const std::string & eMsgStart)
 {
   bool ret {true};
@@ -123,7 +94,7 @@ void writeOutChunkCoordToFile
 {
   auto intOut = [& fileName, & file, & chunkCoord] (const int a)
   {
-    for(int iter {}; iter < sizeof(int); ++iter)
+    for(int iter {}; (size_t)iter < sizeof(int); ++iter)
       {
 	char outputChar {};
 	outputChar = a << (8 * iter);
@@ -162,7 +133,7 @@ bool readInChunkCoordFromFile
 	    return false;
 	  }
       }
-    for(int iter {}; iter < sizeof(int); ++iter)
+    for(int iter {}; (size_t)iter < sizeof(int); ++iter)
       {
 	a |=  (bytes[iter] << (8 * iter));
       }
@@ -266,7 +237,7 @@ void progressivePrintMessage
 	      charsPrinted++;
 	    }
 	}
-      for( ; charsPrinted < msg.size(); ++charsPrinted)
+      for( ; (size_t)charsPrinted < msg.size(); ++charsPrinted)
 	{
 	  printw(concat("", msg[charsPrinted]).c_str());
 	}
@@ -333,22 +304,6 @@ bool isNum(const char c)
 }
 
 
-bool checkRange(const int a, const int min, const int max)
-{ 
-  return (a >= min && a < max) ? true : false;
-}
-
-
-bool inSingleDigitRange(const int a, const int offset)
-{
-  constexpr int SINGLE_DIGIT_MIN {};
-  constexpr int SINGLE_DIGIT_MAX {9};
-  if(((a - offset) < SINGLE_DIGIT_MIN) || ((a - offset) > SINGLE_DIGIT_MAX))
-    return false;
-  return true;
-}
-
-
 /* TODO: See if this needs to be added anywhere! Ask chatGPT about options when
    opening files (they effect if a file will be created or not.) */
 void createFileIfNoneExists
@@ -406,104 +361,6 @@ void loadFileIntoString(const char name [], std::string & buff,
     {
       exit(concat("Error: found file \"", name, "\" to be empty when ", eMsg,
 		  "."), ERROR_OPENING_FILE);
-    }
-}
-
-
-bool getChunkCoordinate
-  (const std::string & data, std::string::const_iterator & buffPos,
-   const std::string & eMsg, yx & chunkCoord)
-{
-  if(buffPos != std::end(data))
-    {
-      readSingleCoordSectionUtils
-	(data, buffPos, eMsg, true, & chunkCoord, "integers (without "
-	 "skipping space up until the coordinate)", false);
-      return true;
-    }
-  else
-    {
-      return false;
-    }
-}
-
-
-// SkipSpace has a default value.
-void readSingleCoordSectionUtils
-(const std::string & buff, std::string::const_iterator & buffPos,
- const std::string & eMsg, const bool useIntegers,
- void * coord, const std::string typeOfNumber, const bool skipSpace)
-{
-  constexpr char COORD_SEPARATION {','};
-  std::vector<std::string> targets {};
-  std::string targetFound {};
-  readSectionOpeningBracketUtils
-    (buff, buffPos, eMsg,
-     concat("single coordinate section (with " , typeOfNumber, ")"),
-     skipSpace);
-  
-  ((yx*)coord)->y = readSingleNum(buff, buffPos, eMsg, useIntegers);
-      
-  targets = {std::string {COORD_SEPARATION}};
-  targetFound = skipSpaceUpTo
-    (buff, buffPos, targets);
-  if(targetFound == "")
-    {
-      std::stringstream e {};
-      e<<"Error: expected \""<<COORD_SEPARATION<<"\" before second coordinate "
-	"component in single coordinate section (with "<<typeOfNumber
-       <<") when "<<eMsg<<". Encountered "<<"\""<<*buffPos<<"\"\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-    }
-
-  ((yx*)coord)->x = readSingleNum(buff, buffPos, eMsg, useIntegers);
-
-  readSectionEndingBracketUtils
-    (buff, buffPos, eMsg,
-     concat("single coordinate section (with ", typeOfNumber, ")"));
-}
-
-
-// SkipSpace has a default value.
-void readSectionOpeningBracketUtils
-(const std::string & buff, std::string::const_iterator & buffPos,
- const std::string & eMsg, const std::string & section, const bool skipSpace)
-{
-  constexpr char RULES_HEADER_SECTION_START_DENOTATION	{'('};
-  std::vector<std::string> targets {};
-  std::string targetFound {};
-      
-  targets.push_back(std::string {RULES_HEADER_SECTION_START_DENOTATION});
-  targetFound = skipSpaceUpTo(buff, buffPos, targets, skipSpace);
-  if(targetFound != std::string {RULES_HEADER_SECTION_START_DENOTATION})
-    {
-      std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_SECTION_START_DENOTATION<<"\" to "
-	"denote the start of "<<section<<" when "<<eMsg
-       <<". Encountered \""<<*buffPos<<"\"\n";
-      
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
-    }
-}
-
-
-void readSectionEndingBracketUtils
-(const std::string & buff, std::string::const_iterator & buffPos,
- const std::string & eMsg,  const std::string & section)
-{
-  constexpr char RULES_HEADER_SECTION_END_DENOTATION	{')'};
-  std::vector<std::string> targets {};
-  std::string targetFound {};
-
-  targets = {std::string {RULES_HEADER_SECTION_END_DENOTATION}};
-  targetFound = skipSpaceUpTo(buff, buffPos, targets);
-  if(targetFound == "")
-    {
-      std::stringstream e {};
-      e<<"Error: expected \""<<RULES_HEADER_SECTION_END_DENOTATION<<"\" to "
-	"denote the end of "<<section<<" when "<<eMsg<<". Encountered "<<"\""
-       <<*buffPos<<"\"\n";
-      exit(e.str().c_str(), ERROR_RULES_LEV_HEADER);
     }
 }
 
@@ -570,89 +427,6 @@ int readSingleNum
     }
 
   int ret;
-  number>>ret;
-  return ret;
-}
-
-
-double readSingleRNum
-(const std::string & buff, std::string::const_iterator & buffPos,
- const std::string & eMsg)
-{
-  std::vector<std::string> targets
-    {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "."};
-  std::string targetFound {};
-  std::stringstream number {};
-
-  // Skip space up until the start of the number.
-  targetFound = skipSpaceUpTo(buff, buffPos, targets);
-  if(targetFound == "")
-    {
-      exit(concat("Error: expected real number when ", eMsg, ". Encountered "
-		  "\"", *buffPos, "\".\n"), ERROR_RULES_LEV_HEADER);
-    }
-
-  int decPlacesIter {};
-  bool foundDigit {false};
-  --buffPos;
-  if(targetFound == "-")
-    {
-      number<<*buffPos;
-      ++buffPos;
-      // Can't have a negative sign after a negative sign.
-      targets.erase(std::remove(targets.begin(), targets.end(), "-"),
-		    targets.end());
-    }
-  else if(targetFound == ".")
-    {
-      number<<*buffPos;
-      ++buffPos;
-      // Can't have a negative sign after the decimal or another decimal.
-      targets.erase(std::remove(targets.begin(), targets.end(), "."),
-		    targets.end());
-      targets.erase(std::remove(targets.begin(), targets.end(), "-"),
-		    targets.end());
-    }
-
-  // Read in number.
-  while(isNum(*buffPos) || *buffPos == '.')
-    {
-      if(*buffPos == '.')
-	{
-	  if(std::find(targets.begin(), targets.end(), ".") == targets.end())
-	    {
-	      // We've encountered a second '.'!
-	      break;
-	    }
-	  targets.erase(std::remove(targets.begin(), targets.end(), "."),
-			targets.end());
-	}
-      else
-	{
-	  foundDigit = true;
-	  decPlacesIter++;
-	}
-      number<<*buffPos;
-      buffPos++;
-    }
-
-  if(!foundDigit)
-    {
-      exit(concat("Error: expected real number when ", eMsg, ". Encountered \"",
-		  *buffPos, "\".\n"),
-	   ERROR_RULES_LEV_HEADER);
-    }
-  // Check if number was too long.
-  if(decPlacesIter > MAX_COORD_LEN)
-    {
-      exit(concat
-	   ("Error: number \"", number.str(), "\" too long (longer than \"",
-	    MAX_COORD_LEN, "\") when ", eMsg,
-	    ". Encountered \"", *buffPos, "\".\n").c_str(),
-	   ERROR_RULES_LEV_HEADER);
-    }
-
-  double ret;
   number>>ret;
   return ret;
 }
@@ -763,7 +537,7 @@ bool getBgChunk
 	  for(int iter {}; iter < runLength; iter++)
 	    {
 	      if(!checkYOfVirtualNestedLoop
-		 (xIter, yIter, chunkSize, fileName, multiChunkFile, eMsgStart))
+		 (xIter, yIter, chunkSize, multiChunkFile, eMsgStart))
 		{
 		  /* This is a multi chunk file and we've just read past the end
 		     of a chunk so we need to back up. */
@@ -778,7 +552,7 @@ bool getBgChunk
       else
 	{
 	  if(!checkYOfVirtualNestedLoop
-	     (xIter, yIter, chunkSize, fileName, multiChunkFile, eMsgStart))
+	     (xIter, yIter, chunkSize, multiChunkFile, eMsgStart))
 	    {
 	      /* This is a multi chunk file and we've just read past the end
 		 of a chunk so we need to back up. */
@@ -856,7 +630,7 @@ bool getCRChunk
 				   static_cast<unsigned char>(lowByte)); iter++)
 	    {
 	      if(!checkYOfVirtualNestedLoop
-		 (xIter, yIter, chunkSize, fileName, multiChunkFile, eMsgStart))
+		 (xIter, yIter, chunkSize, multiChunkFile, eMsgStart))
 		{
 		  /* This is a multi chunk file and we've just read past the end of
 		     a chunk so we need to back up. */
@@ -871,7 +645,7 @@ bool getCRChunk
       else
 	{
 	  if(!checkYOfVirtualNestedLoop
-	     (xIter, yIter, chunkSize, fileName, multiChunkFile, eMsgStart))
+	     (xIter, yIter, chunkSize, multiChunkFile, eMsgStart))
 	    {
 	      /* This is a multi chunk file and we've just read past the end of
 		 a chunk so we need to back up. */
@@ -1037,100 +811,6 @@ void compressAndWriteOutCRChunk
 }
 
 
-void getChunk(const std::string & data,
-	      std::string::const_iterator & buffPos, const std::string & eMsg,
-	      std::string & chunk, const yx expectedChunkSize)
-{
-  chunk.clear();
-
-  int lnCount {};
-  if(buffPos != std::end(data))
-    {
-      while(true)
-	{
-	  char newCh {};
-	  newCh = *buffPos++;
-	  lnCount += (newCh == '\n' ? 1: 0);
-	  
-	  if(lnCount >= expectedChunkSize.y)
-	    {
-	      break;
-	    }
-	  else 
-	    {
-	      chunk += newCh;
-	      if(buffPos == std::end(data))
-		{
-		  break;
-		}
-	    }
-      
-	}
-    }
-
-  if(lnCount != expectedChunkSize.y)
-    {
-      exit(concat
-	   ("Error: Wrong number of lines. Expected ", expectedChunkSize.y,
-	    ", but found ", lnCount, " when ", eMsg), ERROR_BACKGROUND);
-    }
-}
-
-
-std::string createChunkCoordKey(const yx coord)
-{
-    /* ',' must be included to delineate between the y and x
-     coordinates. */
-    return concat("", coord.y, ",", coord.x);
-}
-
-
-std::string createChunkCoordKeyFromCharCoord(const yx chunkCoord)
-{
-  /* If y or x is less than 0 we must sub one of the view port dimension (minus
-     1) sizes from the value before devision otherwise the result will be
-     wrong. E.g. -50 / 170 = 0 and what we need is -1. This is because 50 / 170
-     is also 0, but these two coordinates aren't in the same chunks. Minus 1
-     because the negative chunks don't have a coordinate zero and as such
-     -yHeight or -xHeight both have coordinate -1 where as yHeight and
-     xHeight both have coordinate 1 but (yHeight -1) and (xHeight -1) both have
-     coordinate 0. */
-  yx chunkCoordKey
-    {(chunkCoord.y < 0 ? (chunkCoord.y - (yHeight -1)) / yHeight :
-      chunkCoord.y / yHeight),
-     (chunkCoord.x < 0 ? (chunkCoord.x - (xWidth -1)) / xWidth :
-      chunkCoord.x / xWidth)};
-  return createChunkCoordKey(chunkCoordKey);
-}
-
-
-bool checkForStringInBufferAtPos(const std::string & buff, int buffPos,
-				 const std::string str)
-{
-  bool found {false};
-
-  if((unsigned long)buffPos < buff.size() &&
-     buff.size() - buffPos >= str.size())
-    {
-      int strIter {};
-      for( ; (size_t)buffPos < buff.size(); ++buffPos, ++strIter)
-	{
-	  if(buff[buffPos] != str[strIter])
-	    {
-	      break;
-	    }	  
-	}
-      if((unsigned long)strIter == str.size())
-	{
-
-	  found = true;
-	}
-    }
-
-  return found;
-}
-
-
 // SkipSpace has a default value.
 std::string skipSpaceUpTo(const std::string & buff,
 			  std::string::const_iterator & buffPos,
@@ -1188,37 +868,6 @@ std::string skipSpaceUpTo(const std::string & buff,
 
   buffPos = outerPeekPos;
   return targetFound;
-}
-
-
-void skipSpaceUpToNextLine(const std::string & buff,
-			   std::string::const_iterator & buffPos,
-			   const std::string & eMsg)
-{ 
-  while(buffPos != std::end(buff))
-    {
-      if(*buffPos == '\n')
-	{
-	  break;
-	}
-      else if(*buffPos == ' ' || *buffPos == '\r' || *buffPos == '\t')
-	{
-	  buffPos++;
-	}
-      else
-	{
-	  goto ERROR_EXIT;
-	}
-    }
-
-  if(buffPos == std::end(buff))
-    {
-    ERROR_EXIT:
-      exit(eMsg.c_str(), ERROR_GENERIC_RANGE_ERROR);
-    }
-  
-  // Can be equal to std::end(buff) after incrementing.
-  buffPos++;
 }
 
 

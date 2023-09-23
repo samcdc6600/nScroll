@@ -741,7 +741,8 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 		    {
 		      bool foundACS {false};
 
-		      for(int aCSIter {}; aCSIter < aCSChars.size(); ++aCSIter)
+		      for(int aCSIter {}; (size_t)aCSIter < aCSChars.size();
+			  ++aCSIter)
 			{
 			  if(acs_map[charAtPos & A_CHARTEXT] ==
 			     aCSChars[aCSIter])

@@ -10,8 +10,6 @@
    them but don't want to accidentally leave includes in a file. */
 #include <iostream>
 #include <curses.h>
-// #include <random>
-// #include <fstream>
 #endif
 
 
@@ -127,14 +125,10 @@ constexpr int subMenuSleepTimeMs {160};
 constexpr int helpColorPair {1};
 constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR{27};
-// constexpr int BACKGROUND_HEIGHT {33};
-
 constexpr char BACKGROUND_FILE_EXTENSION [] {".levbg"};
 constexpr char COORD_RULES_FILE_EXTENSION [] {".levcr"};
 constexpr char BACKGROUND_CHUNK_FILE_EXTENSION [] {".bgchunk"};
 constexpr char COORD_RULES_CHUNK_FILE_EXTENSION[] {".crchunk"};
-// constexpr char RULES_CONFIG_FILE_EXTENSION [] {".rules.lev"};
-// constexpr char SPRITE_FILE_EXTENSION [] {".sprite"};
 
 enum errorsCodes {                     /* Error codes. */
                    ERROR_WIN_PARAM,    // Window not initialised - there was a
@@ -219,35 +213,15 @@ bool getConfirmation
 void safeScreenExit(int & userInput, const int editSubMenuSleepTimeMs);
 void sleep(const unsigned long long t);
 bool isNum(const char c);
-/* Returns false if a is not range [min, max). */
-bool checkRange(const int a, const int min, const int max);
-/* Return's true if a - offset is within the range [SINGLE_DIGIT_MIN, SINGLE_DIGIT_MAX].
-   Return's false otherwise. */
-bool inSingleDigitRange(const int a, const int offset);
 void loadFileIntoString(const char name[], std::string & buff,
 			const std::string & eMsg);
 void createFileIfNoneExists
 (const std::string & fileName, const std::string & eMsg);
 bool fileExists(const std::string & fileName);
 void createFile(const std::string & fileName, const std::string & eMsg);
-/* First checks if buffPos is in range. Returns false if it is not. Otherwise
-   attempts to read the coordinates into chunkCoord. If this succeeds returns
-   true (with chunkCoord being set to the coordinates read.) If there is a
-   failure in reading the coordinates then the program will be aborted with eMsg
-   being displayed. */
-bool getChunkCoordinate
-(const std::string & data, std::string::const_iterator & buffPos,
- const std::string & eMsg, yx & chunkCoord);
-/* Attempts to read a number starting at buffPos (will skip any space before the
-   number.) */
 int readSingleNum
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const bool useIntegers);
-/* Similar to readSingleNum except can read real numbers and can always read
-   negative numbers. */
-double readSingleRNum
-(const std::string & buff, std::string::const_iterator & buffPos,
- const std::string & eMsg);
 void readInBgChunkFile
 (const std::string fileName, backgroundChunkCharType chunk[yHeight][xWidth],
  const yx chunkSize, yx & chunkCoord, bool & foundCoord);
@@ -288,28 +262,6 @@ void compressAndWriteOutBgChunk
 void compressAndWriteOutCRChunk
 (const std::string & fileName, std::ofstream & file, const yx chunkCoord,
  const char cRChunk[][xWidth], const yx chunkSize);
-void getChunk
-(const std::string & data, std::string::const_iterator & buffPos,
- const std::string & eMsg, std::string & chunk, const yx expectedChunkSize);
-
-
-inline yx convertCharCoordToChunkCoord(const yx chunkSize, yx charCoord)
-{
-  /* We need to add an offset here if charCoord is less than 0 because otherwise
-     we would have two zero chunks (for each axis). */
-  return yx
-    {(charCoord.y - (charCoord.y < 0 ? chunkSize.y -1: 0)) / chunkSize.y,
-     (charCoord.x - (charCoord.x < 0 ? chunkSize.x -1: 0)) / chunkSize.x};
-}
-
-
-/* Creates a chunk coord key from a chunk coordinate. I.e. the input must
-   already be a chunk coordinate and not a character coordinate. */
-std::string createChunkCoordKey(const yx coord);
-std::string createChunkCoordKeyFromCharCoord(const yx charCoord);
-/* Returns true if str is in buff at buffPos. */
-bool checkForStringInBufferAtPos(const std::string & buff, int buffPos,
-				 const std::string str);
 /* Advances buffPos (past white space) until it reads one past a sequence of
    characters that matches a string in targets, where buffPos points to
    somewhere in buff and the strings in targets will be checked in order of the
@@ -323,12 +275,6 @@ std::string skipSpaceUpTo(const std::string & buff,
                           std::string::const_iterator & buffPos,
                           std::vector<std::string> & targets,
                           const bool skipSpace = true);
-/* Advances buffPos up to and past the next '\n' character. If the end of the
-   buffer or any non white space characters are encountered before '\n' prints
-   eMsg and terminates program. */
-void skipSpaceUpToNextLine(const std::string & buff,
-			   std::string::const_iterator & buffPos,
-			   const std::string & eMsg);
 /* Finds a target from targets in the buffer pointed to by
    outerPeekPos. Returns the target found. If no target was found returns "". */
 static std::string
@@ -363,52 +309,6 @@ std::string concat(std::string newStr,
   newStrCompsS<<newStrCompRaw;
   newStr += newStrCompsS.str();
   return concat(newStr, args...);
-}
-
-
-
-/* Increment's i by n, if i equals iEnd before being incremented n times we call
-   exit(str, eNum). */
-template <typename T_A, typename T_B> auto
-getAdvancedIter(T_A i, const T_B iEnd, const size_t n, const std::string & eMsg)
-  -> T_A
-{
-  for(size_t iter {}; iter < n -1; ++iter)
-    {
-      i++;
-      if(*i == *iEnd)
-	{
-	  exit(eMsg, ERROR_GENERIC_RANGE_ERROR);
-	}
-    }
-  return i;
-}
-
-
-template<typename T1, typename T2>
-void insertChunk
-(const yx coord, const T1 & chunk, const ssize_t chunksReadIn,
- const char fileName [], T2 & chunkMap)
-{
-  /* Store chunk in chunkMap with a key that should be calculated according to
-     the following:
-     Concatenate (y / chunkSize.y) and (x / chunkSize.y) and use as index into
-     map. Then  (y % (chunkSize.y * 3)) * chunkSize.x + (x % (chunkSize.x * 3))
-     can be used to index into the object returned. The stage 1 draw buffer will
-     be 3 by 3 chunks. */
-  const std::string key
-    {createChunkCoordKey(coord)};
-  // Note that insert should copy it's argument.
-  if(chunkMap.insert
-     (std::pair<std::string, T1>
-      (key, chunk)).second == false)
-    {
-      exit(concat
-	   ("Error: duplicate chunk coordinate (",
-	    key, ") found when loading chunk no. ",
-	    chunksReadIn, " from file \"", fileName, "\"."),
-	   ERROR_DUPLICATE_COORDINATE);
-    }
 }
 
 
