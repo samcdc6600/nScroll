@@ -285,6 +285,20 @@ bool getConfirmation
 }
 
 
+bool confirmQuit(const yx viewPortSize, int & input, const int quitChar)
+{
+  bool quit {false};
+  if(input == quitChar)
+    {
+      quit = getConfirmation
+	(viewPortSize, helpColorPair, input, subMenuSleepTimeMs,
+	 "\tDo you really want to quit y/n?.\t");
+    }
+
+  return quit;
+}
+
+
 void safeScreenExit(int & userInput, const int editSubMenuSleepTimeMs)
 {
   sleep(editSubMenuSleepTimeMs);
@@ -301,6 +315,32 @@ void sleep(const unsigned long long t)
 bool isNum(const char c)
 {
   return (c >= '0' && c <= '9') ? true: false;
+}
+
+
+void loadFileIntoString(const char name [], std::string & buff,
+			const std::string & eMsg)
+{
+  std::ifstream file {};
+  file.open(name);
+  if(!file.is_open())
+    {				// Couldn't open file.
+      file.close();
+      exit(concat("Error: opening file \"", name, "\" when ", eMsg, "."),
+	   ERROR_OPENING_FILE);
+    }
+  char c;
+  while(file.get(c))		// Copy file content's to buff.
+    {
+      buff.push_back(c);
+    }
+  file.close();
+
+  if(buff.size() == 0)
+    {
+      exit(concat("Error: found file \"", name, "\" to be empty when ", eMsg,
+		  "."), ERROR_OPENING_FILE);
+    }
 }
 
 
@@ -334,32 +374,6 @@ void createFile(const std::string & fileName, const std::string & eMsg)
   else
     {
       exit(concat("Error: failed to create file \"", fileName, "\" when ", eMsg,
-		  "."), ERROR_OPENING_FILE);
-    }
-}
-
-
-void loadFileIntoString(const char name [], std::string & buff,
-			const std::string & eMsg)
-{
-  std::ifstream file {};
-  file.open(name);
-  if(!file.is_open())
-    {				// Couldn't open file.
-      file.close();
-      exit(concat("Error: opening file \"", name, "\" when ", eMsg, "."),
-	   ERROR_OPENING_FILE);
-    }
-  char c;
-  while(file.get(c))		// Copy file content's to buff.
-    {
-      buff.push_back(c);
-    }
-  file.close();
-
-  if(buff.size() == 0)
-    {
-      exit(concat("Error: found file \"", name, "\" to be empty when ", eMsg,
 		  "."), ERROR_OPENING_FILE);
     }
 }
@@ -921,6 +935,37 @@ bool checkForPostfix(const char str [], const char postfix [])
 }
 
 
+void getMinMaxYAndX(const std::vector<yx> & coords, yx & minMaxY, yx & minMaxX)
+{
+  if(coords.size() < 1)
+    {
+      exit("Error: getMinMaxYAndX() called with coords.size() < 1, This is a "
+	   "logic error. The size of coords should always be checked to make "
+	   "sure it's greater than 0 before calling getMinMaxYAndX()!",
+	   ERROR_BAD_LOGIC);
+    }
+
+  minMaxY.y = coords[0].y;
+  minMaxY.x = coords[0].y;
+
+  minMaxX.y = coords[0].x;
+  minMaxX.x = coords[0].x;  
+  
+  for(yx coord: coords)
+    {
+      // Find min for y...
+      minMaxY.y = coord.y < minMaxY.y? coord.y: minMaxY.y;
+      // Find max for y...
+      minMaxY.x = coord.y > minMaxY.x? coord.y: minMaxY.x;
+
+      // Find min for x...
+      minMaxX.y = coord.x < minMaxX.y? coord.x: minMaxX.y;
+      // Find max for x...
+      minMaxX.x = coord.x > minMaxX.x? coord.x: minMaxX.x;
+    }
+}
+
+
 /* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
 void exit(const std::string & e, const int status)
 {
@@ -929,3 +974,4 @@ void exit(const std::string & e, const int status)
   exit(status);
 }
 
+// Rudimentary laksdjf 

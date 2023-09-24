@@ -2,6 +2,7 @@
 #include "include/utils.hpp"
 #include "include/editMode.hpp"
 #include "include/appendExtractDelete.hpp"
+#include "include/mapView.hpp"
 
 
 /* Verifies that the CMD args in argv conform to one of the modes (see the
@@ -311,6 +312,8 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
 	("Starting Single Chunk Edit Mode.", viewPortSize, printCharSpeed,
 	 afterPrintSleep);
       editMode(argv[1], argv[2], "", "", viewPortSize, false);
+      progressivePrintMessage
+	("Finished editing.", viewPortSize, printCharSpeed, afterPrintSleep);
       break;
     case 2:
       // Chunk edit mode with reference chunks.
@@ -319,6 +322,8 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
 	 viewPortSize, printCharSpeed,
 	 afterPrintSleep);
       editMode(argv[1], argv[3], argv[2], argv[4], viewPortSize, true);
+      progressivePrintMessage
+	("Finished editing.", viewPortSize, printCharSpeed, afterPrintSleep);
       break;
     case 3:
       // Append mode.
@@ -356,11 +361,10 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
       progressivePrintMessage
 	("Starting Map View Mode.", viewPortSize, printCharSpeed,
 	 afterPrintSleep);
-      clear();
-      refresh();
-      endwin();
-      printMessageNoWin("Error: mode not implemented.", printCharSpeed,
-			afterPrintSleep);
+      mapView(argv[1], viewPortSize);
+            progressivePrintMessage
+	("Finished map viewing.", viewPortSize, printCharSpeed,
+	 afterPrintSleep);
       break;
     default:
       exit(concat("Error: reached default case statement in enterMode(). Where,"

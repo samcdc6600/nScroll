@@ -5,13 +5,6 @@
 #include "include/editMode.hpp"
 
 
-//   std::ostream & operator<<(std::ostream & stream, backgroundChunkCharInfo bCCI)
-//   {
-//     stream<<" ch = "<<bCCI.ch<<", set = "<<bCCI.set<<" ";
-//     return stream;
-// }
-
-
 namespace editingSettings
 {    
   setColorMode colorMode {};
@@ -101,9 +94,6 @@ void editModeProper
  const backgroundChunkCharType refBgChunk[yHeight][xWidth],
  const char refCRChunk[yHeight][xWidth], const yx chunkSize,
  const bool usingReferences);
-/* If edState.input == editChars::quit then asks the user if they really want
-   to quit. Returns true if they do, false otherwise. */
-bool confirmQuit(const yx viewPortSize, editingState & edState);
 bool getConfirmation(const yx viewPortSize, editingState & edState,
 		     const std::string & question);
 void actOnInputLayer1
@@ -350,7 +340,8 @@ void editModeProper
       editingSettings::rulesChars::boarder
     };
   
-  while(!confirmQuit(chunkSize, edState))
+  while(!confirmQuit(chunkSize, edState.input,
+		     editingSettings::editChars::quit))
     {
       edState.input = getch();
 
@@ -376,24 +367,6 @@ void editModeProper
 	    }
 	}
 
-
-      // printBgChunk(bgChunk.getChunk().data, chunkSize);
-      // if(edState.refrenceChunkToggle && !edState.cRChunkToggle)
-      // 	{
-      // 	  // Print bg reference chunk.
-      // 	  printRefBgChunk(refBgChunk, chunkSize);
-      // 	}
-      // else if(edState.cRChunkToggle)
-      // 	{
-      // 	  // We want to print coord rules over the bg chunk.
-      // 	  printCRChunk(cRChunk.getChunk().data, chunkSize);
-      // 	  if(edState.refrenceChunkToggle)
-      // 	    {
-      // 	      // Print cR reference chunk.
-      // 	      printCRChunk(refCRChunk, chunkSize);
-      // 	    }
-      // 	}
-
 	// The cursor should generally always be visible, so print last.
       if(edState.cRChunkToggle)
 	{
@@ -413,19 +386,6 @@ void editModeProper
       
       sleep(editingSettings::loopSleepTimeMs);
     }
-}
-
-
-bool confirmQuit(const yx viewPortSize, editingState & edState)
-{
-  bool quit {false};
-  if(edState.input == editingSettings::editChars::quit)
-    {
-      quit = getConfirmation(viewPortSize, edState,
-			     "\tDo you really want to quit y/n?.\t");
-    }
-
-  return quit;
 }
 
 

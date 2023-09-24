@@ -13,32 +13,6 @@
 #endif
 
 
-/* TODO: find and update any code still using int directory in situations
-   where this type should be used. */
-typedef int backgroundChunkCharType;
-
-struct backgroundChunkCharInfo
-{
-  backgroundChunkCharType ch;
-  // Tells if ch has been set yet.
-  bool set;
-};
-
-/* These constants are special values that signify the start of run length
-   sequences. */
-constexpr backgroundChunkCharType bgRunLengthSequenceSignifier
-  {std::numeric_limits<int>::max()};
-constexpr char cRRunLengthSequenceSignifier {'R'};
-/* The point after which we will gain an advantage from our run length
-   compression scheme compression.
-   RunLengthSequenceSignifier + length + character = 3. */
-constexpr int bgCompressionAdvantagePoint{3};
-/* We need to be able to store lengths of at least 8160 (our chunk size 170x48)
-   For this we will need two chars. Thus a run length sequence will take up
-   RunLengthSequenceSignifier + lengthComp1 + lengthComp2 + character
-   characters. */
-constexpr int cRCompressionAdvantagePoint {4};
-
 struct yx
 {
   int y {};
@@ -117,6 +91,75 @@ std::ostream & operator<<(std::ostream &lhs, const yx rhs);
 
 // The window must be these dimensions.
 constexpr int yHeight {48}, xWidth {170};
+
+
+/* TODO: find and update any code still using int directory in situations
+   where this type should be used. */
+typedef int backgroundChunkCharType;
+
+
+struct backgroundChunkCharInfo
+{
+  backgroundChunkCharType ch;
+  // Tells if ch has been set yet.
+  bool set;
+};
+
+
+typedef backgroundChunkCharType bgChunk[yHeight][xWidth];
+typedef char 			cRChunk[yHeight][xWidth];
+
+
+struct bgChunkStrt
+{
+  backgroundChunkCharType chunk[yHeight][xWidth];
+
+  bgChunkStrt(const bgChunk chunk)
+  {
+    for(int yIter {}; yIter < yHeight; ++yIter)
+      {
+	for(int xIter {}; xIter < xWidth; ++xIter)
+	  {
+	    this->chunk[yIter][xIter] = chunk[yIter][xIter];
+	  }
+      }
+  }
+};
+
+
+struct cRChunkStrt
+{
+  char chunk[yHeight][xWidth];
+
+  cRChunkStrt(const cRChunk chunk)
+  {
+    for(int yIter {}; yIter < yHeight; ++yIter)
+      {
+	for(int xIter {}; xIter < xWidth; ++xIter)
+	  {
+	    this->chunk[yIter][xIter] = chunk[yIter][xIter];
+	  }
+      }
+  }
+};
+
+
+/* These constants are special values that signify the start of run length
+   sequences. */
+constexpr backgroundChunkCharType bgRunLengthSequenceSignifier
+  {std::numeric_limits<int>::max()};
+constexpr char cRRunLengthSequenceSignifier {'R'};
+/* The point after which we will gain an advantage from our run length
+   compression scheme compression.
+   RunLengthSequenceSignifier + length + character = 3. */
+constexpr int bgCompressionAdvantagePoint{3};
+/* We need to be able to store lengths of at least 8160 (our chunk size 170x48)
+   For this we will need two chars. Thus a run length sequence will take up
+   RunLengthSequenceSignifier + lengthComp1 + lengthComp2 + character
+   characters. */
+constexpr int cRCompressionAdvantagePoint {4};
+
+
 constexpr int ASCII_CH_MAX {127};
 /* Numerical value of highest character using color pair 1.  */
 constexpr int maxCharNum {158};
@@ -210,6 +253,9 @@ void printMessageNoWin
 bool getConfirmation
 (const yx viewPortSize, const int msgColorPair, int & userInput,
  const int editSubMenuSleepTimeMs, const std::string & question);
+/* If input == quitChar then asks the user if they really want to quit. Returns
+   true if they do, false otherwise. */
+bool confirmQuit(const yx viewPortSize, int & input, const int quitChar);
 void safeScreenExit(int & userInput, const int editSubMenuSleepTimeMs);
 void sleep(const unsigned long long t);
 bool isNum(const char c);
@@ -242,10 +288,6 @@ bool getBgChunk
 (std::fstream & file, backgroundChunkCharType chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
  const bool multiChunkFile = false);
-/* Attempts to read in a chunk coord from file (which should be open) at the
-   current position. Returns true if successful. If unsuccessful returns false
-   if exitOnError is true, otherwise returns false. Sets retVal to the
-   coordinate read (if one was successfully read.) */
 bool readInChunkCoordFromFile
 (yx & retVal, const std::string & fileName, std::fstream & file,
  const bool exitOnError);
@@ -256,6 +298,10 @@ bool getCRChunk
 (std::fstream & file, char chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
  const bool multiChunkFile = false);
+// /* Attempts to read in the next background (starting at file.tellg()). */
+// bool getNextBgChunk
+// (std::fstream & file, backgroundChunkCharType chunk[][xWidth],
+//  const yx chunkSize, yx & chunkCoordconst std::string & fileName);
 void compressAndWriteOutBgChunk
 (const std::string & fileName, std::ofstream & file, const yx chunkCoord,
  const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize);
@@ -282,6 +328,11 @@ findTargetInBuff(const std::string::const_iterator & outerPeekPos,
 		 const std::vector<std::string> & targets);
 /* Returns true if postfix is a strict postfix of str. */
 bool checkForPostfix(const char str [], const char postfix []);
+/* Finds the minimum y value in coords as well as the maximum y value. Stores
+   the minimum and maximum values for y in minMaxY.y and minMax.x
+   respectively. Does the same for x, only of course storing the values in
+   minMaxX. This function assumes that coords is non empty. */
+void getMinMaxYAndX(const std::vector<yx> & coords, yx & minMaxY, yx & minMaxX);
 /* Calls endwin() then print's e to std::cerr and finally call's exit() with
    status */
 void exit(const std::string & e, const int status);

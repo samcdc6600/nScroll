@@ -390,15 +390,14 @@ void extract(const std::string multiChunkFileName,
     };
   
   /* Open files for writing / reading.
-   Note that std::ios::binary is not a file opening mode in and of itself and
-   so when not using ofstream or ifstream we must also supply
-   ios::in and or ios::out if we are also supplying std::ios::binary
-   (presumably just supplying std::ios::binary overrides the default of
-   std::ios::in | std::ios::out when using fstream.) If we just use
-   std::ios::binary with fstream by itself the file opening operation will
-   fail. */
-  std::fstream source(multiChunkFileName,
-		      std::ios::in | std::ios::binary);
+     Note that std::ios::binary is not a file opening mode in and of itself and
+     so when not using ofstream or ifstream we must also supply
+     ios::in and or ios::out if we are also supplying std::ios::binary
+     (presumably just supplying std::ios::binary overrides the default of
+     std::ios::in | std::ios::out when using fstream.) If we just use
+     std::ios::binary with fstream by itself the file opening operation will
+     fail. */
+  std::fstream source(multiChunkFileName, std::ios::in | std::ios::binary);
   // Open dest in append mode.
   std::ofstream dest(singleChunkFileName, std::ios::binary);
 
@@ -414,7 +413,7 @@ void extract(const std::string multiChunkFileName,
       exit(concat("Error: source file \"", multiChunkFileName,
 		  "\" found to be empty when attempting to extract chunk ",
 		  coord, " from it and store said chunk in \"",
-		  singleChunkFileName, "\"."), ERROR_OPENING_FILE);
+		  singleChunkFileName, "\"."), ERROR_MALFORMED_FILE);
     }
   else if(!dest)
     {
@@ -497,7 +496,7 @@ void deleteChunk
     {
       exit(concat("Error: file \"", multiChunkFileName,
 		  "\" found to be empty when attempting to delete chunk ",
-		  searchCoord, " from it."), ERROR_OPENING_FILE);
+		  searchCoord, " from it."), ERROR_MALFORMED_FILE);
     }
 
 
