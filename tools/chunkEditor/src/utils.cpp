@@ -94,17 +94,19 @@ void writeOutChunkCoordToFile
 {
   auto intOut = [& fileName, & file, & chunkCoord] (const int a)
   {
-    for(int iter {}; (size_t)iter < sizeof(int); ++iter)
+    char outputCoord [sizeof(int)];
+    
+    for(int iter = 0; iter < sizeof(int); ++iter)
       {
-	char outputChar {};
-	outputChar = a << (8 * iter);
-	if(!file.write(reinterpret_cast<const char *>(&outputChar),
-		       sizeof(char)))
-	  {
-	    exit(concat("Error: trying to write chunkCoord (", chunkCoord, ")",
-			" to \"", fileName, "\"."), ERROR_WRITING_TO_FILE);
-	  }
+	outputCoord[iter] = (a >> (iter * 8)) & 0xFF;
       }
+
+    if(!file.write(outputCoord, sizeof(int)))
+      {
+	exit(concat("Error: trying to write chunkCoord (", a, ") to \"",
+		    fileName, "\"."), ERROR_WRITING_TO_FILE);
+      }
+    
   };
 
   intOut(chunkCoord.y);
@@ -116,26 +118,22 @@ bool readInChunkCoordFromFile
 (yx & retVal, const std::string & fileName, std::fstream & file,
  const bool exitOnError)
 {
-  auto intIn = [& fileName, & file, exitOnError] (int & a)
+  auto intIn = [& fileName, & file, exitOnError] (int & coord)
   {
-    a = 0;
-    char bytes[4];
-    if(!file.read(bytes, 4))
+    char inputCoord [sizeof(int)];
+
+    if(!file.read(inputCoord, sizeof(int)))
       {
-	if(exitOnError)
-	  {
-	    exit(concat("Error: trying to read int from \"", fileName, "\". "
-			"The file size may be of note."),
-		 ERROR_MALFORMED_FILE);
-	  }
-	else
-	  {
-	    return false;
-	  }
+	exit(concat("Error: trying to read int from \"", fileName, "\". "
+		    "The file size may be of note."),
+	     ERROR_MALFORMED_FILE);
       }
-    for(int iter {}; (size_t)iter < sizeof(int); ++iter)
+
+    coord = 0;
+
+    for(int iter {}; iter < sizeof(int); iter++)
       {
-	a |=  (bytes[iter] << (8 * iter));
+	coord |= (static_cast<int>(inputCoord[iter]) & 0xFF) << (iter * 8);
       }
 
     return true;

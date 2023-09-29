@@ -516,7 +516,8 @@ void actOnInputLayer2
 	}
       break;
     case bgGetCharAtPos:
-      if(!edState.cRChunkToggle)
+      if(!edState.cRChunkToggle && bgChunk.getChunk().data
+	     [edState.cursorPos.y][edState.cursorPos.x].set)
 	{
 	  edState.setCurrentBgChar
 	    (bgChunk.getChunk().data

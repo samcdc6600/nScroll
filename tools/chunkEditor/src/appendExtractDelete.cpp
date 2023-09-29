@@ -61,18 +61,23 @@ void append(const std::string singleChunkFileName,
   auto checkForDuplicateChunkLocal =
     [& singleChunkFileName, & multiChunkFileName, viewPortSize]
     (std::fstream & source, std::fstream & dest,
-     std::streampos & victimChunkStartSeekPos, yx & sourceCoordFound)
+     std::streampos & multiChunkFileSeekPos, yx & sourceCoordFound)
     {
-      bool retDuplicatChunkCoordFound {};
+      bool retDuplicatChunkCoordFound {false};
 
       readInChunkCoordFromFile
 	(sourceCoordFound, singleChunkFileName, source, true);
 
       // Seek back to the start of the source file.
       source.seekg(0, std::ios::beg);
-      checkForDuplicateChunk
-	(multiChunkFileName, dest, sourceCoordFound, retDuplicatChunkCoordFound,
-	 victimChunkStartSeekPos, viewPortSize);
+
+      /* We can't very well read from the destination file if it is empty! */
+      if(dest.peek() != std::ifstream::traits_type::eof())
+	{
+	  checkForDuplicateChunk
+	    (multiChunkFileName, dest, sourceCoordFound,
+	     retDuplicatChunkCoordFound, multiChunkFileSeekPos, viewPortSize);
+	}
       
       return retDuplicatChunkCoordFound;
     };
