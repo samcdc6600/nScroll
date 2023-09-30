@@ -15,7 +15,7 @@ namespace mapViewSettings
    port. If the user pressed space when the cursor is over a chunk the chunk
    will be displayed until the user presses space again. */
 void viewMap
-(const std::string multiChunkFileName, bool viewingBgMap,
+(const std::string & multiChunkFileName, bool viewingBgMap,
  const std::vector<yx> & mapCoords,
  const std::vector<bgChunkStrt> & bgMap, const std::vector<cRChunkStrt> & cRMap,
  const yx viewPortSize);
@@ -23,6 +23,11 @@ void viewMap
    the view port. Returns true if cursorPos has been updated. */
 bool updateCursorPos
 (const int input, yx & cursorPos, const yx minMaxY, const yx minMaxX,
+ const yx viewPortSize);
+/* Lists all coordinates in the map. Prompts the user first if they would like
+   to as this function will exit the program after listing the coordinates. */
+void listMapCoordsFunc
+(const std::vector<yx> & mapCoords, const std::string & fileName,
  const yx viewPortSize);
 void displayMap
 (const std::vector<yx> & mapCoords, const yx cursorPos, const yx minMaxY,
@@ -98,7 +103,7 @@ void mapView(const std::string multiChunkFileName, const yx viewPortSize)
 
 
 void viewMap
-(const std::string multiChunkFileName, bool viewingBgMap,
+(const std::string & multiChunkFileName, bool viewingBgMap,
  const std::vector<yx> & mapCoords,
  const std::vector<bgChunkStrt> & bgMap, const std::vector<cRChunkStrt> & cRMap,
  const yx viewPortSize)
@@ -122,11 +127,17 @@ void viewMap
 
       if(!updateCursorPos(input, cursorPos, minMaxY, minMaxX, viewPortSize))
 	{
+	  using namespace mapViewSettings::mapViewChars;
 	  switch(input)
 	    {
-	      /* CASE SPACE:
-		 If the cursor is over a chunk representing character enter display
-		 chunk mode (which can be exited by pressing space again.) */
+	    case actionAtPos:
+	      /* If the cursor is over a chunk representing character enter
+		 display chunk mode (which can be exited by pressing space
+		 again.) */
+	    break;
+	    case listMapCoords:
+	      listMapCoordsFunc(mapCoords, multiChunkFileName, viewPortSize);
+	      break;
 	    }
 	}
 
@@ -190,6 +201,29 @@ bool updateCursorPos
       cursorPos = newPos;
     }
   return ret;
+}
+
+
+void listMapCoordsFunc
+(const std::vector<yx> & mapCoords, const std::string & fileName,
+ const yx viewPortSize)
+{
+  int input;
+  if(getConfirmation(viewPortSize, helpColorPair, input, subMenuSleepTimeMs,
+     concat("\tDo you really want to display all chunk coordinates in this map "
+	    "file (\"", fileName, "\") (note that the program will exit after "
+	    "displaying the list) y/n?\t")))
+    {
+      endwin();
+      for(const yx & coord: mapCoords)
+	{
+	  printMessageNoWin(concat("", coord), afterPrintSleepFast,
+			    afterPrintSleep);
+	}
+      printMessageNoWin("\nGoodbye :)\n", printCharSpeed,
+			afterPrintSleep);
+      exit(-1);
+    }
 }
 
 

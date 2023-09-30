@@ -283,7 +283,7 @@ void editMode
 	  endwin();
 	  printMessageNoWin("Error: unable to find one or more reference chunk"
 			    " files (see help for more info.) Is the path "
-			    "wrong?", 1, afterPrintSleep);
+			    "wrong?", printCharSpeed, afterPrintSleep);
 	  exit(ERROR_INVALID_CMD_ARGS);
 	}
     }

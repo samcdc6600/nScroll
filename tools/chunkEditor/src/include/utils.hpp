@@ -224,9 +224,10 @@ namespace boarderRuleChars
 };
 
 
-constexpr int printCharSpeed {1};
-constexpr int afterPrintSleep {580};
-
+constexpr int printCharSpeed		{1};
+constexpr int afterPrintSleep 		{580};
+constexpr int afterPrintSleepFast 	{10};
+    
 
 void disableBlockingUserInput();
 void enableBlockingUserInput();

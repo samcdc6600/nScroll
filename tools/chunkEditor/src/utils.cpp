@@ -297,7 +297,7 @@ bool confirmQuit(const yx viewPortSize, int & input, const int quitChar)
     {
       quit = getConfirmation
 	(viewPortSize, helpColorPair, input, subMenuSleepTimeMs,
-	 "\tDo you really want to quit y/n?.\t");
+	 "\tDo you really want to quit y/n?\t");
     }
 
   return quit;

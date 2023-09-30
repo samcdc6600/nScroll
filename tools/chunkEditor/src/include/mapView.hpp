@@ -21,6 +21,8 @@ namespace mapViewSettings
     constexpr char cursorDown		{'s'};
     constexpr char cursorLeft		{'a'};
     constexpr char cursorRight		{'d'};
+    constexpr char actionAtPos		{' '};
+    constexpr char listMapCoords	{'l'};
   }
 }
 

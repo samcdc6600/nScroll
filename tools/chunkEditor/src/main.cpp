@@ -298,7 +298,7 @@ void printHelp(const char * argv [])
 	  COORD_RULES_FILE_EXTENSION, " file.\n\t    Example:\n\t\t", argv[0],
 	  " splendid", BACKGROUND_FILE_EXTENSION)};
   endwin();
-  printMessageNoWin(help, 1, afterPrintSleep);
+  printMessageNoWin(help, printCharSpeed, afterPrintSleep);
 }
 
 
