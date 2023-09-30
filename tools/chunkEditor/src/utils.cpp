@@ -205,11 +205,57 @@ void progressivePrintMessage
       clear();
     }
   
-  const yx margins {viewPortSize.y / 7, viewPortSize.x / 7};
-  const double lineCount  {(double)msg.size() /
-			   (viewPortSize.x - 2 * margins.x)};
+  // const yx margins {viewPortSize.y / 7, viewPortSize.x / 7};
+  // const double lineCount  {(double)msg.size() /
+  // 			   (viewPortSize.x - 2 * margins.x)};
 
-  if(lineCount < 1)
+  // if(lineCount < 1)
+  //   {
+  //     mvprintw(viewPortSize.y / 2, viewPortSize.x / 2 - msg.size() / 2,
+  // 	       "");
+  //     for(char c: msg)
+  // 	{
+  // 	  printw(concat("", c).c_str());
+  // 	  if(printProgressively)
+  // 	    {
+  // 	      refresh();
+  // 	      sleep(interCharacterSleep);
+  // 	    }
+  // 	}
+  //   }
+  // else
+  //   {
+  //     int charsPrinted {};
+  //     for(int lines {}; lines < std::ceil(lineCount); ++lines)
+  // 	{
+  // 	  for(int chars {};
+  // 	      (double)chars < (msg.size() / std::ceil(lineCount)); ++chars)
+  // 	    {
+  // 	      mvprintw
+  // 		(viewPortSize.y / 2 + lines, margins.x + chars,
+  // 		 concat("", msg[charsPrinted]).c_str());
+  // 	      if(printProgressively)
+  // 		{
+  // 		  refresh();
+  // 		  sleep(interCharacterSleep);
+  // 		}
+  // 	      charsPrinted++;
+  // 	    }
+  // 	}
+  //     for( ; (size_t)charsPrinted < msg.size(); ++charsPrinted)
+  // 	{
+  // 	  printw(concat("", msg[charsPrinted]).c_str());
+  // 	}
+  //   }
+
+  // This is for both sides and includes boarder characters.
+  const int margin {4};
+  const int boarderCharsNo {2};
+  const int msgLineLength {170 - margin};
+  const int noOfLines {(int)(msg.size() / msgLineLength)};
+  const int remainder {(int)(msg.size() - (noOfLines * msgLineLength))};
+
+  if(noOfLines < 1)
     {
       mvprintw(viewPortSize.y / 2, viewPortSize.x / 2 - msg.size() / 2,
 	       "");
@@ -226,25 +272,33 @@ void progressivePrintMessage
   else
     {
       int charsPrinted {};
-      for(int lines {}; lines < std::ceil(lineCount); ++lines)
+      for(int lines {margin - boarderCharsNo};
+	  lines < (noOfLines + margin - boarderCharsNo); ++lines)
 	{
-	  for(int chars {};
-	      (double)chars < (msg.size() / std::ceil(lineCount)); ++chars)
+	  for(int lineChars {margin - boarderCharsNo};
+	      lineChars <
+		(msgLineLength + boarderCharsNo + margin - boarderCharsNo);
+	      lineChars++)
 	    {
-	      mvprintw
-		(viewPortSize.y / 2 + lines, margins.x + chars,
-		 concat("", msg[charsPrinted]).c_str());
+	      if(lineChars == 0 || lineChars == lineChars <
+		 (msgLineLength + boarderCharsNo +
+		  margin - boarderCharsNo -1))
+		{
+		  mvprintw(lines, lineChars, "|");
+		}
+	      else
+		{
+		  mvprintw(lines, lineChars,
+			   concat("", msg[charsPrinted]).c_str());
+		  charsPrinted++;
+		}
+
 	      if(printProgressively)
 		{
 		  refresh();
 		  sleep(interCharacterSleep);
 		}
-	      charsPrinted++;
 	    }
-	}
-      for( ; (size_t)charsPrinted < msg.size(); ++charsPrinted)
-	{
-	  printw(concat("", msg[charsPrinted]).c_str());
 	}
     }
   

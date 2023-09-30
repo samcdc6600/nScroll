@@ -50,8 +50,8 @@ namespace editingSettings
     constexpr char bGToggleCharacterSelection	{'c'};
     constexpr char bgNextCurrentChar	{'n'};
     constexpr char bgLastCurrentChar	{'l'};
-    constexpr char undo			{'u'};
     constexpr char redo			{'r'};
+    constexpr char undo			{'u'};
     constexpr char bgGetCharAtPos      	{'g'};
     constexpr char bgFloodFill		{'f'};
     // 'i' for info.

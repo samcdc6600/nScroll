@@ -1092,10 +1092,59 @@ void printEditHelp(const yx viewPortSize, editingState & edState)
   progressivePrintMessage
     (concat
      ("\t~H~E~L~P~!~\t\t\t\t\t\t",
-      cursorUp, ": to move the cursor up.\t\t\t",
-      cursorDown, ": to move the cursor down.\t\t\t",
-     cursorLeft, ": to move the cursor left.\t\t\t",
-      cursorRight, ": to move the cursor right.\t\t\t"),
+      toggleHelpMsg,	": to toggle this message.\t\t\t",
+      cursorUp,		": to move the cursor up.\t\t\t",
+      cursorDown,	": to move the cursor down.\t\t\t",
+      cursorLeft,	": to move the cursor left.\t\t\t",
+      cursorRight,	": to move the cursor right.\t\t\t",
+      "\"", performActionAtPos, "\": to perform an action at the current "
+      "cursor position. The specific action performed depends on the context. "
+      "The most important action is to change the character under the cursor "
+      "to the same character as the cursor.\t\t\t",
+      toggleBetweenCRandBg, ": to toggle between background and character "
+      "rules chunks.\t\t\t",
+      toggleReferenceChunkView, ": to toggle the reference chunk view (this is "
+      "only relevant when in mode 2, see -h for more info.)\t\t\t",
+      cREraseCRChar,	": to set the cursor character to the rules erase "
+      "character when editing a character rules chunk. This allows for the "
+      "erasure of rules characters from the chunk.\t\t\t",
+      cRSetCRCharToBorder, ": to set the cursor character to the boarder "
+      "character when editing a character rules chunk.\t\t\t",
+      cRSetCRCharToPlatform, ": to set the cursor character to the platform "
+      "character when editing a character rules chunk.\t\t\t",
+      bGToggleCharacterSelection, ": to select a new character color and "
+      "character for the cursor character when editing a background chunk\t\t\t",
+      bgNextCurrentChar,	": to cycle forward (next) through the recent "
+      "cursor characters when editing a background chunk\t\t\t",
+      bgLastCurrentChar, ": to cycle backwards (last) through the recent "
+      "cursor characters when editing a background chunk\t\t\t",
+      redo,		": to cycle the chunk buffer position forward (redo). ",
+      "This cycles forward through the chunk buffer. Every time a chunk is "
+      "altered the chunk at the current position in the buffer is unchanged "
+      "and a copy of that chunk is saved in the next buffer position where the "
+      "change is made. The current position is updated to the position of this "
+      "new altered copy.\t\t\t",
+      undo,		": to cycle the chunk buffer position back (undo). "
+      "This cycles back through the chunk buffer. Every time a chunk is "
+      "altered the chunk at the current position in the buffer is unchanged "
+      "and a copy of that chunk is saved in the next buffer position where the "
+      "change is made. The current position is updated to the position of this "
+      "new altered copy.\t\t\t",
+      bgGetCharAtPos,	": to set the cursor character to the background chunk "
+      "character below it. This is only applicable if editing a background "
+      "chunk and the character at the cursor pos has already been set.\t\t\t",
+      bgFloodFill,	": to do a flood fill using the cursor character and "
+      "starting at the current cursor pos. This is only applicable if editing "
+      "a background chunk\t\t\t",
+      bgShowUnsetChars,	": to print noise in locations where characters aren't "
+      "set. This helps when trying to find unset background chunk characters. "
+      "Note that the chunks cannot be saved if any of the background chunk "
+      "characters are unset. Also note that when editing a new background "
+      "chunk file all characters are initially unset.\t\t\t",
+      changeCoordinates, ": to change coordinates. This changes the "
+      "coordinates of both the background chunk and rules character chunk as "
+      "they are a set.\t\t\t",
+      saveChunks,	": to save (output) both chunks.\t\t\t"),
      viewPortSize, printCharSpeed, afterPrintSleepMedium, false, false);
 
   edState.input = getch();  

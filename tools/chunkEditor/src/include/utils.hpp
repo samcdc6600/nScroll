@@ -240,7 +240,7 @@ void enableBlockingUserInput();
 void move(const yx pos);
 void mvprintw(const yx pos, const std::string &str);
 /* Calls progressivePrintMessage() (see header below.) with clearScreen and
-   printProgressively  */
+   printProgressively both set to true.  */
 void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep);
