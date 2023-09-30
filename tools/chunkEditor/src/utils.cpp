@@ -124,9 +124,16 @@ bool readInChunkCoordFromFile
 
     if(!file.read(inputCoord, sizeof(int)))
       {
-	exit(concat("Error: trying to read int from \"", fileName, "\". "
-		    "The file size may be of note."),
-	     ERROR_MALFORMED_FILE);
+	if(exitOnError)
+	  {
+	    exit(concat("Error: trying to read int from \"", fileName, "\". "
+			"The file size may be of note."),
+		 ERROR_MALFORMED_FILE);
+	  }
+	else
+	  {
+	    return false;
+	  }
       }
 
     coord = 0;

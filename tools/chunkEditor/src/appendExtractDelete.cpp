@@ -71,13 +71,9 @@ void append(const std::string singleChunkFileName,
       // Seek back to the start of the source file.
       source.seekg(0, std::ios::beg);
 
-      /* We can't very well read from the destination file if it is empty! */
-      if(dest.peek() != std::ifstream::traits_type::eof())
-	{
-	  checkForDuplicateChunk
-	    (multiChunkFileName, dest, sourceCoordFound,
-	     retDuplicatChunkCoordFound, multiChunkFileSeekPos, viewPortSize);
-	}
+      checkForDuplicateChunk
+	(multiChunkFileName, dest, sourceCoordFound,
+	 retDuplicatChunkCoordFound, multiChunkFileSeekPos, viewPortSize);
       
       return retDuplicatChunkCoordFound;
     };
@@ -264,7 +260,7 @@ bool findCRChunk
 {
   bool foundChunk {false};
   yx currentCoord;
-  
+
   while(true)
     {
       // Store position in file before attempting to read next chunk.

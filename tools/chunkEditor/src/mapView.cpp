@@ -155,7 +155,7 @@ bool updateCursorPos
     {
     case cursorUp:
       newPos.y--;
-      if(newPos.y >= (minMaxY.y - viewPortSize.y /2))
+      if(newPos.y > (minMaxY.y - viewPortSize.y /2))
 	{
 	  /* Only update the cursor if it isn't outside of the minimum and
 	     maximum y and x ranges. */
@@ -171,7 +171,7 @@ bool updateCursorPos
       break;
     case cursorLeft:
       newPos.x--;
-      if(newPos.x >= (minMaxX.y - viewPortSize.x / 2))
+      if(newPos.x > (minMaxX.y - viewPortSize.x / 2))
 	{
 	  ret = true;
 	}
