@@ -231,6 +231,7 @@ namespace boarderRuleChars
 
 constexpr int printCharSpeed		{1};
 constexpr int afterPrintSleep 		{580};
+constexpr int afterPrintSleepMedium	{225};
 constexpr int afterPrintSleepFast 	{10};
     
 

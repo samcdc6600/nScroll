@@ -1096,7 +1096,7 @@ void printEditHelp(const yx viewPortSize, editingState & edState)
       cursorDown, ": to move the cursor down.\t\t\t",
      cursorLeft, ": to move the cursor left.\t\t\t",
       cursorRight, ": to move the cursor right.\t\t\t"),
-     viewPortSize, 0, 200, false, false);
+     viewPortSize, printCharSpeed, afterPrintSleepMedium, false, false);
 
   edState.input = getch();  
   while(edState.input != quit &&

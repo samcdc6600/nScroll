@@ -24,6 +24,7 @@ void viewMap
 bool updateCursorPos
 (const int input, yx & cursorPos, const yx minMaxY, const yx minMaxX,
  const yx viewPortSize);
+void printMapViewHelp(const yx viewPortSize);
 void viewChunk
 (bool viewingBgMap, yx & cursorPos, const std::vector<yx> & mapCoords,
  const std::vector<bgChunkStrt> & bgMap, const std::vector<cRChunkStrt> & cRMap,
@@ -134,6 +135,9 @@ void viewMap
 	  using namespace mapViewSettings::mapViewChars;
 	  switch(input)
 	    {
+	    case toggleHelpMsg:
+	      printMapViewHelp(viewPortSize);
+	      break;
 	    case actionAtPos:
 	      /* If the cursor is over a chunk representing character enter
 		 display chunk mode (which can be exited by pressing space
@@ -210,11 +214,53 @@ bool updateCursorPos
 }
 
 
+void printMapViewHelp(const yx viewPortSize)
+{
+  using namespace mapViewSettings::mapViewChars;
+  mapViewSettings::colorMode.setColor(mapViewSettings::helpColor);
+  progressivePrintMessage
+    (concat
+     ("\t~H~E~L~P~!~\t\t\t\t\t\t",
+      toggleHelpMsg,	": to toggle this message.\t\t\t",
+      quit,		": to exit the program.\t\t\t",
+      cursorUp,		": to move the cursor up.\t\t\t",
+      cursorDown,	": to move the cursor down.\t\t\t",
+      cursorLeft,	": to move the cursor left.\t\t\t",
+      cursorRight,	": to move the cursor right.\t\t\t"
+      "Note that the cursor always stays in the middle of the screen and as "
+      "such moving the cursor has the effect of moving the map around the "
+      "cursor. ",
+      "\"", actionAtPos, "\": to toggle chunk view mode. If the cursor is over "
+      "a map chunk the chunk will be displayed (in a read only mode.)\t\t\t",
+      listMapCoords,	": to display the coordinates of all chunks in the "
+      "map file (note that this will also exit the program.)\t\t\t"),
+     viewPortSize, printCharSpeed, afterPrintSleepMedium, false, false);
+
+  int input {getch()};  
+  while(input != quit &&
+	input != toggleHelpMsg)
+    {
+      input = getch();
+      sleep(mapViewSettings::loopSleepTimeMs);
+    }
+
+  safeScreenExit(input, mapViewSettings::mapViewSubMenuSleepTimeMs);
+}
+
+
 void viewChunk
 (bool viewingBgMap, yx & cursorPos, const std::vector<yx> & mapCoords,
  const std::vector<bgChunkStrt> & bgMap, const std::vector<cRChunkStrt> & cRMap,
  const yx viewPortSize)
 {
+  auto printMapViewHelpLocal = [viewPortSize](const int input)
+  {
+    if(input == mapViewSettings::mapViewChars::toggleHelpMsg)
+      {
+	printMapViewHelp(viewPortSize);
+      }
+  };
+  
   bool foundCoord {false};
 
   // for(const yx & coord: mapCoords)
@@ -238,6 +284,7 @@ void viewChunk
 	    {
 	      // MapCoords and (bgMap or cRMap) should always be the same size.
 	      printBgChunk(bgMap[mapCoordIndex].chunk, viewPortSize);
+	      printMapViewHelpLocal(input);
 	      sleep(mapViewSettings::loopSleepTimeMs);
 	    }
 	}
@@ -248,6 +295,7 @@ void viewChunk
 	    {
 	      // MapCoords and (bgMap or cRMap) should always be the same size.
 	      printCRChunk(cRMap[mapCoordIndex].chunk, viewPortSize);
+	      printMapViewHelpLocal(input);
 	      sleep(mapViewSettings::loopSleepTimeMs);
 	    }
 	}
@@ -267,10 +315,12 @@ void listMapCoordsFunc
  const yx viewPortSize)
 {
   int input;
-  if(getConfirmation(viewPortSize, helpColorPair, input, subMenuSleepTimeMs,
-     concat("\tDo you really want to display all chunk coordinates in this map "
-	    "file (\"", fileName, "\") (note that the program will exit after "
-	    "displaying the list) y/n?\t")))
+  if(getConfirmation
+     (viewPortSize, helpColorPair, input,
+      mapViewSettings::mapViewSubMenuSleepTimeMs,
+      concat("\tDo you really want to display all chunk coordinates in this map "
+	     "file (\"", fileName, "\") (note that the program will exit after "
+	     "displaying the list) y/n?\t")))
     {
       endwin();
       for(const yx & coord: mapCoords)

@@ -9,14 +9,17 @@
 namespace mapViewSettings
 {
   constexpr int loopSleepTimeMs		{5};
+  constexpr int mapViewSubMenuSleepTimeMs {subMenuSleepTimeMs};
   extern setColorMode colorMode;
   constexpr int cursorColor		{helpColorPair};
+  constexpr int helpColor		{helpColorPair};
   constexpr char chunkRepChar   	{'M'};
   constexpr int chunkRepCharColor	{86}; // 72?
   
   namespace mapViewChars
   {
     constexpr char quit			{'q'};
+    constexpr char toggleHelpMsg       	{'h'};
     constexpr char cursorUp		{'w'};
     constexpr char cursorDown		{'s'};
     constexpr char cursorLeft		{'a'};
