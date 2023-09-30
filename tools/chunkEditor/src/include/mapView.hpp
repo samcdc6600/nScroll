@@ -26,6 +26,9 @@ namespace mapViewSettings
     constexpr char cursorRight		{'d'};
     constexpr char actionAtPos		{' '};
     constexpr char listMapCoords	{'l'};
+    /* Cycles through map chunks, setting the cursor position to successive
+       chunks. */
+    constexpr char nextChunk		{'n'};
   }
 }
 

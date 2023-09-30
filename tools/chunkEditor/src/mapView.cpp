@@ -34,6 +34,10 @@ void viewChunk
 void listMapCoordsFunc
 (const std::vector<yx> & mapCoords, const std::string & fileName,
  const yx viewPortSize);
+/* Returns the coord at the index after chunkIndex in mapCoord. Wrapps
+   around if chunkIndex is the last index in mapCoords. ChunkIndex is updated to
+   the index of the coord returned. */
+yx getNextChunkPos(const std::vector<yx> & mapCoords, int & chunkIndex);
 void displayMap
 (const std::vector<yx> & mapCoords, const yx cursorPos, const yx minMaxY,
  const yx minMaxX, const yx viewPortSize);
@@ -125,6 +129,9 @@ void viewMap
   getMinMaxYAndX(mapCoords, minMaxY, minMaxX);
   yx cursorPos {(minMaxY.y + minMaxY.x) / 2, (minMaxX.y + minMaxX.x) / 2};
   int input {ERR};	   // ERR is returned by getch() when there is no input.
+  /* Used for cycling through chunks. (They annoying be hard to locate if they
+     aren't connected.) MapCoords should always be > 0 by this point. */
+  int lastChunkIndex {int(mapCoords.size() -1)};
   
   while(!confirmQuit(viewPortSize, input, mapViewSettings::mapViewChars::quit))
     {
@@ -147,6 +154,9 @@ void viewMap
 	    break;
 	    case listMapCoords:
 	      listMapCoordsFunc(mapCoords, multiChunkFileName, viewPortSize);
+	      break;
+	    case nextChunk:
+	      cursorPos = getNextChunkPos(mapCoords, lastChunkIndex);
 	      break;
 	    }
 	}
@@ -233,7 +243,11 @@ void printMapViewHelp(const yx viewPortSize)
       "\"", actionAtPos, "\": to toggle chunk view mode. If the cursor is over "
       "a map chunk the chunk will be displayed (in a read only mode.)\t\t\t",
       listMapCoords,	": to display the coordinates of all chunks in the "
-      "map file (note that this will also exit the program.)\t\t\t"),
+      "map file (note that this will also exit the program.)\t\t\t",
+      nextChunk,	": to move the cursor to the next map chunk. "
+      "Essentially cycles through chunk positions (this makes it easy to visit "
+      "any disconnected chunks and to visit all chunks in general in an "
+      "ordered sequence (the order they are stored in the map file.))\t\t\t"),
      viewPortSize, printCharSpeed, afterPrintSleepMedium, false, false);
 
   int input {getch()};  
@@ -332,6 +346,17 @@ void listMapCoordsFunc
 			afterPrintSleep);
       exit(-1);
     }
+}
+
+
+yx getNextChunkPos(const std::vector<yx> & mapCoords, int & chunkIndex)
+{
+  if((size_t)(++chunkIndex) > (mapCoords.size() -1))
+    {
+      chunkIndex = 0;
+    }
+
+    return mapCoords[chunkIndex];
 }
 
 
