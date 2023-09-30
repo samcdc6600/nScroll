@@ -24,6 +24,10 @@ void viewMap
 bool updateCursorPos
 (const int input, yx & cursorPos, const yx minMaxY, const yx minMaxX,
  const yx viewPortSize);
+void viewChunk
+(bool viewingBgMap, yx & cursorPos, const std::vector<yx> & mapCoords,
+ const std::vector<bgChunkStrt> & bgMap, const std::vector<cRChunkStrt> & cRMap,
+ const yx viewPortSize);
 /* Lists all coordinates in the map. Prompts the user first if they would like
    to as this function will exit the program after listing the coordinates. */
 void listMapCoordsFunc
@@ -109,7 +113,7 @@ void viewMap
  const yx viewPortSize)
 {
   auto dispCurrentChunkPos =
-    [](const yx cursorPos, const yx viewPortSize)
+    [](const yx cursorPos)
     {
       mapViewSettings::colorMode.setColor(mapViewSettings::cursorColor);
       mvprintw(0,0, concat("Current chunk: ", cursorPos).c_str());
@@ -134,6 +138,8 @@ void viewMap
 	      /* If the cursor is over a chunk representing character enter
 		 display chunk mode (which can be exited by pressing space
 		 again.) */
+	      viewChunk(viewingBgMap, cursorPos, mapCoords, bgMap, cRMap,
+			viewPortSize);
 	    break;
 	    case listMapCoords:
 	      listMapCoordsFunc(mapCoords, multiChunkFileName, viewPortSize);
@@ -142,7 +148,7 @@ void viewMap
 	}
 
       clear();			// Clear the screen.
-      dispCurrentChunkPos(cursorPos, viewPortSize);
+      dispCurrentChunkPos(cursorPos);
       displayMap(mapCoords, cursorPos, minMaxY, minMaxX, viewPortSize);
       /* The cursor is always displayed in the centre of the screen as the map
 	 moves around it. */
@@ -204,6 +210,58 @@ bool updateCursorPos
 }
 
 
+void viewChunk
+(bool viewingBgMap, yx & cursorPos, const std::vector<yx> & mapCoords,
+ const std::vector<bgChunkStrt> & bgMap, const std::vector<cRChunkStrt> & cRMap,
+ const yx viewPortSize)
+{
+  bool foundCoord {false};
+
+  // for(const yx & coord: mapCoords)
+  int mapCoordIndex {};
+  for( ; (size_t)mapCoordIndex < mapCoords.size(); mapCoordIndex++)
+    {
+      if(cursorPos == mapCoords[mapCoordIndex])
+	{
+	  foundCoord = true;
+	  break;
+	}
+    }
+
+  if(foundCoord)
+    {
+      int input {};
+      if(viewingBgMap)
+	{
+	  while((input = getch()) != mapViewSettings::mapViewChars::actionAtPos
+		&& input != mapViewSettings::mapViewChars::quit)
+	    {
+	      // MapCoords and (bgMap or cRMap) should always be the same size.
+	      printBgChunk(bgMap[mapCoordIndex].chunk, viewPortSize);
+	      sleep(mapViewSettings::loopSleepTimeMs);
+	    }
+	}
+      else
+	{
+	  while((input = getch()) != mapViewSettings::mapViewChars::actionAtPos
+		&& input != mapViewSettings::mapViewChars::quit)
+	    {
+	      // MapCoords and (bgMap or cRMap) should always be the same size.
+	      printCRChunk(cRMap[mapCoordIndex].chunk, viewPortSize);
+	      sleep(mapViewSettings::loopSleepTimeMs);
+	    }
+	}
+    }
+  else
+    {
+      mapViewSettings::colorMode.setColor(warningColor);
+      progressivePrintMessage
+	(concat("\tError no chunk at current coordinate ", cursorPos, ".\t"),
+	 viewPortSize, printCharSpeed, afterPrintSleep);
+    }
+}
+
+
 void listMapCoordsFunc
 (const std::vector<yx> & mapCoords, const std::string & fileName,
  const yx viewPortSize)
@@ -233,32 +291,22 @@ void displayMap
 {
   mapViewSettings::colorMode.setColor(mapViewSettings::chunkRepCharColor);
   
-  for(const yx chunkCoord: mapCoords)
+  for(const yx & chunkCoord: mapCoords)
     {
-      if(abs(minMaxY.y) + chunkCoord.y >= abs(minMaxY.y) + cursorPos.y - (viewPortSize.y / 2) &&
-	 abs(minMaxY.y) + chunkCoord.y <= abs(minMaxY.y) + cursorPos.y + (viewPortSize.y / 2) &&
-	 abs(minMaxX.y) + chunkCoord.x >= abs(minMaxX.y) + cursorPos.x - (viewPortSize.x / 2) &&
-	 abs(minMaxX.y) + chunkCoord.x <= abs(minMaxX.y) + cursorPos.x + (viewPortSize.x / 2))
+      if(abs(minMaxY.y) + chunkCoord.y >=
+	 abs(minMaxY.y) + cursorPos.y - (viewPortSize.y / 2) &&
+	 abs(minMaxY.y) + chunkCoord.y <=
+	 abs(minMaxY.y) + cursorPos.y + (viewPortSize.y / 2) &&
+	 abs(minMaxX.y) + chunkCoord.x >=
+	 abs(minMaxX.y) + cursorPos.x - (viewPortSize.x / 2) &&
+	 abs(minMaxX.y) + chunkCoord.x <=
+	 abs(minMaxX.y) + cursorPos.x + (viewPortSize.x / 2))
 	{
 	  /* CursorPos is always at the centre of the screen. */
-	  // yx printPos {chunkCoord.y + abs(cursorPos.y - (viewPortSize.y / 2)),
-	  // 	       chunkCoord.x + abs(cursorPos.x - (viewPortSize.x / 2))};
-	  /* If X in abs(X) is  */
-	  mvprintw(chunkCoord.y - (cursorPos.y - (viewPortSize.y / 2)), chunkCoord.x - (cursorPos.x - (viewPortSize.x / 2)),
-		   concat("", mapViewSettings::chunkRepChar).c_str());
-
-	  if(chunkCoord.y == 10 && chunkCoord.x == 10)
-	    {
-	      	    mvprintw(yx{1, 0},
-		     concat
-			     ("", yx{cursorPos.y, cursorPos.x}));
-	    mvprintw(yx{2, 0},
-		     concat
-		     ("", yx{abs(cursorPos.y - (viewPortSize.y / 2)), abs(cursorPos.x - (viewPortSize.x / 2))}));
-	  mvprintw(yx{3, 0},
-		   concat
-		   ("", yx{chunkCoord.y + abs(cursorPos.y - (viewPortSize.y / 2)), chunkCoord.x + abs(cursorPos.x - (viewPortSize.x / 2))}));
-		   }
+	  mvprintw
+	    (chunkCoord.y - (cursorPos.y - (viewPortSize.y / 2)),
+	     chunkCoord.x - (cursorPos.x - (viewPortSize.x / 2)),
+	     concat("", mapViewSettings::chunkRepChar).c_str());
 	}
     }
 }

@@ -144,6 +144,10 @@ struct cRChunkStrt
 };
 
 
+/* Character printed in bg chunk mode when a character is not yet in the
+   position in question (when not in bgShowUnsetChars mode.) Also used for
+   the same purpose for cR chunk mode. */
+constexpr int emptyCharChar {' '};
 /* These constants are special values that signify the start of run length
    sequences. */
 constexpr backgroundChunkCharType bgRunLengthSequenceSignifier
@@ -165,7 +169,8 @@ constexpr int ASCII_CH_MAX {127};
 constexpr int maxCharNum {158};
 constexpr int COLOR_CH_MAX {63};
 constexpr int subMenuSleepTimeMs {160};
-constexpr int helpColorPair {1};
+constexpr int helpColorPair	{1};
+constexpr int warningColor	{86};
 constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR{27};
 constexpr char BACKGROUND_FILE_EXTENSION [] {".levbg"};
@@ -251,6 +256,12 @@ void progressivePrintMessage
 void printMessageNoWin
 (const std::string & msg, const int interCharacterSleep,
  const int afterMsgSleep);
+/* Should only be used for fully populated bgChunks, hence the use of
+   backgroundChunkCharType and not backgroundChunkCharInfo. Use of not fully
+   populated bgChunks will lead to undefined behaviour. */
+void printBgChunk
+(const backgroundChunkCharType bgChunk[][xWidth], const yx viewPortSize);
+void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize);
 bool getConfirmation
 (const yx viewPortSize, const int msgColorPair, int & userInput,
  const int editSubMenuSleepTimeMs, const std::string & question);
@@ -258,6 +269,17 @@ bool getConfirmation
    true if they do, false otherwise. */
 bool confirmQuit(const yx viewPortSize, int & input, const int quitChar);
 void safeScreenExit(int & userInput, const int editSubMenuSleepTimeMs);
+void setColorFromChar(const int ch);
+int getColor(const int ch);
+void setRandomColor();
+/* Removes color info from ch. If ch is an aCS character sets aCS to true,
+   otherwise sets aCS to false. Prints an error and exits if ch is out of
+   range. */
+int getChar(const int ch, bool & aCS);
+std::chrono::steady_clock::time_point setCursorVisibility
+(bool & cursorOn, const std::chrono::steady_clock::time_point tLast);
+void printACS(const yx position, const int aCSChar);
+void printACS(const int aCSChar);
 void sleep(const unsigned long long t);
 bool isNum(const char c);
 void loadFileIntoString(const char name[], std::string & buff,

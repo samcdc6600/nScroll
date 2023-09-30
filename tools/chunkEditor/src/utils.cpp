@@ -92,11 +92,11 @@ bool checkYOfVirtualNestedLoop
 void writeOutChunkCoordToFile
 (const std::string & fileName, std::ofstream & file, const yx chunkCoord)
 {
-  auto intOut = [& fileName, & file, & chunkCoord] (const int a)
+  auto intOut = [& fileName, & file] (const int a)
   {
     char outputCoord [sizeof(int)];
     
-    for(int iter = 0; iter < sizeof(int); ++iter)
+    for(int iter = 0; (size_t)iter < sizeof(int); ++iter)
       {
 	outputCoord[iter] = (a >> (iter * 8)) & 0xFF;
       }
@@ -138,7 +138,7 @@ bool readInChunkCoordFromFile
 
     coord = 0;
 
-    for(int iter {}; iter < sizeof(int); iter++)
+    for(int iter {}; (size_t)iter < sizeof(int); iter++)
       {
 	coord |= (static_cast<int>(inputCoord[iter]) & 0xFF) << (iter * 8);
       }
@@ -267,6 +267,48 @@ void printMessageNoWin
 }
 
 
+void printBgChunk
+(const backgroundChunkCharType bgChunk[][xWidth], const yx viewPortSize)
+{
+  for(int yIter {}; yIter < viewPortSize.y; yIter++)
+    {
+      for(int xIter {}; xIter < viewPortSize.x; xIter++)
+	{
+	  int ch;
+	  bool foundACSCode;
+	      
+	  setColorFromChar(bgChunk[yIter][xIter]);
+	  ch = getChar(bgChunk[yIter][xIter], foundACSCode);
+
+	  if(foundACSCode)
+	    {
+	      printACS(yx{yIter, xIter}, ch);
+	    }
+	  else
+	    {
+	      mvprintw(yIter, xIter, concat("", (char)ch).c_str());
+	    }
+	}
+    }
+}
+
+
+void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize)
+{ 
+  for(int yIter {}; yIter < viewPortSize.y; ++yIter)
+    {
+      for(int xIter {}; xIter < viewPortSize.x; ++xIter)
+	{
+	  if(cRChunk[yIter][xIter] != emptyCharChar)
+	    {
+	      setRandomColor();
+	      mvprintw(yIter, xIter, concat("", cRChunk[yIter][xIter]).c_str());
+	    }
+	}
+    }
+}
+
+
 bool getConfirmation
 (const yx viewPortSize, const int msgColorPair, int & userInput,
  const int editSubMenuSleepTimeMs, const std::string & question)
@@ -308,6 +350,182 @@ void safeScreenExit(int & userInput, const int editSubMenuSleepTimeMs)
 {
   sleep(editSubMenuSleepTimeMs);
   userInput = getch();
+}
+
+
+void setColorFromChar(const int ch)
+{
+  setColorMode colorMode {};
+  int colorCode = getColor(ch);
+  colorMode.setColor(colorCode);
+}
+
+
+int getColor(const int ch)
+{
+  /* A character is encoded as it's basic value + it's color value -1 times
+     maxCharNum. Since integer division rounds down (ch -1) / maxCharNum should
+     give the color code. less 1. */
+  int color {((ch -1) / maxCharNum) +1};
+  if(color > colorParams::effectiveGameColorPairsNo)
+    {
+      exit(concat("Error (in getColor()): encountered colour (", color, ") "
+		  "code that is out of range.\n"),
+	   ERROR_COLOR_CODE_RANGE);
+    }
+
+  return color;
+}
+
+
+void setRandomColor()
+{
+  setColorMode colorMode {};
+  colorMode.setColor
+    (abs(rand() % colorParams::gameColorPairsNo) +1);
+  if(rand() % 2)
+    {
+      attron(A_REVERSE);
+    }
+  else
+    {
+      attroff(A_REVERSE);
+    }
+}
+
+
+int getChar(const int ch, bool & aCS)
+{
+  // Remove colour information (first color starts at 1, so we remove 1.)
+  int rawCh {ch - ((getColor(ch) -1) * maxCharNum)};
+  aCS = false;
+
+  if(rawCh > ASCII_CH_MAX && rawCh <= maxCharNum)
+    {
+      // We have an ACS char.
+      aCS = true;
+    }
+  else if(rawCh < 0 || rawCh > ASCII_CH_MAX)
+    {
+      exit(concat("Error: encountered character (", (int)rawCh, ") that is lass"
+		  " than 0 or greater than ", maxCharNum,". after having color "
+		  "info removed."),
+	   ERROR_CHARACTER_RANGE);
+    }
+  
+  return rawCh;
+}
+
+
+void printACS(const yx position, const int aCSChar)
+{
+  move(position);
+  printACS(aCSChar);
+}
+
+
+void printACS(const int aCSChar)
+{
+    switch(aCSChar)
+    {
+    case 128:		  
+      addch(ACS_ULCORNER);
+      break;
+    case 129:
+      addch(ACS_LLCORNER);
+      break;
+    case 130:
+      addch(ACS_LRCORNER);
+      break;
+    case 131:
+      addch(ACS_LTEE);
+      break;	      
+    case 132:
+      addch(ACS_RTEE);
+      break;
+    case 133:
+      addch(ACS_BTEE);
+      break;
+    case 134:
+      addch(ACS_TTEE);
+      break;
+    case 135:
+      addch(ACS_HLINE);
+      break;
+    case 136:
+      addch(ACS_VLINE);
+      break;
+    case 137:
+      addch(ACS_PLUS);
+      break;
+    case 138:
+      addch(ACS_S1);
+      break;
+    case 139:
+      addch(ACS_S3);
+      break;
+    case 140:
+      addch(ACS_S7);
+      break;
+    case 141:
+      addch(ACS_S9);
+      break;
+    case 142:
+      addch(ACS_DIAMOND);
+      break;
+    case 143:
+      addch(ACS_CKBOARD);
+      break;
+    case 144:
+      addch(ACS_DEGREE);
+      break;
+    case 145:
+      addch(ACS_PLMINUS);
+      break;
+    case 146:
+      addch(ACS_BULLET);
+      break;
+    case 147:
+      addch(ACS_LARROW);
+      break;
+    case 148:
+      addch(ACS_RARROW);
+      break;
+    case 149:
+      addch(ACS_DARROW);
+      break;
+    case 150:
+      addch(ACS_UARROW);
+      break;
+    case 151:
+      addch(ACS_BOARD);
+      break;
+    case 152:
+      addch(ACS_LANTERN);
+      break;
+    case 153:
+      addch(ACS_BLOCK);
+      break;
+    case 154:
+      addch(ACS_LEQUAL);
+      break;
+    case 155:
+      addch(ACS_GEQUAL);
+      break;
+    case 156:
+      addch(ACS_PI);
+      break;
+    case 157:
+      addch(ACS_NEQUAL);
+      break;
+    case 158:
+      addch(ACS_STERLING);
+      break;
+    default:
+      exit(concat("Error: encountered ACS character (", aCSChar, ") character "
+		  "that is out of range"), ERROR_CHARACTER_RANGE);
+      break;
+    }
 }
 
 

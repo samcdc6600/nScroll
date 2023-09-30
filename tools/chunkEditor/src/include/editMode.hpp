@@ -24,12 +24,8 @@ namespace editingSettings
   /* This color pair is used when a character is not yet in the position in
      question. */
   constexpr int invalidCharColorPair {-1}; //noCharColorPair {15};
-  /* Character printed in bg chunk mode when a character is not yet in the
-     position in question (when not in bgShowUnsetChars mode.) Also used for
-     the same purpose for cR chunk mode. */
-  constexpr int emptyCharChar {' '};
   constexpr int blackBgColorPair {15};
-  /* TODO: think of better name for this and also maybe replace references to
+  /* TODO: think of better name for this and also maybe replace es to
      help char with it. */
   constexpr int validColorNumber {helpColor};
   
@@ -91,8 +87,6 @@ class chunk
 {
 private:
   static constexpr int undoBuffers		{1024};
-  // T tmpChunk[yHeight][xWidth]			{};
-  // T chunks[undoBuffers][yHeight][xWidth]	{};
   array2D<T, yHeight, xWidth> tmpChunk	       	{};
   array2D<T, yHeight, xWidth> chunks[undoBuffers] {};
   int currentChunk				{};

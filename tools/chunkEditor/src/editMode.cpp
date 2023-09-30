@@ -127,10 +127,10 @@ void getBgCharFromUser(const yx chunkSize, editingState &edState);
    prints a help message. */
 int getColorPairFromUser(const yx chunkSize, editingState & edState,
 			 bool & userQuit, std::function<void()> printHelpMsg);
-// /* Should be called when exiting an interactive "screen" or "menu". Sleeps for
-//    editingSettings::editSubMenuSleepTimeMs and then sets edState.input to the
-//    value returned from getch(). This give the user some time to take their
-//    finger off of editChars::quit. */
+/* Should be called when exiting an interactive "screen" or "menu". Sleeps for
+   editingSettings::editSubMenuSleepTimeMs and then sets edState.input to the
+   value returned from getch(). This give the user some time to take their
+   finger off of editChars::quit. */
 void safeScreenExit(editingState & edState);
 /* If the character at edState.cursorPos is different from
    edState.getCurrentBgChar() then all characters equal to the character at
@@ -162,25 +162,10 @@ bool writeOutChunks
 void printEditHelp(const yx viewPortSize, editingState & edState);
 void printBgChunk
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx viewPortSize);
-void printRefBgChunk
-(const backgroundChunkCharType bgChunk[][xWidth], const yx viewPortSize);
-void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize);
 void printRandomColorAtCursoPos(editingState & edState);
 void printCursorForCREditMode(const yx cursorPos, const char currentCRChar);
 void printCursorForBgEditMode
 (const yx cursorPos, const int currentBgChar);
-void printACS(const yx position, const int aCSChar);
-void printACS(const int aCSChar);
-void setColorFromChar(const int ch);
-void setRandomColor();
-// bool charInColorCharRange(const int ch);
-int getColor(const int ch);
-/* Removes color info from ch. If ch is an aCS character sets aCS to true,
-   otherwise sets aCS to false. Prints an error and exits if ch is out of
-   range. */
-int getChar(const int ch, bool & aCS);
-std::chrono::steady_clock::time_point setCursorVisibility
-(bool & cursorOn, const std::chrono::steady_clock::time_point tLast);
 
 
 /* Fills chunk with filler. */
@@ -236,8 +221,7 @@ void editMode
     {backgroundChunkCharInfo{editingSettings::invalidCharColorPair, false},
      editingSettings::showLastChunkAfterUpdateIndexFor};
   chunk<char, yHeight, xWidth> cRChunk
-    {editingSettings::emptyCharChar,
-     editingSettings::showLastChunkAfterUpdateIndexFor};
+    {emptyCharChar, editingSettings::showLastChunkAfterUpdateIndexFor};
   
   bool foundBgChunkCoord {false}, foundCRChunkCoord {false},
     foundRefBgChunkCoord {false}, foundRefCRChunkCoord {false};
@@ -360,7 +344,7 @@ void editModeProper
 	}
       else
 	{
-	  printRefBgChunk(refBgChunk, chunkSize);
+	  printBgChunk(refBgChunk, chunkSize);
 	  if(edState.cRChunkToggle)
 	    {
 	      printCRChunk(refCRChunk, chunkSize);
@@ -913,17 +897,6 @@ void floodFill
   */
   const int targetCharToReplace
     {bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch};
-
-  // endwin();
-  // for(int yIter {}; yIter < chunkSize.y; ++yIter)
-  //   {
-  //     for(int xIter {}; xIter < chunkSize.x; ++xIter)
-  // 	{
-  // 	  std::cout<<bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch<<" ";
-  // 	}
-  //     std::cout<<'\n';
-  //   }
-  // exit(-1);
 		   
   if(edState.getCurrentBgChar() != targetCharToReplace)
     {
@@ -1172,48 +1145,6 @@ void printBgChunk
 }
 
 
-void printRefBgChunk
-(const backgroundChunkCharType bgChunk[][xWidth], const yx viewPortSize)
-{
-  for(int yIter {}; yIter < viewPortSize.y; yIter++)
-    {
-      for(int xIter {}; xIter < viewPortSize.x; xIter++)
-	{
-	  int ch;
-	  bool foundACSCode;
-	      
-	  setColorFromChar(bgChunk[yIter][xIter]);
-	  ch = getChar(bgChunk[yIter][xIter], foundACSCode);
-
-	  if(foundACSCode)
-	    {
-	      printACS(yx{yIter, xIter}, ch);
-	    }
-	  else
-	    {
-	      mvprintw(yIter, xIter, concat("", (char)ch).c_str());
-	    }
-	}
-    }
-}
-
-
-void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize)
-{ 
-  for(int yIter {}; yIter < viewPortSize.y; ++yIter)
-    {
-      for(int xIter {}; xIter < viewPortSize.x; ++xIter)
-	{
-	  if(cRChunk[yIter][xIter] != editingSettings::emptyCharChar)
-	    {
-	      setRandomColor();
-	      mvprintw(yIter, xIter, concat("", cRChunk[yIter][xIter]).c_str());
-	    }
-	}
-    }
-}
-
-
 void printRandomColorAtCursoPos(editingState & edState)
 {
   setRandomColor();
@@ -1239,12 +1170,6 @@ void printCursorForBgEditMode
   bool aCSChar {false};
   /* Set cursor colour to opposite of bg color (maybe, we aren't doing
      it properly here.) at cursorPos. */
-  // setColorFromChar
-  //   ((bgChunk[cursorPos.y][cursorPos.x].ch +
-  // 	       (colorParams::effectiveGameColorPairsNo / 2)) %
-  // 	      colorParams::effectiveGameColorPairsNo);
-  // const int bgChar {getChar(currentBgChar, aCSChar)};
-
 
   const int bgChar {getChar(currentBgChar, aCSChar)};
   setColorFromChar(currentBgChar);
@@ -1258,181 +1183,6 @@ void printCursorForBgEditMode
       mvprintw(cursorPos, concat("", (char)bgChar));
     }
   move(cursorPos);
-}
-
-
-void printACS(const yx position, const int aCSChar)
-{
-  move(position);
-  printACS(aCSChar);
-}
-
-
-void printACS(const int aCSChar)
-{
-    switch(aCSChar)
-    {
-    case 128:		  
-      addch(ACS_ULCORNER);
-      break;
-    case 129:
-      addch(ACS_LLCORNER);
-      break;
-    case 130:
-      addch(ACS_LRCORNER);
-      break;
-    case 131:
-      addch(ACS_LTEE);
-      break;	      
-    case 132:
-      addch(ACS_RTEE);
-      break;
-    case 133:
-      addch(ACS_BTEE);
-      break;
-    case 134:
-      addch(ACS_TTEE);
-      break;
-    case 135:
-      addch(ACS_HLINE);
-      break;
-    case 136:
-      addch(ACS_VLINE);
-      break;
-    case 137:
-      addch(ACS_PLUS);
-      break;
-    case 138:
-      addch(ACS_S1);
-      break;
-    case 139:
-      addch(ACS_S3);
-      break;
-    case 140:
-      addch(ACS_S7);
-      break;
-    case 141:
-      addch(ACS_S9);
-      break;
-    case 142:
-      addch(ACS_DIAMOND);
-      break;
-    case 143:
-      addch(ACS_CKBOARD);
-      break;
-    case 144:
-      addch(ACS_DEGREE);
-      break;
-    case 145:
-      addch(ACS_PLMINUS);
-      break;
-    case 146:
-      addch(ACS_BULLET);
-      break;
-    case 147:
-      addch(ACS_LARROW);
-      break;
-    case 148:
-      addch(ACS_RARROW);
-      break;
-    case 149:
-      addch(ACS_DARROW);
-      break;
-    case 150:
-      addch(ACS_UARROW);
-      break;
-    case 151:
-      addch(ACS_BOARD);
-      break;
-    case 152:
-      addch(ACS_LANTERN);
-      break;
-    case 153:
-      addch(ACS_BLOCK);
-      break;
-    case 154:
-      addch(ACS_LEQUAL);
-      break;
-    case 155:
-      addch(ACS_GEQUAL);
-      break;
-    case 156:
-      addch(ACS_PI);
-      break;
-    case 157:
-      addch(ACS_NEQUAL);
-      break;
-    case 158:
-      addch(ACS_STERLING);
-      break;
-    default:
-      exit(concat("Error: encountered ACS character (", aCSChar, ") character "
-		  "that is out of range"), ERROR_CHARACTER_RANGE);
-      break;
-    }
-}
-
-
-void setColorFromChar(const int ch)
-{
-  int colorCode = getColor(ch);
-  editingSettings::colorMode.setColor(colorCode);
-}
-
-
-void setRandomColor()
-{
-  editingSettings::colorMode.setColor
-    (abs(rand() % colorParams::gameColorPairsNo) +1);
-  if(rand() % 2)
-    {
-      attron(A_REVERSE);
-    }
-  else
-    {
-      attroff(A_REVERSE);
-    }
-}
-
-
-int getColor(const int ch)
-{
-  /* A character is encoded as it's basic value + it's color value -1 times
-     maxCharNum. Since integer division rounds down (ch -1) / maxCharNum should
-     give the color code. less 1. */
-  int color {((ch -1) / maxCharNum) +1};
-  if(color > colorParams::effectiveGameColorPairsNo)
-    {
-      exit(concat("Error (in getColor()): encountered colour (", color, ") "
-		  "code that is out of range.\n"),
-	   ERROR_COLOR_CODE_RANGE);
-    }
-
-  return color;
-}
-
-
-
-int getChar(const int ch, bool & aCS)
-{
-  // Remove colour information (first color starts at 1, so we remove 1.)
-  int rawCh {ch - ((getColor(ch) -1) * maxCharNum)};
-  aCS = false;
-
-  if(rawCh > ASCII_CH_MAX && rawCh <= maxCharNum)
-    {
-      // We have an ACS char.
-      aCS = true;
-    }
-  else if(rawCh < 0 || rawCh > ASCII_CH_MAX)
-    {
-      exit(concat("Error: encountered character (", (int)rawCh, ") that is lass"
-		  " than 0 or greater than ", maxCharNum,". after having color "
-		  "info removed."),
-	   ERROR_CHARACTER_RANGE);
-    }
-  
-  return rawCh;
 }
 
 
