@@ -146,11 +146,13 @@ void viewMap
 	      printMapViewHelp(viewPortSize);
 	      break;
 	    case actionAtPos:
+	      curs_set(0);	// Turn off cursor visibility.
 	      /* If the cursor is over a chunk representing character enter
 		 display chunk mode (which can be exited by pressing space
 		 again.) */
 	      viewChunk(viewingBgMap, cursorPos, mapCoords, bgMap, cRMap,
 			viewPortSize);
+	      curs_set(1);	// Turn cursor visibility back on.
 	    break;
 	    case listMapCoords:
 	      listMapCoordsFunc(mapCoords, multiChunkFileName, viewPortSize);

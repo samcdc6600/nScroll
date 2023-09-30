@@ -272,13 +272,12 @@ void progressivePrintMessage
   else
     {
       int charsPrinted {};
-      for(int lines {margin - boarderCharsNo};
-	  lines < (noOfLines + margin - boarderCharsNo); ++lines)
+      int lines {margin - boarderCharsNo};
+      for( ; lines < (noOfLines + margin - boarderCharsNo); ++lines)
 	{
-	  for(int lineChars {margin - boarderCharsNo};
-	      lineChars <
-		(msgLineLength + boarderCharsNo + margin - boarderCharsNo);
-	      lineChars++)
+	  for(int lineChars {margin - boarderCharsNo} ; lineChars <
+		 (msgLineLength + boarderCharsNo + margin - boarderCharsNo);
+	       lineChars++)
 	    {
 	      if(lineChars == 0 || lineChars == lineChars <
 		 (msgLineLength + boarderCharsNo +
@@ -299,6 +298,13 @@ void progressivePrintMessage
 		  sleep(interCharacterSleep);
 		}
 	    }
+	}
+      // Move to next line to print last of the characters (if there are any.)
+      move(lines, margin - boarderCharsNo);
+      for(int remainderChars {}; remainderChars < remainder; remainderChars++)
+	{
+	  printw(concat("", msg[charsPrinted]).c_str());
+	  charsPrinted++;
 	}
     }
   
