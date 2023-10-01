@@ -196,72 +196,79 @@ void progressivePrintMessage
 void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep, const bool clearScreen, const bool printProgressively)
-{
-  /* TODO: Fix up this function a bit. Right now if more than one line is
-     printed the output of all lines will be the same width, but will be left
-     justified (to some lesser or greater extent.) */
+{ 
+  auto printHorizontalBoarder =
+    [viewPortSize]
+    (const int msgLineLength, const int marginSingle, const int marginTop,
+     const int lineNo, const bool top)
+    {
+      // Print left corner.
+      setRandomColor();
+      mvprintw(lineNo + marginTop, marginSingle,
+	       top? progressivePrintMessageTopLeftCornerBoarderChar.c_str():
+	       progressivePrintMessageBottomLeftCornerBoarderChar.c_str());
+      // Print centre.
+      int lineChars {};
+      for( ; lineChars < msgLineLength; lineChars++)
+	{
+	  setRandomColor();
+	  mvprintw(lineNo + marginTop, lineChars + 1 + marginSingle,
+		   progressivePrintMessageHorizBoarderChar.c_str());
+	}
+      // Print right corner.
+      setRandomColor();
+      mvprintw(lineNo+ marginTop, lineChars + 1 + marginSingle,
+	       top? progressivePrintMessageTopRightCornerBoarderChar.c_str():
+	       progressivePrintMessageBottomRightCornerBoarderChar.c_str());
+  };
+
+  setColorMode color {};
+  // This is for both sides and includes boarder characters.
+  const int margin {6};
+  const int boarderCharsNo {2};
+  const int marginSingle {(margin - boarderCharsNo) / 2};
+  const int msgLineLength {170 - margin};
+  const int noOfLines {(int)(msg.size() / msgLineLength)};
+  const int marginTop
+    {marginSingle + (viewPortSize.y / 2) - (noOfLines / 2)};
+  const int remainder {(int)(msg.size() - (noOfLines * msgLineLength))};
+  /* We need to move back to just after this point after printing the bottom
+     boarder for messages prompting for user input. */
+  yx lastMsgCharPos {};
+  int charsPrinted {};
+  int lines {};
+
   if(clearScreen)
     {
       clear();
     }
   
-  // const yx margins {viewPortSize.y / 7, viewPortSize.x / 7};
-  // const double lineCount  {(double)msg.size() /
-  // 			   (viewPortSize.x - 2 * margins.x)};
+  // Print top boarder.
+  printHorizontalBoarder
+    (msgLineLength, marginSingle, marginTop, lines -1,
+     true);
 
-  // if(lineCount < 1)
-  //   {
-  //     mvprintw(viewPortSize.y / 2, viewPortSize.x / 2 - msg.size() / 2,
-  // 	       "");
-  //     for(char c: msg)
-  // 	{
-  // 	  printw(concat("", c).c_str());
-  // 	  if(printProgressively)
-  // 	    {
-  // 	      refresh();
-  // 	      sleep(interCharacterSleep);
-  // 	    }
-  // 	}
-  //   }
-  // else
-  //   {
-  //     int charsPrinted {};
-  //     for(int lines {}; lines < std::ceil(lineCount); ++lines)
-  // 	{
-  // 	  for(int chars {};
-  // 	      (double)chars < (msg.size() / std::ceil(lineCount)); ++chars)
-  // 	    {
-  // 	      mvprintw
-  // 		(viewPortSize.y / 2 + lines, margins.x + chars,
-  // 		 concat("", msg[charsPrinted]).c_str());
-  // 	      if(printProgressively)
-  // 		{
-  // 		  refresh();
-  // 		  sleep(interCharacterSleep);
-  // 		}
-  // 	      charsPrinted++;
-  // 	    }
-  // 	}
-  //     for( ; (size_t)charsPrinted < msg.size(); ++charsPrinted)
-  // 	{
-  // 	  printw(concat("", msg[charsPrinted]).c_str());
-  // 	}
-  //   }
-
-  // This is for both sides and includes boarder characters.
-  const int margin {4};
-  const int boarderCharsNo {2};
-  const int msgLineLength {170 - margin};
-  const int noOfLines {(int)(msg.size() / msgLineLength)};
-  const int remainder {(int)(msg.size() - (noOfLines * msgLineLength))};
-
-  if(noOfLines < 1)
+  // Print bulk of message (if it is one line or more.)
+  for( ; lines < noOfLines; ++lines)
     {
-      mvprintw(viewPortSize.y / 2, viewPortSize.x / 2 - msg.size() / 2,
-	       "");
-      for(char c: msg)
+      for(int lineChars {}; lineChars < msgLineLength + boarderCharsNo; lineChars++)
 	{
-	  printw(concat("", c).c_str());
+	  if(lineChars == 0 || lineChars == msgLineLength +1)
+	    {
+	      setRandomColor();
+	      mvprintw(lines + marginTop,
+		       lineChars + marginSingle,
+		       progressivePrintMessageVertBoarderChar.c_str());
+	    }
+	  else
+	    {
+	      color.setColor(helpColorPair);
+	      lastMsgCharPos = yx {lines + marginTop,
+		       lineChars + marginSingle};
+	      mvprintw(lastMsgCharPos, concat("", msg[charsPrinted]).c_str());
+	      charsPrinted++;
+	    }
+
 	  if(printProgressively)
 	    {
 	      refresh();
@@ -269,45 +276,46 @@ void progressivePrintMessage
 	    }
 	}
     }
-  else
-    {
-      int charsPrinted {};
-      int lines {margin - boarderCharsNo};
-      for( ; lines < (noOfLines + margin - boarderCharsNo); ++lines)
-	{
-	  for(int lineChars {margin - boarderCharsNo} ; lineChars <
-		 (msgLineLength + boarderCharsNo + margin - boarderCharsNo);
-	       lineChars++)
-	    {
-	      if(lineChars == 0 || lineChars == lineChars <
-		 (msgLineLength + boarderCharsNo +
-		  margin - boarderCharsNo -1))
-		{
-		  mvprintw(lines, lineChars, "|");
-		}
-	      else
-		{
-		  mvprintw(lines, lineChars,
-			   concat("", msg[charsPrinted]).c_str());
-		  charsPrinted++;
-		}
 
-	      if(printProgressively)
-		{
-		  refresh();
-		  sleep(interCharacterSleep);
-		}
-	    }
-	}
-      // Move to next line to print last of the characters (if there are any.)
-      move(lines, margin - boarderCharsNo);
-      for(int remainderChars {}; remainderChars < remainder; remainderChars++)
+  // Print last incomplete line (if there is any.)
+  if(remainder > 0)
+    {
+      // Print left boarder.
+      setRandomColor();
+      mvprintw(lines + marginTop, marginSingle,
+	       progressivePrintMessageVertBoarderChar.c_str());
+
+      // Print incomplete line.
+      int remainderChars {};
+      for( ; remainderChars < remainder; remainderChars++)
 	{
-	  printw(concat("", msg[charsPrinted]).c_str());
+	  color.setColor(helpColorPair);
+	  lastMsgCharPos =
+	    yx{lines + marginTop, remainderChars + marginSingle + 1};
+	  mvprintw(lastMsgCharPos, concat("", msg[charsPrinted]).c_str());
 	  charsPrinted++;
 	}
+      // Print spaces for the remainder of the line.
+      for( ; remainderChars < msgLineLength +1; ++remainderChars)
+	{
+	  color.setColor(helpColorPair);
+	  mvprintw(lines + marginTop, remainderChars + marginSingle, " ");
+	}
+	  
+      // Print right boarder.
+      setRandomColor();
+      mvprintw(lines + marginTop, remainderChars + marginSingle,
+	       progressivePrintMessageVertBoarderChar.c_str());
     }
+
+  // Print bottom boarder.
+  printHorizontalBoarder
+    (msgLineLength, marginSingle, marginTop, lines +1,
+     false);
   
+  color.setColor(helpColorPair);
+  move(lastMsgCharPos.y, lastMsgCharPos.x +1);
+
   refresh();
   sleep(afterMsgSleep);
 }

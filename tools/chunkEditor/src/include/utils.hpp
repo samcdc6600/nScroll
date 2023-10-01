@@ -148,7 +148,14 @@ struct cRChunkStrt
    position in question (when not in bgShowUnsetChars mode.) Also used for
    the same purpose for cR chunk mode. */
 constexpr int emptyCharChar {' '};
-/* These constants are special values that signify the start of run length
+const std::string progressivePrintMessageHorizBoarderChar	{"-"};
+const std::string progressivePrintMessageVertBoarderChar	{"|"};
+const std::string progressivePrintMessageTopLeftCornerBoarderChar	{"/"};
+const std::string progressivePrintMessageTopRightCornerBoarderChar	{"\\"};
+const std::string progressivePrintMessageBottomLeftCornerBoarderChar	{"\\"};
+const std::string progressivePrintMessageBottomRightCornerBoarderChar	{"/"};
+
+      /* These constants are special values that signify the start of run length
    sequences. */
 constexpr backgroundChunkCharType bgRunLengthSequenceSignifier
   {std::numeric_limits<int>::max()};

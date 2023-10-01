@@ -526,7 +526,7 @@ void actOnInputLayer2
       break;
     case saveChunks:
       if(getConfirmation(chunkSize, edState,
-			 "\tdo you really want to save?\t"))
+			 "\tdo you really want to save y/n?\t"))
 	{
 	  progressivePrintMessage
 	    (concat("\tSaving chunks...\t"),
@@ -1003,7 +1003,9 @@ void showAndChangeCoorinates
        "the chunks are saved.): ")};
   
   editingSettings::colorMode.setColor(editingSettings::helpColor);
-  
+
+  // Controls position to move cursor to for input.
+  const int inputOffsetPos {10};
   progressivePrintMessage
     (msg, viewPortSize, 0, 200, false, false);
 
