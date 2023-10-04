@@ -90,7 +90,7 @@ void mapView(const std::string multiChunkFileName, const yx viewPortSize)
     }
   else
     {
-      // We're dealing with a character rules file.
+      // We're dealing with a choord rules file.
       cRChunk mapChunk;
       yx mapChunkCoord;
 

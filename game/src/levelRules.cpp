@@ -344,76 +344,112 @@ void checkForDefaultBgSpriteValues
 // =============================================================================
 
 
-void rules::loadAndInitialiseCoordRules(const yx expectedChunkSize,
-					const char coordRulesFileName[],
-					const backgroundData & background)
+void rules::loadAndInitialiseCoordRules(const backgroundData & background)
 {
-  std::string rawCoordRules {};
+    if(!checkForPostfix(&fileName[0], COORD_RULES_FILE_EXTENSION))
+    {
+      exit(concat
+	   ("Error: opening file \"", fileName, "\" as a coord rules "
+	    "file. Postfix for ", COORD_RULES_FILE_EXTENSION, " files should "
+	    "be \"", COORD_RULES_FILE_EXTENSION, "\"."), ERROR_OPENING_FILE);
+    }
+
+    std::fstream cRFile(fileName, std::ios::in | std::ios::binary);
+
+  if(!cRFile)
+    {      exit(concat("Error: failed to open coord rules file \"",
+		       fileName, "\"."), ERROR_OPENING_FILE);
+    }
+  else if(cRFile.peek() == std::ifstream::traits_type::eof())
+    {
+      exit(concat("Error: coord rules file \"", fileName, "\" found to be "
+		  "empty. \"", COORD_RULES_FILE_EXTENSION, "\" files must not "
+		  "be empty."), ERROR_BACKGROUND);
+    }
   
-  loadFileIntoString(coordRulesFileName, rawCoordRules,
-		     concat("trying to read ", COORD_RULES_FILE_EXTENSION,
-			    " file"));
   initialiseCoordRules
-    (expectedChunkSize, coordRulesFileName, chunkMap, rawCoordRules,
-     background);
+    (cRFile, chunkMap, background);
+  cRFile.close();
 }
 
 
 void rules::initialiseCoordRules
-(const yx expectedChunkSize, const char coordRulesFileName [],
- chunkMapType & coordRules, const std::string & coordRulesData,
+(std::fstream & cRFile, chunkMapType & coordRules,
  const backgroundData & background) const
 {
-  yx chunkCoord {};
-  std::string chunk {};
-  chunkType rawChunk {};
-  std::string::const_iterator buffPos {std::begin(coordRulesData)};
-  ssize_t chunksReadIn {};
+  // yx chunkCoord {};
+  // std::string chunk {};
+  // chunkType rawChunk {};
+  // std::string::const_iterator buffPos {std::begin(coordRulesData)};
+  // ssize_t chunksReadIn {};
 
-  // Extract chunks from coordRulesData ========================================
-  while(true)
-    {
-      /* Each chunk should have a header that contains it's coordinates
-	 in the level. The unit of the coordinates should be chunks. So
-	 for a chunk that starts at (0, 170) in character coordinates
-	 (assuming the size of chunks for this file are 170 in the x
-	 dimension), the coordinate in the header would be (0, 1) and
-	 for (0, 340) it would be (0, 2), etc... */
-      if(getChunkCoordinate
-	 (coordRulesData, buffPos,
-	  concat("trying  to read coord no. ", chunksReadIn, " from ",
-		 COORD_RULES_FILE_EXTENSION, " file \"", coordRulesFileName,
-		 "\""), chunkCoord))
-	{
-	  skipSpaceUpToNextLine
-	    (coordRulesData, buffPos,
-	     concat("Error: trying to read chunk no. ", chunksReadIn,
-		    ". Expected '\\n' after reading chunk coordinate (",
-		    chunkCoord.y, ", ", chunkCoord.x, ") from ",
-		    COORD_RULES_FILE_EXTENSION, " file \"", coordRulesFileName,
-		    "\". Encountered other character or EOF."));
-	  // Get chunk from coord rules read from file.
-	  getChunk
-	    (coordRulesData, buffPos,
-	     concat("trying to read in chunk no. ", chunksReadIn, ". from ",
-		    COORD_RULES_FILE_EXTENSION, " file \"", coordRulesFileName,
-		    "\"."), chunk, expectedChunkSize);
-	  // Decompress chunk, verify size and return in rawChunk.
-	  decompressChunk
-	    (chunk, rawChunk, expectedChunkSize, chunksReadIn,
-	     coordRulesFileName);
-	  insertChunk(chunkCoord, rawChunk, chunksReadIn, coordRulesFileName,
-		      coordRules);
+  // // Extract chunks from coordRulesData ========================================
+  // while(true)
+  //   {
+  //     /* Each chunk should have a header that contains it's coordinates
+  // 	 in the level. The unit of the coordinates should be chunks. So
+  // 	 for a chunk that starts at (0, 170) in character coordinates
+  // 	 (assuming the size of chunks for this file are 170 in the x
+  // 	 dimension), the coordinate in the header would be (0, 1) and
+  // 	 for (0, 340) it would be (0, 2), etc... */
+  //     if(getChunkCoordinate
+  // 	 (coordRulesData, buffPos,
+  // 	  concat("trying  to read coord no. ", chunksReadIn, " from ",
+  // 		 COORD_RULES_FILE_EXTENSION, " file \"", coordRulesFileName,
+  // 		 "\""), chunkCoord))
+  // 	{
+  // 	  skipSpaceUpToNextLine
+  // 	    (coordRulesData, buffPos,
+  // 	     concat("Error: trying to read chunk no. ", chunksReadIn,
+  // 		    ". Expected '\\n' after reading chunk coordinate (",
+  // 		    chunkCoord.y, ", ", chunkCoord.x, ") from ",
+  // 		    COORD_RULES_FILE_EXTENSION, " file \"", coordRulesFileName,
+  // 		    "\". Encountered other character or EOF."));
+  // 	  // Get chunk from coord rules read from file.
+  // 	  getChunk
+  // 	    (coordRulesData, buffPos,
+  // 	     concat("trying to read in chunk no. ", chunksReadIn, ". from ",
+  // 		    COORD_RULES_FILE_EXTENSION, " file \"", coordRulesFileName,
+  // 		    "\"."), chunk, expectedChunkSize);
+  // 	  // Decompress chunk, verify size and return in rawChunk.
+  // 	  decompressChunk
+  // 	    (chunk, rawChunk, expectedChunkSize, chunksReadIn,
+  // 	     coordRulesFileName);
+  // 	  insertChunk(chunkCoord, rawChunk, chunksReadIn, coordRulesFileName,
+  // 		      coordRules);
 	  
-	  chunksReadIn++;
-	  // GetChunk() clears it's argument (chunk).
-	  rawChunk.clear();
-	}
-      else
-	{
-	  break;
-	}
-    }
+  // 	  chunksReadIn++;
+  // 	  // GetChunk() clears it's argument (chunk).
+  // 	  rawChunk.clear();
+  // 	}
+  //     else
+  // 	{
+  // 	  break;
+  // 	}
+  //   }
+
+  yx mapCoord {};
+  cRChunk mapChunk;
+  int mapChunksRead {};
+
+    while(getCRChunk(cRFile, mapChunk, chunkSize, mapCoord,
+		   fileName, true))
+      {
+	mapChunksRead++;
+	/* We don't want to re-write getCRChunk or insertChunk so we have to do
+	   this conversion here. */
+	std::vector<char> linearMapChunk;
+	for(int yIter {}; yIter < chunkSize.y; yIter++)
+	  {
+	    for(int xIter {}; xIter < chunkSize.y; xIter++)
+	      {
+		linearMapChunk.push_back(mapChunk[yIter][xIter]);
+	      }
+	  }
+	insertChunk(mapCoord, linearMapChunk, mapChunksRead, fileName,
+		    coordRules);
+	linearMapChunk.clear();
+      }
 
   /* Each chunk in background must have a matching chunk in coordRules. This
      will simplify logic in other areas somewhat. It does means that
@@ -422,6 +458,98 @@ void rules::initialiseCoordRules
      wouldn't be too large anyway (especially with compressed chunks.) Although
      some extra memory will be used the game logic will be slightly simpler. */
   verifyTotalOneToOneOntoMappingOfCoordToBgKeys(coordRules, background);
+}
+
+
+// Note that multiChunkFile has a default value of false.
+bool rules::getCRChunk
+(std::fstream & file, cRChunk chunk, const yx chunkSize, yx & chunkCoord,
+ const std::string & fileName, const bool multiChunkFile) const
+{
+  const std::string eMsgStart
+    {concat("Error: trying to read in coord rules chunk file "
+	    "\"", fileName, "\". ")};
+  
+  if(!readInChunkCoordFromFile(chunkCoord, fileName, file, !multiChunkFile))
+    {
+      return false;
+    }
+
+  // Read in chunk body.
+  int yIter {}, xIter {};
+  char cRChar {};
+  int chunkCharsFound {};
+  while(file.read(&cRChar, sizeof(char)))
+    {
+      if(cRChar == cRRunLengthSequenceSignifier)
+	{
+	  char highByte {}, lowByte {};
+	  if(!file.read(&highByte, sizeof(char)))
+	    {
+	      exit(concat(eMsgStart, "File ends after run-length sequence "
+			  "signifier (or an IO error has occurred.)"),
+		   ERROR_MALFORMED_FILE);
+	    }
+	  if(!file.read(&lowByte, sizeof(char)))
+	    {
+	      exit(concat(eMsgStart, "File ends after run-length sequence "
+			  "signifier and first byte of length (or an IO error "
+			  "has occurred.)"), ERROR_MALFORMED_FILE);
+	    }
+	  if(!file.read(&cRChar, sizeof(char)))
+	    {
+	      exit(concat(eMsgStart, "File ends after run-length "
+			  "sequence signifier and length bytes (or an IO error "
+			  "has occurred.)"), ERROR_MALFORMED_FILE);
+	    }
+	  for(int iter {}; iter < ((static_cast<unsigned char>(highByte) << 8) |
+				   static_cast<unsigned char>(lowByte)); iter++)
+	    {
+	      if(!checkYOfVirtualNestedChunkLoop
+		 (xIter, yIter, chunkSize, multiChunkFile, eMsgStart))
+		{
+		  /* This is a multi chunk file and we've just read past the end of
+		     a chunk so we need to back up. */
+		  file.seekg(-sizeof(char), std::ios::cur);
+		  goto MEGA_BREAK;
+		}
+	      chunk[yIter][xIter] = cRChar;
+	      chunkCharsFound++;
+	      updateVirtualNestedChunkYXLoop(xIter, yIter, chunkSize);
+	    }
+	}
+      else
+	{
+	  if(!checkYOfVirtualNestedChunkLoop
+	     (xIter, yIter, chunkSize, multiChunkFile, eMsgStart))
+	    {
+	      /* This is a multi chunk file and we've just read past the end of
+		 a chunk so we need to back up. */
+	      file.seekg(-sizeof(char), std::ios::cur);
+	      goto MEGA_BREAK;
+	    }
+	  chunk[yIter][xIter] = cRChar;
+	  chunkCharsFound++;
+	  updateVirtualNestedChunkYXLoop(xIter, yIter, chunkSize);
+	}
+    }
+
+ MEGA_BREAK:
+  if(chunkCharsFound < chunkSize.y * chunkSize.x)
+    {
+      if(multiChunkFile)
+	{
+	  return false;
+	}
+      else
+	{
+	  exit(concat(eMsgStart, "Chunk is too small (", chunkCharsFound, ") "
+		      "It should be ", chunkSize.y * chunkSize.x, "."),
+	       ERROR_MALFORMED_FILE);
+	}
+    }
+
+  return true;
 }
 
 

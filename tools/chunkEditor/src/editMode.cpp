@@ -1108,12 +1108,12 @@ void printEditHelp(const yx viewPortSize, editingState & edState)
       toggleReferenceChunkView, ": to toggle the reference chunk view (this is "
       "only relevant when in mode 2, see -h for more info.)\t\t\t",
       cREraseCRChar,	": to set the cursor character to the rules erase "
-      "character when editing a character rules chunk. This allows for the "
+      "character when editing a choord rules chunk. This allows for the "
       "erasure of rules characters from the chunk.\t\t\t",
       cRSetCRCharToBorder, ": to set the cursor character to the boarder "
-      "character when editing a character rules chunk.\t\t\t",
+      "character when editing a choord rules chunk.\t\t\t",
       cRSetCRCharToPlatform, ": to set the cursor character to the platform "
-      "character when editing a character rules chunk.\t\t\t",
+      "character when editing a choord rules chunk.\t\t\t",
       bGToggleCharacterSelection, ": to select a new character color and "
       "character for the cursor character when editing a background chunk\t\t\t",
       bgNextCurrentChar,	": to cycle forward (next) through the recent "

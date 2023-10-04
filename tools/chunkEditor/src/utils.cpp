@@ -896,7 +896,7 @@ bool getCRChunk
  const bool multiChunkFile)
 {
   const std::string eMsgStart
-    {concat("Error: trying to read in character rules chunk file "
+    {concat("Error: trying to read in coord rules chunk file "
 	    "\"", fileName, "\". ")};
   
   if(!readInChunkCoordFromFile(chunkCoord, fileName, file, !multiChunkFile))

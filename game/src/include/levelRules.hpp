@@ -40,6 +40,24 @@ public:
   const yx firstStageBufferSizeInChars;
   
 private:
+  typedef char cRChunk[yHeight][xWidth];
+
+  struct cRChunkStrt
+  {
+    cRChunk chunk;
+
+    cRChunkStrt(const cRChunk chunk)
+    {
+      for(int yIter {}; yIter < yHeight; ++yIter)
+	{
+	  for(int xIter {}; xIter < xWidth; ++xIter)
+	    {
+	      this->chunk[yIter][xIter] = chunk[yIter][xIter];
+	    }
+	}
+    }
+  };
+  
   /* THE PHYSICS ENGINE SHOULD BE RUN THIS OFTEN (IN REAL SYSTEM TIME.) The
      sprites position should be updated by 1 character in any direction at
      most this often. This is in seconds. */
@@ -55,6 +73,7 @@ private:
      they will move into a rules chunk that is invalid. This way the non player
      sprites can move out of the view port and not mess up the game logic. */
   static const int FIRST_STAGE_BUFFER_DIMENSIONS_SIZE {7};
+  const char cRRunLengthSequenceSignifier {'R'};
   /* The player cannot pass widthin this many character's of the window
      boarder's (y, x). This variable shouldn't be changed once it is set. */
   yx PLAYER_MOVEMENT_AREA_PADDING {};
@@ -65,13 +84,16 @@ private:
   
   // ==== Headers Related To Loading COORD_RULES_FILE_EXTENSION Files START ====
   // ===========================================================================
-  void loadAndInitialiseCoordRules(const yx expectedChunkSize,
-				   const char coordRulesFileName [],
-				   const backgroundData & background);
+  void loadAndInitialiseCoordRules(const backgroundData & background);
   void initialiseCoordRules
-  (const yx expectedChunkSize, const char coordRulesFileName [],
-   chunkMapType & coordRules, const std::string & coordRulesData,
+  (std::fstream & cRFile, chunkMapType & coordRules,
    const backgroundData & background) const;
+  /* NOTE THAT IF A THE LAST CHUNK IN THE FILE IS READ FILE.FAIL() WILL BE TRUE
+     AND WILL NEED TO BE RESET IF MORE OPERATIONS (AT LEAST FOR SOME POSSIBLE
+     OPERATIONS) NEED TO BE DONE ON FSTREAM. */
+  bool getCRChunk
+  (std::fstream & file, cRChunk chunk, const yx chunkSize, yx & chunkCoord,
+   const std::string & fileName, const bool multiChunkFile = false) const;
   /* Attempts to decompress chunk in chunkIn. If successful returns
      decompressed chunk via rawChunk. ChunkIn is assumed to be compressed using
      the run length encoding technique.
@@ -208,7 +230,7 @@ public:
   {
     std::string rulesBuffer {};
 
-    loadAndInitialiseCoordRules(viewPortSize, coordRulesFileName, background);
+    loadAndInitialiseCoordRules(background);
     loadFileIntoString
       (rulesFileName, rulesBuffer,
        concat("trying to read ", RULES_CONFIG_FILE_EXTENSION, " file"));

@@ -33,7 +33,7 @@ namespace editingSettings
      setColorMode colorMode {colorParams::defaultColorPair}; */
   namespace editChars
   {
-    /* Where a cR prefix means that the command should be specific to character
+    /* Where a cR prefix means that the command should be specific to choord
        rules editing mode and a prefix of br means that the command should be
        specific to background editing mode. */
     constexpr char quit			{'q'};

@@ -191,7 +191,7 @@ void checkForDuplicateChunk
     }
   else
     {
-      // We're appending to a character rules file.
+      // We're appending to a choord rules file.
       duplicatChunkCoordFound = duplicateCoordInCRMultiChunk
 	(multiChunkFileName, multiChunkFile, searchCoord, chunkStartSeekPos,
 	 viewPortSize);

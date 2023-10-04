@@ -6,9 +6,6 @@
 
 void backgroundData::loadAndInitialiseBackground()
 {
-  std::string rawLevelBackground {};
-
-  //checkForPostfix(argv[1], BACKGROUND_CHUNK_FILE_EXTENSION)
   if(!checkForPostfix(&fileName[0], BACKGROUND_FILE_EXTENSION))
     {
       exit(concat
@@ -16,9 +13,6 @@ void backgroundData::loadAndInitialiseBackground()
 	    "file. Postfix for ", BACKGROUND_FILE_EXTENSION, " files should "
 	    "be \"", BACKGROUND_FILE_EXTENSION, "\"."), ERROR_OPENING_FILE);
     }
-  // loadFileIntoString
-  //   (fileName, rawLevelBackground,
-  //    concat("trying to read ", BACKGROUND_FILE_EXTENSION, " file"));
 
     std::fstream bgFile(fileName, std::ios::in | std::ios::binary);
 
@@ -46,32 +40,32 @@ void backgroundData::initialiseBackground
   bgChunk mapChunk;
   int mapChunksRead {};
 	
-      while(getBgChunk(bgFile, mapChunk, chunkSize, mapCoord,
-		       fileName, true))
+  while(getBgChunk(bgFile, mapChunk, chunkSize, mapCoord,
+		   fileName, true))
+    {
+      mapChunksRead++;
+      /* We don't want to re-write getBgChunk or insertChunk so we have to
+	 do this conversion here. */
+      std::vector<chunkElementBaseType> linearMapChunk;
+      for(int yIter {}; yIter < chunkSize.y; yIter++)
 	{
-	  mapChunksRead++;
-	  /* We don't want to re-write getBgChunk or insertChunk so we have to
-	     do this conversion here. */
-	  std::vector<chunkElementBaseType> linearMapChunk;
-	  for(int yIter {}; yIter < chunkSize.y; yIter++)
+	  for(int xIter {}; xIter < chunkSize.y; xIter++)
 	    {
-	      for(int xIter {}; xIter < chunkSize.y; xIter++)
-		{
-		  linearMapChunk.push_back(mapChunk[yIter][xIter]);
-		}
+	      linearMapChunk.push_back(mapChunk[yIter][xIter]);
 	    }
-	  insertChunk(mapCoord, linearMapChunk, mapChunksRead, fileName,
-		      background);
-	  linearMapChunk.clear();
 	}
-      if(mapChunksRead == 0)
-	{
-	  exit(concat
-	       ("Error: unable to read any chunks from background file \"",
-		fileName, "\" when attempting to initialise backgroundData "
-		"object (note that the file isn't empty!) "),
-	       ERROR_MALFORMED_FILE);
-	}
+      insertChunk(mapCoord, linearMapChunk, mapChunksRead, fileName,
+		  background);
+      linearMapChunk.clear();
+    }
+  if(mapChunksRead == 0)
+    {
+      exit(concat
+	   ("Error: unable to read any chunks from background file \"",
+	    fileName, "\" when attempting to initialise backgroundData "
+	    "object (note that the file isn't empty!) "),
+	   ERROR_MALFORMED_FILE);
+    }
 }
 
 

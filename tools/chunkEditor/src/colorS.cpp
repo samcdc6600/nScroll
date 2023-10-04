@@ -30,9 +30,6 @@ bool setColorMode::inRange(const int color)
 {
   if(color < 1 || color > colorParams::effectiveGameColorPairsNo)
     {
-      endwin();
-      std::cout<<"color = "<<color<<'\n';
-      exit(-1);
       return false; 	// Color is out of range.
     }
   return true;
