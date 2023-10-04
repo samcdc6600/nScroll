@@ -44,9 +44,9 @@ void menu
 (const yx viewPortSize)
 { 
   backgroundData background
-    {viewPortSize, "assets/level1/level1.background.lev"};
+    {viewPortSize, "assets/lev1/1.levbg"};
   rules levelRules
-    {viewPortSize, "assets/level1/level1.coordRules.lev",
+    {viewPortSize, "assets/lev1/level1.coordRules.lev",
      boarderRuleChars::BOARDER_CHAR,
      "assets/level1/level1.rules.lev", background};
   background.initBuffers(levelRules.getInitialViewPortPosition());

@@ -20,18 +20,18 @@ public:
   {}
 
 
-  void draw(unsigned short * secondStageDrawBuffer, const bool updateSlice,
-	    const yx viewPortPos);
+  void draw(bgSecondStageDrawBufferType * secondStageDrawBuffer,
+	    const bool updateSlice, const yx viewPortPos);
 
 private:
   // Main body of draw code.
   void drawProper
-  (unsigned short * secondStageDrawBuffer, const bool updateSlice,
+  (bgSecondStageDrawBufferType * secondStageDrawBuffer, const bool updateSlice,
    const yx viewPortPos);
   /* Inner loop of draw code. Should be called from within iteration over y
      axis. */
   void handleXCompAndDraw
-  (unsigned short * secondStageDrawBuffer, const bool updateSlice,
+  (bgSecondStageDrawBufferType * secondStageDrawBuffer, const bool updateSlice,
    const yx viewPortPos, const int sliceLineIter, const int sliceLineCharIter);
 };
 

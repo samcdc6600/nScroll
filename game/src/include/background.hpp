@@ -8,7 +8,7 @@
 #include "chunk.hpp"
 
 
-class backgroundData: public chunk<unsigned short>
+class backgroundData: public chunk<bgSecondStageDrawBufferType>
 {
 public:
   // ========================== MEMBER VARIABLES START =========================
@@ -16,21 +16,46 @@ public:
   chunkElementBaseType * secondStageDrawBuffer;
   
 private:
+  typedef chunkElementBaseType bgChunk[yHeight][xWidth];
+  
+  struct bgChunkStrt
+  {
+    bgChunk chunk;
+
+    bgChunkStrt(const bgChunk chunk)
+    {
+      for(int yIter {}; yIter < yHeight; ++yIter)
+	{
+	  for(int xIter {}; xIter < xWidth; ++xIter)
+	    {
+	      this->chunk[yIter][xIter] = chunk[yIter][xIter];
+	    }
+	}
+    }
+  };
+  
   static const int FIRST_STAGE_BUFFER_DIMENSIONS_SIZE {5};
+  const chunkElementBaseType bgRunLengthSequenceSignifier
+  {std::numeric_limits<int>::max()};
 
   // ========================== MEMBER FUNCTIONS START =========================
   // ===========================================================================
   void loadAndInitialiseBackground();
   void initialiseBackground
-  (const bool rawData, const std::string & bgData,
-   chunkMapType & background);
-  /* Get's chunk from bgData and stores in chunk. Prints eMsg and exits if chunk
-     cannot successfully be read in. This function is used during object
-     initialisation. */
-  /* Prints eMsg and terminates program if rawChunk is the wrong size. */
-  void verifyCollapsedChunkSize(const chunkType & rawChunk,
-				const ssize_t chunksReadIn,
-				const bool attemptedCompression) const;
+  (std::fstream & bgFile, chunkMapType & background);
+  /* Reads in and decompress a chunk from a file. The file should already be
+   open. If it is a multi chunk file, multiChunkFile should be set to true. In
+   this case if there is an error the function will return false. However if
+   multiChunkFile is false an error message will be printed and the program
+   exited upon error. File should be an already opened chunk file, chunk is
+   where the chunk read in will be stored and chunkCoord is the chunk
+   coordinates read from the file.
+   NOTE THAT IF THE LAST CHUNK IN THE FILE IS READ FILE.FAIL() WILL BE TRUE
+   AND WILL NEED TO BE RESET IF MORE OPERATIONS (AT LEAST FOR SOME POSSIBLE
+   OPERATIONS) NEED TO BE DONE ON FSTREAM. */
+bool getBgChunk
+(std::fstream & file, bgChunk chunk, const yx chunkSize, yx & chunkCoord,
+ const std::string & fileName, const bool multiChunkFile = false);
   
 public:
 

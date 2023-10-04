@@ -81,7 +81,7 @@ void mapView(const std::string multiChunkFileName, const yx viewPortSize)
 		       multiChunkFileName, true))
 	{
 	  mapCoords.push_back(mapChunkCoord);
-	  bgMap.push_back(bgChunkStrt{mapChunk});
+	  bgMap.push_back(mapChunk);
 	}
       if(bgMap.size() == 0)
 	{
@@ -106,6 +106,7 @@ void mapView(const std::string multiChunkFileName, const yx viewPortSize)
 	}
     }
 
+  mapFile.close();
   viewMap
     (multiChunkFileName, viewingBgMap, mapCoords, bgMap, cRMap, viewPortSize);
 }

@@ -92,6 +92,7 @@ yx abs(const yx a);
 std::ostream & operator<<(std::ostream &lhs, const yx rhs);
 
 
+typedef int bgSecondStageDrawBufferType;
 // The window must be these dimensions.
 constexpr int yHeight {48}, xWidth {170};
 constexpr int ASCII_CH_MAX {127};
@@ -101,8 +102,8 @@ constexpr int ASCII_NUMBER_OFFSET {48};
 constexpr char ESC_CHAR {27};
 // constexpr int BACKGROUND_HEIGHT {33};
 
-constexpr char BACKGROUND_FILE_EXTENSION [] {".background.lev"};
-constexpr char COORD_RULES_FILE_EXTENSION [] {".coordRules.lev"};
+constexpr char BACKGROUND_FILE_EXTENSION [] {".levbg"};
+constexpr char COORD_RULES_FILE_EXTENSION [] {".levcr"};
 constexpr char RULES_CONFIG_FILE_EXTENSION [] {".rules.lev"};
 constexpr char SPRITE_FILE_EXTENSION [] {".sprite"};
 
@@ -119,6 +120,8 @@ enum errorsCodes {                     /* Error codes. */
                    ERROR_CHARACTER_RANGE,   // Character out of range.
                    ERROR_COLOR_CODE_RANGE,  // Color code out of range.
                    ERROR_GENERIC_RANGE_ERROR,
+		   /* Some file (of unknown type) is malformed. */
+		   ERROR_MALFORMED_FILE,
                    ERROR_BACKGROUND,          // Malformed BG file.
 		   ERROR_RULES_CHAR_FILE,
 		   ERROR_RULES_LEV_HEADER,    // Header of .level.rules file is
@@ -171,6 +174,9 @@ void loadFileIntoString(const char name[], std::string & buff,
 bool getChunkCoordinate
 (const std::string & data, std::string::const_iterator & buffPos,
  const std::string & eMsg, yx & chunkCoord);
+bool readInChunkCoordFromFile
+(yx & retVal, const std::string & fileName, std::fstream & file,
+ const bool exitOnError);
 /* Attempts to read a number starting at buffPos (will skip any space before the
    number.) */
 int readSingleNum
@@ -227,6 +233,18 @@ void skipSpaceUpToNextLine(const std::string & buff,
 static std::string
 findTargetInBuff(const std::string::const_iterator & outerPeekPos,
 		 const std::vector<std::string> & targets);
+/* Returns true if postfix is a strict postfix of str. */
+bool checkForPostfix(const char str [], const char postfix []);
+/* Used to update yIter and xIter for loop in get chunk functions. */
+void updateVirtualNestedChunkYXLoop
+(int & xIter, int & yIter, const yx chunkSize);
+/* Used to detect if the chunk is too big in get chunk functions. If
+   multiChunkFile is true and yIter is too large the function will return
+   false. Other wise it will return true. If multiChunkfile is false and yIter
+   is too large the function will exit with an error message. */
+bool checkYOfVirtualNestedChunkLoop
+(int & xIter, int & yIter, const yx chunkSize, const bool multiChunkFile,
+ const std::string & eMsgStart);
 /* Calls endwin() then print's e to std::cerr and finally call's exit() with
    status */
 void exit(const std::string & e, const int status);

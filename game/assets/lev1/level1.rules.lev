@@ -1,0 +1,96 @@
+/* Rules.lev configuration files such as this are arranged in a hierarchical
+   fashion. The configuration information should be placed in an outer set of
+   brackets. Subsections are denoted by keywords and their contents are stored
+   in brackets that follow their denoting keywords. Some fields can be omitted.
+   Where a field is a section that does not contain any other sections (only
+   value or values) In the case a field can be omitted it a default value will
+   be supplied by the game engine. */
+(
+  player(
+    initialViewPortCoordinate(0, 150)
+    viewPortPadding(14, 36)
+    initialCoordinateViewPortRelative(18, 74)
+    sprites("./assets/sprites/sprite(0).sprite",
+    "./assets/sprites/sprite(1).sprite",
+    "./assets/sprites/sprite(2).sprite",
+    "./assets/sprites/sprite(3).sprite",
+    "./assets/sprites/sprite(4).sprite")
+    jumpingPower(90) /* jumpingPower has default argument 80. */
+    maxXVelocity(42) /* maxXVelocity has default argument 44. */
+                     /* maxFallingVelocity has default argument jumpingPower. */
+    maxFallingVelocity(90)
+                     /* leftAcceleration has default argument 2.5. */
+    leftAcceleration(2.8)
+                     /* rightAcceleration has default argument 2.5. */
+    rightAcceleration(2.8)
+  )
+  /* 1st tree near hole in 0,0.*/
+  backgroundSprite(
+    		     /* displayInForground has default argument false. */
+    initialCoordinate(28,67)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
+  /* 2nd tree near hole in 0,0.*/
+  backgroundSprite(
+    initialCoordinate(28,97)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
+  /* 1st platform (in 0,0)*/
+  backgroundSprite(
+    initialCoordinate(19,125)
+    sprites
+    ("./assets/sprites/platform1(0).sprite")
+  )
+  /* 2nd platform (in 0,1). */
+  backgroundSprite(
+    initialCoordinate(12,188)
+    sprites
+    ("./assets/sprites/platform1(0).sprite")
+  )
+  /* Tree on 1st platform (in 0,0). */
+  backgroundSprite(
+    initialCoordinate(8,135)
+    sprites
+    ("./assets/sprites/tree2BlueBg(0).sprite")
+  )
+  backgroundSprite(
+    initialCoordinate(30,172)
+    sprites
+    ("./assets/sprites/tree2BlueBg(0).sprite")
+  )
+  /* Tree on 2nd platform (in 0,1).*/
+  backgroundSprite(
+    initialCoordinate(2,194)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
+  /* Tree inside large underground cave in light beam. */
+  backgroundSprite(
+    initialCoordinate(76,62)
+    sprites
+    ("./assets/sprites/tree2BlueBg(0).sprite")
+  )
+  backgroundSprite(
+    initialCoordinate(14,270)
+    displayInForground(true)
+    sprites
+    ("./assets/sprites/caveForground1(0).sprite")
+  )
+  backgroundSprite(
+    initialCoordinate(0,310)
+    sprites
+    ("./assets/sprites/tree2BlueBg(0).sprite")
+  )
+  backgroundSprite(
+    initialCoordinate(-1,-1)
+    sprites
+    ("./assets/sprites/tree1BlueBg(0).sprite")
+  )
+  backgroundSprite(
+    initialCoordinate(21,-150)
+    sprites
+    ("./assets/sprites/tree2BlueBg(0).sprite")
+  )
+)

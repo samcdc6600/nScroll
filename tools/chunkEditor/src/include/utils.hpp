@@ -155,7 +155,7 @@ const std::string progressivePrintMessageTopRightCornerBoarderChar	{"\\"};
 const std::string progressivePrintMessageBottomLeftCornerBoarderChar	{"\\"};
 const std::string progressivePrintMessageBottomRightCornerBoarderChar	{"/"};
 
-      /* These constants are special values that signify the start of run length
+/* These constants are special values that signify the start of run length
    sequences. */
 constexpr backgroundChunkCharType bgRunLengthSequenceSignifier
   {std::numeric_limits<int>::max()};
@@ -312,7 +312,7 @@ void readInCRChunkFile
    exited upon error. File should be an already opened chunk file, chunk is
    where the chunk read in will be stored and chunkCoord is the chunk
    coordinates read from the file.
-   NOTE THAT IF A THE LAST CHUNK IN THE FILE IS READ FILE.FAIL() WILL BE TRUE
+   NOTE THAT IF THE LAST CHUNK IN THE FILE IS READ FILE.FAIL() WILL BE TRUE
    AND WILL NEED TO BE RESET IF MORE OPERATIONS (AT LEAST FOR SOME POSSIBLE
    OPERATIONS) NEED TO BE DONE ON FSTREAM. */
 bool getBgChunk

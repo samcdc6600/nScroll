@@ -3,7 +3,7 @@
 
 
 void bgSprite::draw
-(unsigned short * secondStageDrawBuffer, const bool updateSlice,
+(bgSecondStageDrawBufferType * secondStageDrawBuffer, const bool updateSlice,
  const yx viewPortPos)
 {
   timers.updateSliceTimer();
@@ -41,7 +41,7 @@ void bgSprite::draw
 
 
 void bgSprite::drawProper
-(unsigned short * secondStageDrawBuffer, const bool updateSlice,
+(bgSecondStageDrawBufferType * secondStageDrawBuffer, const bool updateSlice,
  const yx viewPortPos)
 {
   // Iterate over sprite slice lines.
@@ -69,7 +69,7 @@ void bgSprite::drawProper
 
 
 void bgSprite::handleXCompAndDraw
-(unsigned short * secondStageDrawBuffer, const bool updateSlice,
+(bgSecondStageDrawBufferType * secondStageDrawBuffer, const bool updateSlice,
  const yx viewPortPos, const int sliceLineIter, const int sliceLineCharIter)
 {
   /* If current char of current slice line is in the view port

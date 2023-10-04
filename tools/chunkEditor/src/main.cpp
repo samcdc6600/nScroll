@@ -49,7 +49,8 @@ int verifyCmdArgsAndGetMode(const int argc, const char * argv [])
 
      If argc == argNumForMode_6 check for form like:
      chunked x.background.lev
-     (and again for rules.) */
+     (and again for rules.)
+     Or check for -h for the 2nd arg. */
   /* Print help message and exit if arguments in argv don't correspond to
      either mode 1 or mode 3. */
   auto testMode1And3Args = [argv, & modeFound]() -> void
@@ -191,12 +192,9 @@ void printHelp(const char * argv [])
       concat(
           "===================================================================="
           "============\n",
-          argv[0], " Help:\n\t", argv[0],
-          " requires two arguments. Both "
-          "arguments must be valid file\n\tpaths. ",
+          argv[0], " Help:\n\t",
           argv[0],
-          " has five "
-          "modes depending on the arguments."
+          " has seven modes. They are as follows."
           "\n\n    1st mode:\n\tThe first mode is known as Single Chunk Edit "
           "Mode. If the files have the\n\textensions \"",
           BACKGROUND_CHUNK_FILE_EXTENSION, "\" and \"",
@@ -296,7 +294,12 @@ void printHelp(const char * argv [])
 	  "the user must supply a file as\n\tthe soul argument. The file must "
 	  "either be a ", BACKGROUND_FILE_EXTENSION, " file. Or a\n\t",
 	  COORD_RULES_FILE_EXTENSION, " file.\n\t    Example:\n\t\t", argv[0],
-	  " splendid", BACKGROUND_FILE_EXTENSION)};
+	  " splendid", BACKGROUND_FILE_EXTENSION,
+	  "\n\n"
+	  "    7th mode:\n\tThis mode is known as Help Mode and does what it "
+	  "says on the tin."
+	  "\n\t	Example:\n\t\t", argv[0], " -h"
+	  "\n")};
   endwin();
   printMessageNoWin(help, printCharSpeed, afterPrintSleep);
 }

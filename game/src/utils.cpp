@@ -214,6 +214,49 @@ void readSectionEndingBracketUtils
 }
 
 
+bool readInChunkCoordFromFile
+(yx & retVal, const std::string & fileName, std::fstream & file,
+ const bool exitOnError)
+{
+  auto intIn = [& fileName, & file, exitOnError] (int & coord)
+  {
+    char inputCoord [sizeof(int)];
+
+    if(!file.read(inputCoord, sizeof(int)))
+      {
+	if(exitOnError)
+	  {
+	    exit(concat("Error: trying to read int from \"", fileName, "\". "
+			"The file size may be of note."),
+		 ERROR_MALFORMED_FILE);
+	  }
+	else
+	  {
+	    return false;
+	  }
+      }
+
+    coord = 0;
+
+    for(int iter {}; (size_t)iter < sizeof(int); iter++)
+      {
+	coord |= (static_cast<int>(inputCoord[iter]) & 0xFF) << (iter * 8);
+      }
+
+    return true;
+  };
+
+  bool ret;
+
+  if((ret = intIn(retVal.y)))
+    {
+      ret = intIn(retVal.x);
+    }
+  
+  return ret;
+}
+
+
 int readSingleNum
 (const std::string & buff, std::string::const_iterator & buffPos,
  const std::string & eMsg, const bool useIntegers)
@@ -582,6 +625,56 @@ static std::string findTargetInBuff
 
  RETURN:
   return targetFound;
+}
+
+
+bool checkForPostfix(const char str [], const char postfix [])
+{
+  const char * postfixPos {strstr(str, postfix)};
+
+  if(postfixPos == nullptr ||
+     (size_t)((postfixPos + strlen(postfix)) - str) != strlen(str))
+    {
+      return false;
+    }
+
+  return true;
+}
+
+
+void updateVirtualNestedChunkYXLoop
+    (int & xIter, int & yIter, const yx chunkSize)
+{
+  xIter++;
+  if(xIter > chunkSize.x -1)
+    {
+      xIter = 0;
+      yIter++;
+    }
+}
+
+
+bool checkYOfVirtualNestedChunkLoop
+(int & xIter, int & yIter, const yx chunkSize,
+ const bool multiChunkFile, const std::string & eMsgStart)
+{
+  bool ret {true};
+  if(yIter > chunkSize.y - 1)
+    {
+      if(!multiChunkFile)
+	{
+	  exit(concat(eMsgStart, "Chunk is too large, equal to or over ",
+		      yIter * chunkSize.x + xIter +1, " It should be ",
+		      chunkSize.y * chunkSize.x, "."),
+	       ERROR_MALFORMED_FILE);
+	}
+      else
+	{
+	  ret = false;
+	}
+    }
+
+  return ret;
 }
 
 

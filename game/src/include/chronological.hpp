@@ -32,7 +32,6 @@ private:
      wan't to use the system_time this is because it will always be closer to
      the real time. */
   std::__1::chrono::system_clock::time_point tLast;
-  const long double scaleFactor {1};
   /* Many public functions belonging to this object (apart from any constructor
      and start() must call this function as their first action. If the public
      member function uses tickTime then it must call this function. */
