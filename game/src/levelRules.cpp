@@ -429,26 +429,16 @@ void rules::initialiseCoordRules
   //   }
 
   yx mapCoord {};
-  cRChunk mapChunk;
+  std::vector<chunkElementBaseType> mapChunk;
   int mapChunksRead {};
 
     while(getCRChunk(cRFile, mapChunk, chunkSize, mapCoord,
 		   fileName, true))
       {
 	mapChunksRead++;
-	/* We don't want to re-write getCRChunk or insertChunk so we have to do
-	   this conversion here. */
-	std::vector<char> linearMapChunk;
-	for(int yIter {}; yIter < chunkSize.y; yIter++)
-	  {
-	    for(int xIter {}; xIter < chunkSize.y; xIter++)
-	      {
-		linearMapChunk.push_back(mapChunk[yIter][xIter]);
-	      }
-	  }
-	insertChunk(mapCoord, linearMapChunk, mapChunksRead, fileName,
+	insertChunk(mapCoord, mapChunk, mapChunksRead, fileName,
 		    coordRules);
-	linearMapChunk.clear();
+	mapChunk.clear();
       }
 
   /* Each chunk in background must have a matching chunk in coordRules. This
@@ -463,8 +453,9 @@ void rules::initialiseCoordRules
 
 // Note that multiChunkFile has a default value of false.
 bool rules::getCRChunk
-(std::fstream & file, cRChunk chunk, const yx chunkSize, yx & chunkCoord,
- const std::string & fileName, const bool multiChunkFile) const
+(std::fstream & file, std::vector<chunkElementBaseType> & chunk,
+ const yx chunkSize, yx & chunkCoord, const std::string & fileName,
+ const bool multiChunkFile) const
 {
   const std::string eMsgStart
     {concat("Error: trying to read in coord rules chunk file "
@@ -513,7 +504,7 @@ bool rules::getCRChunk
 		  file.seekg(-sizeof(char), std::ios::cur);
 		  goto MEGA_BREAK;
 		}
-	      chunk[yIter][xIter] = cRChar;
+	      chunk.push_back(cRChar);
 	      chunkCharsFound++;
 	      updateVirtualNestedChunkYXLoop(xIter, yIter, chunkSize);
 	    }
@@ -528,7 +519,7 @@ bool rules::getCRChunk
 	      file.seekg(-sizeof(char), std::ios::cur);
 	      goto MEGA_BREAK;
 	    }
-	  chunk[yIter][xIter] = cRChar;
+	  chunk.push_back(cRChar);
 	  chunkCharsFound++;
 	  updateVirtualNestedChunkYXLoop(xIter, yIter, chunkSize);
 	}
@@ -553,124 +544,124 @@ bool rules::getCRChunk
 }
 
 
-void rules::decompressChunk
-(const std::string & chunkIn, chunkType & rawChunk,
- const yx expectedChunkSize, const ssize_t chunksReadIn,
- const char coordRulesFileName[]) const
-{
-  const char runLenBeginChar
-    {levelFileKeywords::alphabet::alphMisc::RULES_MAIN_RUNLENGTH_BEGIN_CHAR};
-  std::string::const_iterator buffPos {std::begin(chunkIn)};
-  int lineNumber {};
-  int lineLength {};
+// void rules::decompressChunk
+// (const std::string & chunkIn, chunkType & rawChunk,
+//  const yx expectedChunkSize, const ssize_t chunksReadIn,
+//  const char coordRulesFileName[]) const
+// {
+//   const char runLenBeginChar
+//     {levelFileKeywords::alphabet::alphMisc::RULES_MAIN_RUNLENGTH_BEGIN_CHAR};
+//   std::string::const_iterator buffPos {std::begin(chunkIn)};
+//   int lineNumber {};
+//   int lineLength {};
     
-  while(buffPos < chunkIn.end())
-    {
-      if(*buffPos == runLenBeginChar)
-	{
-	  // We've encountered a run-length encoding character.
-	  const char ruleChar {*(++buffPos)};
-	  ++buffPos;
+//   while(buffPos < chunkIn.end())
+//     {
+//       if(*buffPos == runLenBeginChar)
+// 	{
+// 	  // We've encountered a run-length encoding character.
+// 	  const char ruleChar {*(++buffPos)};
+// 	  ++buffPos;
 
-	  checkRuleChar
-	    (ruleChar,
-	     concat("decompressing chunk no. ", chunksReadIn, " from file \"",
-		    coordRulesFileName, "\" (on line ", lineNumber + 1,
-		    " of chunk.) "));
+// 	  checkRuleChar
+// 	    (ruleChar,
+// 	     concat("decompressing chunk no. ", chunksReadIn, " from file \"",
+// 		    coordRulesFileName, "\" (on line ", lineNumber + 1,
+// 		    " of chunk.) "));
 
-	  const int runLength
-	    {readSingleNum
-	     (chunkIn, buffPos,
-	      concat("reading run-length encoding length as a result of "
-		     "encountering run-length encoding character \"",
-		     runLenBeginChar, "\" while  decompressing chunk no. ",
-		     chunksReadIn, " from file \"",
-		     coordRulesFileName, "\" (on line ", lineNumber + 1,
-		     " of chunk.) "), false)};
-	  --buffPos;
+// 	  const int runLength
+// 	    {readSingleNum
+// 	     (chunkIn, buffPos,
+// 	      concat("reading run-length encoding length as a result of "
+// 		     "encountering run-length encoding character \"",
+// 		     runLenBeginChar, "\" while  decompressing chunk no. ",
+// 		     chunksReadIn, " from file \"",
+// 		     coordRulesFileName, "\" (on line ", lineNumber + 1,
+// 		     " of chunk.) "), false)};
+// 	  --buffPos;
 
-	  for(int lengthIter {}; lengthIter < runLength; ++lengthIter)
-	    {
-	      rawChunk.push_back(ruleChar);
-	    }
-	  lineLength += runLength;
-	}
-      else
-	{
-	  checkRuleChar
-	    (*buffPos,
-	     concat("decompressing chunk no. ", chunksReadIn, " from file \"",
-		    coordRulesFileName, "\" (on line ", lineNumber + 1,
-		    " of chunk.) "));
-	  rawChunk.push_back(*buffPos);
-	  lineLength++;
-	}
+// 	  for(int lengthIter {}; lengthIter < runLength; ++lengthIter)
+// 	    {
+// 	      rawChunk.push_back(ruleChar);
+// 	    }
+// 	  lineLength += runLength;
+// 	}
+//       else
+// 	{
+// 	  checkRuleChar
+// 	    (*buffPos,
+// 	     concat("decompressing chunk no. ", chunksReadIn, " from file \"",
+// 		    coordRulesFileName, "\" (on line ", lineNumber + 1,
+// 		    " of chunk.) "));
+// 	  rawChunk.push_back(*buffPos);
+// 	  lineLength++;
+// 	}
       
-      buffPos++;
-      if(*buffPos == '\n')
-	{
-	  if(lineLength != expectedChunkSize.x)
-	    {
-	      exit(concat
-		   ("Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header ",
-		    "file \"", coordRulesFileName, "\". Encountered line of ",
-		    "length (", lineLength, ") when ", "decompressing chunk ",
-		    "no. ", chunksReadIn, " (on line ", lineNumber + 1, " of ",
-		    "chunk.) Expected a line of length (", expectedChunkSize.x,
-		    ")."), ERROR_BACKGROUND);
-	    }
-	  lineLength = 0;
-	  lineNumber++;
-	  buffPos++;
-	}
-    }
+//       buffPos++;
+//       if(*buffPos == '\n')
+// 	{
+// 	  if(lineLength != expectedChunkSize.x)
+// 	    {
+// 	      exit(concat
+// 		   ("Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header ",
+// 		    "file \"", coordRulesFileName, "\". Encountered line of ",
+// 		    "length (", lineLength, ") when ", "decompressing chunk ",
+// 		    "no. ", chunksReadIn, " (on line ", lineNumber + 1, " of ",
+// 		    "chunk.) Expected a line of length (", expectedChunkSize.x,
+// 		    ")."), ERROR_BACKGROUND);
+// 	    }
+// 	  lineLength = 0;
+// 	  lineNumber++;
+// 	  buffPos++;
+// 	}
+//     }
 
-  if(lineLength != expectedChunkSize.x)
-    {
-      exit(concat("\n", *buffPos, *(++buffPos), *(++buffPos), "\n"), 1);
-      exit(concat
-	   ("Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \"",
-	    coordRulesFileName, "\". Encountered line of length (", lineLength,
-	    ") when decompressing chunk no. ", chunksReadIn, " (on line ",
-	    lineNumber + 1, " of chunk.) Expected a line of length (",
-	    expectedChunkSize.x, ")."), ERROR_BACKGROUND);
-    }
+//   if(lineLength != expectedChunkSize.x)
+//     {
+//       exit(concat("\n", *buffPos, *(++buffPos), *(++buffPos), "\n"), 1);
+//       exit(concat
+// 	   ("Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \"",
+// 	    coordRulesFileName, "\". Encountered line of length (", lineLength,
+// 	    ") when decompressing chunk no. ", chunksReadIn, " (on line ",
+// 	    lineNumber + 1, " of chunk.) Expected a line of length (",
+// 	    expectedChunkSize.x, ")."), ERROR_BACKGROUND);
+//     }
 
-  const ssize_t expectedChunkSizeLinear
-    {expectedChunkSize.y * expectedChunkSize.x};
-  if(rawChunk.size() != (unsigned long)expectedChunkSizeLinear)
-    {
-      exit(concat
-	   ("Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \"",
-	    coordRulesFileName, "\".  Size (", rawChunk.size(), ") of chunk ",
-	    "no. ", chunksReadIn, " not equal to expected size (",
-	    expectedChunkSizeLinear, ") of ", "chunk."), ERROR_BACKGROUND);
-    }
-}
+//   const ssize_t expectedChunkSizeLinear
+//     {expectedChunkSize.y * expectedChunkSize.x};
+//   if(rawChunk.size() != (unsigned long)expectedChunkSizeLinear)
+//     {
+//       exit(concat
+// 	   ("Error: reading ", RULES_CONFIG_FILE_EXTENSION, " header file \"",
+// 	    coordRulesFileName, "\".  Size (", rawChunk.size(), ") of chunk ",
+// 	    "no. ", chunksReadIn, " not equal to expected size (",
+// 	    expectedChunkSizeLinear, ") of ", "chunk."), ERROR_BACKGROUND);
+//     }
+// }
 
 
-void rules::checkRuleChar
-    (const char potentialRule, const std::string eMsg) const
-{
-  for(char rule: boarderRuleChars::CHARS)
-    {
-      if(potentialRule == rule || potentialRule == ' ')
-	{
-	  return;
-	}
-    }
-  std::stringstream e {};
-  e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
-    "line, \""
-   <<levelFileKeywords::alphabet::alphMisc::RULES_MAIN_RUNLENGTH_BEGIN_CHAR
-   <<"\" or in the set of rule characters (";
-  for(char rule: boarderRuleChars::CHARS)
-    {
-      e<<rule<<", ";
-    }
-  e<<") when "<<eMsg<<'.';
-  exit(e.str().c_str(), ERROR_CHARACTER_RANGE);
-}
+// void rules::checkRuleChar
+//     (const char potentialRule, const std::string eMsg) const
+// {
+//   for(char rule: boarderRuleChars::CHARS)
+//     {
+//       if(potentialRule == rule || potentialRule == ' ')
+// 	{
+// 	  return;
+// 	}
+//     }
+//   std::stringstream e {};
+//   e<<"Error: found that character \""<<potentialRule<<"\" is not a space, new "
+//     "line, \""
+//    <<levelFileKeywords::alphabet::alphMisc::RULES_MAIN_RUNLENGTH_BEGIN_CHAR
+//    <<"\" or in the set of rule characters (";
+//   for(char rule: boarderRuleChars::CHARS)
+//     {
+//       e<<rule<<", ";
+//     }
+//   e<<") when "<<eMsg<<'.';
+//   exit(e.str().c_str(), ERROR_CHARACTER_RANGE);
+// }
 
 
 void rules::verifyTotalOneToOneOntoMappingOfCoordToBgKeys
