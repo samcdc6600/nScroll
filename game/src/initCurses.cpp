@@ -15,7 +15,7 @@ void initialiseCurses(yx & maxyx)
 	    "and the current width is ", maxyx.x, " characters.\n"),
 	   ERROR_WIN_PARAM);
     }
-  if(has_colors() == FALSE)  // If the terminal does not support colors                                                
+  if(!has_colors())  // If the terminal does not support colors                                                
     {
       exit("Error your terminal does not support colour :'(\n", ERROR_WIN_PARAM);
     }
@@ -43,7 +43,6 @@ void initialiseCurses(yx & maxyx)
 
   // Dissable blocking while waiting for input (use non blocking sys call.)
   nodelay(stdscr, TRUE);
-    
   initColorPairs();          // Initialise the color pairs                                                             
 }
 
@@ -56,51 +55,133 @@ void initColorPairs()
   };
   std::vector<colors> newColors {};
 
-  // Calculate RGB values of game colors.
-  for(int rIter {},
-	redComp {}, greenComp {}, blueComp {};
-      rIter < colorParams::gameColorCompNo; rIter++)
+  int redComp {}, greenComp {}, blueComp {};
+
+  /* See colorS.hpp for more info about how we are calculating the colors. */
+  // CALCULATE RGB VALUES OF GAME COLORS. ======================================
+  for(int bIter {};
+      bIter < colorParams::gameColorCompNo; bIter++)
     {
+      blueComp += (colorParams::gameRGBMax /
+		  colorParams::gameColorCompNo); // * 0.8;
       for(int gIter {}; gIter < colorParams::gameColorCompNo; gIter++)
 	{
-	  for(int bIter {}; bIter < colorParams::gameColorCompNo; bIter++)
-	    {
-	      newColors.push_back
-		(colors{redComp, blueComp, greenComp});
-	      // We inc after because colors should start at 0.
-	      blueComp += colorParams::gameRGBMax /
-		(colorParams::gameColorCompNo -1);
-	    }
-	  /* Ensure colors for inner loops are in the range [0, 1000] by setting
+	  /* Ensure colors for inner loops are in the range [333, 1000] by setting
 	     them back to 0 after exiting the inner loops. */
-	  blueComp = 0;
-	  greenComp += colorParams::gameRGBMax /
-	    (colorParams::gameColorCompNo -1);
+	  greenComp += (colorParams::gameRGBMax /
+			colorParams::gameColorCompNo); // * 0.8;
+	  for(int rIter {}; rIter < colorParams::gameColorCompNo -1; rIter++)
+	    {
+	      // We inc after because colors shouldn't start at 0.
+	      redComp += (colorParams::gameRGBMax /
+			  (colorParams::gameColorCompNo -1)); // * 0.8;
+	      newColors.push_back
+		({redComp, blueComp, greenComp});
+	    }
+	  redComp = 0;
 	}
       greenComp = 0;
-      redComp += colorParams::gameRGBMax /
-	(colorParams::gameColorCompNo -1);
     }
 
-  // Init colors.
+  /* Add 5 extra colors. We need 23. */
+  // Add black.
+  newColors.push_back
+    (colors{0, 0, 0});
+  // Add darkish brown.
+  newColors.push_back(colors
+		      {colorParams::gameRGBMax / colorParams::gameColorCompNo,
+		       colorParams::gameRGBMax / colorParams::gameColorCompNo,
+		       colorParams::gameRGBMax / colorParams::gameColorCompNo});
+  // Add middle brown.
+  newColors.push_back(colors{colorParams::gameRGBMax / 2,
+			     colorParams::gameRGBMax / 2,
+			     colorParams::gameRGBMax / 2});
+  // Add off middle brown (with less green.)
+  newColors.push_back
+    (colors{colorParams::gameRGBMax / 2,
+	    colorParams::gameRGBMax / 2 -
+	    (colorParams::gameRGBMax / colorParams::gameColorCompNo) / 2,
+	    colorParams::gameRGBMax / 2});
+  // Add off middle brown (with less blue.)
+  newColors.push_back
+    (colors{colorParams::gameRGBMax / 2,
+	    colorParams::gameRGBMax / 2,
+	    colorParams::gameRGBMax / 2 -
+	    (colorParams::gameRGBMax / colorParams::gameColorCompNo) / 2});
+
+  /* CALCULATE INDEXES OF COLORS FOR COLOR PAIRS. ==============================
+     These will be used to index into the newColors vector when creating color
+     pairs. */
+  std::vector<yx> indexesOfColorsForPairs {};
+
+  // We can have 253 color pairs (506 with inversion) if we have 23 colors.
+  for(int fIter {}; (size_t)fIter < newColors.size(); ++fIter)
+    {
+      for(int bIter {}; (size_t)bIter < newColors.size(); ++bIter)
+	{
+	  indexesOfColorsForPairs.push_back(yx{fIter, bIter});
+	}
+    }
+
+  // Remove elm from vec.
+  auto removeFrom = [](std::vector<yx> & vec, const yx elm)
+  {
+    auto it = std::find(vec.begin(), vec.end(), elm);
+
+    if (it != vec.end())
+      {
+	vec.erase(it);
+      }    
+  };
+
+  /* Size of colors after for loop will be (cS * cS) / 2 - (cS / 2), where cS
+     is indexesOfColorsForPairs.size() before the loop. */
+  for(int oIter {}; (size_t)oIter < indexesOfColorsForPairs.size(); ++oIter)
+    {
+      for(int iIter {}; (size_t)iIter < indexesOfColorsForPairs.size(); ++iIter)
+	{
+	  if(oIter != iIter &&
+	     indexesOfColorsForPairs[oIter].y ==
+	     indexesOfColorsForPairs[iIter].x &&
+	     indexesOfColorsForPairs[oIter].x ==
+	     indexesOfColorsForPairs[iIter].y)
+	    {
+	      /* Remove reverse color (this can be printed using
+		 attron(A_REVERSE) / attroff(A_REVERSE); */
+	      // Remove from copy.
+	      removeFrom(indexesOfColorsForPairs,
+			 indexesOfColorsForPairs[iIter]);
+	      if(oIter > iIter)
+		{
+		  --oIter;
+		}
+	    }
+	}
+      if(indexesOfColorsForPairs[oIter].y == indexesOfColorsForPairs[oIter].x)
+	{
+	  // A solid character can be achieved with a ' '.
+	  // Remove from copy.
+	  removeFrom(indexesOfColorsForPairs, indexesOfColorsForPairs[oIter]);
+	}
+    }
+
+  // Init colors. ==============================================================
   for(int colorNoIter {}; colorNoIter < (int)newColors.size(); ++colorNoIter)
     {
-      init_color(colorNoIter, newColors[colorNoIter].r,
+      /* Note that the 0th color pair (which we are not using) is reserved for
+	 the default color (which is one of the other color pairs). Hence + 1.
+      */
+      init_color(colorNoIter +1, newColors[colorNoIter].r,
 		 newColors[colorNoIter].g, newColors[colorNoIter].b);
     }
 
-  // Init color pairs.
-  for(int fgIter {}; fgIter < (int)newColors.size(); ++fgIter)
+  // Init color pairs. =========================================================
+  /* Pairs start at 1 (we are not using the default pair functionality of
+     ncurses, where the default pair is 0.) */
+  int pairNumber {1};
+  for(yx newPairsColorIndexes: indexesOfColorsForPairs)
     {
-      for(int bgIter {}; bgIter < (int)newColors.size();
-	  ++bgIter)
-	{
-	  const int pairNumber
-	    {fgIter * (int)newColors.size() + bgIter};
-	  init_pair(pairNumber, fgIter, bgIter);
-	}      
+      init_pair(pairNumber, newPairsColorIndexes.y, newPairsColorIndexes.x);
+      pairNumber++;
     }
-
-  // Set current color to default color.
-  attron(COLOR_PAIR(colorParams::defaultColorPair));
 }

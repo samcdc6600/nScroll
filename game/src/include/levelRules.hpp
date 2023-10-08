@@ -40,24 +40,6 @@ public:
   const yx firstStageBufferSizeInChars;
   
 private:
-  // typedef char cRChunk[yHeight][xWidth];
-
-  // struct cRChunkStrt
-  // {
-  //   cRChunk chunk;
-
-  //   cRChunkStrt(const cRChunk chunk)
-  //   {
-  //     for(int yIter {}; yIter < yHeight; ++yIter)
-  // 	{
-  // 	  for(int xIter {}; xIter < xWidth; ++xIter)
-  // 	    {
-  // 	      this->chunk[yIter][xIter] = chunk[yIter][xIter];
-  // 	    }
-  // 	}
-  //   }
-  // };
-  
   /* THE PHYSICS ENGINE SHOULD BE RUN THIS OFTEN (IN REAL SYSTEM TIME.) The
      sprites position should be updated by 1 character in any direction at
      most this often. This is in seconds. */
@@ -95,24 +77,6 @@ private:
   (std::fstream & file, std::vector<chunkElementBaseType> & chunk,
    const yx chunkSize, yx & chunkCoord, const std::string & fileName,
    const bool multiChunkFile = false) const;
-  // /* Attempts to decompress chunk in chunkIn. If successful returns
-  //    decompressed chunk via rawChunk. ChunkIn is assumed to be compressed using
-  //    the run length encoding technique.
-  //    LevelFileKeywords::RULES_MAIN_RUNLENGTH_BEGIN_CHAR signifies the start of
-  //    a "run". The character after that is repeated a number of times in
-  //    rawChunk equal to the number after that character. The number should be in
-  //    base 10 in ASCII. The end of the number is non-ambiguous because numbers
-  //    are not valid rule characters in a RULES_CONFIG_FILE_EXTENSION file. If
-  //    there is an  error an error message is printed and the program is
-  //    terminated. */
-  // void decompressChunk
-  // (const std::string & chunkIn, chunkType & rawChunk,
-  //  const yx expectedChunkSize, const ssize_t chunksReadIn,
-  //  const char coordRulesFileName[]) const;
-  // /* Checks if argument is an element of boarderRuleChars::CHARS (see utils.cpp).
-  //    Or if the argument is a space character. If either of these is true then
-  //    returns. Otherwise calls exit() */
-  // void checkRuleChar(const char potentialRule, const std::string eMsg) const;
   /* Make sure that for each key in coordRules there is a corresponding key in
      background and that coordRules and background have the same cardinality. */
   void verifyTotalOneToOneOntoMappingOfCoordToBgKeys

@@ -1,61 +1,88 @@
 #include <ncurses.h>
 #include "include/colorS.hpp"
+#include "include/utils.hpp"
 
-colourMap::colourMap()
-{
-  const int offset{159};
-  int colourVal {offset};//range of characters
-  for(std::string colourIter: colorPairs)
-    {
-      map[colourIter] = colourVal;//associate color pair with range (offset)
-      colourVal += offset;//set to next range
-    }
-}
 
 void setColorMode::setState(const int state)
 {
   if(!inRange(state))
-    {//state is out of range
-      std::string eMsg {"in colorS.cpp->setState(const int state), state = "};
-      eMsg += state;
-      eMsg += "\n";
-      throw std::logic_error(eMsg);      
+    {
+      exit(concat("Error: in setState. Color (", state, ") out of range."),
+	   ERROR_COLOR_CODE_RANGE);
     }
-  attron(COLOR_PAIR(state));
+  else
+    {
+      if(state > colorParams::gameColorPairsNo)
+	{
+	  attron(A_REVERSE);
+	  attron(COLOR_PAIR(state - colorParams::gameColorPairsNo));
+	}
+      else
+	{
+	  attroff(A_REVERSE);
+	  attron(COLOR_PAIR(state));
+	}
+    }
 }
+
 
 bool setColorMode::inRange(const int color)
 {
-  if(color < 0 || color > colorMax)
-    return false;//color is out of range
-  return true;//color is in range
+  if(color < 1 || color > colorParams::effectiveGameColorPairsNo)
+    {
+      return false; 	// Color is out of range.
+    }
+  return true;
 }
 
-setColorMode::setColorMode(const int color): defaultColor(color)//set the default color and the color state
-{
-  if(!inRange(color))
-    {
-      std::string eMsg {"in colorS.cpp->setColorMode(const int color), color = "};
-      eMsg += color;
-      eMsg += "\n";
-      throw std::logic_error(eMsg);
-    }
-  setState(defaultColor);//set default color
-}
 
 void setColorMode::setColor(const int color)
 {
   if(!inRange(color))//is the color variable out of range?
     {
-      std::string eMsg {"in colorS.cpp->setColor(const int color), color = "};
-      eMsg += color;
-      eMsg += "\n";
-      throw std::logic_error(eMsg);
+      exit(concat("Error: in setColor(), colour (", color, ") is out of "
+		  "range\n"), ERROR_COLOR_CODE_RANGE);
     }
   setState(color);//turn on color color
 }
 
-void setColorMode::clearColor()
+
+int setColorMode::getColor(const int ch)
 {
-  setState(defaultColor);//turn on defaultColor color
+  /* A character is encoded as it's basic value + it's color value -1 times
+     maxCharNum. Since integer division rounds down (ch -1) / maxCharNum should
+     give the color code. less 1. */
+  int color {((ch -1) / MONO_CH_MAX) +1};
+  if(color > colorParams::effectiveGameColorPairsNo)
+    {
+      exit(concat("Error (in getColor()): encountered colour (", color, ") "
+		  "code that is out of range.\n"),
+	   ERROR_COLOR_CODE_RANGE);
+    }
+
+  return color;
+}
+
+
+void setColorMode::setColorFromChar(const int ch)
+{
+  setColorMode colorMode {};
+  int colorCode = getColor(ch);
+  colorMode.setColor(colorCode);
+}
+
+
+void setColorMode::setRandomColor()
+{
+  setColorMode colorMode {};
+  colorMode.setColor
+    (abs(rand() % colorParams::gameColorPairsNo) +1);
+  if(rand() % 2)
+    {
+      attron(A_REVERSE);
+    }
+  else
+    {
+      attroff(A_REVERSE);
+    }
 }

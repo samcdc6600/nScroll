@@ -15,25 +15,7 @@ public:
   // ===========================================================================
   chunkElementBaseType * secondStageDrawBuffer;
   
-private:
-  typedef chunkElementBaseType bgChunk[yHeight][xWidth];
-  
-  struct bgChunkStrt
-  {
-    bgChunk chunk;
-
-    bgChunkStrt(const bgChunk chunk)
-    {
-      for(int yIter {}; yIter < yHeight; ++yIter)
-	{
-	  for(int xIter {}; xIter < xWidth; ++xIter)
-	    {
-	      this->chunk[yIter][xIter] = chunk[yIter][xIter];
-	    }
-	}
-    }
-  };
-  
+private:  
   static const int FIRST_STAGE_BUFFER_DIMENSIONS_SIZE {5};
   const chunkElementBaseType bgRunLengthSequenceSignifier
   {std::numeric_limits<int>::max()};
@@ -54,8 +36,9 @@ private:
    AND WILL NEED TO BE RESET IF MORE OPERATIONS (AT LEAST FOR SOME POSSIBLE
    OPERATIONS) NEED TO BE DONE ON FSTREAM. */
 bool getBgChunk
-(std::fstream & file, bgChunk chunk, const yx chunkSize, yx & chunkCoord,
- const std::string & fileName, const bool multiChunkFile = false);
+(std::fstream & file, std::vector<chunkElementBaseType> & chunk,
+ const yx chunkSize, yx & chunkCoord, const std::string & fileName,
+ const bool multiChunkFile = false);
   
 public:
 

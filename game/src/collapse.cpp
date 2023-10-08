@@ -135,7 +135,7 @@ void thirdPassOfCollapse
   /* Declared as static so that the constructor will only be called once. This
      is an optimization since the constructor does a lot of work that is
      redundent if done more then once. */
-  static colourMap cuMap;
+  // static colourMap cuMap;
   // EscSeq holds the string used to get the color code from cuMap.
   std::string escSeq {};
   for(size_t iter{}; iter < preRet.size(); ++iter)
@@ -177,7 +177,9 @@ void thirdPassOfCollapse
 		  if(preRet[iterColor] != 10176)
 		    { /* Non "transparent space" characters have color
 			 information applied here. */
-		      ret.push_back(preRet[iterColor] + cuMap.getRange(escSeq));
+		      // ret.push_back(preRet[iterColor] +
+		      // cuMap.getRange(escSeq));
+		      ret.push_back(' ');
 		    }
 		  else
 		    { /* Transparent space! (this character is a special case

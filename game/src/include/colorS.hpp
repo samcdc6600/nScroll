@@ -9,59 +9,48 @@
 
 namespace colorParams
 {
-  /* The game has supports this many colors and as such the terminal must also
+  constexpr int gameColorCompNo {3};
+  /* The game supports this many colors and as such the terminal must also
      support this many colors. */
-  const int gameColors {256};
+  constexpr int gameColors
+    {gameColorCompNo * gameColorCompNo * (gameColorCompNo -1) + 5};
   /* Number of color pairs used by the game. Ncurses must support at least this
      many color pairs. COLOR_PAIRS is 32767 on our system. We will support 125^2
      (15625) color pairs. That is 125 bg colors and 125 fg colors. */
-  const int gameColorCompNo {5};
-  const int gameColorPairsNo {15625};
+  /* Ncurses supports 256 color pairs. We will use
+     (setq colors(+ (* 3 3 2) 5)) = 23
+     (-(/ (expt colors 2)2)(/ colors 2)) = 253,
+     that is 253 color pairs. The above equation is the number of color pairs
+     once pairs that could be obtained through inversion and pairs with both
+     colors being equal (which can just be drawn using spaces) are removed.
+     then use the function calls attron(A_REVERSE) and  attroff(A_REVERSE) to
+     effectively double that number and regain the pairs that were removed. */
+  constexpr int gameColorPairsNoMax {256};
+  constexpr int gameColorPairsNo {253};
+  constexpr int effectiveGameColorPairsNo {gameColorPairsNo * 2};
   /* The RGB values should be in the range [0, 1000]. */
-  const int gameRGBMax {1000};
-  const int defaultColorPair {0};
+  constexpr int gameRGBMax {1000};
+  /* Code for value of transparent space is 1 higher then
+     159 * effectiveGameColorPairsNo which is above the space of all ACS and
+     ASCII characters whether coloured or not. */
+  constexpr int TRANS_SP {159 * effectiveGameColorPairsNo};
 }
 
 
-class colourMap//this classes main function is to help in converting the background input from char's to int's
+// This class is used to change the color mode of Ncurses.
+class setColorMode
 {
 private:
-  std::map<std::string, int> map;//stores color types to int offsets
+  void setState(const int state); // Set the color state in Ncurses.
+  bool inRange(const int color);
+  void setColor(const int color); // Set color to color.
   
+  // Stupendous.
 public:
-  const std::vector<std::string> colorPairs
-  {//BLACK_WHITE is defined as pair zero and cannot be changed and thus must be first
-    //      "WHITE_BLACK",
-    "BLACK_BLACK", "BLACK_RED", "BLACK_GREEN", "BLACK_YELLOW", "BLACK_BLUE", "BLACK_MAGENTA", "BLACK_CYAN",
-      "BLACK_WHITE", "RED_BLACK", "RED_RED", "RED_GREEN", "RED_YELLOW", "RED_BLUE", "RED_MAGENTA", "RED_CYAN",
-      "RED_WHITE", "GREEN_BLACK", "GREEN_RED", "GREEN_GREEN", "GREEN_YELLOW", "GREEN_BLUE", "GREEN_MAGENTA",
-      "GREEN_CYAN", "GREEN_WHITE", "YELLOW_BLACK", "YELLOW_RED", "YELLOW_GREEN", "YELLOW_YELLOW", "YELLOW_BLUE",
-      "YELLOW_MAGENTA", "YELLOW_CYAN", "YELLOW_WHITE", "BLUE_BLACK", "BLUE_RED", "BLUE_GREEN", "BLUE_YELLOW",
-      "BLUE_BLUE", "BLUE_MAGENTA", "BLUE_CYAN", "BLUE_WHITE", "MAGENTA_BLACK", "MAGENTA_RED", "MAGENTA_GREEN",
-      "MAGENTA_YELLOW", "MAGENTA_BLUE", "MAGENTA_MAGENTA", "MAGENTA_CYAN", "MAGENTA_WHITE", "CYAN_BLACK",
-      "CYAN_RED", "CYAN_GREEN", "CYAN_YELLOW", "CYAN_BLUE", "CYAN_MAGENTA", "CYAN_CYAN", "CYAN_WHITE", "WHITE_RED",
-      "WHITE_GREEN", "WHITE_YELLOW", "WHITE_BLUE", "WHITE_MAGENTA", "WHITE_CYAN", "WHITE_WHITE"
-      };
-  
-  colourMap();
-  
-  int getRange(const std::string str)
-  {
-    return map.at(str);//return tange (offset)
-  }
+  int getColor(const int ch);	 /* Returns colour code encoded in ch. */
+  void setColorFromChar(const int ch);
+  void setRandomColor();
 };
 
-class setColorMode//This class is used to change the color mode of Ncurses
-{
-private:
-  const int colorMax {63};
-  const int defaultColor {};
-  void setState(const int state);//set the color state in Ncurses
-  bool inRange(const int color);//is the color passed to this function in range?
-public:
-  setColorMode(const int color);
-  void setColor(const int color);//set color to color
-  void clearColor();//set color to default
-};
 
 #endif

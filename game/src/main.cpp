@@ -87,13 +87,12 @@ int gameLoop
       levelRules.physics
 	(background, player::convertDirectionCharsToDirections
 	 (static_cast<player::directionChars>(input)));
-      // draw(background, levelRules.gamePlayer, levelRules.bgSprites);
+      draw(background, levelRules.gamePlayer, levelRules.bgSprites);
 #ifdef DEBUG
       levelRules.printRuleChars(750);
 #endif
       /* Sleep for the rest of the tick time (if we haven't already exceeded
 	 it! */
       levelRules.gameTiming.physics.sleepForRemainingTickTime();
-      clear();
     }
 }

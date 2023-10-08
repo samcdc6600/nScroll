@@ -37,26 +37,16 @@ void backgroundData::initialiseBackground
 (std::fstream & bgFile, chunkMapType & background)
 {
   yx mapCoord {};
-  bgChunk mapChunk;
+  std::vector<chunkElementBaseType> mapChunk {};
   int mapChunksRead {};
 	
   while(getBgChunk(bgFile, mapChunk, chunkSize, mapCoord,
 		   fileName, true))
     {
       mapChunksRead++;
-      /* We don't want to re-write getBgChunk or insertChunk so we have to
-	 do this conversion here. */
-      std::vector<chunkElementBaseType> linearMapChunk;
-      for(int yIter {}; yIter < chunkSize.y; yIter++)
-	{
-	  for(int xIter {}; xIter < chunkSize.y; xIter++)
-	    {
-	      linearMapChunk.push_back(mapChunk[yIter][xIter]);
-	    }
-	}
-      insertChunk(mapCoord, linearMapChunk, mapChunksRead, fileName,
+      insertChunk(mapCoord, mapChunk, mapChunksRead, fileName,
 		  background);
-      linearMapChunk.clear();
+      mapChunk.clear();
     }
   if(mapChunksRead == 0)
     {
@@ -71,8 +61,9 @@ void backgroundData::initialiseBackground
 
 // Note that multiChunkFile has a default value of false.
 bool backgroundData::getBgChunk
-(std::fstream & file, bgChunk chunk, const yx chunkSize, yx & chunkCoord,
- const std::string & fileName, const bool multiChunkFile)
+(std::fstream & file, std::vector<chunkElementBaseType> & chunk,
+ const yx chunkSize, yx & chunkCoord, const std::string & fileName,
+ const bool multiChunkFile)
 {
   const std::string eMsgStart
     {concat("Error: trying to read in background file \"", fileName,
@@ -114,7 +105,7 @@ bool backgroundData::getBgChunk
 		  file.seekg(-sizeof(int), std::ios::cur);
 		  goto MEGA_BREAK;
 		}
-	      chunk[yIter][xIter] = bgChar;
+	      chunk.push_back(bgChar);
 	      chunkCharsFound++;
 	      updateVirtualNestedChunkYXLoop(xIter, yIter, chunkSize);
 	    }
@@ -129,7 +120,7 @@ bool backgroundData::getBgChunk
 	      file.seekg(-sizeof(int), std::ios::cur);
 	      goto MEGA_BREAK;
 	    }
-	  chunk[yIter][xIter] = bgChar;
+	  chunk.push_back(bgChar);
 	  chunkCharsFound++;
 	  updateVirtualNestedChunkYXLoop(xIter, yIter, chunkSize);
 	}

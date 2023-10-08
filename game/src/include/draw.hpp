@@ -30,8 +30,6 @@ void drawFgBgSprites
 // Draws background at current position into secondStageDrawBuffer.
 void printDrawBuffer
 (backgroundData::chunkElementBaseType * secondStageDrawBuffer, const yx viewPortSize);
-// Set's or clears the colour code based on the value of charCodeWithColor.
-void setColor(const int charCodeWithColor);
 /* Pushes sucessive characters from secondStageDrawBuffer (starting at
    buffIndex) into contiguouscolorchars untill either reaching the end of
    secondStageDrawBuffer, reaching a character that has a different colour or
@@ -45,9 +43,8 @@ void setColor(const int charCodeWithColor);
 inline bool getContiguouslyColordString
 (const backgroundData::chunkElementBaseType * const secondStageDrawBuffer,
  int & buffIndex, const yx viewPortSize, std::string & contiguousColorChars,
- unsigned short & acsCode);
+ backgroundData::chunkElementBaseType & acsCode);
 void printAcs(const int acsCode, const bool inColor);
-/* Checks whethere ch is a colour character or not. */
-bool inColorRange(const int ch);
-int getColor(const int ch);	 /* Returns colour code encoded in ch. */
+
+
 #endif

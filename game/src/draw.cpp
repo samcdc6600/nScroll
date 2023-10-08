@@ -11,12 +11,7 @@
 
 
 const std::string FILE_NAME {"draw.cpp"};
-
-
-/* Class handels the setting of color when printing characters (used in
-   draw.cpp) argument is the default color pair. */
-//If argument to object constructor is changed it must also be changed in main.cpp.
-setColorMode colorMode{colorParams::defaultColorPair};
+setColorMode colorMode {};
 
 
 void calculateChunksToCheck
@@ -198,17 +193,18 @@ void drawFgBgSprites
 
 void printDrawBuffer
 (backgroundData::chunkElementBaseType * secondStageDrawBuffer, const yx viewPortSize)
-{   
+{
+  setColorMode color {};
   mvprintw(0, 0, "");
 
   for(int iter {}; iter < (viewPortSize.y * viewPortSize.x);
       ++iter)
     {
       std::string contiguousColorChars;
-      unsigned short acsCode;
+      backgroundData::chunkElementBaseType acsCode;
       bool foundAcsCode;
 
-      setColor(secondStageDrawBuffer[iter]);
+      color.setColorFromChar(secondStageDrawBuffer[iter]);
       foundAcsCode = getContiguouslyColordString
 	(secondStageDrawBuffer, iter, viewPortSize,
 	 contiguousColorChars, acsCode);
@@ -229,59 +225,57 @@ void printDrawBuffer
 }
 
 
-void setColor(const int charCodeWithColor)
-{
-      if(inColorRange(charCodeWithColor))
-	{
-	  int colorCode = getColor(charCodeWithColor);
-	  colorMode.setColor(colorCode);
-	}
-      else
-	{
-	  colorMode.clearColor();
-	}
-}
-
-
 inline bool getContiguouslyColordString
 (const backgroundData::chunkElementBaseType * const secondStageDrawBuffer,
  int & buffIndex, const yx viewPortSize, std::string & contiguousColorChars,
- unsigned short & acsCode)
+ backgroundData::chunkElementBaseType & acsCode)
 {
-  const unsigned short startColorCode =
-    getColor(secondStageDrawBuffer[buffIndex]);
-  // const int startIndex {buffIndex};
+  setColorMode colorMode {};
+  
+  auto getChar = [& colorMode](const int ch, bool & aCS)
+  {
+    // Remove colour information (first color starts at 1, so we remove 1.)
+    int rawCh {ch - ((colorMode.getColor(ch) -1) * MONO_CH_MAX)};
+    aCS = false;
 
+    if(rawCh > ASCII_CH_MAX && rawCh <= MONO_CH_MAX)
+      {
+	// We have an ACS char.
+	aCS = true;
+      }
+    else if(rawCh < 0 || rawCh > ASCII_CH_MAX)
+      {
+	exit(concat("Error: encountered character (", (int)rawCh, ") that is lass"
+		    " than 0 or greater than ", MONO_CH_MAX,". after having color "
+		    "info removed."),
+	     ERROR_CHARACTER_RANGE);
+      }
+  
+    return rawCh;
+  };
+  
+
+  const int startColorCode =
+    colorMode.getColor(secondStageDrawBuffer[buffIndex]);
 
   for( ; buffIndex < (viewPortSize.y * viewPortSize.x) &&
-	 getColor(secondStageDrawBuffer[buffIndex]) == startColorCode;
+	 colorMode.getColor(secondStageDrawBuffer[buffIndex]) == startColorCode;
        buffIndex++)
     {
-      unsigned short ch;
-      ch = secondStageDrawBuffer[buffIndex];
+      bool foundACSCode {};
+      backgroundData::chunkElementBaseType ch
+	{getChar(secondStageDrawBuffer[buffIndex], foundACSCode)};
 
-      // Remove colour information (if any) from ch.
-      if(inColorRange(ch))
-	{
-	  ch -= (getColor(ch) * (MONO_CH_MAX + 1));
-	}
-
-      if(ch <= ASCII_CH_MAX)
+      if(!foundACSCode)
 	{
 	  // We have an ASCII char.
 	  contiguousColorChars.push_back(ch);
 	}
-      else if(ch <= MONO_CH_MAX)
+      else
 	{
 	  // We have an ACS char. 
 	  acsCode = ch;
 	  return true;
-	}
-      else
-	{
-	  exit(concat("Error: encountered default colour character (",
-		      (int)ch, ") that is greater than ", MONO_CH_MAX,".!"),
-	       ERROR_CHARACTER_RANGE);
 	}
     }
 
@@ -398,23 +392,4 @@ void printAcs(const int acsCode, const bool inColor)
 	   ERROR_CHARACTER_RANGE);
       break;
     }
-}
-
-
-bool inColorRange(const int ch)
-{
-  if(ch > MONO_CH_MAX)
-    return true;
-  return false;
-}
-int getColor(const int ch)
-{
-  // Ch modulo MONO_CH_MAX equals the color code.
-  int color {ch / (MONO_CH_MAX +1)};		
-  if(color <= COLOR_CH_MAX)
-    return color;
-
-  exit(concat("Error (in ", FILE_NAME, "): encountered colour (", color, ") "
-	      "code that is out of range.\n"),
-       ERROR_COLOR_CODE_RANGE);
 }
