@@ -35,6 +35,7 @@ tools/benchmarking/~*
 tools/benchmarking/*~
 tools/benchmarking/*#
 tools/benchmarking/#*
+
 tools/chunkEditor/*.bgchunk
 tools/chunkEditor/*.crchunk
 tools/chunkEditor/*.levbg
@@ -53,6 +54,21 @@ tools/chunkEditor/src/include/*~
 tools/chunkEditor/src/include/~*
 tools/chunkEditor/src/include/*#
 tools/chunkEditor/src/include/#*
+
+tools/spriteEditor/*.sprite
+tools/spriteEditor/spriteed
+tools/spriteEditor/*.core
+tools/spriteEditor/.tmp
+tools/spriteEditor/tmp*
+tools/spriteEditor/obj
+tools/spriteEditor/src/*~
+tools/spriteEditor/src/~*
+tools/spriteEditor/src/*#
+tools/spriteEditor/src/#*
+tools/spriteEditor/src/include/*~
+tools/spriteEditor/src/include/~*
+tools/spriteEditor/src/include/*#
+tools/spriteEditor/src/include/#*
 
 
 spriteCreate/~*
