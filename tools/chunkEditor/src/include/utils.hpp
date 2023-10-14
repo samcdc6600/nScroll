@@ -95,7 +95,7 @@ constexpr int yHeight {48}, xWidth {170};
 
 /* TODO: find and update any code still using int directory in situations
    where this type should be used. */
-typedef int backgroundChunkCharType;
+typedef unsigned short backgroundChunkCharType;
 
 
 struct backgroundChunkCharInfo
@@ -158,7 +158,7 @@ const std::string progressivePrintMessageBottomRightCornerBoarderChar	{"/"};
 /* These constants are special values that signify the start of run length
    sequences. */
 constexpr backgroundChunkCharType bgRunLengthSequenceSignifier
-  {std::numeric_limits<int>::max()};
+  {std::numeric_limits<unsigned short>::max()};
 constexpr char cRRunLengthSequenceSignifier {'R'};
 /* The point after which we will gain an advantage from our run length
    compression scheme compression.
@@ -178,8 +178,8 @@ constexpr int cRCompressionAdvantagePoint {4};
 constexpr int lowerUnusedASCIIChNum {32 -1};
 /* We could have also removed upperUnusedASCIIChNum from the character
    range. However removing lowerUnusedASCIIChNum is enough to have the
-   character color pair combos fit in shorts and it would just make the code
-   more complicated. So there wouldn't really be any benefit. */
+   character color pair combos fit in unsigned shorts and it would just make the
+   code more complicated. So there wouldn't really be any benefit. */
 // constexpr int upperUnusedASCIIChNum {1};
 constexpr int aSCIIChMaxEffective
   {127 - lowerUnusedASCIIChNum};

@@ -191,7 +191,7 @@ void readInBgChunkFile
 (const std::string fileName, backgroundChunkCharInfo chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, bool & foundCoord)
 {
-  int rawChunk[yHeight][xWidth];
+  backgroundChunkCharType rawChunk[yHeight][xWidth];
   readInBgChunkFile(fileName, rawChunk, chunkSize, chunkCoord, foundCoord);
 
   for(int yIter {}; yIter < chunkSize.y; yIter++)
@@ -695,8 +695,8 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 			      /* Note here that aSCIIChMaxEffective has
 				 lowerUnusedASCIIChNum removed from it as
 				 characters below this point aren't really
-				 printable (this allows us to use shorts for
-				 character rather than ints.) */
+				 printable (this allows us to use unsigned
+				 shorts for character rather than ints.) */
 			      edState.setCurrentBgChar
 				(charColorOffset +
 				 aSCIIChMaxEffective + aCSIter + 1);
@@ -715,8 +715,8 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 		    {
 		      /* Note here that we remove lowerUnusedASCIIChNum the
 			 characters below this point aren't really printable
-			 (this allows us to use shorts for character rather than
-			 ints.) */
+			 (this allows us to use unsigned shorts for character
+			 rather than ints.) */
 		      edState.setCurrentBgChar
 			(charColorOffset + (charAtPos & A_CHARTEXT) -
 			 lowerUnusedASCIIChNum);

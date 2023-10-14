@@ -23,7 +23,7 @@ namespace editingSettings
   constexpr int helpColor {helpColorPair};
   /* This color pair is used when a character is not yet in the position in
      question. */
-  constexpr int invalidCharColorPair {-1}; //noCharColorPair {15};
+  constexpr int invalidCharColorPair {bgRunLengthSequenceSignifier -1};
   constexpr int blackBgColorPair {15};
   /* TODO: think of better name for this and also maybe replace es to
      help char with it. */

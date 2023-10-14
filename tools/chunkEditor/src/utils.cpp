@@ -482,7 +482,7 @@ int getChar(const int ch, bool & aCS)
     }
 
   /* To avoid having to store character color pair combinations using
-     ints (as opposed to shorts) we remove lowerUnusedASCIIChNum from
+     ints (as opposed to unsigned shorts) we remove lowerUnusedASCIIChNum from
      each raw character (one that has no color pair info). So we must
      add it back here! */
   return rawCh + lowerUnusedASCIIChNum;
@@ -1261,12 +1261,11 @@ void getMinMaxYAndX(const std::vector<yx> & coords, yx & minMaxY, yx & minMaxX)
 }
 
 
-/* Calls endwin() then print's e to std::cerr and finally call's exit() with status */
+/* Calls endwin() then print's e to std::cerr and finally call's exit() with
+   status */
 void exit(const std::string & e, const int status)
 {
   endwin();
   std::cerr<<e<<'\n';
   exit(status);
 }
-
-// Rudimentary laksdjf 
