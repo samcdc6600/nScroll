@@ -692,8 +692,14 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 			  if(acs_map[charAtPos & A_CHARTEXT] ==
 			     aCSChars[aCSIter])
 			    {
+			      /* Note here that aSCIIChMaxEffective has
+				 lowerUnusedASCIIChNum removed from it as
+				 characters below this point aren't really
+				 printable (this allows us to use shorts for
+				 character rather than ints.) */
 			      edState.setCurrentBgChar
-				(charColorOffset + ASCII_CH_MAX + aCSIter +1);
+				(charColorOffset +
+				 aSCIIChMaxEffective + aCSIter + 1);
 			      foundACS = true;
 			    }
 			}
@@ -707,8 +713,13 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 		    }
 		  else
 		    {
+		      /* Note here that we remove lowerUnusedASCIIChNum the
+			 characters below this point aren't really printable
+			 (this allows us to use shorts for character rather than
+			 ints.) */
 		      edState.setCurrentBgChar
-			(charColorOffset + (charAtPos & A_CHARTEXT));
+			(charColorOffset + (charAtPos & A_CHARTEXT) -
+			 lowerUnusedASCIIChNum);
 		    }
 		  foundChar = true;
 		  break;
@@ -800,7 +811,7 @@ int getColorPairFromUser(const yx chunkSize, editingState & edState,
 		if(!gotFgColor)
 		  {
 		    /* Since we display two sets of colored spaces we always
-		       wen't to get the bg color (as that is the visible
+		       won't to get the bg color (as that is the visible
 		       color.) */
 		    pair_content
 		      (pairNumberAtCursorPos, &dummyVal, &fgColorIndex);
@@ -1004,8 +1015,6 @@ void showAndChangeCoorinates
   
   editingSettings::colorMode.setColor(editingSettings::helpColor);
 
-  // Controls position to move cursor to for input.
-  const int inputOffsetPos {10};
   progressivePrintMessage
     (msg, viewPortSize, 0, 200, false, false);
 

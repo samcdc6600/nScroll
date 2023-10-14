@@ -170,10 +170,22 @@ constexpr int bgCompressionAdvantagePoint{3};
    characters. */
 constexpr int cRCompressionAdvantagePoint {4};
 
-
-constexpr int ASCII_CH_MAX {127};
+/* Note here that we are using 32 less 1 because this prevents space from being
+   0 which causes a problem in getColor in the line:
+   int color {((ch -1) / maxCharNum) +1};
+   We can't be bothered to try to fix it since it works otherwise and 32 is
+   enough to remove fix the characters in ints. */
+constexpr int lowerUnusedASCIIChNum {32 -1};
+/* We could have also removed upperUnusedASCIIChNum from the character
+   range. However removing lowerUnusedASCIIChNum is enough to have the
+   character color pair combos fit in shorts and it would just make the code
+   more complicated. So there wouldn't really be any benefit. */
+// constexpr int upperUnusedASCIIChNum {1};
+constexpr int aSCIIChMaxEffective
+  {127 - lowerUnusedASCIIChNum};
 /* Numerical value of highest character using color pair 1.  */
-constexpr int maxCharNum {158};
+constexpr int maxCharNum
+  {158 - lowerUnusedASCIIChNum};
 constexpr int COLOR_CH_MAX {63};
 constexpr int subMenuSleepTimeMs {160};
 constexpr int helpColorPair	{1};

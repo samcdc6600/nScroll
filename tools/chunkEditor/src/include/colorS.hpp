@@ -29,16 +29,18 @@ namespace colorParams
   constexpr int gameRGBMax {1000};
 }
 
-class setColorMode//This class is used to change the color mode of Ncurses
+
+// This class is used to change the color mode of Ncurses.
+class setColorMode
 {
 private:
-  void setState(const int state);//set the color state in Ncurses
-  // void setDefaultColor();
-  bool inRange(const int color);//is the color passed to this function in range?
-  // stupendous 
+  void setState(const int state); // Set the color state in Ncurses.
+  bool inRange(const int color);
+  
+  // Stupendous.
 public:
-  void setColor(const int color);//set color to color
-  void clearColor();//set color to default
+  void setColor(const int color); // Set color to color.
 };
+
 
 #endif

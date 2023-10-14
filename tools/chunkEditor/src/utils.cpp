@@ -468,20 +468,24 @@ int getChar(const int ch, bool & aCS)
   int rawCh {ch - ((getColor(ch) -1) * maxCharNum)};
   aCS = false;
 
-  if(rawCh > ASCII_CH_MAX && rawCh <= maxCharNum)
+  if(rawCh > aSCIIChMaxEffective && rawCh <= maxCharNum)
     {
       // We have an ACS char.
       aCS = true;
     }
-  else if(rawCh < 0 || rawCh > ASCII_CH_MAX)
+  else if(rawCh < 0 || rawCh > aSCIIChMaxEffective)
     {
-      exit(concat("Error: encountered character (", (int)rawCh, ") that is lass"
+      exit(concat("Error: encountered character (", (int)rawCh, ") that is less"
 		  " than 0 or greater than ", maxCharNum,". after having color "
 		  "info removed."),
 	   ERROR_CHARACTER_RANGE);
     }
-  
-  return rawCh;
+
+  /* To avoid having to store character color pair combinations using
+     ints (as opposed to shorts) we remove lowerUnusedASCIIChNum from
+     each raw character (one that has no color pair info). So we must
+     add it back here! */
+  return rawCh + lowerUnusedASCIIChNum;
 }
 
 

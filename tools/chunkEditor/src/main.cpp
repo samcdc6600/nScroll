@@ -179,7 +179,6 @@ int verifyCmdArgsAndGetMode(const int argc, const char * argv [])
       exit(ERROR_INVALID_CMD_ARGS);
       break;
     }
-  
 
   return modeFound;
 }

@@ -37,10 +37,10 @@ bool setColorMode::inRange(const int color)
 
 void setColorMode::setColor(const int color)
 {
-  if(!inRange(color))//is the color variable out of range?
+  if(!inRange(color))		// Is the color variable out of range?
     {
       exit(concat("Error: in setColor(), colour (", color, ") is out of "
 		  "range\n"), ERROR_COLOR_CODE_RANGE);
     }
-  setState(color);//turn on color color
+  setState(color);		// Turn on color color.
 }

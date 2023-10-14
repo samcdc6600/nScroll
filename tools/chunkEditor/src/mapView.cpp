@@ -1,4 +1,5 @@
 #include <fstream>
+#include <curses.h>
 #include "include/mapView.hpp"
 
 
