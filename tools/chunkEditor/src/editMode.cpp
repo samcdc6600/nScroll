@@ -320,7 +320,7 @@ void editModeProper
       std::chrono::steady_clock::now(),
       ERR, 	        // This is returned by getch() when there is no input.
       yx{chunkSize.y / 2, chunkSize.x / 2},
-      ' ',
+      editingSettings::initialCursorChar,
       editingSettings::rulesChars::boarder
     };
   

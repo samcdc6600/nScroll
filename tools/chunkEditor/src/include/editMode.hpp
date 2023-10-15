@@ -25,6 +25,7 @@ namespace editingSettings
      question. */
   constexpr int invalidCharColorPair {bgRunLengthSequenceSignifier -1};
   constexpr int blackBgColorPair {15};
+  constexpr char initialCursorChar {' ' - lowerUnusedASCIIChNum};
   /* TODO: think of better name for this and also maybe replace es to
      help char with it. */
   constexpr int validColorNumber {helpColor};

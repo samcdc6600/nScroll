@@ -826,7 +826,7 @@ bool getBgChunk
   int yIter {}, xIter {};
   backgroundChunkCharType bgChar {};
   int chunkCharsFound {};
-  while(file.read(reinterpret_cast<char*>(&bgChar), sizeof(int)))
+  while(file.read(reinterpret_cast<char*>(&bgChar), sizeof(backgroundChunkCharType)))
     {      
       if(bgChar == bgRunLengthSequenceSignifier)
 	{
@@ -837,7 +837,7 @@ bool getBgChunk
 			  "signifier (or an IO error has occurred.)"),
 		   ERROR_MALFORMED_FILE);
 	    }
-	  if(!file.read(reinterpret_cast<char*>(&bgChar), sizeof(int)))
+	  if(!file.read(reinterpret_cast<char*>(&bgChar), sizeof(backgroundChunkCharType)))
 	    {
 	      exit(concat(eMsgStart, "File ends after run-length sequence "
 			  "signifier and length (or an IO error has occurred.)"
@@ -850,7 +850,7 @@ bool getBgChunk
 		{
 		  /* This is a multi chunk file and we've just read past the end
 		     of a chunk so we need to back up. */
-		  file.seekg(-sizeof(int), std::ios::cur);
+		  file.seekg(-sizeof(backgroundChunkCharType), std::ios::cur);
 		  goto MEGA_BREAK;
 		}
 	      chunk[yIter][xIter] = bgChar;
@@ -865,7 +865,7 @@ bool getBgChunk
 	    {
 	      /* This is a multi chunk file and we've just read past the end
 		 of a chunk so we need to back up. */
-	      file.seekg(-sizeof(int), std::ios::cur);
+	      file.seekg(-sizeof(backgroundChunkCharType), std::ios::cur);
 	      goto MEGA_BREAK;
 	    }
 	  chunk[yIter][xIter] = bgChar;
