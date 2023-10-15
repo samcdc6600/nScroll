@@ -18,6 +18,7 @@ struct editingState
   /* Show reference chunk (note that the chunk show is dependant on the state of
      cRChunkToggle */
   bool refrenceChunkToggle;
+  bool lineDrawModeToggle;
   bool cursorOn;
   std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast;
   int input;
@@ -101,17 +102,31 @@ void actOnInputLayer1
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
  const bool usingReferences, editingState & edState);
+/* Updates the cursors position in edState if edState.input is one of cursorUp,
+   cursorDown, cursorLeft or cursorRight and if the cursor will not go outside
+   of the view port. Also sets the character at edState.cursorPos in bgChunk or
+   cRChunk to the current cursor character depending on various fields in
+   edState. Namely edState.lineDrawModeToggle and edState.cRChunkToggle, where
+   lineDrawModeToggle controls if a character will be set and cRChunkToggle
+   controls weather it will be in bgChunk or cRChunk. */
+bool updateCursorPos
+(chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
+ editingState & edState);
+/* Updates the cursors position in edState if edState.input is one of cursorUp,
+   cursorDown, cursorLeft or cursorRight and if the cursor will not go outside
+   of the view port. */
+bool updateCursorPos(const yx chunkSize, editingState & edState);
+/* Updates character at edState.cursorPos in bgChunk or cRChunk with the current
+   cursor ch depending the value of edState.cRChunkToggle.  */
+void performActionAtPosFunc
+(chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+ chunk<char, yHeight, xWidth> & cRChunk, editingState & edState);
 void actOnInputLayer2
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
  editingState & edState);
-/* Updates the cursors position in edState if edState.input is one of cursorUp,
-    cursorDown, cursorLeft or cursorRight and if the cursor will not go outside
-    of the view port. */
-bool updateCursorPos
-(const yx chunkSize, editingState & edState);
-void printCharacterSelection();
 /* Displays available colors on the screen and waits for the user to select one
    using the cursor navigation keys (see editingSettings.) This color will be
    the fg color, then displayes available colors again. This color will be the
@@ -328,7 +343,7 @@ void editModeProper
 		     editingSettings::editChars::quit))
     {
       edState.input = getch();
-
+      
       // Perform some action based on input.
       actOnInputLayer1(bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk,
 		       cRChunk, chunkSize, usingReferences, edState);
@@ -388,8 +403,8 @@ void actOnInputLayer1
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
  const bool usingReferences, editingState & edState)
-{
-  if(!updateCursorPos(chunkSize, edState))
+{ 
+  if(!updateCursorPos(bgChunk, cRChunk, chunkSize, edState))
     {
       switch(edState.input)
 	{
@@ -417,6 +432,130 @@ void actOnInputLayer1
 }
 
 
+bool updateCursorPos
+(chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+ chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
+ editingState & edState)
+{
+  using namespace editingSettings::editChars;
+
+  bool ret {false};
+
+  auto sharedCursorMovementAction = [& bgChunk, & cRChunk, & edState, & ret]()
+  {
+    move(edState.cursorPos);
+    if(edState.lineDrawModeToggle)
+      {
+	performActionAtPosFunc(bgChunk, cRChunk, edState);
+      }
+    ret = true;
+  };
+  
+  switch(edState.input)
+    {
+    case cursorUp:
+      if(edState.cursorPos.y > 0)
+	{
+	  edState.cursorPos.y--;
+	  sharedCursorMovementAction();
+	}
+      break;
+    case cursorDown:
+      if(edState.cursorPos.y < chunkSize.y -1)
+	{
+	  edState.cursorPos.y++;
+	  sharedCursorMovementAction();
+	}
+      break;
+    case cursorLeft:
+      if(edState.cursorPos.x > 0)
+	{
+	  edState.cursorPos.x--;
+	  sharedCursorMovementAction();
+	}
+      break;
+    case cursorRight:
+      if(edState.cursorPos.x < chunkSize.x -1)
+	{
+	  edState.cursorPos.x++;
+	  sharedCursorMovementAction();
+	}
+      break;
+    }
+
+  return ret;
+}
+
+
+bool updateCursorPos(const yx chunkSize, editingState & edState)
+{
+  using namespace editingSettings::editChars;
+
+  bool ret {false};
+
+  auto sharedCursorMovementAction = [& edState, & ret]()
+  {
+    move(edState.cursorPos);
+    ret = true;
+  };
+  
+  switch(edState.input)
+    {
+    case cursorUp:
+      if(edState.cursorPos.y > 0)
+	{
+	  edState.cursorPos.y--;
+	  sharedCursorMovementAction();
+	}
+      break;
+    case cursorDown:
+      if(edState.cursorPos.y < chunkSize.y -1)
+	{
+	  edState.cursorPos.y++;
+	  sharedCursorMovementAction();
+	}
+      break;
+    case cursorLeft:
+      if(edState.cursorPos.x > 0)
+	{
+	  edState.cursorPos.x--;
+	  sharedCursorMovementAction();
+	}
+      break;
+    case cursorRight:
+      if(edState.cursorPos.x < chunkSize.x -1)
+	{
+	  edState.cursorPos.x++;
+	  sharedCursorMovementAction();
+	}
+      break;
+    }
+
+  return ret;
+}
+
+
+void performActionAtPosFunc
+(chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
+ chunk<char, yHeight, xWidth> & cRChunk, editingState & edState)
+{
+  if(edState.cRChunkToggle)
+    {
+      cRChunk.advanceBeforeModify().
+	data[edState.cursorPos.y][edState.cursorPos.x] =
+	edState.currentCRChar;
+    }
+  else
+    {
+      bgChunk.advanceBeforeModify().
+	data[edState.cursorPos.y][edState.cursorPos.x].ch =
+	edState.getCurrentBgChar();
+      bgChunk.getChunk().
+	data[edState.cursorPos.y][edState.cursorPos.x].set = true;
+    }
+}
+
+
 void actOnInputLayer2
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
@@ -428,20 +567,7 @@ void actOnInputLayer2
   switch(edState.input)
     {
     case performActionAtPos:
-      if(edState.cRChunkToggle)
-	{
-	  cRChunk.advanceBeforeModify().
-	    data[edState.cursorPos.y][edState.cursorPos.x] =
-	    edState.currentCRChar;
-	}
-      else
-	{
-	  bgChunk.advanceBeforeModify().
-	    data[edState.cursorPos.y][edState.cursorPos.x].ch =
-	    edState.getCurrentBgChar();
-	  bgChunk.getChunk().
-	    data[edState.cursorPos.y][edState.cursorPos.x].set = true;
-	}
+      performActionAtPosFunc(bgChunk, cRChunk, edState);
       break;
     case cREraseCRChar:
       if(edState.cRChunkToggle)
@@ -508,6 +634,15 @@ void actOnInputLayer2
 	     [edState.cursorPos.y][edState.cursorPos.x].ch);
 	}
       break;
+    case toggleLineDrawMode:
+      {
+	edState.lineDrawModeToggle = !edState.lineDrawModeToggle;
+	if(edState.lineDrawModeToggle)
+	  {
+	    performActionAtPosFunc(bgChunk, cRChunk, edState);
+	  }
+      }
+      break;
     case bgFloodFill:
       if(!edState.cRChunkToggle)
 	{
@@ -542,53 +677,6 @@ void actOnInputLayer2
 	}
       break;
     }
-}
-
-
-bool updateCursorPos
-(const yx chunkSize, editingState & edState)
-{
-  using namespace editingSettings::editChars;
-
-  bool ret {false};
-  
-  switch(edState.input)
-    {
-    case cursorUp:
-      if(edState.cursorPos.y > 0)
-	{
-	  edState.cursorPos.y--;
-	  move(edState.cursorPos);
-	  ret = true;
-	}
-      break;
-    case cursorDown:
-      if(edState.cursorPos.y < chunkSize.y -1)
-	{
-	  edState.cursorPos.y++;
-	  move(edState.cursorPos);
-	  ret = true;
-	}
-      break;
-    case cursorLeft:
-      if(edState.cursorPos.x > 0)
-	{
-	  edState.cursorPos.x--;
-	  move(edState.cursorPos);
-	  ret = true;
-	}
-      break;
-    case cursorRight:
-      if(edState.cursorPos.x < chunkSize.x -1)
-	{
-	  edState.cursorPos.x++;
-	  move(edState.cursorPos);
-	  ret = true;
-	}
-      break;
-    }
-
-  return ret;
 }
 
 
@@ -1144,6 +1232,10 @@ void printEditHelp(const yx viewPortSize, editingState & edState)
       bgGetCharAtPos,	": to set the cursor character to the background chunk "
       "character below it. This is only applicable if editing a background "
       "chunk and the character at the cursor pos has already been set.\t\t\t",
+      toggleLineDrawMode, ": to toggle line drawing. When line drawing is "
+      "turned on any character the user moves the cursor over will be set to "
+      "the current cursor character. This way lines can be drawn without "
+      "having to constantly press space.\t\t\t",
       bgFloodFill,	": to do a flood fill using the cursor character and "
       "starting at the current cursor pos. This is only applicable if editing "
       "a background chunk\t\t\t",

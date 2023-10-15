@@ -54,6 +54,10 @@ namespace editingSettings
     constexpr char redo			{'r'};
     constexpr char undo			{'u'};
     constexpr char bgGetCharAtPos      	{'g'};
+    /* In line draw mode the current bg / cr character is set to the current
+       cursor char (this way the user can draw lines without having to
+       constantly hit performActionAtPos. */
+    constexpr char toggleLineDrawMode  	{'L'};
     constexpr char bgFloodFill		{'f'};
     // 'i' for info.
     constexpr char bgShowUnsetChars	{'i'};
