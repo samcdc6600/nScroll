@@ -826,18 +826,21 @@ bool getBgChunk
   int yIter {}, xIter {};
   backgroundChunkCharType bgChar {};
   int chunkCharsFound {};
-  while(file.read(reinterpret_cast<char*>(&bgChar), sizeof(backgroundChunkCharType)))
+  while(file.read(reinterpret_cast<char*>(&bgChar),
+		  sizeof(backgroundChunkCharType)))
     {      
       if(bgChar == bgRunLengthSequenceSignifier)
 	{
-	  int runLength {};
-	  if(!file.read(reinterpret_cast<char*>(&runLength), sizeof(int)))
+	  backgroundChunkCharType runLength {};
+	  if(!file.read(reinterpret_cast<char*>(&runLength),
+			sizeof(backgroundChunkCharType)))
 	    {
 	      exit(concat(eMsgStart, "File ends after run-length sequence "
 			  "signifier (or an IO error has occurred.)"),
 		   ERROR_MALFORMED_FILE);
 	    }
-	  if(!file.read(reinterpret_cast<char*>(&bgChar), sizeof(backgroundChunkCharType)))
+	  if(!file.read(reinterpret_cast<char*>(&bgChar),
+			sizeof(backgroundChunkCharType)))
 	    {
 	      exit(concat(eMsgStart, "File ends after run-length sequence "
 			  "signifier and length (or an IO error has occurred.)"
