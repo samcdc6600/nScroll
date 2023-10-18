@@ -1,3 +1,4 @@
+#include <chrono>
 #include <filesystem>
 #include <stack>
 #include <curses.h>
@@ -19,6 +20,7 @@ struct editingState
      cRChunkToggle */
   bool refrenceChunkToggle;
   bool lineDrawModeToggle;
+  bool crosshairCursorToggle;
   bool cursorOn;
   std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast;
   int input;
@@ -29,30 +31,39 @@ private:
   static constexpr int bgCharsBufferSize {24};
   int bgCharsRingBuffer [bgCharsBufferSize] {};
   int currentBgCharIndex {};
+  const std::chrono::milliseconds crosshairCursorColorTransitionTime;
+  std::chrono::steady_clock::time_point crosshairCursorColorTransitionTimeLast;
+  int crosshairCursorColorPair;
 
 public:
   char currentCRChar;
 
   editingState
   (const bool cRChunkToggle, const bool cursorOn,
-   const std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast,
+   const std::chrono::milliseconds crosshairTransitionTimeMs,
    const int input, const yx cursorPos, const int currentBgChar,
-   const int currentCRChar)
+   const int currentCRChar):
+    crosshairCursorColorTransitionTime(crosshairTransitionTimeMs)
   {
-    this->cRChunkToggle = cRChunkToggle;
-    this->refrenceChunkToggle = false;
-    this->cursorOn = cursorOn;
-    this->cursorVisibilityChangeTimeLast = cursorVisibilityChangeTimeLast;
-    this->input = input;
-    this->cursorPos = cursorPos;
+    this->cRChunkToggle		= cRChunkToggle;
+    this->refrenceChunkToggle	= false;
+    this->lineDrawModeToggle	= false;
+    this->crosshairCursorToggle = false;
+    this->cursorOn		= cursorOn;
+    this->cursorVisibilityChangeTimeLast = std::chrono::steady_clock::now();
+    this->input			= input;
+    this->cursorPos		= cursorPos;
     for(int iter {}; iter < bgCharsBufferSize; ++iter)
       {
 	bgCharsRingBuffer[iter] = currentBgChar;
       }
     this->currentCRChar = currentCRChar;
+    this->crosshairCursorColorTransitionTimeLast =
+      std::chrono::steady_clock::now();
+    this->crosshairCursorColorPair = editingSettings::helpColor;
   }
   
-  int getCurrentBgChar()
+  int getCurrentBgChar() const
   {
     return bgCharsRingBuffer[currentBgCharIndex];
   }
@@ -77,6 +88,20 @@ public:
       currentBgCharIndex = bgCharsBufferSize - 1:
       currentBgCharIndex--;
   }
+
+
+  int getCrosshairColor()
+  {
+    if(std::chrono::steady_clock::now() -
+       crosshairCursorColorTransitionTimeLast >
+       editingSettings::crosshairTransitionTimeMs)
+      {
+	crosshairCursorColorTransitionTimeLast = std::chrono::steady_clock::now();
+	crosshairCursorColorPair = editingSettings::colorMode.getRandomColor();
+      }
+    
+    return crosshairCursorColorPair;
+  }
 };
 
 
@@ -95,6 +120,8 @@ void editModeProper
  const backgroundChunkCharType refBgChunk[yHeight][xWidth],
  const char refCRChunk[yHeight][xWidth], const yx chunkSize,
  const bool usingReferences);
+std::chrono::steady_clock::time_point setCursorVisibility
+(bool & cursorOn, const std::chrono::steady_clock::time_point tLast);
 bool getConfirmation(const yx viewPortSize, editingState & edState,
 		     const std::string & question);
 void actOnInputLayer1
@@ -178,9 +205,14 @@ void printEditHelp(const yx viewPortSize, editingState & edState);
 void printBgChunk
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx viewPortSize);
 void printRandomColorAtCursoPos(editingState & edState);
-void printCursorForCREditMode(const yx cursorPos, const char currentCRChar);
+void printCursorForCREditMode
+(const yx viewPortSize, editingState & edState);
 void printCursorForBgEditMode
-(const yx cursorPos, const int currentBgChar);
+(const yx viewPortSize, editingState & edState);
+/* Prints a crosshair for the cursor if edState.crosshairCursortoggle is
+   true. */
+void printCursorCrossHair
+(const yx viewPortSize, editingState & edState);
 
 
 /* Fills chunk with filler. */
@@ -332,7 +364,7 @@ void editModeProper
     {
       false,
       true,
-      std::chrono::steady_clock::now(),
+      editingSettings::crosshairTransitionTimeMs,
       ERR, 	        // This is returned by getch() when there is no input.
       yx{chunkSize.y / 2, chunkSize.x / 2},
       editingSettings::initialCursorChar,
@@ -369,13 +401,12 @@ void editModeProper
 	// The cursor should generally always be visible, so print last.
       if(edState.cRChunkToggle)
 	{
-	  printCursorForCREditMode(edState.cursorPos, edState.currentCRChar);
+	  printCursorForCREditMode(chunkSize, edState);
 	  cRChunk.printIndexIfChanged(chunkSize.y -1, 0);
 	}
       else
 	{
-	  printCursorForBgEditMode
-	    (edState.cursorPos, edState.getCurrentBgChar());
+	  printCursorForBgEditMode(chunkSize, edState);
 	  bgChunk.printIndexIfChanged(chunkSize.y -1, 0);
 	}
 
@@ -655,6 +686,9 @@ void actOnInputLayer2
 	{
 	  showUnsetBgChars(bgChunk.getChunk().data, chunkSize, edState);
 	}
+      break;
+    case toggleCrosshairCursor:
+      edState.crosshairCursorToggle = !edState.crosshairCursorToggle;
       break;
     case changeCoordinates:
       showAndChangeCoorinates(chunkSize, edState, chunkCoord);
@@ -1244,6 +1278,7 @@ void printEditHelp(const yx viewPortSize, editingState & edState)
       "Note that the chunks cannot be saved if any of the background chunk "
       "characters are unset. Also note that when editing a new background "
       "chunk file all characters are initially unset.\t\t\t",
+      toggleCrosshairCursor, ": to toggle crosshair cursor.\t\t\t",
       changeCoordinates, ": to change coordinates. This changes the "
       "coordinates of both the background chunk and rules character chunk as "
       "they are a set.\t\t\t",
@@ -1299,42 +1334,67 @@ void printBgChunk
 
 void printRandomColorAtCursoPos(editingState & edState)
 {
-  setRandomColor();
+  editingSettings::colorMode.setRandomColor();
   mvprintw(edState.cursorPos, concat(" ").c_str());
   move(edState.cursorPos);
 };
 
 
 void printCursorForCREditMode
-(const yx cursorPos, const char currentCRChar)
+(const yx viewPortSize, editingState & edState)
 {
-  // TMP (We want to set the cursor colour to the opposite of the bg
-  // colour. No matter which chunk editing mode we are in.)
+  printCursorCrossHair(viewPortSize, edState);
   editingSettings::colorMode.setColor(editingSettings::blackBgColorPair);
-  mvprintw(cursorPos, concat("", currentCRChar).c_str());
-  move(cursorPos);
+  mvprintw(edState.cursorPos, concat("", edState.currentCRChar).c_str());
+  move(edState.cursorPos);
 }
 
 
 void printCursorForBgEditMode
-(const yx cursorPos, const int currentBgChar)
+(const yx viewPortSize, editingState & edState)
 {
   bool aCSChar {false};
-  /* Set cursor colour to opposite of bg color (maybe, we aren't doing
-     it properly here.) at cursorPos. */
+  const int bgChar {getChar(edState.getCurrentBgChar(), aCSChar)};
 
-  const int bgChar {getChar(currentBgChar, aCSChar)};
-  setColorFromChar(currentBgChar);
-	  
+  printCursorCrossHair(viewPortSize, edState);
+  setColorFromChar(edState.getCurrentBgChar());
   if(aCSChar)
     {
-      printACS(cursorPos, bgChar);
+      printACS(edState.cursorPos, bgChar);
     }
   else
     {
-      mvprintw(cursorPos, concat("", (char)bgChar));
+      mvprintw(edState.cursorPos, concat("", (char)bgChar));
     }
-  move(cursorPos);
+  move(edState.cursorPos);
+}
+
+
+void printCursorCrossHair
+(const yx viewPortSize, editingState & edState)
+{ 
+  if(edState.crosshairCursorToggle)
+    {
+      editingSettings::colorMode.setColor(edState.getCrosshairColor());
+      
+      for(int xIter {}; xIter < edState.cursorPos.x; xIter++)
+	{
+	  mvprintw(edState.cursorPos.y, xIter, " ");
+	}
+      for(int xIter {edState.cursorPos.x + 1}; xIter < viewPortSize.x; xIter++)
+	{
+	  mvprintw(edState.cursorPos.y, xIter, " ");
+	}
+
+      for(int yIter {}; yIter < edState.cursorPos.y; yIter++)
+	{
+	  mvprintw(yIter, edState.cursorPos.x, " ");
+	}
+      for(int yIter {edState.cursorPos.y + 1}; yIter < viewPortSize.y; yIter++)
+	{
+	  mvprintw(yIter, edState.cursorPos.x, " ");
+	}
+    }
 }
 
 

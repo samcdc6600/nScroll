@@ -40,6 +40,16 @@ private:
   // Stupendous.
 public:
   void setColor(const int color); // Set color to color.
+
+  void setRandomColor()
+  {
+    setColor(getRandomColor());
+  }
+
+  int getRandomColor() const
+  {
+    return abs(rand() % colorParams::effectiveGameColorPairsNo) +1;
+  }
 };
 
 

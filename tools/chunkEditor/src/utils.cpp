@@ -196,14 +196,16 @@ void progressivePrintMessage
 void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep, const bool clearScreen, const bool printProgressively)
-{ 
+{
+  setColorMode colorMode {};
+  
   auto printHorizontalBoarder =
-    [viewPortSize]
+    [viewPortSize, & colorMode]
     (const int msgLineLength, const int marginSingle, const int marginTop,
      const int lineNo, const bool top)
     {
       // Print left corner.
-      setRandomColor();
+      colorMode.setRandomColor();
       mvprintw(lineNo + marginTop, marginSingle,
 	       top? progressivePrintMessageTopLeftCornerBoarderChar.c_str():
 	       progressivePrintMessageBottomLeftCornerBoarderChar.c_str());
@@ -211,12 +213,12 @@ void progressivePrintMessage
       int lineChars {};
       for( ; lineChars < msgLineLength; lineChars++)
 	{
-	  setRandomColor();
+	  colorMode.setRandomColor();
 	  mvprintw(lineNo + marginTop, lineChars + 1 + marginSingle,
 		   progressivePrintMessageHorizBoarderChar.c_str());
 	}
       // Print right corner.
-      setRandomColor();
+      colorMode.setRandomColor();
       mvprintw(lineNo+ marginTop, lineChars + 1 + marginSingle,
 	       top? progressivePrintMessageTopRightCornerBoarderChar.c_str():
 	       progressivePrintMessageBottomRightCornerBoarderChar.c_str());
@@ -255,7 +257,7 @@ void progressivePrintMessage
 	{
 	  if(lineChars == 0 || lineChars == msgLineLength +1)
 	    {
-	      setRandomColor();
+	      color.setRandomColor();
 	      mvprintw(lines + marginTop,
 		       lineChars + marginSingle,
 		       progressivePrintMessageVertBoarderChar.c_str());
@@ -281,7 +283,7 @@ void progressivePrintMessage
   if(remainder > 0)
     {
       // Print left boarder.
-      setRandomColor();
+      color.setRandomColor();
       mvprintw(lines + marginTop, marginSingle,
 	       progressivePrintMessageVertBoarderChar.c_str());
 
@@ -303,7 +305,7 @@ void progressivePrintMessage
 	}
 	  
       // Print right boarder.
-      setRandomColor();
+      color.setRandomColor();
       mvprintw(lines + marginTop, remainderChars + marginSingle,
 	       progressivePrintMessageVertBoarderChar.c_str());
     }
@@ -362,14 +364,16 @@ void printBgChunk
 
 
 void printCRChunk(const char cRChunk[][xWidth], const yx viewPortSize)
-{ 
+{
+  setColorMode colorMode {};
+  
   for(int yIter {}; yIter < viewPortSize.y; ++yIter)
     {
       for(int xIter {}; xIter < viewPortSize.x; ++xIter)
 	{
 	  if(cRChunk[yIter][xIter] != emptyCharChar)
 	    {
-	      setRandomColor();
+	      colorMode.setRandomColor();
 	      mvprintw(yIter, xIter, concat("", cRChunk[yIter][xIter]).c_str());
 	    }
 	}
@@ -443,22 +447,6 @@ int getColor(const int ch)
     }
 
   return color;
-}
-
-
-void setRandomColor()
-{
-  setColorMode colorMode {};
-  colorMode.setColor
-    (abs(rand() % colorParams::gameColorPairsNo) +1);
-  if(rand() % 2)
-    {
-      attron(A_REVERSE);
-    }
-  else
-    {
-      attroff(A_REVERSE);
-    }
 }
 
 

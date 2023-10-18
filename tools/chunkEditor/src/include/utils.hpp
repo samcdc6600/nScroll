@@ -291,13 +291,10 @@ bool confirmQuit(const yx viewPortSize, int & input, const int quitChar);
 void safeScreenExit(int & userInput, const int editSubMenuSleepTimeMs);
 void setColorFromChar(const int ch);
 int getColor(const int ch);
-void setRandomColor();
 /* Removes color info from ch. If ch is an aCS character sets aCS to true,
    otherwise sets aCS to false. Prints an error and exits if ch is out of
    range. */
 int getChar(const int ch, bool & aCS);
-std::chrono::steady_clock::time_point setCursorVisibility
-(bool & cursorOn, const std::chrono::steady_clock::time_point tLast);
 void printACS(const yx position, const int aCSChar);
 void printACS(const int aCSChar);
 void sleep(const unsigned long long t);

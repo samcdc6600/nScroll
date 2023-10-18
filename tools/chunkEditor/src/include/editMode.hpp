@@ -18,6 +18,9 @@ namespace editingSettings
   constexpr std::chrono::milliseconds showLastChunkAfterUpdateIndexFor {2500};
   constexpr int afterFileErrorPrintSleep {3500};
   constexpr int afterIncorrectCoordInputSleep {4000};
+  /* If the cursor crosshair is turned on it will change to a new random color
+     at intervals of this length. */
+  constexpr std::chrono::milliseconds crosshairTransitionTimeMs {2250};
   extern setColorMode colorMode;
   // Color used for help menu.
   constexpr int helpColor {helpColorPair};
@@ -61,7 +64,8 @@ namespace editingSettings
     constexpr char bgFloodFill		{'f'};
     // 'i' for info.
     constexpr char bgShowUnsetChars	{'i'};
-    constexpr char changeCoordinates    {'k'};
+    constexpr char toggleCrosshairCursor	{'k'};
+    constexpr char changeCoordinates    {'C'};
     constexpr char saveChunks		{'o'};
     constexpr char toggleHelpMsg       	{'h'};
   };
