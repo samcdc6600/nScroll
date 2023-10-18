@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include "chunk.hpp"
+#include "colorS.hpp"
 
 
 class backgroundData: public chunk<bgSecondStageDrawBufferType>
@@ -15,10 +16,15 @@ public:
   // ===========================================================================
   chunkElementBaseType * secondStageDrawBuffer;
   
-private:  
+private:
+  /* Chunk elements are stored in this format on disk. We will use
+     chunkFileElementBaseType for reading in chunks. After this we will convert
+     the chunks to chunkElementBaseType (this requires a small calculation for
+     each character (chunk element).) */
+  typedef unsigned short chunkFileElementBaseType;
   static const int FIRST_STAGE_BUFFER_DIMENSIONS_SIZE {5};
-  const chunkElementBaseType bgRunLengthSequenceSignifier
-  {std::numeric_limits<int>::max()};
+  const chunkFileElementBaseType bgRunLengthSequenceSignifier
+  {std::numeric_limits<chunkFileElementBaseType>::max()};
 
   // ========================== MEMBER FUNCTIONS START =========================
   // ===========================================================================
@@ -36,7 +42,7 @@ private:
    AND WILL NEED TO BE RESET IF MORE OPERATIONS (AT LEAST FOR SOME POSSIBLE
    OPERATIONS) NEED TO BE DONE ON FSTREAM. */
 bool getBgChunk
-(std::fstream & file, std::vector<chunkElementBaseType> & chunk,
+(std::fstream & file, std::vector<chunkFileElementBaseType> & chunk,
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
  const bool multiChunkFile = false);
   
@@ -45,7 +51,7 @@ public:
   // Third argument to chunk is used to fill missing chunks with black spaces.
   backgroundData(const yx chunkSizeIn, const char bgFileName []):
     chunk(chunkSizeIn, FIRST_STAGE_BUFFER_DIMENSIONS_SIZE,
-	  (MONO_CH_MAX +1) * 1 + ' ', bgFileName, "calling chunk constructor"
+	  colorParams::blackSpaceChar, bgFileName, "calling chunk constructor"
 	  "before backgroundData constructor body"),
     secondStageDrawBuffer
     (new chunkElementBaseType

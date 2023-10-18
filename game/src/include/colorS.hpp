@@ -34,6 +34,8 @@ namespace colorParams
      159 * effectiveGameColorPairsNo which is above the space of all ACS and
      ASCII characters whether coloured or not. */
   constexpr int TRANS_SP {159 * effectiveGameColorPairsNo};
+  // Space character encoded with a color pair that has a black background.
+  constexpr int blackSpaceChar {158 * 14 + ' '};
 }
 
 

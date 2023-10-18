@@ -1,7 +1,8 @@
+#include <cstdlib>
+#include <fstream>
 #include "include/background.hpp"
 #include "include/colorS.hpp"
 #include "include/collapse.hpp"
-#include <cstdlib>
 
 
 void backgroundData::loadAndInitialiseBackground()
@@ -37,16 +38,65 @@ void backgroundData::initialiseBackground
 (std::fstream & bgFile, chunkMapType & background)
 {
   yx mapCoord {};
-  std::vector<chunkElementBaseType> mapChunk {};
+  std::vector<chunkFileElementBaseType> mapChunk {};
+  /* Chunk elements are stored on disk using a smaller number. */
+  std::vector<chunkElementBaseType> convertedMapChunk {};
   int mapChunksRead {};
+
+  auto convertMapChunk = [& mapChunk, & convertedMapChunk]()
+  {
+    /* Note here that we are using 32 less 1 because this prevents space from
+       being 0 which causes a problem in getColor in the line:
+       int color {((ch -1) / maxCharNum) +1};
+       We can't be bothered to try to fix it since it works otherwise and 32 is
+       enough to remove fix the characters in ints. */
+    constexpr int lowerUnusedASCIIChNum {32 -1};
+    constexpr int maxCharNum {MONO_CH_MAX - lowerUnusedASCIIChNum};
+    constexpr int aSCIIChMaxEffective
+      {ASCII_CH_MAX - lowerUnusedASCIIChNum};
+
+    auto getColor = [](const int ch)
+    {
+      /* A character is encoded as it's basic value + it's color value -1 times
+	 maxCharNum. Since integer division rounds down (ch -1) / maxCharNum
+	 should give the color code. less 1. */
+      int color {((ch -1) / maxCharNum)};
+      if(color > colorParams::effectiveGameColorPairsNo)
+	{
+	  exit(concat("Error (in getColor()): encountered colour (", color, ") "
+		      "code that is out of range.\n"),
+	       ERROR_COLOR_CODE_RANGE);
+	}
+      return color;
+    };
+    
+    for(chunkFileElementBaseType ch: mapChunk)
+      {
+	int color {getColor(ch)};
+	// Remove colour information (first color starts at 1, so we remove 1.)
+	int rawCh {ch - ((getColor(ch) -1) * maxCharNum)};
+	/* To avoid having to store character color pair combinations using
+	   ints (as opposed to unsigned shorts) we remove lowerUnusedASCIIChNum
+	   from each raw character (one that has no color pair info). So we must
+	   add it back here! */
+	rawCh += lowerUnusedASCIIChNum;
+	/* A character is encoded as it's basic value + it's color value -1
+	   times maxCharNum. Since integer division rounds down (ch -1) /
+	   maxCharNum should give the color code. less 1. */
+	rawCh += ((color -1) * MONO_CH_MAX);
+	convertedMapChunk.push_back(rawCh + lowerUnusedASCIIChNum);
+      }
+  };
 	
   while(getBgChunk(bgFile, mapChunk, chunkSize, mapCoord,
 		   fileName, true))
     {
       mapChunksRead++;
-      insertChunk(mapCoord, mapChunk, mapChunksRead, fileName,
+      convertMapChunk();
+      insertChunk(mapCoord, convertedMapChunk, mapChunksRead, fileName,
 		  background);
       mapChunk.clear();
+      convertedMapChunk.clear();
     }
   if(mapChunksRead == 0)
     {
@@ -61,7 +111,7 @@ void backgroundData::initialiseBackground
 
 // Note that multiChunkFile has a default value of false.
 bool backgroundData::getBgChunk
-(std::fstream & file, std::vector<chunkElementBaseType> & chunk,
+(std::fstream & file, std::vector<chunkFileElementBaseType> & chunk,
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
  const bool multiChunkFile)
 {
@@ -76,20 +126,23 @@ bool backgroundData::getBgChunk
   
   // Read in chunk body.
   int yIter {}, xIter {};
-  chunkElementBaseType bgChar {};
+  chunkFileElementBaseType bgChar {};
   int chunkCharsFound {};
-  while(file.read(reinterpret_cast<char*>(&bgChar), sizeof(int)))
+  while(file.read(reinterpret_cast<char*>(&bgChar),
+		  sizeof(chunkFileElementBaseType)))
     {      
       if(bgChar == bgRunLengthSequenceSignifier)
 	{
-	  int runLength {};
-	  if(!file.read(reinterpret_cast<char*>(&runLength), sizeof(int)))
+	  chunkFileElementBaseType runLength {};
+	  if(!file.read(reinterpret_cast<char*>(&runLength),
+			sizeof(chunkFileElementBaseType)))
 	    {
 	      exit(concat(eMsgStart, "File ends after run-length sequence "
 			  "signifier (or an IO error has occurred.)"),
 		   ERROR_MALFORMED_FILE);
 	    }
-	  if(!file.read(reinterpret_cast<char*>(&bgChar), sizeof(int)))
+	  if(!file.read(reinterpret_cast<char*>(&bgChar),
+			sizeof(chunkFileElementBaseType)))
 	    {
 	      exit(concat(eMsgStart, "File ends after run-length sequence "
 			  "signifier and length (or an IO error has occurred.)"
@@ -102,7 +155,7 @@ bool backgroundData::getBgChunk
 		{
 		  /* This is a multi chunk file and we've just read past the end
 		     of a chunk so we need to back up. */
-		  file.seekg(-sizeof(int), std::ios::cur);
+		  file.seekg(-sizeof(chunkFileElementBaseType), std::ios::cur);
 		  goto MEGA_BREAK;
 		}
 	      chunk.push_back(bgChar);
@@ -117,7 +170,7 @@ bool backgroundData::getBgChunk
 	    {
 	      /* This is a multi chunk file and we've just read past the end
 		 of a chunk so we need to back up. */
-	      file.seekg(-sizeof(int), std::ios::cur);
+	      file.seekg(-sizeof(chunkFileElementBaseType), std::ios::cur);
 	      goto MEGA_BREAK;
 	    }
 	  chunk.push_back(bgChar);
