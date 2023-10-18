@@ -21,8 +21,6 @@ struct editingState
   bool refrenceChunkToggle;
   bool lineDrawModeToggle;
   bool crosshairCursorToggle;
-  bool cursorOn;
-  std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast;
   int input;
   yx cursorPos;
   
@@ -31,6 +29,8 @@ private:
   static constexpr int bgCharsBufferSize {24};
   int bgCharsRingBuffer [bgCharsBufferSize] {};
   int currentBgCharIndex {};
+  bool cursorOn;
+  std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast;
   const std::chrono::milliseconds crosshairCursorColorTransitionTime;
   std::chrono::steady_clock::time_point crosshairCursorColorTransitionTimeLast;
   int crosshairCursorColorPair;
@@ -87,6 +87,28 @@ public:
     currentBgCharIndex == 0 ?
       currentBgCharIndex = bgCharsBufferSize - 1:
       currentBgCharIndex--;
+  }
+
+
+  void setCursorVisibility()
+  {
+    if(std::chrono::steady_clock::now() - cursorVisibilityChangeTimeLast >
+       editingSettings::cursorBlinkTimeMs)
+      {
+	cursorVisibilityChangeTimeLast = std::chrono::steady_clock::now();
+	
+	cursorOn = !cursorOn;
+
+	if(cursorOn)
+	  {
+	    // Set cursor to visible.
+	    curs_set(2);
+	  }
+	else
+	  {
+	    curs_set(0);
+	  }
+      }
   }
 
 
@@ -410,9 +432,7 @@ void editModeProper
 	  bgChunk.printIndexIfChanged(chunkSize.y -1, 0);
 	}
 
-      edState.cursorVisibilityChangeTimeLast =
-	setCursorVisibility(edState.cursorOn,
-			    edState.cursorVisibilityChangeTimeLast);
+      edState.setCursorVisibility();
       
       sleep(editingSettings::loopSleepTimeMs);
     }
@@ -848,9 +868,7 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 		}
 	    }
 
-	  edState.cursorVisibilityChangeTimeLast =
-	    setCursorVisibility(edState.cursorOn,
-				edState.cursorVisibilityChangeTimeLast);
+	  edState.setCursorVisibility();
 	  sleep(editingSettings::loopSleepTimeMs);
 	}
     }
@@ -949,9 +967,8 @@ int getColorPairFromUser(const yx chunkSize, editingState & edState,
 	      break;
 	    }
 	}
-      edState.cursorVisibilityChangeTimeLast =
-	setCursorVisibility(edState.cursorOn,
-			    edState.cursorVisibilityChangeTimeLast);
+      
+      edState.setCursorVisibility();
       sleep(editingSettings::loopSleepTimeMs);
     }
 
@@ -1395,31 +1412,4 @@ void printCursorCrossHair
 	  mvprintw(yIter, edState.cursorPos.x, " ");
 	}
     }
-}
-
-
-std::chrono::steady_clock::time_point setCursorVisibility
-(bool & cursorOn, const std::chrono::steady_clock::time_point tLast)
-{
-  std::chrono::steady_clock::time_point retTime {tLast};
-  
-  if(std::chrono::steady_clock::now() - tLast >
-     editingSettings::cursorBlinkTimeMs)
-    {
-      retTime = std::chrono::steady_clock::now();
-	  
-      if(cursorOn)
-	{
-	  // Set cursor to visible.
-	  curs_set(2);
-	  cursorOn = !cursorOn;
-	}
-      else
-	{
-	  curs_set(0);
-	  cursorOn = !cursorOn;
-	}
-    }
-
-  return retTime;
 }
