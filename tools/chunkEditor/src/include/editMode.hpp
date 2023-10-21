@@ -21,6 +21,9 @@ namespace editingSettings
   /* If the cursor crosshair is turned on it will change to a new random color
      at intervals of this length. */
   constexpr std::chrono::milliseconds crosshairTransitionTimeMs {2250};
+  /* Time that the currently selected region will be showed for in millisecond
+     when selecting a new region. */
+  constexpr std::chrono::milliseconds dispSelectionSelectingTimeMs {475};
   extern setColorMode colorMode;
   // Color used for help menu.
   constexpr int helpColor {helpColorPair};
@@ -61,7 +64,9 @@ namespace editingSettings
        cursor char (this way the user can draw lines without having to
        constantly hit performActionAtPos. */
     constexpr char toggleLineDrawMode  	{'L'};
-    constexpr char bgFloodFill		{'f'};
+    constexpr char floodFill		{'f'};
+    constexpr char selectSelection     	{'S'};
+    constexpr char pasteSelection	{'P'};
     // 'i' for info.
     constexpr char bgShowUnsetChars	{'i'};
     constexpr char toggleCrosshairCursor	{'k'};

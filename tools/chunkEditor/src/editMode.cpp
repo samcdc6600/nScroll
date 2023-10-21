@@ -3,6 +3,7 @@
 #include <stack>
 #include <curses.h>
 #include <fstream>
+#include <set>
 #include "include/editMode.hpp"
 
 
@@ -14,6 +15,11 @@ namespace editingSettings
 
 struct editingState
 {
+  struct selectionBufferElement
+  {
+    backgroundChunkCharType ch;
+    yx coord;
+  };
   // Are we editing the cRChunk or the bgChunk?
   bool cRChunkToggle;
   /* Show reference chunk (note that the chunk show is dependant on the state of
@@ -25,14 +31,25 @@ struct editingState
   yx cursorPos;
   
 private:
-  // Buffer to remember x of the last bg chars.
-  static constexpr int bgCharsBufferSize {24};
-  int bgCharsRingBuffer [bgCharsBufferSize] {};
+  
+  static constexpr int bgCharsRingBufferSize {24};
+  static constexpr int selectionRingBuffserSize {24};
+  // Buffer to remember bgCharsRingBufferSize of the last bg chars.
+  int bgCharsRingBuffer [bgCharsRingBufferSize] {};
+  // Buffer to remeber selectionRingBuffserSize of the last selected selection.
+  std::vector<selectionBufferElement>
+  selectionRingBuffer [selectionRingBuffserSize] {};
   int currentBgCharIndex {};
+  int currentSelectionIndex {};
   bool cursorOn;
-  std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast;
+  bool displaySelectionColorsForSelecting {false};
+  
   const std::chrono::milliseconds crosshairCursorColorTransitionTime;
+  const std::chrono::milliseconds displaySelectionColorsForSelectingTimeMs;
+  std::chrono::steady_clock::time_point cursorVisibilityChangeTimeLast;
   std::chrono::steady_clock::time_point crosshairCursorColorTransitionTimeLast;
+  std::chrono::steady_clock::time_point
+  displaySelectionColorsForSelectingTimeLast;
   int crosshairCursorColorPair;
 
 public:
@@ -41,9 +58,11 @@ public:
   editingState
   (const bool cRChunkToggle, const bool cursorOn,
    const std::chrono::milliseconds crosshairTransitionTimeMs,
+   const std::chrono::milliseconds dispSelectionSelectingTimeMs,
    const int input, const yx cursorPos, const int currentBgChar,
    const int currentCRChar):
-    crosshairCursorColorTransitionTime(crosshairTransitionTimeMs)
+    crosshairCursorColorTransitionTime(crosshairTransitionTimeMs),
+    displaySelectionColorsForSelectingTimeMs(dispSelectionSelectingTimeMs)
   {
     this->cRChunkToggle		= cRChunkToggle;
     this->refrenceChunkToggle	= false;
@@ -51,9 +70,11 @@ public:
     this->crosshairCursorToggle = false;
     this->cursorOn		= cursorOn;
     this->cursorVisibilityChangeTimeLast = std::chrono::steady_clock::now();
+    this->displaySelectionColorsForSelectingTimeLast =
+      std::chrono::steady_clock::now();
     this->input			= input;
     this->cursorPos		= cursorPos;
-    for(int iter {}; iter < bgCharsBufferSize; ++iter)
+    for(int iter {}; iter < bgCharsRingBufferSize; ++iter)
       {
 	bgCharsRingBuffer[iter] = currentBgChar;
       }
@@ -68,24 +89,36 @@ public:
     return bgCharsRingBuffer[currentBgCharIndex];
   }
 
+  std::vector<selectionBufferElement> getCurrentSelection()
+  {
+    return selectionRingBuffer[currentSelectionIndex];
+  }
+
   void setCurrentBgChar(const int newChar)
   {
     // Cycle back to zero if index goes out of range.
-    currentBgCharIndex < bgCharsBufferSize -1 ? currentBgCharIndex++:
-      currentBgCharIndex = 0;
+    currentBgCharIndex = (currentBgCharIndex + 1) % bgCharsRingBufferSize;
     bgCharsRingBuffer[currentBgCharIndex] = newChar;
+  }
+
+  void setCurrentSelection(const std::vector<selectionBufferElement> & newSelection)
+  {
+    // currentSelectionIndex <
+    currentSelectionIndex = (currentSelectionIndex + 1) %
+      selectionRingBuffserSize;
+    selectionRingBuffer[currentSelectionIndex] = newSelection;
   }
 
   void recallNextBgChar()
   {
-    currentBgCharIndex < bgCharsBufferSize -1 ? currentBgCharIndex++:
+    currentBgCharIndex < bgCharsRingBufferSize -1 ? currentBgCharIndex++:
       currentBgCharIndex = 0;
   }
 
   void recallLastBgChar()
   {
     currentBgCharIndex == 0 ?
-      currentBgCharIndex = bgCharsBufferSize - 1:
+      currentBgCharIndex = bgCharsRingBufferSize - 1:
       currentBgCharIndex--;
   }
 
@@ -123,6 +156,23 @@ public:
       }
     
     return crosshairCursorColorPair;
+  }
+
+  /* Returns true if colors should be displayed for selecting (this should be
+     used when a selection is being created (as opposed to when one is being
+     used.) */
+  bool shouldDisplaySelectionColorsForSelecting()
+  {
+    if(std::chrono::steady_clock::now() -
+       displaySelectionColorsForSelectingTimeLast >
+       displaySelectionColorsForSelectingTimeMs)
+      {
+	displaySelectionColorsForSelectingTimeLast =
+	  std::chrono::steady_clock::now();
+	displaySelectionColorsForSelecting =
+	  !displaySelectionColorsForSelecting;
+      }
+    return displaySelectionColorsForSelecting;
   }
 };
 
@@ -166,6 +216,10 @@ bool updateCursorPos
    cursorDown, cursorLeft or cursorRight and if the cursor will not go outside
    of the view port. */
 bool updateCursorPos(const yx chunkSize, editingState & edState);
+/* Same as updateCursorPos(const yx chunkSize, editingState & edState) with the
+   exception that the cursor pos can be set outside of the view port. */
+bool updateCursorPos
+(const yx chunkSize, editingState & edState, yx minPos, yx maxPos);
 /* Updates character at edState.cursorPos in bgChunk or cRChunk with the current
    cursor ch depending the value of edState.cRChunkToggle.  */
 void performActionAtPosFunc
@@ -196,12 +250,24 @@ int getColorPairFromUser(const yx chunkSize, editingState & edState,
    value returned from getch(). This give the user some time to take their
    finger off of editChars::quit. */
 void safeScreenExit(editingState & edState);
-/* If the character at edState.cursorPos is different from
-   edState.getCurrentBgChar() then all characters equal to the character at
-   edState.cursorPos that are contiguous with it will be set to
-   edState.getCurrentBgChar(). */
-void floodFill
+// /* If the character at edState.cursorPos is different from
+//    edState.getCurrentBgChar() then all characters equal to the character at
+//    edState.cursorPos that are contiguous with it will be set to
+//    edState.getCurrentBgChar(). */
+// void floodFillBg
+// (T bgChunk[][xWidth], const yx chunkSize,
+//  editingState & edState);
+void floodFillBg
 (backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
+ editingState & edState);
+/* Allows the user to select a region (selection) for later pasting. */
+void selectAndCopySelection
+(backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
+ editingState & edState);
+/* Allows the user to paste previously selected regions from the selection
+   buffer in edState.*/
+void pasteSelectionIntoBg
+(chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk, const yx chunkSize,
  editingState & edState);
 /* Prints changing colored emptyCharChar for each unset character in bgChunk (at the
    position of the unset character.) Returns if the user pressed
@@ -224,6 +290,7 @@ bool writeOutChunks
 /* Once entered this function will not exit untill one of editChars::quit or
    editChars::toggleHelpMsg is pressed.  */
 void printEditHelp(const yx viewPortSize, editingState & edState);
+void printBgCharAtPos(backgroundChunkCharType ch, const yx pos);
 void printBgChunk
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx viewPortSize);
 void printRandomColorAtCursoPos(editingState & edState);
@@ -387,6 +454,7 @@ void editModeProper
       false,
       true,
       editingSettings::crosshairTransitionTimeMs,
+      editingSettings::dispSelectionSelectingTimeMs,
       ERR, 	        // This is returned by getch() when there is no input.
       yx{chunkSize.y / 2, chunkSize.x / 2},
       editingSettings::initialCursorChar,
@@ -538,7 +606,16 @@ bool updateCursorPos
 }
 
 
-bool updateCursorPos(const yx chunkSize, editingState & edState)
+bool updateCursorPos
+(const yx chunkSize, editingState & edState)
+{
+  return updateCursorPos
+    (chunkSize, edState, yx{0, 0}, {chunkSize.y, chunkSize.x});
+}
+
+
+bool updateCursorPos
+(const yx chunkSize, editingState & edState, yx minPos, yx maxPos)
 {
   using namespace editingSettings::editChars;
 
@@ -553,28 +630,28 @@ bool updateCursorPos(const yx chunkSize, editingState & edState)
   switch(edState.input)
     {
     case cursorUp:
-      if(edState.cursorPos.y > 0)
+      if(edState.cursorPos.y > minPos.y)
 	{
 	  edState.cursorPos.y--;
 	  sharedCursorMovementAction();
 	}
       break;
     case cursorDown:
-      if(edState.cursorPos.y < chunkSize.y -1)
+      if(edState.cursorPos.y < maxPos.y -1)
 	{
 	  edState.cursorPos.y++;
 	  sharedCursorMovementAction();
 	}
       break;
     case cursorLeft:
-      if(edState.cursorPos.x > 0)
+      if(edState.cursorPos.x > minPos.x)
 	{
 	  edState.cursorPos.x--;
 	  sharedCursorMovementAction();
 	}
       break;
     case cursorRight:
-      if(edState.cursorPos.x < chunkSize.x -1)
+      if(edState.cursorPos.x < maxPos.x -1)
 	{
 	  edState.cursorPos.x++;
 	  sharedCursorMovementAction();
@@ -694,12 +771,19 @@ void actOnInputLayer2
 	  }
       }
       break;
-    case bgFloodFill:
+    case floodFill:
       if(!edState.cRChunkToggle)
 	{
-	  floodFill
+	  floodFillBg
 	    (bgChunk.advanceBeforeModify().data, chunkSize, edState);
 	}
+      break;
+    case selectSelection:
+      selectAndCopySelection
+	(bgChunk.getChunk().data, chunkSize, edState);
+      break;
+    case pasteSelection:
+      pasteSelectionIntoBg(bgChunk, chunkSize, edState);
       break;
     case bgShowUnsetChars:
       if(!edState.cRChunkToggle)
@@ -1021,13 +1105,14 @@ void safeScreenExit(editingState & edState)
 }
 
 
-void floodFill
+
+void floodFillBg
 (backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
  editingState & edState)
 {
   /*
     Sudo code:
-        function floodFill(image, x, y, targetColor, replacementColor):
+        function floodFillBg(image, x, y, targetColor, replacementColor):
           if pixel at (x, y) is not the targetColor:
               return
 
@@ -1103,6 +1188,260 @@ void floodFill
 	    }
 	}
     }
+}
+
+
+void selectAndCopySelection
+(backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
+ editingState & edState)
+{
+  std::vector<editingState::selectionBufferElement> newSelection;
+
+  /* Add addee to newSelection as if it were a set (we don't want duplicate
+     coordinates.) */
+  auto setAdd = [& newSelection]
+    (const backgroundChunkCharType ch, const yx coord, bool deleteIfDuplicate)
+  {
+    const editingState::selectionBufferElement addee {ch, coord};
+    bool found {false};
+    for(int iter {}; iter < newSelection.size(); iter++)
+      {
+	if(addee.coord.y == newSelection[iter].coord.y &&
+	   addee.coord.x == newSelection[iter].coord.x)
+	  {
+	    if(deleteIfDuplicate)
+	      {
+		/* This way the user and add / remove elements from the
+		   selection. */
+		newSelection.erase(newSelection.begin() + iter);
+	      }
+	    else
+	      {
+		newSelection[iter] = addee;
+	      }
+	    found = true;
+	    break;
+	  }
+      }
+    if(!found)
+      {
+	newSelection.push_back(addee);
+      }
+  };
+
+  auto printSelection = [& edState, & newSelection]()
+  {
+    if(edState.shouldDisplaySelectionColorsForSelecting())
+      {
+	for(auto element: newSelection)
+	  {
+	    editingSettings::colorMode.setRandomColor();
+	    mvprintw(element.coord.y, element.coord.x, " ");
+	  }
+      }
+  };
+  
+  do
+    {
+      edState.input = getch();
+
+      if(!updateCursorPos(chunkSize, edState))
+	{
+	  switch(edState.input)
+	    {
+	    case editingSettings::editChars::toggleHelpMsg:
+	      // TODO: change to context specific help message!
+	      exit(-1); //printEditHelp(chunkSize, edState);
+	      break;
+	    case editingSettings::editChars::performActionAtPos:
+	      setAdd(bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch,
+		     edState.cursorPos, true);
+	      break;
+	    case editingSettings::editChars::toggleCrosshairCursor:
+	      edState.crosshairCursorToggle = !edState.crosshairCursorToggle;
+	      break;
+	    case editingSettings::editChars::toggleLineDrawMode:
+	      {
+		edState.lineDrawModeToggle = !edState.lineDrawModeToggle;
+		if(edState.lineDrawModeToggle)
+		  {
+		    setAdd(bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch,
+		     edState.cursorPos, true);
+		  }
+	      }
+	      break;
+	    case editingSettings::editChars::floodFill:
+	      break;
+	    case editingSettings::editChars::selectSelection:
+	      // Save selection and exit function!
+	      edState.setCurrentSelection(newSelection);
+	      progressivePrintMessage
+		(concat("New selection added!"),
+		 chunkSize, printCharSpeed, 0);
+	      edState.input = editingSettings::editChars::quit;
+	      break;
+	    }
+	}
+      else
+	{
+	  // Cursor moved. Update newSelection if in line draw mode.
+	  if(edState.lineDrawModeToggle)
+	    {
+	      setAdd(bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch,
+		     edState.cursorPos, true);
+	    }
+	}
+
+      printBgChunk(bgChunk, chunkSize);
+      printSelection();
+      printCursorForBgEditMode(chunkSize, edState);
+      edState.setCursorVisibility();
+
+      sleep(editingSettings::loopSleepTimeMs);
+    }
+  while(edState.input != editingSettings::editChars::quit);
+
+  safeScreenExit(edState);
+}
+
+
+void pasteSelectionIntoBg
+(chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk, const yx chunkSize,
+ editingState & edState)
+{
+  // Minimum offset of selection from origin.
+  yx selectionMinOffsetFromOrigin {}, selectionMaxOffsetFromOrigin {};
+  std::vector<editingState::selectionBufferElement> currentSelection
+    {edState.getCurrentSelection()};
+
+  /* If min is true getSelectionOffsetFromOrigin will return minimum offset
+     from the origin and if it is false the function will return the maximum
+     offset. */
+  auto getSelectionOffsetFromOrigin =
+    [chunkSize, & currentSelection]
+    (yx & selectionOffsetFromOrigin, const bool min)
+    {
+      selectionOffsetFromOrigin = min ? chunkSize: yx{0, 0};
+      for(auto element: currentSelection)
+	{
+	  if(min)
+	    {
+	      if(element.coord.y < selectionOffsetFromOrigin.y)
+		{
+		  selectionOffsetFromOrigin.y = element.coord.y;
+		}
+	      if(element.coord.x < selectionOffsetFromOrigin.x)
+		{
+		  selectionOffsetFromOrigin.x = element.coord.x;
+		}
+	    }
+	  else
+	    {
+	      if(element.coord.y > selectionOffsetFromOrigin.y)
+		{
+		  selectionOffsetFromOrigin.y = element.coord.y;
+		}
+	      if(element.coord.x > selectionOffsetFromOrigin.x)
+		{
+		  selectionOffsetFromOrigin.x = element.coord.x;
+		}
+	    }
+	}
+    };
+
+  auto printSelection =
+    [chunkSize, & edState, & selectionMinOffsetFromOrigin, & currentSelection]()
+    {
+      for(auto element: currentSelection)
+	{
+	  // Print from origin + cursorPos.
+	  const yx printPos
+	    {element.coord.y - selectionMinOffsetFromOrigin.y +
+	     edState.cursorPos.y,
+	     element.coord.x - selectionMinOffsetFromOrigin.x +
+	     edState.cursorPos.x};
+	  if(printPos.y >= 0 && printPos.y < chunkSize.y &&
+	     printPos.x >= 0 && printPos.x < chunkSize.x)
+	    {
+	      printBgCharAtPos
+		(element.ch, printPos);
+	    }
+	}
+  };
+
+  auto pasteSelection =
+    [& bgChunk, chunkSize, & edState, & selectionMinOffsetFromOrigin, & currentSelection]()
+    {
+      yx printPos {};
+      backgroundChunkCharType lastCh {};
+      
+      for(auto element: currentSelection)
+	{
+	  // Paste from origin + cursorPos.
+	  printPos = 
+	    yx{element.coord.y - selectionMinOffsetFromOrigin.y +
+	       edState.cursorPos.y,
+	       element.coord.x - selectionMinOffsetFromOrigin.x +
+	     edState.cursorPos.x};
+	  /* Save last ch for use with bgChunk.advanceBeforeModify() */
+	  lastCh = element.ch;	
+	  
+	  if(printPos.y >= 0 && printPos.y < chunkSize.y &&
+	     printPos.x >= 0 && printPos.x < chunkSize.x)
+	    {
+	      /* Normally we wouldn't call getChunk(), however this is a special
+		 excption and we call advanceBeforeModify() after this loop. */
+	      bgChunk.getChunk().data[printPos.y][printPos.x].ch = element.ch;
+	      bgChunk.getChunk().data[printPos.y][printPos.x].set = true;
+	    }
+	  // Make sure this is counted as an undo-able action!
+	  bgChunk.advanceBeforeModify().data[printPos.y][printPos.x].ch = lastCh;
+	}
+    };
+  
+  getSelectionOffsetFromOrigin(selectionMinOffsetFromOrigin, true);
+  getSelectionOffsetFromOrigin(selectionMaxOffsetFromOrigin, false);
+  
+  do
+    {
+      edState.input = getch();
+
+      /* We have to be able to move the cursor in the range [-sizeof(selection),
+	 chunkSize) */
+      if(!updateCursorPos
+	 (chunkSize, edState,
+	  yx
+	  {-(selectionMaxOffsetFromOrigin.y - selectionMinOffsetFromOrigin.y),
+	   -(selectionMaxOffsetFromOrigin.x - selectionMinOffsetFromOrigin.x)},
+	  chunkSize))
+	{
+	  switch(edState.input)
+	    {
+	    case editingSettings::editChars::toggleHelpMsg:
+	      // TODO: change to context specific help message!
+	      exit(-1); //printEditHelp(chunkSize, edState);
+	      break;
+	    case editingSettings::editChars::performActionAtPos:
+	      // Paste selection into bg.
+	      pasteSelection();
+	      edState.input = editingSettings::editChars::quit;
+	      break;
+	    case editingSettings::editChars::toggleCrosshairCursor:
+	      edState.crosshairCursorToggle = !edState.crosshairCursorToggle;
+	      break;
+	    }
+	}
+
+      printBgChunk(bgChunk.getChunk().data, chunkSize);
+      printCursorForBgEditMode(chunkSize, edState);
+      printSelection();
+      edState.setCursorVisibility();
+
+      sleep(editingSettings::loopSleepTimeMs);
+    }
+  while(edState.input != editingSettings::editChars::quit);
+
+  safeScreenExit(edState);
 }
 
 
@@ -1287,7 +1626,7 @@ void printEditHelp(const yx viewPortSize, editingState & edState)
       "turned on any character the user moves the cursor over will be set to "
       "the current cursor character. This way lines can be drawn without "
       "having to constantly press space.\t\t\t",
-      bgFloodFill,	": to do a flood fill using the cursor character and "
+      floodFill,	": to do a flood fill using the cursor character and "
       "starting at the current cursor pos. This is only applicable if editing "
       "a background chunk\t\t\t",
       bgShowUnsetChars,	": to print noise in locations where characters aren't "
@@ -1314,6 +1653,24 @@ void printEditHelp(const yx viewPortSize, editingState & edState)
 }
 
 
+void printBgCharAtPos(backgroundChunkCharType ch, const yx pos)
+{
+  bool foundACSCode;
+	      
+  setColorFromChar(ch);
+  ch = getChar(ch, foundACSCode);
+
+  if(foundACSCode)
+    {
+      printACS(pos, ch);
+    }
+  else
+    {
+      mvprintw(pos, concat("", (char)ch).c_str());
+    }
+}
+
+
 void printBgChunk
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx viewPortSize)
 {
@@ -1323,20 +1680,7 @@ void printBgChunk
 	{
 	  if(bgChunk[yIter][xIter].set == true)
 	    {
-	      int ch;
-	      bool foundACSCode;
-	      
-	      setColorFromChar(bgChunk[yIter][xIter].ch);
-	      ch = getChar(bgChunk[yIter][xIter].ch, foundACSCode);
-
-	      if(foundACSCode)
-		{
-		  printACS(yx{yIter, xIter}, ch);
-		}
-	      else
-		{
-		  mvprintw(yIter, xIter, concat("", (char)ch).c_str());
-		}
+	      printBgCharAtPos(bgChunk[yIter][xIter].ch, yx{yIter, xIter});
 	    }
 	  else
 	    {
