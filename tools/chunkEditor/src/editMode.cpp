@@ -33,12 +33,12 @@ struct editingState
 private:
   
   static constexpr int bgCharsRingBufferSize {24};
-  static constexpr int selectionRingBuffserSize {24};
+  static constexpr int selectionRingBufferSize {24};
   // Buffer to remember bgCharsRingBufferSize of the last bg chars.
   int bgCharsRingBuffer [bgCharsRingBufferSize] {};
-  // Buffer to remeber selectionRingBuffserSize of the last selected selection.
+  // Buffer to remember selectionRingBufferSize of the last selected selection.
   std::vector<selectionBufferElement>
-  selectionRingBuffer [selectionRingBuffserSize] {};
+  selectionRingBuffer [selectionRingBufferSize] {};
   int currentBgCharIndex {};
   int currentSelectionIndex {};
   bool cursorOn;
@@ -105,7 +105,7 @@ public:
   {
     // currentSelectionIndex <
     currentSelectionIndex = (currentSelectionIndex + 1) %
-      selectionRingBuffserSize;
+      selectionRingBufferSize;
     selectionRingBuffer[currentSelectionIndex] = newSelection;
   }
 
@@ -115,6 +115,32 @@ public:
       currentBgCharIndex = 0;
   }
 
+  /* Returns true if a non-empty selection is found and sets selection to next
+     non-empty selection that was found (if one is found.) */
+  bool recallNextSelection
+  (std::vector<selectionBufferElement> & selection)
+  {
+    bool foundNonEmptySelection {false};
+    int selectionsChecked {};
+    
+    do
+      {
+	currentSelectionIndex = (currentSelectionIndex + 1) %
+	  selectionRingBufferSize;
+	selectionsChecked++;
+      }
+    while(selectionRingBuffer[currentSelectionIndex].size() == 0 ||
+	  selectionsChecked <= selectionRingBufferSize +1);
+    
+    if(selectionRingBuffer[currentSelectionIndex].size() != 0)
+      {
+	foundNonEmptySelection = true;
+	selection = selectionRingBuffer[currentSelectionIndex];
+      }
+
+    return foundNonEmptySelection;
+  }
+
   void recallLastBgChar()
   {
     currentBgCharIndex == 0 ?
@@ -122,6 +148,32 @@ public:
       currentBgCharIndex--;
   }
 
+  /* Returns true if a non-empty selection is found and sets selection to last
+     non-empty selection that was found (if one is found.) */
+  bool recallLastSelection
+  (std::vector<selectionBufferElement> & selection)
+  {
+    bool foundNonEmptySelection {false};
+    int selectionsChecked {};
+
+    do
+      {
+	currentSelectionIndex == 0 ?
+	  currentSelectionIndex = selectionRingBufferSize -1:
+	  currentSelectionIndex--;
+	selectionsChecked++;
+      }
+    while(selectionRingBuffer[currentSelectionIndex].size() == 0 ||
+	  selectionsChecked <= selectionRingBufferSize +1);
+
+    if(selectionRingBuffer[currentSelectionIndex].size() != 0)
+      {
+	foundNonEmptySelection = true;
+	selection = selectionRingBuffer[currentSelectionIndex];
+      }
+
+    return foundNonEmptySelection;
+  }
 
   void setCursorVisibility()
   {
@@ -143,7 +195,6 @@ public:
 	  }
       }
   }
-
 
   int getCrosshairColor()
   {
@@ -1277,7 +1328,8 @@ void selectAndCopySelection
 	      edState.setCurrentSelection(newSelection);
 	      progressivePrintMessage
 		(concat("New selection added!"),
-		 chunkSize, printCharSpeed, 0);
+		 chunkSize, printCharSpeed,
+		 editingSettings::afterGeneralMessageSleep);
 	      edState.input = editingSettings::editChars::quit;
 	      break;
 	    }
@@ -1398,48 +1450,66 @@ void pasteSelectionIntoBg
 	  bgChunk.advanceBeforeModify().data[printPos.y][printPos.x].ch = lastCh;
 	}
     };
-  
-  getSelectionOffsetFromOrigin(selectionMinOffsetFromOrigin, true);
-  getSelectionOffsetFromOrigin(selectionMaxOffsetFromOrigin, false);
-  
-  do
+
+  if(currentSelection.size() != 0)
     {
-      edState.input = getch();
-
-      /* We have to be able to move the cursor in the range [-sizeof(selection),
-	 chunkSize) */
-      if(!updateCursorPos
-	 (chunkSize, edState,
-	  yx
-	  {-(selectionMaxOffsetFromOrigin.y - selectionMinOffsetFromOrigin.y),
-	   -(selectionMaxOffsetFromOrigin.x - selectionMinOffsetFromOrigin.x)},
-	  chunkSize))
+      getSelectionOffsetFromOrigin(selectionMinOffsetFromOrigin, true);
+      getSelectionOffsetFromOrigin(selectionMaxOffsetFromOrigin, false);
+  
+      do
 	{
-	  switch(edState.input)
+	  edState.input = getch();
+
+	  /* We have to be able to move the cursor in the range [-sizeof(selection),
+	     chunkSize) */
+	  if(!updateCursorPos
+	     (chunkSize, edState,
+	      yx
+	      {-(selectionMaxOffsetFromOrigin.y -
+		 selectionMinOffsetFromOrigin.y),
+	       -(selectionMaxOffsetFromOrigin.x -
+		 selectionMinOffsetFromOrigin.x)},
+	      chunkSize))
 	    {
-	    case editingSettings::editChars::toggleHelpMsg:
-	      // TODO: change to context specific help message!
-	      exit(-1); //printEditHelp(chunkSize, edState);
-	      break;
-	    case editingSettings::editChars::performActionAtPos:
-	      // Paste selection into bg.
-	      pasteSelection();
-	      edState.input = editingSettings::editChars::quit;
-	      break;
-	    case editingSettings::editChars::toggleCrosshairCursor:
-	      edState.crosshairCursorToggle = !edState.crosshairCursorToggle;
-	      break;
+	      switch(edState.input)
+		{
+		case editingSettings::editChars::toggleHelpMsg:
+		// TODO: change to context specific help message!
+		exit(-1); //printEditHelp(chunkSize, edState);
+		break;
+		case editingSettings::editChars::performActionAtPos:
+		// Paste selection into bg.
+		pasteSelection();
+		edState.input = editingSettings::editChars::quit;
+		break;
+		case editingSettings::editChars::nextSelection:
+		  edState.recallNextSelection(currentSelection);
+		break;
+		case editingSettings::editChars::lastSelection:
+		  edState.recallLastSelection(currentSelection);
+		break;
+		case editingSettings::editChars::toggleCrosshairCursor:
+		edState.crosshairCursorToggle = !edState.crosshairCursorToggle;
+		break;
+		}
 	    }
+
+	  printBgChunk(bgChunk.getChunk().data, chunkSize);
+	  printCursorForBgEditMode(chunkSize, edState);
+	  printSelection();
+	  edState.setCursorVisibility();
+
+	  sleep(editingSettings::loopSleepTimeMs);
 	}
-
-      printBgChunk(bgChunk.getChunk().data, chunkSize);
-      printCursorForBgEditMode(chunkSize, edState);
-      printSelection();
-      edState.setCursorVisibility();
-
-      sleep(editingSettings::loopSleepTimeMs);
+      while(edState.input != editingSettings::editChars::quit);
     }
-  while(edState.input != editingSettings::editChars::quit);
+  else
+    {
+      progressivePrintMessage
+	(concat("Error: cannot place selection (no selections made.)"),
+	 chunkSize, printCharSpeed,
+	 editingSettings::afterGeneralMessageSleep);
+    }
 
   safeScreenExit(edState);
 }

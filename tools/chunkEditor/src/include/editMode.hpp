@@ -18,6 +18,7 @@ namespace editingSettings
   constexpr std::chrono::milliseconds showLastChunkAfterUpdateIndexFor {2500};
   constexpr int afterFileErrorPrintSleep {3500};
   constexpr int afterIncorrectCoordInputSleep {4000};
+  constexpr int afterGeneralMessageSleep {1750};
   /* If the cursor crosshair is turned on it will change to a new random color
      at intervals of this length. */
   constexpr std::chrono::milliseconds crosshairTransitionTimeMs {2250};
@@ -67,6 +68,8 @@ namespace editingSettings
     constexpr char floodFill		{'f'};
     constexpr char selectSelection     	{'S'};
     constexpr char pasteSelection	{'P'};
+    constexpr char nextSelection	{'n'};
+    constexpr char lastSelection	{'l'};
     // 'i' for info.
     constexpr char bgShowUnsetChars	{'i'};
     constexpr char toggleCrosshairCursor	{'k'};
