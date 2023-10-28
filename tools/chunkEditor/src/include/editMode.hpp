@@ -25,6 +25,10 @@ namespace editingSettings
   /* Time that the currently selected region will be showed for in millisecond
      when selecting a new region. */
   constexpr std::chrono::milliseconds dispSelectionSelectingTimeMs {475};
+  /* Time that the current selection number will be displayed for after
+     changing the current selection. */
+  constexpr std::chrono::milliseconds displaySelectionNoForMs
+    {showLastChunkAfterUpdateIndexFor};
   extern setColorMode colorMode;
   // Color used for help menu.
   constexpr int helpColor {helpColorPair};
@@ -68,6 +72,8 @@ namespace editingSettings
     constexpr char floodFill		{'f'};
     constexpr char selectSelection     	{'S'};
     constexpr char pasteSelection	{'P'};
+    /* Rotate selection by 90 degrees. */
+    constexpr char rotateSelection	{'R'};
     constexpr char nextSelection	{'n'};
     constexpr char lastSelection	{'l'};
     // 'i' for info.
@@ -106,7 +112,7 @@ private:
   static constexpr int undoBuffers		{1024};
   array2D<T, yHeight, xWidth> tmpChunk	       	{};
   array2D<T, yHeight, xWidth> chunks[undoBuffers] {};
-  int currentChunk				{};
+  int currentChunk				{undoBuffers -1};
   const std::chrono::milliseconds showLastChunkIndexFor {};
   std::chrono::steady_clock::time_point lastCurrentChunkUpdate {};
   

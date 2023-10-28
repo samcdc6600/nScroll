@@ -376,6 +376,6 @@ void enterMode(const int mode, const char * argv [], const yx viewPortSize)
     }
 
   progressivePrintMessage
-    ("Farewell", viewPortSize, printCharSpeed,
+    ("Farewell.", viewPortSize, printCharSpeed,
      afterPrintSleep);
 }

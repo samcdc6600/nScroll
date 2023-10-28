@@ -289,7 +289,7 @@ void progressivePrintMessage
 
       // Print incomplete line.
       int remainderChars {};
-      for( ; remainderChars < remainder; remainderChars++)
+      for( ; remainderChars <= remainder; remainderChars++)
 	{
 	  color.setColor(helpColorPair);
 	  lastMsgCharPos =
@@ -302,6 +302,11 @@ void progressivePrintMessage
 	{
 	  color.setColor(helpColorPair);
 	  mvprintw(lines + marginTop, remainderChars + marginSingle, " ");
+	  if(printProgressively)
+	    {
+	      refresh();
+	      sleep(interCharacterSleep);
+	    }
 	}
 	  
       // Print right boarder.
