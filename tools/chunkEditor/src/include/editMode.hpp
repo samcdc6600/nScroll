@@ -74,6 +74,7 @@ namespace editingSettings
     constexpr char pasteSelection	{'P'};
     /* Rotate selection by 90 degrees. */
     constexpr char rotateSelection	{'R'};
+    constexpr char mirrorSelection	{'m'};
     constexpr char nextSelection	{'n'};
     constexpr char lastSelection	{'l'};
     // 'i' for info.

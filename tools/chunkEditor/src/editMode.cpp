@@ -1632,8 +1632,80 @@ void pasteSelectionIntoBg
 	}
     };
 
-  // auto rotateSelection =
-  //   [& currentSelection]
+  auto rotateSelection90Deg =
+    [& selectionMaxOffsetFromOrigin, & currentSelection]()
+    {
+      /* TODO: Fix rotation issue. Sometimes if an item is rotated (such as a
+         tree it will appear too low down and the user will have to move the
+         cursor up. When it is rotated around 360% it will be in the right
+         position. We are honestly not sure where exactly what is going
+         wrong. The min / max y values change when rotated 360% (this is
+         obviously a big clue.) */
+      if(currentSelection.size() > 1)
+	{
+	  std::vector<editingState::selectionBufferElement> rotatedSelection {};
+	  for(auto element: currentSelection)
+	    {
+	      editingState::selectionBufferElement newElement
+		{element.ch, yx{element.coord.x,
+				selectionMaxOffsetFromOrigin.y -
+				element.coord.y}};
+	      rotatedSelection.push_back(newElement);
+	    }
+	  currentSelection = rotatedSelection;
+	}
+    };
+
+
+  auto mirrorSelectionFunc =
+    [& selectionMinOffsetFromOrigin, & selectionMaxOffsetFromOrigin,
+     & currentSelection]()
+    {
+      if(currentSelection.size() > 1)
+	{
+	  yx selectionSize
+	    {selectionMaxOffsetFromOrigin.y - selectionMinOffsetFromOrigin.y,
+	     selectionMaxOffsetFromOrigin.x - selectionMinOffsetFromOrigin.x};
+
+	  for(int leftY {selectionMinOffsetFromOrigin.y},
+		rightY {selectionMaxOffsetFromOrigin.y};
+	      leftY < selectionMaxOffsetFromOrigin.y - (selectionSize.y / 2)
+		; leftY++, rightY--)
+	    {
+	      int leftIndex {}, rightIndex {};
+	      bool foundLeft {false}, foundRight {false};
+
+	      endwin();
+
+	      
+	      for(int elementIndex {}; elementIndex < currentSelection.size();
+		  ++elementIndex)
+		{
+		  if(currentSelection[elementIndex].coord.y == leftY)
+		    {
+		      	      std::cout<<"leftY "<<leftY<<", "<<"rightY "<<rightY<<'\n';
+		      foundLeft = true;
+		      leftIndex = elementIndex;
+		    }
+		  if(currentSelection[elementIndex].coord.y == rightY)
+		    {
+		      foundRight = true;
+		      rightIndex = elementIndex;
+		    }
+
+		  if(foundLeft && foundRight)
+		    {
+		      editingState::selectionBufferElement tmp {};
+		      tmp = currentSelection[leftIndex];
+		      currentSelection[leftIndex].coord = currentSelection[rightIndex].coord;
+		      currentSelection[rightIndex].coord = tmp.coord;
+		      break;
+		    }
+		}
+	    }
+	  // exit(-1);
+	}
+    };
 
   auto afterRecallNextAndRecallLastActions =
     [getSelectionOffsetFromOrigin,
@@ -1702,9 +1774,13 @@ void pasteSelectionIntoBg
 		case editingSettings::editChars::performActionAtPos:
 		  pasteSelection();
 		  break;
-		// case editingSettings::editChars::rotateSelection:
-		//   rotateSelection();
-		//   break;
+		case editingSettings::editChars::rotateSelection:
+		  rotateSelection90Deg();
+		  afterRecallNextAndRecallLastActions();
+		  break;
+		case editingSettings::editChars::mirrorSelection:
+		  mirrorSelectionFunc();
+		  break;
 		case editingSettings::editChars::nextSelection:
 		  edState.recallNextSelection(currentSelection);
 		  afterRecallNextAndRecallLastActions();
