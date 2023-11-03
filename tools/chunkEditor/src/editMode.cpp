@@ -1633,7 +1633,8 @@ void pasteSelectionIntoBg
     };
 
   auto rotateSelection90Deg =
-    [& selectionMaxOffsetFromOrigin, & currentSelection]()
+    [& selectionMinOffsetFromOrigin, & selectionMaxOffsetFromOrigin,
+     & currentSelection]()
     {
       /* TODO: Fix rotation issue. Sometimes if an item is rotated (such as a
          tree it will appear too low down and the user will have to move the
@@ -1647,9 +1648,10 @@ void pasteSelectionIntoBg
 	  for(auto element: currentSelection)
 	    {
 	      editingState::selectionBufferElement newElement
-		{element.ch, yx{element.coord.x,
-				selectionMaxOffsetFromOrigin.y -
-				element.coord.y}};
+		{element.ch,
+		 yx{element.coord.x - selectionMinOffsetFromOrigin.x,
+		    selectionMaxOffsetFromOrigin.y -
+		    (element.coord.y - selectionMinOffsetFromOrigin.y)}};
 	      rotatedSelection.push_back(newElement);
 	    }
 	  currentSelection = rotatedSelection;
