@@ -1669,43 +1669,20 @@ void pasteSelectionIntoBg
 	    {selectionMaxOffsetFromOrigin.y - selectionMinOffsetFromOrigin.y,
 	     selectionMaxOffsetFromOrigin.x - selectionMinOffsetFromOrigin.x};
 
-	  for(int leftY {selectionMinOffsetFromOrigin.y},
-		rightY {selectionMaxOffsetFromOrigin.y};
-	      leftY < selectionMaxOffsetFromOrigin.y - (selectionSize.y / 2)
-		; leftY++, rightY--)
+	  std::vector<editingState::selectionBufferElement>
+	    mirroredSelection {};
+
+	  for(auto element: currentSelection)
 	    {
-	      int leftIndex {}, rightIndex {};
-	      bool foundLeft {false}, foundRight {false};
-
-	      endwin();
-
-	      
-	      for(int elementIndex {}; elementIndex < currentSelection.size();
-		  ++elementIndex)
-		{
-		  if(currentSelection[elementIndex].coord.y == leftY)
-		    {
-		      	      std::cout<<"leftY "<<leftY<<", "<<"rightY "<<rightY<<'\n';
-		      foundLeft = true;
-		      leftIndex = elementIndex;
-		    }
-		  if(currentSelection[elementIndex].coord.y == rightY)
-		    {
-		      foundRight = true;
-		      rightIndex = elementIndex;
-		    }
-
-		  if(foundLeft && foundRight)
-		    {
-		      editingState::selectionBufferElement tmp {};
-		      tmp = currentSelection[leftIndex];
-		      currentSelection[leftIndex].coord = currentSelection[rightIndex].coord;
-		      currentSelection[rightIndex].coord = tmp.coord;
-		      break;
-		    }
-		}
+	      mirroredSelection.push_back
+		(editingState::selectionBufferElement
+		 {
+		   element.ch,
+		   yx{element.coord.y,  selectionSize.x - element.coord.x}
+		 });
 	    }
-	  // exit(-1);
+
+	  currentSelection = mirroredSelection;
 	}
     };
 
@@ -1782,6 +1759,7 @@ void pasteSelectionIntoBg
 		  break;
 		case editingSettings::editChars::mirrorSelection:
 		  mirrorSelectionFunc();
+		  afterRecallNextAndRecallLastActions();
 		  break;
 		case editingSettings::editChars::nextSelection:
 		  edState.recallNextSelection(currentSelection);
