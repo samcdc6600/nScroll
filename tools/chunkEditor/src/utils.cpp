@@ -193,6 +193,11 @@ void progressivePrintMessage
 }
 
 
+/* TODO: update progressivePrintMessage() so that if msg contains new line
+   characters it will handle them properly. I.e. the next character in msg
+   should print to the next line and the boarder and background and overall
+   message shape should adjust accordingly. This will require an initial pass
+   over msg to calculate the size and shape of the message box. */
 void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep, const bool clearScreen, const bool printProgressively)

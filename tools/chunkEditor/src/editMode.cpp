@@ -86,6 +86,16 @@ public:
       std::chrono::steady_clock::now();
     this->crosshairCursorColorPair = editingSettings::helpColor;
   }
+
+  /* We haven't just made selectionRingBufferSize public because it causes a
+     linker error when we try to access
+     editingState::selectionRingBufferSize and or
+     edState.selectionRingBufferSize from printEditHelp() and we have no idea
+     why. :'( */
+  size_t getSizeOfSelectionRingBuffer()
+  {
+    return selectionRingBufferSize;
+  }
   
   backgroundChunkCharType getCurrentBgChar() const
   {
@@ -284,7 +294,9 @@ bool getConfirmation(const yx viewPortSize, editingState & edState,
 void actOnInputLayer1
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
+ chunk<char, yHeight, xWidth> & cRChunk,
+ const backgroundChunkCharType refBgChunk[yHeight][xWidth],
+ const char refCRChunk[yHeight][xWidth], const yx chunkSize,
  const bool usingReferences, editingState & edState);
 /* Updates the cursors position in edState if edState.input is one of cursorUp,
    cursorDown, cursorLeft or cursorRight and if the cursor will not go outside
@@ -313,7 +325,9 @@ void performActionAtPosFunc
 void actOnInputLayer2
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
+ chunk<char, yHeight, xWidth> & cRChunk,
+ const backgroundChunkCharType refBgChunk[yHeight][xWidth],
+ const char refCRChunk[yHeight][xWidth], const yx chunkSize,
  editingState & edState);
 /* Displays available colors on the screen and waits for the user to select one
    using the cursor navigation keys (see editingSettings.) This color will be
@@ -549,8 +563,9 @@ void editModeProper
       edState.input = getch();
       
       // Perform some action based on input.
-      actOnInputLayer1(bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk,
-		       cRChunk, chunkSize, usingReferences, edState);
+      actOnInputLayer1
+	(bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk, cRChunk,
+	 refBgChunk, refCRChunk, chunkSize, usingReferences, edState);
 
       // We always print the background chunk.
       if(!edState.refrenceChunkToggle)
@@ -602,7 +617,9 @@ bool getConfirmation(const yx viewPortSize, editingState & edState,
 void actOnInputLayer1
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
+ chunk<char, yHeight, xWidth> & cRChunk,
+ const backgroundChunkCharType refBgChunk[yHeight][xWidth],
+ const char refCRChunk[yHeight][xWidth], const yx chunkSize,
  const bool usingReferences, editingState & edState)
 { 
   if(!updateCursorPos(bgChunk, cRChunk, chunkSize, edState))
@@ -623,11 +640,9 @@ void actOnInputLayer1
 	  printEditHelp(chunkSize, edState);
 	  break;
 	default:
-	  if(!edState.refrenceChunkToggle)
-	    {
-	      actOnInputLayer2(bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk,
-			       cRChunk, chunkSize, edState);
-	    }
+	  actOnInputLayer2
+	    (bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk, cRChunk,
+	     refBgChunk, refCRChunk, chunkSize, edState);
 	};
     }
 }
@@ -645,7 +660,7 @@ bool updateCursorPos
   auto sharedCursorMovementAction = [& bgChunk, & cRChunk, & edState, & ret]()
   {
     move(edState.cursorPos);
-    if(edState.lineDrawModeToggle)
+    if(edState.lineDrawModeToggle && !edState.refrenceChunkToggle)
       {
 	performActionAtPosFunc(bgChunk, cRChunk, edState);
       }
@@ -769,82 +784,111 @@ void performActionAtPosFunc
 void actOnInputLayer2
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
- chunk<char, yHeight, xWidth> & cRChunk, const yx chunkSize,
+ chunk<char, yHeight, xWidth> & cRChunk,
+ const backgroundChunkCharType refBgChunk[yHeight][xWidth],
+ const char refCRChunk[yHeight][xWidth], const yx chunkSize,
  editingState & edState)
 {
   using namespace editingSettings::editChars;
+
+  auto cREraseCRCharFunc = [& edState]()
+  {
+    if(edState.cRChunkToggle && !edState.refrenceChunkToggle)
+      {
+	edState.currentCRChar = editingSettings::rulesChars::nullRule;
+      }
+  };
+
+  auto cRSetCRCharToBoarderFunc = [& edState]()
+  {
+    if(edState.cRChunkToggle && !edState.refrenceChunkToggle)
+      {
+	edState.currentCRChar = editingSettings::rulesChars::boarder;
+      }
+  };
+
+  auto cRSetCRCharToPlatformFunc = [& edState]()
+  {
+    if(edState.cRChunkToggle && !edState.refrenceChunkToggle)
+      {
+	edState.currentCRChar = editingSettings::rulesChars::platform;
+      }
+  };
+
+  auto bGToggleCharacterSelectionFunc = [chunkSize, & edState]()
+  {
+    if(!edState.cRChunkToggle && !edState.refrenceChunkToggle)
+      {
+	getBgCharFromUser(chunkSize, edState);
+      }
+  };
+
+  auto bgNextCurrentCharFunc = [& edState]()
+  {
+    if(!edState.cRChunkToggle && !edState.refrenceChunkToggle)
+      {
+	edState.recallNextBgChar();
+      }
+  };
+
+  auto bgLastCurrentCharFunc = [& edState]()
+  {
+    if(!edState.cRChunkToggle && !edState.refrenceChunkToggle)
+      {
+	edState.recallLastBgChar();
+      }
+  };
+
+  auto undoFunc = [& bgChunk, & cRChunk, & edState]()
+  {
+    if(!edState.refrenceChunkToggle)
+      {
+	if(!edState.cRChunkToggle)
+	  {
+	    bgChunk.backward();
+	  }
+	else
+	  {
+	    cRChunk.backward();
+	  }
+      }
+  };
+
+  auto redoFunc = [& bgChunk, & cRChunk, & edState]()
+  {
+    if(!edState.refrenceChunkToggle)
+      {
+	if(!edState.cRChunkToggle)
+	  {
+	    bgChunk.forward();
+	  }
+	else
+	  {
+	    cRChunk.forward();
+	  }
+      }
+  };
   
-  switch(edState.input)
-    {
-    case performActionAtPos:
-      performActionAtPosFunc(bgChunk, cRChunk, edState);
-      break;
-    case cREraseCRChar:
-      if(edState.cRChunkToggle)
-	{
-	  edState.currentCRChar = editingSettings::rulesChars::nullRule;
-	}
-      break;
-    case cRSetCRCharToBorder:
-      if(edState.cRChunkToggle)
-	{
-	  edState.currentCRChar = editingSettings::rulesChars::boarder;
-	}
-      break;
-    case cRSetCRCharToPlatform:
-      if(edState.cRChunkToggle)
-	{
-	  edState.currentCRChar = editingSettings::rulesChars::platform;
-	}
-      break;
-    case bGToggleCharacterSelection:
-      if(!edState.cRChunkToggle)
-	{
-	  getBgCharFromUser(chunkSize, edState);
-	}
-      break;
-    case bgNextCurrentChar:
-      if(!edState.cRChunkToggle)
-	{
-	  edState.recallNextBgChar();
-	}
-      break;
-    case bgLastCurrentChar:
-      if(!edState.cRChunkToggle)
-	{
-	  edState.recallLastBgChar();
-	}
-      break;
-    case undo:
-      if(!edState.cRChunkToggle)
-	{
-	  bgChunk.backward();
-	}
-      else
-	{
-	  cRChunk.backward();
-	}
-      break;
-    case redo:
-      if(!edState.cRChunkToggle)
-	{
-	  bgChunk.forward();
-	}
-      else
-	{
-	  cRChunk.forward();
-	}
-      break;
-    case bgGetCharAtPos:
-      if(!edState.cRChunkToggle && bgChunk.getChunk().data
-	     [edState.cursorPos.y][edState.cursorPos.x].set)
-	{
-	  edState.setCurrentBgChar
-	    (bgChunk.getChunk().data
-	     [edState.cursorPos.y][edState.cursorPos.x].ch);
-	}
-      break;
-    case toggleLineDrawMode:
+  auto getCharAtPos = [& bgChunk, & refBgChunk, & edState]()
+  {
+    if(edState.refrenceChunkToggle)
+      {
+	edState.setCurrentBgChar
+	  (refBgChunk[edState.cursorPos.y][edState.cursorPos.x]);
+      }
+    else if(!edState.cRChunkToggle && bgChunk.getChunk().data
+	    [edState.cursorPos.y][edState.cursorPos.x].set)
+      {
+	edState.setCurrentBgChar
+	  (bgChunk.getChunk().data
+	   [edState.cursorPos.y][edState.cursorPos.x].ch);
+      }
+  };
+
+
+  auto toggleLineDrawFunc = [& bgChunk, & cRChunk, & edState]()
+  {
+    if(!edState.refrenceChunkToggle)
       {
 	edState.lineDrawModeToggle = !edState.lineDrawModeToggle;
 	if(edState.lineDrawModeToggle)
@@ -852,32 +896,128 @@ void actOnInputLayer2
 	    performActionAtPosFunc(bgChunk, cRChunk, edState);
 	  }
       }
+  };
+
+  auto floodFillFunc = [& bgChunk, chunkSize, & edState]()
+  {
+    if(!edState.refrenceChunkToggle)
+      {
+	if(!edState.cRChunkToggle)
+	  {
+	    floodFillBg
+	      (bgChunk.advanceBeforeModify().data, chunkSize, edState);
+	  }
+      }
+  };
+
+  auto selectSelectionFunc = [& bgChunk, & refBgChunk, chunkSize, & edState]()
+  {
+    if(!edState.cRChunkToggle)
+      {
+	if(!edState.refrenceChunkToggle)
+	  {
+	    selectAndCopySelection
+	      (bgChunk.getChunk().data, chunkSize, edState);
+	  }
+	else
+	  {
+	    /* We have to create a copy of ref chunk here because
+	       selectAndCopySelection() expects a chunk of type
+	       backgroundChunkCharinfo and not backgroundChunkChartype. */
+	    backgroundChunkCharInfo refChunkCopy[yHeight][xWidth];
+	    for(int yIter {}; yIter < chunkSize.y; ++yIter)
+	      {
+		for(int xIter {}; xIter < chunkSize.x; ++xIter)
+		  {
+		    refChunkCopy[yIter][xIter].ch = refBgChunk[yIter][xIter];
+		    refChunkCopy[yIter][xIter].set = true;
+		  }
+	      }
+	    selectAndCopySelection
+	      (refChunkCopy, chunkSize, edState);
+	  }
+      }
+  };
+
+  auto pasteSelectionFunc = [& bgChunk, chunkSize, & edState]()
+  {
+    if(!edState.cRChunkToggle && !edState.refrenceChunkToggle)
+      {
+	pasteSelectionIntoBg(bgChunk, chunkSize, edState);
+      }
+  };
+
+  auto bgShowUnsetCharsFunc = [& bgChunk, chunkSize, & edState]()
+  {
+    if(!edState.refrenceChunkToggle)
+      {
+	if(!edState.cRChunkToggle)
+	  {
+	    showUnsetBgChars(bgChunk.getChunk().data, chunkSize, edState);
+	  }
+      }
+  };
+
+  auto changeCoordinatesFunc = [& chunkCoord, chunkSize, & edState]()
+  {
+    if(!edState.refrenceChunkToggle)
+      {
+	showAndChangeCoorinates(chunkSize, edState, chunkCoord);
+      }
+  };
+  
+  switch(edState.input)
+    {
+    case performActionAtPos:
+      performActionAtPosFunc(bgChunk, cRChunk, edState);
+      break;
+    case cREraseCRChar:
+      cREraseCRCharFunc();
+      break;
+    case cRSetCRCharToBorder:
+      cRSetCRCharToBoarderFunc();
+      break;
+    case cRSetCRCharToPlatform:
+      cRSetCRCharToPlatformFunc();
+      break;
+    case bGToggleCharacterSelection:
+      bGToggleCharacterSelectionFunc();
+      break;
+    case bgNextCurrentChar:
+      bgNextCurrentCharFunc();
+      break;
+    case bgLastCurrentChar:
+      bgLastCurrentCharFunc();
+      break;
+    case undo:
+      undoFunc();
+      break;
+    case redo:
+      redoFunc();
+      break;
+    case bgGetCharAtPos:
+      getCharAtPos();
+      break;
+    case toggleLineDrawMode:
+      toggleLineDrawFunc();
       break;
     case floodFill:
-      if(!edState.cRChunkToggle)
-	{
-	  floodFillBg
-	    (bgChunk.advanceBeforeModify().data, chunkSize, edState);
-	}
+      floodFillFunc();
       break;
     case selectSelection:
-      selectAndCopySelection
-	(bgChunk.getChunk().data, chunkSize, edState);
+      selectSelectionFunc();
       break;
     case pasteSelection:
-      pasteSelectionIntoBg(bgChunk, chunkSize, edState);
+      pasteSelectionFunc();
       break;
     case bgShowUnsetChars:
-      if(!edState.cRChunkToggle)
-	{
-	  showUnsetBgChars(bgChunk.getChunk().data, chunkSize, edState);
-	}
+      bgShowUnsetCharsFunc();
       break;
     case toggleCrosshairCursor:
       edState.crosshairCursorToggle = !edState.crosshairCursorToggle;
       break;
     case changeCoordinates:
-      showAndChangeCoorinates(chunkSize, edState, chunkCoord);
+      changeCoordinatesFunc();
       break;
     case saveChunks:
       if(getConfirmation(chunkSize, edState,
@@ -1363,71 +1503,104 @@ void selectAndCopySelection
       }
   };
 
+  auto printUnsetCharError = [chunkSize]()
+  {
+    progressivePrintMessage
+      (concat("Error: character at cursor pos is unset. Press \"",
+	      editingSettings::editChars::bgShowUnsetChars, "\" to see unset "
+	      "chars when in main bg edit mode (currently in selection mode.)"),
+       chunkSize, printCharSpeed,
+       editingSettings::afterGeneralMessageSleep);
+  };
 
   auto selectionFloodFill =
-    [setAdd, bgChunk, chunkSize, & edState, & newSelection]()
+    [setAdd, printUnsetCharError, bgChunk, chunkSize, & edState,
+     & newSelection]()
   {
-    /* Save currentBgChar. We will reset this after calling floodFillBg as we
-       need to temporally change it before calling floodFillBg. */
-    const backgroundChunkCharType currentBgChar {edState.getCurrentBgChar()};
-    /* SetCurrentBgChar() will advance the ring buffer index so we have to move
-       back in the buffer first as to not trample on the character after the
-       current one. */
-    edState.recallLastBgChar();
-    /* We set the current bg cursor char to bgRunLengthSequenceSignifier as
-       this value isn't used for anything special in floodFillBg, but it is
-       guaranteed that no character in the background will be equal to it. */
-    edState.setCurrentBgChar(bgRunLengthSequenceSignifier);
+    if(bgChunk[edState.cursorPos.y][edState.cursorPos.x].set)
+      {
+	/* Save currentBgChar. We will reset this after calling floodFillBg as
+	   we need to temporally change it before calling floodFillBg. */
+	const backgroundChunkCharType currentBgChar
+	  {edState.getCurrentBgChar()};
+	/* SetCurrentBgChar() will advance the ring buffer index so we have to
+	   move back in the buffer first as to not trample on the character
+	   after the current one. */
+	edState.recallLastBgChar();
+	/* We set the current bg cursor char to bgRunLengthSequenceSignifier as
+	   this value isn't used for anything special in floodFillBg, but it is
+	   guaranteed that no character in the background will be equal to
+	   it. */
+	edState.setCurrentBgChar(bgRunLengthSequenceSignifier);
     
-    /* Create copy of bgChunk to pass to flood fill. */
-    backgroundChunkCharInfo bgChunkCopy[yHeight][xWidth];
-    for(int yIter {}; yIter < chunkSize.y; ++yIter)
-      {
-	for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	/* Create copy of bgChunk to pass to flood fill. */
+ 	backgroundChunkCharInfo bgChunkCopy[yHeight][xWidth];
+	for(int yIter {}; yIter < chunkSize.y; ++yIter)
 	  {
-	    bgChunkCopy[yIter][xIter] = bgChunk[yIter][xIter];
-	  }
-      }
-    
-    /* Set chars in bgChunkCopy bgRunLengthSequenceSignifier that are at
-       positions in newSelection. This way we can select smaller regions from
-       larger contiguous bg regions. */
-    for(auto selected: newSelection)
-      {
-	bgChunkCopy[selected.coord.y][selected.coord.x].ch =
-	  bgRunLengthSequenceSignifier;
-	bgChunkCopy[selected.coord.y][selected.coord.x].set = true;
-      }
-
-    /* Fill area of contiguously (equal characters) starting from cursor pos
-       with bgRunLengthSequenceSignifier "characters" */
-    floodFillBg(bgChunkCopy, chunkSize, edState);
-
-    /* Now add characters that were changed to newSelection! */
-        for(int yIter {}; yIter < chunkSize.y; ++yIter)
-      {
-	for(int xIter {}; xIter < chunkSize.x; ++xIter)
-	  {
-	    if(bgChunkCopy[yIter][xIter].ch == bgRunLengthSequenceSignifier)
+	    for(int xIter {}; xIter < chunkSize.x; ++xIter)
 	      {
-		/* We have a character that matches
-		   bgRunLengthSequenceSignifier, which means it must have been
-		   set by floodFillBg! The character of course must come from
-		   the unmolested bg chunk */
-		setAdd(bgChunk[yIter][xIter].ch,
-		       yx{yIter, xIter}, false);
+		bgChunkCopy[yIter][xIter] = bgChunk[yIter][xIter];
 	      }
 	  }
-      }
+    
+	/* Set chars in bgChunkCopy bgRunLengthSequenceSignifier that are at
+	   positions in newSelection. This way we can select smaller regions
+	   from larger contiguous bg regions. */
+	for(auto selected: newSelection)
+	  {
+	    bgChunkCopy[selected.coord.y][selected.coord.x].ch =
+	      bgRunLengthSequenceSignifier;
+	    bgChunkCopy[selected.coord.y][selected.coord.x].set = true;
+	  }
 
-    /* Reset current cursor bg char. */
-    edState.recallLastBgChar();
-    edState.setCurrentBgChar(currentBgChar);
+	/* Fill area of contiguously (equal characters) starting from cursor pos
+	   with bgRunLengthSequenceSignifier "characters" */
+	floodFillBg(bgChunkCopy, chunkSize, edState);
+
+	/* Now add characters that were changed to newSelection! */
+        for(int yIter {}; yIter < chunkSize.y; ++yIter)
+	  {
+	    for(int xIter {}; xIter < chunkSize.x; ++xIter)
+	      {
+		if(bgChunkCopy[yIter][xIter].ch == bgRunLengthSequenceSignifier)
+		  {
+		    /* We have a character that matches
+		       bgRunLengthSequenceSignifier, which means it must have
+		       been set by floodFillBg! The character of course must
+		       come from the unmolested bg chunk */
+		    setAdd(bgChunk[yIter][xIter].ch,
+			   yx{yIter, xIter}, false);
+		  }
+	      }
+	  }
+
+	/* Reset current cursor bg char. */
+	edState.recallLastBgChar();
+	edState.setCurrentBgChar(currentBgChar);
+      }
+    else
+      {
+	printUnsetCharError();
+      }
+  };
+
+  auto performActionAtPosFunc =
+    [setAdd, printUnsetCharError, bgChunk, & edState]()
+  {
+    if(bgChunk[edState.cursorPos.y][edState.cursorPos.x].set)
+      {
+	setAdd(bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch,
+	       edState.cursorPos, true);
+      }
+    else
+      {
+	printUnsetCharError();
+      }
   };
 
   // It's annoying to have this set here.
   edState.lineDrawModeToggle = false;
-  
+
   do
     {
       edState.input = getch();
@@ -1440,8 +1613,7 @@ void selectAndCopySelection
 	      printPasteSelectionHelp();
 	      break;
 	    case editingSettings::editChars::performActionAtPos:
-	      setAdd(bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch,
-		     edState.cursorPos, true);
+	      performActionAtPosFunc();
 	      break;
 	    case editingSettings::editChars::toggleCrosshairCursor:
 	      edState.crosshairCursorToggle = !edState.crosshairCursorToggle;
@@ -1449,7 +1621,8 @@ void selectAndCopySelection
 	    case editingSettings::editChars::toggleLineDrawMode:
 	      {
 		edState.lineDrawModeToggle = !edState.lineDrawModeToggle;
-		if(edState.lineDrawModeToggle)
+		if(edState.lineDrawModeToggle &&
+		   bgChunk[edState.cursorPos.y][edState.cursorPos.x].set)
 		  {
 		    setAdd(bgChunk[edState.cursorPos.y][edState.cursorPos.x].ch,
 		     edState.cursorPos, true);
@@ -1526,7 +1699,7 @@ void pasteSelectionIntoBg
 	cursorUp,		": to move the cursor up.\t\t\t",
 	cursorDown,	": to move the cursor down.\t\t\t",
 	cursorLeft,	": to move the cursor left.\t\t\t",
-	cursorRight,	": to move the cursor right.\t\t\t",
+	cursorRight,	": to move\n the cursor right.\t\t\t",
 	" \"", performActionAtPos, " \": to paste the current selection.\t\t\t",
 	nextSelection,	": to cycle to the next selection (if any)\t\t\t",
 	lastSelection,	": to cycle to the last selection (if any)\t\t\t",
@@ -1686,7 +1859,7 @@ void pasteSelectionIntoBg
 	}
     };
 
-  auto afterRecallNextAndRecallLastActions =
+  auto afterSelectinSizeChanged =
     [getSelectionOffsetFromOrigin,
      chunkSize, & edState,
      & selectionMinOffsetFromOrigin, & selectionMaxOffsetFromOrigin]()
@@ -1755,19 +1928,19 @@ void pasteSelectionIntoBg
 		  break;
 		case editingSettings::editChars::rotateSelection:
 		  rotateSelection90Deg();
-		  afterRecallNextAndRecallLastActions();
+		  afterSelectinSizeChanged();
 		  break;
 		case editingSettings::editChars::mirrorSelection:
 		  mirrorSelectionFunc();
-		  afterRecallNextAndRecallLastActions();
+		  afterSelectinSizeChanged();
 		  break;
 		case editingSettings::editChars::nextSelection:
 		  edState.recallNextSelection(currentSelection);
-		  afterRecallNextAndRecallLastActions();
+		  afterSelectinSizeChanged();
 		  break;
 		case editingSettings::editChars::lastSelection:		
 		  edState.recallLastSelection(currentSelection);
-		  afterRecallNextAndRecallLastActions();
+		  afterSelectinSizeChanged();
 		  break;
 		case editingSettings::editChars::toggleCrosshairCursor:
 		  edState.crosshairCursorToggle = !edState.crosshairCursorToggle;
@@ -1829,8 +2002,7 @@ void showUnsetBgChars
 	    {
 	      if(!bgChunk[yIter][xIter].set)
 		{
-		  int color = rand() % 2 ? blackBgColorPair: validColorNumber;
-		  colorMode.setColor(color);
+		  colorMode.setRandomColor();
 		  mvprintw(yIter, xIter, "%c", emptyCharChar);
 		}
 	    }
@@ -1992,6 +2164,11 @@ void printEditHelp(const yx viewPortSize, editingState & edState)
       floodFill,	": to do a flood fill using the cursor character and "
       "starting at the current cursor pos. This is only applicable if editing "
       "a background chunk\t\t\t",
+      selectSelection,	": to enter selection mode, where a an area (selection) "
+      "can be selected for copying and later pasting.\t\t\t",
+      pasteSelection,	": to enter past mode, where ",
+      edState.getSizeOfSelectionRingBuffer(), " of the last selections made can "
+      "be pasted.\t\t\t",
       bgShowUnsetChars,	": to print noise in locations where characters aren't "
       "set. This helps when trying to find unset background chunk characters. "
       "Note that the chunks cannot be saved if any of the background chunk "
