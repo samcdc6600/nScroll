@@ -229,21 +229,66 @@ void progressivePrintMessage
 	       progressivePrintMessageBottomRightCornerBoarderChar.c_str());
   };
 
-  setColorMode color {};
+  /* Returns the number of character (with the exception that '\n' characters
+     will add msgLineLength to the length returned and '\t' characters will add
+     tabSize.). */
+  auto countVirtualLength = [msg]
+    (const int msgLineLength, const int tabSize)
+  {
+    int virtualLengthRet {};
+    int currentLineLen {};
+    int noOfLines {};
+
+    for(int iter {}; (size_t)iter < msg.size(); iter++)
+      {
+	switch(msg[iter])
+	  {
+	  case '\n':
+	    virtualLengthRet += msgLineLength - currentLineLen;
+	    currentLineLen = 0;
+	    noOfLines++;
+	    break;
+	  // case '\t':
+	  //   virtualLengthRet += tabSize;
+	  //   currentLineLen += tabSize;
+	  //   if(currentLineLen >= msgLineLength)
+	  //     {
+	  // 	currentLineLen = 0;
+	  // 	noOfLines++;
+	  //     }
+	  //   break;
+	  default:
+	    virtualLengthRet++;
+	    currentLineLen++;
+	    if(currentLineLen >= msgLineLength)
+	      {
+		currentLineLen = 0;
+		noOfLines++;
+	      }
+	  }
+      }
+
+    return virtualLengthRet;
+  };
+
+  setColorMode color   	{};
+  const int tabSize    	{4};	// Length of a tab.
   // This is for both sides and includes boarder characters.
-  const int margin {6};
-  const int boarderCharsNo {2};
-  const int marginSingle {(margin - boarderCharsNo) / 2};
-  const int msgLineLength {170 - margin};
-  const int noOfLines {(int)(msg.size() / msgLineLength)};
+  const int margin		{6};
+  const int boarderCharsNo	{2};
+  const int marginSingle	{(margin - boarderCharsNo) / 2};
+  const int msgLineLength	{170 - margin};
+  const int msgLength  	{countVirtualLength(msgLineLength, tabSize)};
+  const int noOfLines	       	{msgLength / msgLineLength};
   const int marginTop
     {marginSingle + (viewPortSize.y / 2) - (noOfLines / 2)};
-  const int remainder {(int)(msg.size() - (noOfLines * msgLineLength))};
+  const int remainder  	{(int)(msgLength -
+				       (noOfLines * msgLineLength))};
   /* We need to move back to just after this point after printing the bottom
      boarder for messages prompting for user input. */
-  yx lastMsgCharPos {};
-  int charsPrinted {};
-  int lines {};
+  yx lastMsgCharPos    	{};
+  int charsPrinted     	{};
+  int lines	       	{};
 
   if(clearScreen)
     {
@@ -272,8 +317,27 @@ void progressivePrintMessage
 	      color.setColor(helpColorPair);
 	      lastMsgCharPos = yx {lines + marginTop,
 		       lineChars + marginSingle};
-	      mvprintw(lastMsgCharPos, concat("", msg[charsPrinted]).c_str());
-	      charsPrinted++;
+	      switch(msg[charsPrinted])
+		{
+		case '\n':
+		  {
+		    int virtualLineChars {lineChars};
+		    for( ; virtualLineChars < msgLineLength; ++virtualLineChars)
+		      {
+			lastMsgCharPos = yx {lines + marginTop,
+					     virtualLineChars + marginSingle};
+			mvprintw(lastMsgCharPos, " ");
+		      }
+		    lines++;
+		    charsPrinted++;
+		  }
+		  break;
+		// case '\t':
+		//   break;
+		default:
+		  mvprintw(lastMsgCharPos, concat("", msg[charsPrinted]).c_str());
+		  charsPrinted++;
+		};
 	    }
 
 	  if(printProgressively)

@@ -219,8 +219,8 @@ namespace editingSettings
 	editChars::quit,		": to quite the program.")};
     const std::string refViewingCR
       {concat
-       ("\t~H~E~L~P~!~\t\t\t\t\t\tIn the reference chunk view mode (viewing a character rules chunk).\t\t\t\t\t",
-	editChars::toggleHelpMsg,	": to toggle this message.\t\t\t",
+       ("\t~H~E~L~P~!~\nIn the reference chunk view mode (viewing a character rules chunk).\n",
+	editChars::toggleHelpMsg,	": to toggle this message.\n",
 	editChars::cursorUp,		": to move the cursor up.\t\t\t",
 	editChars::cursorDown,	": to move the cursor down.\t\t\t",
 	editChars::cursorLeft,	": to move the cursor left.\t\t\t",
