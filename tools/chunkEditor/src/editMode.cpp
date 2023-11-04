@@ -32,8 +32,8 @@ struct editingState
   
 private:
   
-  static constexpr int bgCharsRingBufferSize {24};
-  static constexpr int selectionRingBufferSize {24};
+  static constexpr int bgCharsRingBufferSize {editingSettings::bgCharsRingBufferSize};
+  static constexpr int selectionRingBufferSize {editingSettings::selectionRingBufferSize};
   // Buffer to remember bgCharsRingBufferSize of the last bg chars.
   int bgCharsRingBuffer [bgCharsRingBufferSize] {};
   // Buffer to remember selectionRingBufferSize of the last selected selection.
@@ -85,16 +85,6 @@ public:
     this->crosshairCursorColorTransitionTimeLast =
       std::chrono::steady_clock::now();
     this->crosshairCursorColorPair = editingSettings::helpColor;
-  }
-
-  /* We haven't just made selectionRingBufferSize public because it causes a
-     linker error when we try to access
-     editingState::selectionRingBufferSize and or
-     edState.selectionRingBufferSize from printEditHelp() and we have no idea
-     why. :'( */
-  size_t getSizeOfSelectionRingBuffer()
-  {
-    return selectionRingBufferSize;
   }
   
   backgroundChunkCharType getCurrentBgChar() const
@@ -295,8 +285,7 @@ void actOnInputLayer1
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk,
- const backgroundChunkCharType refBgChunk[yHeight][xWidth],
- const char refCRChunk[yHeight][xWidth], const yx chunkSize,
+ const backgroundChunkCharType refBgChunk[yHeight][xWidth], const yx chunkSize,
  const bool usingReferences, editingState & edState);
 /* Updates the cursors position in edState if edState.input is one of cursorUp,
    cursorDown, cursorLeft or cursorRight and if the cursor will not go outside
@@ -326,8 +315,7 @@ void actOnInputLayer2
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk,
- const backgroundChunkCharType refBgChunk[yHeight][xWidth],
- const char refCRChunk[yHeight][xWidth], const yx chunkSize,
+ const backgroundChunkCharType refBgChunk[yHeight][xWidth], const yx chunkSize,
  editingState & edState);
 /* Displays available colors on the screen and waits for the user to select one
    using the cursor navigation keys (see editingSettings.) This color will be
@@ -342,8 +330,9 @@ void getBgCharFromUser(const yx chunkSize, editingState &edState);
    invalid if the user hit the editChars::quit. Otherwise userQuit is false and
    the return value is valid. And where printHelpMsg() is a lambda function that
    prints a help message. */
-int getColorPairFromUser(const yx chunkSize, editingState & edState,
-			 bool & userQuit, std::function<void()> printHelpMsg);
+int getColorPairFromUser
+(const yx chunkSize, editingState & edState, bool & userQuit,
+ std::function<void(const std::string & msg)> printHelpMsg);
 /* Should be called when exiting an interactive "screen" or "menu". Sleeps for
    editingSettings::editSubMenuSleepTimeMs and then sets edState.input to the
    value returned from getch(). This give the user some time to take their
@@ -374,7 +363,7 @@ void showUnsetBgChars
 /* Prints a message showing the current coordinates and asking the user to
    enter new coordinates, can be aborted using editChars::quit. New coordinates
    are only saved when writeOutChunks is called. */
-void showAndChangeCoorinates
+void showAndChangeCoordinates
 (const yx viewPortSize, editingState & edState, yx & chunkCoord);
 /* Writes contents of bgChunk.getChunk() and cRChunk.getChunk() to the files
    at bgChunkFileName and cRChunkFileName respectively. Prints error message and
@@ -385,7 +374,8 @@ bool writeOutChunks
  const char cRChunk[][xWidth], const yx chunkSize);
 /* Once entered this function will not exit untill one of editChars::quit or
    editChars::toggleHelpMsg is pressed.  */
-void printEditHelp(const yx viewPortSize, editingState & edState);
+void printHelp(const yx viewPortSize, editingState & edState,
+	       const std::string & msg);
 void printBgCharAtPos(backgroundChunkCharType ch, const yx pos);
 void printBgChunk
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx viewPortSize);
@@ -565,7 +555,7 @@ void editModeProper
       // Perform some action based on input.
       actOnInputLayer1
 	(bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk, cRChunk,
-	 refBgChunk, refCRChunk, chunkSize, usingReferences, edState);
+	 refBgChunk, chunkSize, usingReferences, edState);
 
       // We always print the background chunk.
       if(!edState.refrenceChunkToggle)
@@ -618,10 +608,38 @@ void actOnInputLayer1
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk,
- const backgroundChunkCharType refBgChunk[yHeight][xWidth],
- const char refCRChunk[yHeight][xWidth], const yx chunkSize,
+ const backgroundChunkCharType refBgChunk[yHeight][xWidth], const yx chunkSize,
  const bool usingReferences, editingState & edState)
-{ 
+{
+  auto helpFuncDispatch = [chunkSize, & edState]()
+  {
+    if(!edState.refrenceChunkToggle)
+      {
+	if(!edState.cRChunkToggle)
+	  {
+	    // We should be in the main mode (viewing a bg chunk.)
+	    printHelp
+	      (chunkSize, edState, editingSettings::helpMsgs::mainViewingBg);
+	  }
+	else
+	  {
+	    // We should be in the main mode (viewing a cr chunk.)
+	    printHelp
+	      (chunkSize, edState, editingSettings::helpMsgs::mainViewingCR);
+	  }
+      }
+    else if(!edState.cRChunkToggle)
+      {
+	// We should be in the reference chunk mode (viewing a bg chunk.)
+	printHelp(chunkSize, edState, editingSettings::helpMsgs::refViewingBg);
+      }
+    else
+      {
+	// We should be in the reference chunk mode (viewing a cr chunk.)
+	printHelp(chunkSize, edState, editingSettings::helpMsgs::refViewingCR);
+      }
+  };
+  
   if(!updateCursorPos(bgChunk, cRChunk, chunkSize, edState))
     {
       switch(edState.input)
@@ -637,12 +655,12 @@ void actOnInputLayer1
 	    }
 	  break;
 	case editingSettings::editChars::toggleHelpMsg:
-	  printEditHelp(chunkSize, edState);
+	  helpFuncDispatch();
 	  break;
 	default:
 	  actOnInputLayer2
 	    (bgChunkFileName, cRChunkFileName, chunkCoord, bgChunk, cRChunk,
-	     refBgChunk, refCRChunk, chunkSize, edState);
+	     refBgChunk, chunkSize, edState);
 	};
     }
 }
@@ -764,19 +782,22 @@ void performActionAtPosFunc
 (chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk, editingState & edState)
 {
-  if(edState.cRChunkToggle)
+  if(!edState.refrenceChunkToggle)
     {
-      cRChunk.advanceBeforeModify().
-	data[edState.cursorPos.y][edState.cursorPos.x] =
-	edState.currentCRChar;
-    }
-  else
-    {
-      bgChunk.advanceBeforeModify().
-	data[edState.cursorPos.y][edState.cursorPos.x].ch =
-	edState.getCurrentBgChar();
-      bgChunk.getChunk().
-	data[edState.cursorPos.y][edState.cursorPos.x].set = true;
+      if(edState.cRChunkToggle)
+	{
+	  cRChunk.advanceBeforeModify().
+	    data[edState.cursorPos.y][edState.cursorPos.x] =
+	    edState.currentCRChar;
+	}
+      else
+	{
+	  bgChunk.advanceBeforeModify().
+	    data[edState.cursorPos.y][edState.cursorPos.x].ch =
+	    edState.getCurrentBgChar();
+	  bgChunk.getChunk().
+	    data[edState.cursorPos.y][edState.cursorPos.x].set = true;
+	}
     }
 }
 
@@ -785,8 +806,7 @@ void actOnInputLayer2
 (const std::string bgChunkFileName, const std::string cRChunkFileName,
  yx & chunkCoord, chunk<backgroundChunkCharInfo, yHeight, xWidth> & bgChunk,
  chunk<char, yHeight, xWidth> & cRChunk,
- const backgroundChunkCharType refBgChunk[yHeight][xWidth],
- const char refCRChunk[yHeight][xWidth], const yx chunkSize,
+ const backgroundChunkCharType refBgChunk[yHeight][xWidth], const yx chunkSize,
  editingState & edState)
 {
   using namespace editingSettings::editChars;
@@ -871,17 +891,20 @@ void actOnInputLayer2
   
   auto getCharAtPos = [& bgChunk, & refBgChunk, & edState]()
   {
-    if(edState.refrenceChunkToggle)
+    if(!edState.cRChunkToggle)
       {
-	edState.setCurrentBgChar
-	  (refBgChunk[edState.cursorPos.y][edState.cursorPos.x]);
-      }
-    else if(!edState.cRChunkToggle && bgChunk.getChunk().data
-	    [edState.cursorPos.y][edState.cursorPos.x].set)
-      {
-	edState.setCurrentBgChar
-	  (bgChunk.getChunk().data
-	   [edState.cursorPos.y][edState.cursorPos.x].ch);
+	if(edState.refrenceChunkToggle)
+	  {
+	    edState.setCurrentBgChar
+	      (refBgChunk[edState.cursorPos.y][edState.cursorPos.x]);
+	  }
+	else if(bgChunk.getChunk().data
+		[edState.cursorPos.y][edState.cursorPos.x].set)
+	  {
+	    edState.setCurrentBgChar
+	      (bgChunk.getChunk().data
+	       [edState.cursorPos.y][edState.cursorPos.x].ch);
+	  }
       }
   };
 
@@ -962,7 +985,30 @@ void actOnInputLayer2
   {
     if(!edState.refrenceChunkToggle)
       {
-	showAndChangeCoorinates(chunkSize, edState, chunkCoord);
+	showAndChangeCoordinates(chunkSize, edState, chunkCoord);
+      }
+  };
+
+  auto saveChunksFunc = [bgChunkFileName, cRChunkFileName, & chunkCoord,
+			 chunkSize, & bgChunk, & cRChunk, & edState]()
+  {
+    if(!edState.refrenceChunkToggle)
+      {
+	if(getConfirmation(chunkSize, edState,
+			   "\tdo you really want to save y/n?\t"))
+	  {
+	    progressivePrintMessage
+	      (concat("\tSaving chunks...\t"),
+	       chunkSize, 0, 0, false, false);
+	    if(writeOutChunks(bgChunkFileName, cRChunkFileName,
+			      chunkCoord, bgChunk.getChunk().data,
+			      cRChunk.getChunk().data, chunkSize))
+	      {
+		progressivePrintMessage
+		  (concat("\tChunks saved...\t"),
+		   chunkSize, 0, afterPrintSleep, false, false);
+	      }
+	  }
       }
   };
   
@@ -1020,21 +1066,7 @@ void actOnInputLayer2
       changeCoordinatesFunc();
       break;
     case saveChunks:
-      if(getConfirmation(chunkSize, edState,
-			 "\tdo you really want to save y/n?\t"))
-	{
-	  progressivePrintMessage
-	    (concat("\tSaving chunks...\t"),
-	     chunkSize, 0, 0, false, false);
-	  if(writeOutChunks(bgChunkFileName, cRChunkFileName,
-			    chunkCoord, bgChunk.getChunk().data,
-			    cRChunk.getChunk().data, chunkSize))
-	    {
-	      progressivePrintMessage
-		(concat("\tChunks saved...\t"),
-		 chunkSize, 0, afterPrintSleep, false, false);
-	    }
-	}
+      saveChunksFunc();
       break;
     }
 }
@@ -1077,12 +1109,11 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
     refresh();
   };
   
-  auto printModeSpecificHelpMsg = [chunkSize]()
+  auto printModeSpecificHelpMsg = [chunkSize](const std::string & msg)
   {
     editingSettings::colorMode.setColor(editingSettings::helpColor);
     progressivePrintMessage
-      (concat("\tPlease select a background color for the character.\t"),
-       chunkSize, 0, 0, false, false);
+      (msg, chunkSize, 0, 0, false, false);
   };
 
   // Used to reset the cursor pos at the end of the fuc.
@@ -1108,7 +1139,7 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 	  const int printACSAtY {1};
       
 	  printAllCharacters(printACSAtY);
-	  printModeSpecificHelpMsg();
+	  printModeSpecificHelpMsg(editingSettings::helpMsgs::getBgCharFromUser);
 	  /* Get character at pos here before changing it with
 	     printRandomColorAtCursoPos() */
 	  const chtype charAtPos 
@@ -1121,9 +1152,6 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 	    {
 	      switch(edState.input)
 		{
-		case toggleHelpMsg:
-		  printEditHelp(chunkSize, edState);
-		  break;
 		case performActionAtPos:
 		  const int charColorOffset {maxCharNum * (colorPair -1)};
 		  /* As far as we know there is no direct way to tell if a
@@ -1184,8 +1212,9 @@ void getBgCharFromUser(const yx chunkSize, editingState & edState)
 }
 
 
-int getColorPairFromUser(const yx chunkSize, editingState & edState,
-			 bool & userQuit, std::function<void()> printHelpMsg)
+int getColorPairFromUser
+(const yx chunkSize, editingState & edState, bool & userQuit,
+ std::function<void(const std::string & msg)> printHelpMsg)
 {
   using namespace editingSettings::editChars;
 
@@ -1233,7 +1262,9 @@ int getColorPairFromUser(const yx chunkSize, editingState & edState,
   while((!gotBgColor || !gotFgColor) && (char)edState.input != quit)
     {
       printAllColors();
-      printHelpMsg();
+      printHelpMsg
+	(!gotFgColor ? editingSettings::helpMsgs::getBgCharFgColorFromUser:
+	 editingSettings::helpMsgs::getBgCharBgColorFromUser);
       /* Get color at pos here before changing it with
 	 printRandomColorAtCursoPos() */
       int pairNumberAtCursorPos
@@ -1247,9 +1278,6 @@ int getColorPairFromUser(const yx chunkSize, editingState & edState,
 	{
 	  switch(edState.input)
 	    {
-	    case toggleHelpMsg:
-	      printEditHelp(chunkSize, edState);
-	      break;
 	    case performActionAtPos:
 	      {
 		short dummyVal {}; // pair_content requires three arguments...
@@ -1400,14 +1428,6 @@ void floodFillBg
 		  locationsToSet.push(yx{currentPos.y, currentPos.x + 1});
 		}
 	    }
-
-	  if(locationsToSet.size() < 1024)
-	    {
-	      // printBgChunk(bgChunk, chunkSize);
-	      // editingSettings::colorMode.setColor(editingSettings::helpColor);
-	      // mvprintw(0, 0, "%d", locationsToSet.size());
-	      // refresh();
-	    }
 	}
     }
 }
@@ -1417,46 +1437,6 @@ void selectAndCopySelection
 (const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize,
  editingState & edState)
 {
-  auto printPasteSelectionHelp = [chunkSize, & edState]()
-  {
-    using namespace editingSettings::editChars;
-  
-    editingSettings::colorMode.setColor(editingSettings::helpColor);
-    progressivePrintMessage
-      (concat
-       ("\t~H~E~L~P~!~\t\t\t\t\t\t",
-	toggleHelpMsg,	": to toggle this message.\t\t\t",
-	cursorUp,		": to move the cursor up.\t\t\t",
-	cursorDown,	": to move the cursor down.\t\t\t",
-	cursorLeft,	": to move the cursor left.\t\t\t",
-	cursorRight,	": to move the cursor right.\t\t\t",
-	" \"", performActionAtPos, " \": to select / deselect the character "
-	"under the cursor.\t\t\t",
-	toggleCrosshairCursor, ": to toggle crosshair cursor.\t\t\t",
-	toggleLineDrawMode, ": to toggle line drawing. When line drawing is "
-	"turned on any character the user moves the cursor over will be marked "
-	"to be copied (unless it is already marked in which case it will be "
-	"unmarked.) This way lines can be drawn "
-	"without having to constantly press \"", performActionAtPos,
-	"\".\t\t\t",
-	floodFill,	": to do a flood fill starting at the current cursor "
-	"pos.\t\t\t",
-	selectSelection, ": to save the current selection and exit the "
-	"selection mode.\t\t\t",
-	quit,		": to quit selection mode and return to the main "
-	"editing mode."),
-       chunkSize, printCharSpeed, afterPrintSleepMedium, false, false);
-
-    edState.input = getch();  
-    while(edState.input != quit &&
-	  edState.input != toggleHelpMsg)
-      {
-	edState.input = getch();
-	sleep(editingSettings::loopSleepTimeMs);
-      }
-    edState.input = ERR;
-  };
-
   std::vector<editingState::selectionBufferElement> newSelection;
 
   /* Add addee to newSelection as if it were a set (we don't want duplicate
@@ -1610,7 +1590,8 @@ void selectAndCopySelection
 	  switch(edState.input)
 	    {
 	    case editingSettings::editChars::toggleHelpMsg:
-	      printPasteSelectionHelp();
+	      printHelp(chunkSize, edState,
+			editingSettings::helpMsgs::selectAndCopySelection);
 	      break;
 	    case editingSettings::editChars::performActionAtPos:
 	      performActionAtPosFunc();
@@ -1687,37 +1668,6 @@ void pasteSelectionIntoBg
   std::vector<editingState::selectionBufferElement> currentSelection
     {edState.getCurrentSelection()};
 
-  auto printPasteSelectionHelp = [chunkSize, & edState]()
-  {
-    using namespace editingSettings::editChars;
-  
-    editingSettings::colorMode.setColor(editingSettings::helpColor);
-    progressivePrintMessage
-      (concat
-       ("\t~H~E~L~P~!~\t\t\t\t\t\t",
-	toggleHelpMsg,	": to toggle this message.\t\t\t",
-	cursorUp,		": to move the cursor up.\t\t\t",
-	cursorDown,	": to move the cursor down.\t\t\t",
-	cursorLeft,	": to move the cursor left.\t\t\t",
-	cursorRight,	": to move\n the cursor right.\t\t\t",
-	" \"", performActionAtPos, " \": to paste the current selection.\t\t\t",
-	nextSelection,	": to cycle to the next selection (if any)\t\t\t",
-	lastSelection,	": to cycle to the last selection (if any)\t\t\t",
-	toggleCrosshairCursor, ": to toggle crosshair cursor.\t\t\t",
-	quit,		": to quit paste selection mode and return to the main "
-	"editing mode."),
-       chunkSize, printCharSpeed, afterPrintSleepMedium, false, false);
-
-    edState.input = getch();  
-    while(edState.input != quit &&
-	  edState.input != toggleHelpMsg)
-      {
-	edState.input = getch();
-	sleep(editingSettings::loopSleepTimeMs);
-      }
-    edState.input = ERR;
-  };
-
   /* If min is true getSelectionOffsetFromOrigin will return minimum offset
      from the origin and if it is false the function will return the maximum
      offset. */
@@ -1777,8 +1727,6 @@ void pasteSelectionIntoBg
     [& bgChunk, chunkSize, & edState, & selectionMinOffsetFromOrigin, & currentSelection]()
     {
       yx printPos {};
-      backgroundChunkCharType lastCh {};
-
       // Make sure the whole paste is counted as an undo-able action!
       bgChunk.advanceBeforeModify().data;
       
@@ -1790,8 +1738,6 @@ void pasteSelectionIntoBg
 	       edState.cursorPos.y,
 	       element.coord.x - selectionMinOffsetFromOrigin.x +
 	     edState.cursorPos.x};
-	  /* Save last ch for use with bgChunk.advanceBeforeModify() */
-	  lastCh = element.ch;	
 	  
 	  if(printPos.y >= 0 && printPos.y < chunkSize.y &&
 	     printPos.x >= 0 && printPos.x < chunkSize.x)
@@ -1921,7 +1867,8 @@ void pasteSelectionIntoBg
 	      switch(edState.input)
 		{
 		case editingSettings::editChars::toggleHelpMsg:
-		  printPasteSelectionHelp();
+		  printHelp(chunkSize, edState,
+			    editingSettings::helpMsgs::pasteSelection);
 		  break;
 		case editingSettings::editChars::performActionAtPos:
 		  pasteSelection();
@@ -1994,7 +1941,7 @@ void showUnsetBgChars
     {
       if(edState.input == editChars::toggleHelpMsg)
 	{
-	  printEditHelp(chunkSize, edState);
+	  printHelp(chunkSize, edState, helpMsgs::showUnsetBgChars);
 	}
       for(int yIter {}; yIter < chunkSize.y; yIter++)
 	{
@@ -2016,7 +1963,7 @@ void showUnsetBgChars
 }
 
 
-void showAndChangeCoorinates
+void showAndChangeCoordinates
 (const yx viewPortSize, editingState & edState, yx & chunkCoord)
 {
   using namespace editingSettings::editChars;
@@ -2108,79 +2055,14 @@ bool writeOutChunks
 }
 
 
-void printEditHelp(const yx viewPortSize, editingState & edState)
+void printHelp
+(const yx viewPortSize, editingState & edState, const std::string & msg)
 {
   using namespace editingSettings::editChars;
   
   editingSettings::colorMode.setColor(editingSettings::helpColor);
   progressivePrintMessage
-    (concat
-     ("\t~H~E~L~P~!~\t\t\t\t\t\t",
-      toggleHelpMsg,	": to toggle this message.\t\t\t",
-      cursorUp,		": to move the cursor up.\t\t\t",
-      cursorDown,	": to move the cursor down.\t\t\t",
-      cursorLeft,	": to move the cursor left.\t\t\t",
-      cursorRight,	": to move the cursor right.\t\t\t",
-      "\"", performActionAtPos, "\": to perform an action at the current "
-      "cursor position. The specific action performed depends on the context. "
-      "The most important action is to change the character under the cursor "
-      "to the same character as the cursor.\t\t\t",
-      toggleBetweenCRandBg, ": to toggle between background and character "
-      "rules chunks.\t\t\t",
-      toggleReferenceChunkView, ": to toggle the reference chunk view (this is "
-      "only relevant when in mode 2, see -h for more info.)\t\t\t",
-      cREraseCRChar,	": to set the cursor character to the rules erase "
-      "character when editing a choord rules chunk. This allows for the "
-      "erasure of rules characters from the chunk.\t\t\t",
-      cRSetCRCharToBorder, ": to set the cursor character to the boarder "
-      "character when editing a choord rules chunk.\t\t\t",
-      cRSetCRCharToPlatform, ": to set the cursor character to the platform "
-      "character when editing a choord rules chunk.\t\t\t",
-      bGToggleCharacterSelection, ": to select a new character color and "
-      "character for the cursor character when editing a background chunk\t\t\t",
-      bgNextCurrentChar,	": to cycle forward (next) through the recent "
-      "cursor characters when editing a background chunk\t\t\t",
-      bgLastCurrentChar, ": to cycle backwards (last) through the recent "
-      "cursor characters when editing a background chunk\t\t\t",
-      redo,		": to cycle the chunk buffer position forward (redo). ",
-      "This cycles forward through the chunk buffer. Every time a chunk is "
-      "altered the chunk at the current position in the buffer is unchanged "
-      "and a copy of that chunk is saved in the next buffer position where the "
-      "change is made. The current position is updated to the position of this "
-      "new altered copy.\t\t\t",
-      undo,		": to cycle the chunk buffer position back (undo). "
-      "This cycles back through the chunk buffer. Every time a chunk is "
-      "altered the chunk at the current position in the buffer is unchanged "
-      "and a copy of that chunk is saved in the next buffer position where the "
-      "change is made. The current position is updated to the position of this "
-      "new altered copy.\t\t\t",
-      bgGetCharAtPos,	": to set the cursor character to the background chunk "
-      "character below it. This is only applicable if editing a background "
-      "chunk and the character at the cursor pos has already been set.\t\t\t",
-      toggleLineDrawMode, ": to toggle line drawing. When line drawing is "
-      "turned on any character the user moves the cursor over will be set to "
-      "the current cursor character. This way lines can be drawn without "
-      "having to constantly press \"", performActionAtPos, "\".\t\t\t",
-      floodFill,	": to do a flood fill using the cursor character and "
-      "starting at the current cursor pos. This is only applicable if editing "
-      "a background chunk\t\t\t",
-      selectSelection,	": to enter selection mode, where a an area (selection) "
-      "can be selected for copying and later pasting.\t\t\t",
-      pasteSelection,	": to enter past mode, where ",
-      edState.getSizeOfSelectionRingBuffer(), " of the last selections made can "
-      "be pasted.\t\t\t",
-      bgShowUnsetChars,	": to print noise in locations where characters aren't "
-      "set. This helps when trying to find unset background chunk characters. "
-      "Note that the chunks cannot be saved if any of the background chunk "
-      "characters are unset. Also note that when editing a new background "
-      "chunk file all characters are initially unset.\t\t\t",
-      toggleCrosshairCursor, ": to toggle crosshair cursor.\t\t\t",
-      changeCoordinates, ": to change coordinates. This changes the "
-      "coordinates of both the background chunk and rules character chunk as "
-      "they are a set.\t\t\t",
-      saveChunks,	": to save (output) both chunks.\t\t\t",
-      quit,		": to quite the program."),
-     viewPortSize, printCharSpeed, afterPrintSleepMedium, false, false);
+    (msg, viewPortSize, printCharSpeed, afterPrintSleepMedium, false, false);
 
   edState.input = getch();  
   while(edState.input != quit &&
