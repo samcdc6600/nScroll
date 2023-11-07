@@ -219,18 +219,21 @@ namespace editingSettings
 	editChars::quit,		": to quite the program.")};
     const std::string refViewingCR
       {concat
-       ("\t~H~E~L~P~!~\nIn the reference chunk view mode (viewing a character rules chunk).\n",
-	editChars::toggleHelpMsg,	": to toggle this message.\n",
-	editChars::cursorUp,		": to move the cursor up.\t\t\t",
-	editChars::cursorDown,	": to move the cursor down.\t\t\t",
-	editChars::cursorLeft,	": to move the cursor left.\t\t\t",
-	editChars::cursorRight,	": to move the cursor right.\t\t\t",
-	editChars::toggleBetweenCRandBg, ": to toggle between background and character "
-	"rules chunks.\t\t\t",
-	editChars::toggleReferenceChunkView, ": to toggle the reference chunk view (this is "
-	"only relevant when in mode 2, see -h for more info.)\t\t\t",
-	editChars::toggleCrosshairCursor, ": to toggle crosshair cursor.\t\t\t",
-	editChars::quit,		": to quite the program.")};
+       ("~H~E~L~P~!~\nIn the reference chunk view mode "
+	"(viewing a character rules chunk).\n",
+	editChars::toggleHelpMsg,		":    to toggle this "
+	"message.\n",
+	editChars::cursorUp, ", ", editChars::cursorLeft, ", ",
+	editChars::cursorDown, " or ", editChars::cursorRight, ":    "
+	"to move the cursor down up, left, down or right respectively.\n",
+	editChars::toggleBetweenCRandBg,	":    to toggle between "
+	"background and character rules chunks.\n",
+	editChars::toggleReferenceChunkView,	":    to toggle the reference "
+	"chunk view (this is only relevant when in mode 2, see -h for more "
+	"info.)\n",
+	editChars::toggleCrosshairCursor,	":    to toggle crosshair "
+	"cursor.\n",
+	editChars::quit,			":    to quite the program.")};
     const std::string showUnsetBgChars
       {concat
        ("\t~H~E~L~P~!~\t\t\t\t\t\tIn show unset background characters "

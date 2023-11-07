@@ -267,7 +267,8 @@ void progressivePrintMessage
    If printProgressively is set to true then refresh() will be called and each
    character is printed at which point the function will sleep for
    interCharacterSleep before the next character is printed. If clearScreen is
-   true then the screen will be cleared before printing the message. */
+   true then the screen will be cleared before printing the message. Can handle
+   new lines, but not tabs. */
 void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep, const bool clearScreen,
