@@ -544,7 +544,7 @@ void editModeProper
       ERR, 	        // This is returned by getch() when there is no input.
       yx{chunkSize.y / 2, chunkSize.x / 2},
       editingSettings::initialCursorChar,
-      editingSettings::rulesChars::boarder
+      editingSettings::rulesChars::border
     };
   
   while(!confirmQuit(chunkSize, edState.input,
@@ -819,11 +819,11 @@ void actOnInputLayer2
       }
   };
 
-  auto cRSetCRCharToBoarderFunc = [& edState]()
+  auto cRSetCRCharToBorderFunc = [& edState]()
   {
     if(edState.cRChunkToggle && !edState.refrenceChunkToggle)
       {
-	edState.currentCRChar = editingSettings::rulesChars::boarder;
+	edState.currentCRChar = editingSettings::rulesChars::border;
       }
   };
 
@@ -1021,7 +1021,7 @@ void actOnInputLayer2
       cREraseCRCharFunc();
       break;
     case cRSetCRCharToBorder:
-      cRSetCRCharToBoarderFunc();
+      cRSetCRCharToBorderFunc();
       break;
     case cRSetCRCharToPlatform:
       cRSetCRCharToPlatformFunc();

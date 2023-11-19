@@ -38,16 +38,16 @@ void writeOutChunkCoordToFile
 (const std::string & fileName, std::ofstream & file, const yx chunkCoord);
 
 
-namespace boarderRuleChars
+namespace borderRuleChars
 {
-  /* NOTE: when adding boarder rule characters you must also add them to the
+  /* NOTE: when adding border rule characters you must also add them to the
      CHARS array and add the extern declarations to utils.hpp. */
-  // The player cannot move through boarder chars.
-  constexpr char BOARDER_CHAR = 'b';
-  /* Same as boarder chars (except the player can move through them if
+  // The player cannot move through border chars.
+  constexpr char BORDER_CHAR = 'b';
+  /* Same as border chars (except the player can move through them if
      moving up.) */
   constexpr char PLATFORM_CHAR = 'p';
-  const std::vector<char> CHARS {BOARDER_CHAR, PLATFORM_CHAR};
+  const std::vector<char> CHARS {BORDER_CHAR, PLATFORM_CHAR};
 };
 /* I.e. level can't be more then MAX_COORD_LEN chars long (or rather a player
    cannot be started at a position with a number with more places than this. */
@@ -195,7 +195,7 @@ void progressivePrintMessage
 
 /* TODO: update progressivePrintMessage() so that if msg contains new line
    characters it will handle them properly. I.e. the next character in msg
-   should print to the next line and the boarder and background and overall
+   should print to the next line and the border and background and overall
    message shape should adjust accordingly. This will require an initial pass
    over msg to calculate the size and shape of the message box. */
 void progressivePrintMessage
@@ -204,29 +204,56 @@ void progressivePrintMessage
 {
   setColorMode colorMode {};
   
-  auto printHorizontalBoarder =
+  auto printHorizontalBorder =
     [viewPortSize, & colorMode]
-    (const int msgLineLength, const int marginSingle, const int marginTop,
-     const int lineNo, const bool top)
+    (const int msgLineLength, const int marginSingle,
+     const int padding, const int marginTop, const int lineNo,
+     const bool top)
     {
+      // if(top)
+      // 	{
+      // 	  color.setColor(helpColorPair);
+      // 	  // Print left padding.
+      // 	  for(int yIter {}; yIter < padding; yIter++)
+      // 	    {
+      // 	      // Print left padding.
+      // 	      for(int iter {}; iter < padding; iter++)
+      // 		{
+      // 		  mvprintw(yIter + lineNo + marginTop + 1,
+      // 			   marginSingle + border + iter, " ");
+      // 		}
+      // 	      for(int xIter  {}; xIter < msgLineLength; xIter++)
+      // 		{
+      // 		  mvprintw
+      // 		    (yx{yIter + lineNo + marginTop + 1,
+      // 			xIter + marginSingle + border + padding}, " ");
+      // 		}
+      // 	      // Print right padding.
+      // 	      for(int iter {}; iter < padding; iter++)
+      // 		{
+      // 		  mvprintw(yIter + lineNo + marginTop + 1,
+      // 			   msgLineLength + marginSingle + padding + border + iter, " ");
+      // 		}
+      // 	    }
+      // 	}
       // Print left corner.
       colorMode.setRandomColor();
       mvprintw(lineNo + marginTop, marginSingle,
-	       top? progressivePrintMessageTopLeftCornerBoarderChar.c_str():
-	       progressivePrintMessageBottomLeftCornerBoarderChar.c_str());
+	       top? progressivePrintMessageTopLeftCornerBorderChar.c_str():
+	       progressivePrintMessageBottomLeftCornerBorderChar.c_str());
       // Print centre.
       int lineChars {};
-      for( ; lineChars < msgLineLength; lineChars++)
+      for( ; lineChars < msgLineLength + (padding * 2); lineChars++)
 	{
 	  colorMode.setRandomColor();
 	  mvprintw(lineNo + marginTop, lineChars + 1 + marginSingle,
-		   progressivePrintMessageHorizBoarderChar.c_str());
+		   progressivePrintMessageHorizBorderChar.c_str());
 	}
       // Print right corner.
       colorMode.setRandomColor();
       mvprintw(lineNo+ marginTop, lineChars + 1 + marginSingle,
-	       top? progressivePrintMessageTopRightCornerBoarderChar.c_str():
-	       progressivePrintMessageBottomRightCornerBoarderChar.c_str());
+	       top? progressivePrintMessageTopRightCornerBorderChar.c_str():
+	       progressivePrintMessageBottomRightCornerBorderChar.c_str());
   };
 
   /* Returns the number of characters ('\n' characters will be added to the
@@ -273,31 +300,32 @@ void progressivePrintMessage
   };
 
   setColorMode color   	{};
-  // This is for both sides and includes boarder characters.
-  const int margin		{8};
-  const int boarderCharsNo	{4};
-  const int marginSingle	{margin / 2};
-  const int msgLineLength	{170 - margin - boarderCharsNo};
+  // This is for both sides and includes border characters.
+  const int lRMargin   	{5};
+  const int padding	{2};
+  const int border	{1};
+  const int msgLineLength
+    			{170 - (lRMargin * 2) - ((padding + border) * 2)};
   const int msgLength  	{countVirtualLength(msgLineLength)};
   const int noOfLines	       	{msgLength / msgLineLength};
   const int marginTop
-    {marginSingle + (viewPortSize.y / 2) - (noOfLines / 2)};
+    {(viewPortSize.y / 2) - (padding + border) - (noOfLines / 2)};
   /* We need to move back to just after this point after printing the bottom
-     boarder for messages prompting for user input. */
+     border for messages prompting for user input. */
   yx lastMsgCharPos    	{};
   int charsPrinted     	{};
   int lines	       	{};
 
   auto printBlanksForRemainderOfLine =
-    [margin, msgLineLength, marginTop, & lines, & charsPrinted]
+    [lRMargin, border, msgLineLength, marginTop, & lines, & charsPrinted]
     (const int msgLinePrintLoopControlVar, int & lineCharIter)
     {
       int virtualLineChars {lineCharIter};
-      for( ; virtualLineChars < msgLineLength; ++virtualLineChars)
+      for( ; virtualLineChars < msgLineLength; virtualLineChars++)
 	{
 	  mvprintw
 	    (yx{lines + marginTop,
-		virtualLineChars + (margin / 2)}, " ");
+		virtualLineChars + lRMargin + border + padding}, " ");
 	}
       charsPrinted++;
       // We need to break out of the outer for loop.
@@ -308,72 +336,87 @@ void progressivePrintMessage
     {
       clear();
     }
-
-  endwin();
-  std::cout<<"marginTop = "<<marginTop<<" noOfLines = "<<noOfLines<<'\n';
-  exit(-1);
   
-  // Print top boarder.
-  printHorizontalBoarder
-    (msgLineLength, marginSingle, marginTop, lines -1,
+  // Print top border.
+  printHorizontalBorder
+    (msgLineLength, lRMargin, border, marginTop, lines -1,
      true);
+  
   printProgressivelyFunc();
 
   // Print bulk of message (if it is one line or more.)
-  for( ; lines < noOfLines; ++lines)
+  for( ; lines < noOfLines + (padding * 2); ++lines)
     {
-      // Print left vertical boarder character.
+      // Print left vertical border character.
       color.setRandomColor();
-      mvprintw(lines + marginTop, marginSingle,
-	       progressivePrintMessageVertBoarderChar.c_str());
-
-      
-      const int msgLinePrintLoopControlVar {msgLineLength};
-      int lineCharIter {};
-
-      lineCharIter = 0;
-      for( ; lineCharIter < msgLinePrintLoopControlVar;
-	   lineCharIter++)
+      mvprintw(lines + marginTop, lRMargin,
+	       progressivePrintMessageVertBorderChar.c_str());
+      color.setColor(helpColorPair);
+      // Print left padding.
+      for(int iter {}; iter < padding; iter++)
 	{
-	  color.setColor(helpColorPair);
-	  lastMsgCharPos = yx {lines + marginTop,
-			       lineCharIter + (margin / 2)};
-
-	  switch(msg[charsPrinted])
-	    {
-	    case '\n':
-	      {
-		printBlanksForRemainderOfLine
-		  (msgLinePrintLoopControlVar, lineCharIter);
-	      }
-	      break;
-	    default:
-	      if(charsPrinted > msg.size() -1)
-		{
-		  mvprintw
-		    (lastMsgCharPos, " ");
-		}
-	      else
-		{
-		  mvprintw(lastMsgCharPos, concat("", msg[charsPrinted]).c_str());
-		}
-	      charsPrinted++;
-	    }
-
-	  printProgressivelyFunc();
+	  mvprintw(lines + marginTop, lRMargin + border + iter, " ");
 	}
 
+      int lineCharIter {};
       
-      // Print right vertical boarder character.
+      lineCharIter = 0;
+      if(lines < padding || lines > noOfLines)
+	{
+	  printBlanksForRemainderOfLine
+	    (msgLineLength, lineCharIter);
+	}
+      else
+	{
+	  for( ; lineCharIter < msgLineLength;
+	       lineCharIter++)
+	    {
+	      lastMsgCharPos = yx {lines + marginTop,
+				   lineCharIter + lRMargin + padding + border};
+
+	      switch(msg[charsPrinted])
+		{
+		case '\n':
+		  {
+		    printBlanksForRemainderOfLine
+		      (msgLineLength, lineCharIter);
+		  }
+		  break;
+		default:
+		  if(charsPrinted > msg.size() -1)
+		    {
+		      mvprintw
+			(lastMsgCharPos, " ");
+		    }
+		  else
+		    {
+		      mvprintw
+			(lastMsgCharPos, concat("", msg[charsPrinted]).c_str());
+		    }
+		  charsPrinted++;
+		}
+
+	      printProgressivelyFunc();
+	    }
+	}
+
+      // Print right padding.
+      for(int iter {}; iter < padding; iter++)
+	{
+	  mvprintw(lines + marginTop, msgLineLength + lRMargin +
+		   padding + border + iter, " ");
+	}
+      // Print right vertical border character.
       color.setRandomColor();
-      mvprintw(lines + marginTop, msgLineLength + 1 + marginSingle,
-	       progressivePrintMessageVertBoarderChar.c_str());
-      printProgressivelyFunc();
+      mvprintw
+	(lines + marginTop, msgLineLength + lRMargin + border +
+	 (padding * 2),
+	 progressivePrintMessageVertBorderChar.c_str());
     }
 
-  // Print bottom boarder.
-  printHorizontalBoarder
-    (msgLineLength, marginSingle, marginTop, lines,
+  // Print bottom border.
+  printHorizontalBorder
+    (msgLineLength, lRMargin, padding, marginTop, lines,
      false);
   
   color.setColor(helpColorPair);

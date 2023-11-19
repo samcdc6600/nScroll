@@ -148,52 +148,50 @@ struct cRChunkStrt
    position in question (when not in bgShowUnsetChars mode.) Also used for
    the same purpose for cR chunk mode. */
 constexpr int emptyCharChar {' '};
-const std::string progressivePrintMessageHorizBoarderChar	{"-"};
-const std::string progressivePrintMessageVertBoarderChar	{"|"};
-const std::string progressivePrintMessageTopLeftCornerBoarderChar	{"/"};
-const std::string progressivePrintMessageTopRightCornerBoarderChar	{"\\"};
-const std::string progressivePrintMessageBottomLeftCornerBoarderChar	{"\\"};
-const std::string progressivePrintMessageBottomRightCornerBoarderChar	{"/"};
+const std::string progressivePrintMessageHorizBorderChar		{"-"};
+const std::string progressivePrintMessageVertBorderChar			{"|"};
+const std::string progressivePrintMessageTopLeftCornerBorderChar	{"/"};
+const std::string progressivePrintMessageTopRightCornerBorderChar	{"\\"};
+const std::string progressivePrintMessageBottomLeftCornerBorderChar	{"\\"};
+const std::string progressivePrintMessageBottomRightCornerBorderChar	{"/"};
 
 /* These constants are special values that signify the start of run length
    sequences. */
 constexpr backgroundChunkCharType bgRunLengthSequenceSignifier
   {std::numeric_limits<unsigned short>::max()};
-constexpr char cRRunLengthSequenceSignifier {'R'};
+constexpr char cRRunLengthSequenceSignifier	{'R'};
 /* The point after which we will gain an advantage from our run length
    compression scheme compression.
    RunLengthSequenceSignifier + length + character = 3. */
-constexpr int bgCompressionAdvantagePoint{3};
+constexpr int bgCompressionAdvantagePoint	{3};
 /* We need to be able to store lengths of at least 8160 (our chunk size 170x48)
    For this we will need two chars. Thus a run length sequence will take up
    RunLengthSequenceSignifier + lengthComp1 + lengthComp2 + character
    characters. */
-constexpr int cRCompressionAdvantagePoint {4};
+constexpr int cRCompressionAdvantagePoint	{4};
 
 /* Note here that we are using 32 less 1 because this prevents space from being
    0 which causes a problem in getColor in the line:
    int color {((ch -1) / maxCharNum) +1};
    We can't be bothered to try to fix it since it works otherwise and 32 is
    enough to remove fix the characters in ints. */
-constexpr int lowerUnusedASCIIChNum {32 -1};
+constexpr int lowerUnusedASCIIChNum		{32 -1};
 /* We could have also removed upperUnusedASCIIChNum from the character
    range. However removing lowerUnusedASCIIChNum is enough to have the
    character color pair combos fit in unsigned shorts and it would just make the
    code more complicated. So there wouldn't really be any benefit. */
 // constexpr int upperUnusedASCIIChNum {1};
-constexpr int aSCIIChMaxEffective
-  {127 - lowerUnusedASCIIChNum};
+constexpr int aSCIIChMaxEffective	{127 - lowerUnusedASCIIChNum};
 /* Numerical value of highest character using color pair 1.  */
-constexpr int maxCharNum
-  {158 - lowerUnusedASCIIChNum};
-constexpr int COLOR_CH_MAX {63};
-constexpr int subMenuSleepTimeMs {160};
-constexpr int helpColorPair	{1};
-constexpr int warningColor	{86};
-constexpr int ASCII_NUMBER_OFFSET {48};
-constexpr char ESC_CHAR{27};
-constexpr char BACKGROUND_FILE_EXTENSION [] {".levbg"};
-constexpr char COORD_RULES_FILE_EXTENSION [] {".levcr"};
+constexpr int maxCharNum		{158 - lowerUnusedASCIIChNum};
+constexpr int COLOR_CH_MAX		{63};
+constexpr int subMenuSleepTimeMs	{160};
+constexpr int helpColorPair		{1};
+constexpr int warningColor		{86};
+constexpr int ASCII_NUMBER_OFFSET 	{48};
+constexpr char ESC_CHAR			{27};
+constexpr char BACKGROUND_FILE_EXTENSION []	{".levbg"};
+constexpr char COORD_RULES_FILE_EXTENSION []	{".levcr"};
 constexpr char BACKGROUND_CHUNK_FILE_EXTENSION [] {".bgchunk"};
 constexpr char COORD_RULES_CHUNK_FILE_EXTENSION[] {".crchunk"};
 
@@ -238,11 +236,11 @@ enum errorsCodes {                     /* Error codes. */
 };
 
 
-namespace boarderRuleChars
+namespace borderRuleChars
 {
-  /* NOTE: when adding boarder rule characters you must add then to utils.cpp as
+  /* NOTE: when adding border rule characters you must add then to utils.cpp as
      well as adding the corresponding extern declarations here. */
-  extern const char BOARDER_CHAR;
+  extern const char BORDER_CHAR;
   extern const char PLATFORM_CHAR;
   extern const std::vector<char> CHARS;
 };

@@ -90,71 +90,75 @@ namespace editingSettings
   namespace rulesChars
   {
     constexpr char nullRule	{' '};
-    constexpr char boarder	{'b'};
+    constexpr char border	{'b'};
     constexpr char platform	{'p'};
   }
 
   namespace helpMsgs
   {
     const std::string mainViewingBg
-      {concat
-       ("\t~H~E~L~P~!~\t\t\t\t\t\tIn the main editing mode (viewing a background chunk.)\t\t\t\t\t",
-	editChars::toggleHelpMsg,	": to toggle this message.\t\t\t",
-	editChars::cursorUp,		": to move the cursor up.\t\t\t",
-	editChars::cursorDown,	": to move the cursor down.\t\t\t",
-	editChars::cursorLeft,	": to move the cursor left.\t\t\t",
-	editChars::cursorRight,	": to move the cursor right.\t\t\t",
-	"\"", editChars::performActionAtPos, "\": to perform an action at the current "
-	"cursor position. The specific action performed depends on the context. "
-	"The most important action is to change the character under the cursor "
-	"to the same character as the cursor.\t\t\t",
-	editChars::toggleBetweenCRandBg, ": to toggle between background and character "
-	"rules chunks.\t\t\t",
-	editChars::toggleReferenceChunkView, ": to toggle the reference chunk view (this is "
-	"only relevant when in mode 2, see -h for more info.)\t\t\t",
-	editChars::bGToggleCharacterSelection, ": to select a new character color and "
-	"character for the cursor character.\t\t\t",
-	editChars::bgNextCurrentChar,	": to cycle forward (next) through the recent "
-	"cursor characters.\t\t\t",
-	editChars::bgLastCurrentChar, ": to cycle backwards (last) through the recent "
-	"cursor characters.\t\t\t",
-	editChars::redo,		": to cycle the chunk buffer position forward (redo). ",
-	"This cycles forward through the chunk buffer. Every time a chunk is "
-	"altered the chunk at the current position in the buffer is unchanged "
-	"and a copy of that chunk is saved in the next buffer position where the "
-	"change is made. The current position is updated to the position of this "
-	"new altered copy.\t\t\t",
-	editChars::undo,		": to cycle the chunk buffer position back (undo). "
-	"This cycles back through the chunk buffer. Every time a chunk is "
-	"altered the chunk at the current position in the buffer is unchanged "
-	"and a copy of that chunk is saved in the next buffer position where the "
-	"change is made. The current position is updated to the position of this "
-	"new altered copy.\t\t\t",
-	editChars::bgGetCharAtPos,	": to set the cursor character to the background chunk "
-	"character below it. This is only applicable if the character at the "
-	"cursor pos has already been set.\t\t\t",
-	editChars::toggleLineDrawMode, ": to toggle line drawing. When line drawing is "
-	"turned on any character the user moves the cursor over will be set to "
-	"the current cursor character. This way lines can be drawn without "
-	"having to constantly press \"", editChars::performActionAtPos, "\".\t\t\t",
-	editChars::floodFill,	": to do a flood fill using the cursor character and "
-	"starting at the current cursor pos.\t\t\t",
-	editChars::selectSelection,	": to enter selection mode, where an area (selection) "
-	"can be selected for copying and later pasting.\t\t\t",
-	editChars::pasteSelection,	": to enter past mode, where ",
-	selectionRingBufferSize, " of the last selections made can "
-	"be pasted.\t\t\t",
-	editChars::bgShowUnsetChars,	": to print noise in locations where characters aren't "
-	"set. This helps when trying to find unset background chunk characters. "
-	"Note that the chunks cannot be saved if any of the background chunk "
-	"characters are unset. Also note that when editing a new background "
-	"chunk file all characters are initially unset.\t\t\t",
-	editChars::toggleCrosshairCursor, ": to toggle crosshair cursor.\t\t\t",
-	editChars::changeCoordinates, ": to change coordinates. This changes the "
-	"coordinates of both the background chunk and rules character chunk as "
-	"they are a set.\t\t\t",
-	editChars::saveChunks,	": to save (output) both chunks.\t\t\t",
-	editChars::quit,		": to quite the program.")};
+      {
+	
+	"\n"
+	// concat
+       // ("\t~H~E~L~P~!~\t\t\t\t\t\tIn the main editing mode (viewing a background chunk.)\t\t\t\t\t",
+       // 	editChars::toggleHelpMsg,	": to toggle this message.\t\t\t",
+       // 	editChars::cursorUp,		": to move the cursor up.\t\t\t",
+       // 	editChars::cursorDown,	": to move the cursor down.\t\t\t",
+       // 	editChars::cursorLeft,	": to move the cursor left.\t\t\t",
+       // 	editChars::cursorRight,	": to move the cursor right.\t\t\t",
+       // 	"\"", editChars::performActionAtPos, "\": to perform an action at the current "
+       // 	"cursor position. The specific action performed depends on the context. "
+       // 	"The most important action is to change the character under the cursor "
+       // 	"to the same character as the cursor.\t\t\t",
+       // 	editChars::toggleBetweenCRandBg, ": to toggle between background and character "
+       // 	"rules chunks.\t\t\t",
+       // 	editChars::toggleReferenceChunkView, ": to toggle the reference chunk view (this is "
+       // 	"only relevant when in mode 2, see -h for more info.)\t\t\t",
+       // 	editChars::bGToggleCharacterSelection, ": to select a new character color and "
+       // 	"character for the cursor character.\t\t\t",
+       // 	editChars::bgNextCurrentChar,	": to cycle forward (next) through the recent "
+       // 	"cursor characters.\t\t\t",
+       // 	editChars::bgLastCurrentChar, ": to cycle backwards (last) through the recent "
+       // 	"cursor characters.\t\t\t",
+       // 	editChars::redo,		": to cycle the chunk buffer position forward (redo). ",
+       // 	"This cycles forward through the chunk buffer. Every time a chunk is "
+       // 	"altered the chunk at the current position in the buffer is unchanged "
+       // 	"and a copy of that chunk is saved in the next buffer position where the "
+       // 	"change is made. The current position is updated to the position of this "
+       // 	"new altered copy.\t\t\t",
+       // 	editChars::undo,		": to cycle the chunk buffer position back (undo). "
+       // 	"This cycles back through the chunk buffer. Every time a chunk is "
+       // 	"altered the chunk at the current position in the buffer is unchanged "
+       // 	"and a copy of that chunk is saved in the next buffer position where the "
+       // 	"change is made. The current position is updated to the position of this "
+       // 	"new altered copy.\t\t\t",
+       // 	editChars::bgGetCharAtPos,	": to set the cursor character to the background chunk "
+       // 	"character below it. This is only applicable if the character at the "
+       // 	"cursor pos has already been set.\t\t\t",
+       // 	editChars::toggleLineDrawMode, ": to toggle line drawing. When line drawing is "
+       // 	"turned on any character the user moves the cursor over will be set to "
+       // 	"the current cursor character. This way lines can be drawn without "
+       // 	"having to constantly press \"", editChars::performActionAtPos, "\".\t\t\t",
+       // 	editChars::floodFill,	": to do a flood fill using the cursor character and "
+       // 	"starting at the current cursor pos.\t\t\t",
+       // 	editChars::selectSelection,	": to enter selection mode, where an area (selection) "
+       // 	"can be selected for copying and later pasting.\t\t\t",
+       // 	editChars::pasteSelection,	": to enter past mode, where ",
+       // 	selectionRingBufferSize, " of the last selections made can "
+       // 	"be pasted.\t\t\t",
+       // 	editChars::bgShowUnsetChars,	": to print noise in locations where characters aren't "
+       // 	"set. This helps when trying to find unset background chunk characters. "
+       // 	"Note that the chunks cannot be saved if any of the background chunk "
+       // 	"characters are unset. Also note that when editing a new background "
+       // 	"chunk file all characters are initially unset.\t\t\t",
+       // 	editChars::toggleCrosshairCursor, ": to toggle crosshair cursor.\t\t\t",
+       // 	editChars::changeCoordinates, ": to change coordinates. This changes the "
+       // 	"coordinates of both the background chunk and rules character chunk as "
+       // 	"they are a set.\t\t\t",
+       // 	editChars::saveChunks,	": to save (output) both chunks.\t\t\t",
+       // 	editChars::quit,		": to quite the program.")
+      };
     const std::string mainViewingCR
       {concat
        ("\t~H~E~L~P~!~\t\t\t\t\t\tIn the main editing mode (viewing a character rules chunk.)\t\t\t\t\t",
@@ -173,7 +177,7 @@ namespace editingSettings
 	"only relevant when in mode 2, see -h for more info.)\t\t\t",
 	editChars::cREraseCRChar,	": to set the cursor character to the rules erase "
 	"character. This allows for the erasure of rules characters from the chunk.\t\t\t",
-	editChars::cRSetCRCharToBorder, ": to set the cursor character to the boarder "
+	editChars::cRSetCRCharToBorder, ": to set the cursor character to the border "
 	"character.\t\t\t",
 	editChars::cRSetCRCharToPlatform, ": to set the cursor character to the platform "
 	"character.\t\t\t",
