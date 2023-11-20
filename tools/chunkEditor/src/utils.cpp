@@ -193,11 +193,6 @@ void progressivePrintMessage
 }
 
 
-/* TODO: update progressivePrintMessage() so that if msg contains new line
-   characters it will handle them properly. I.e. the next character in msg
-   should print to the next line and the border and background and overall
-   message shape should adjust accordingly. This will require an initial pass
-   over msg to calculate the size and shape of the message box. */
 void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep, const bool clearScreen, const bool printProgressively)
@@ -210,32 +205,6 @@ void progressivePrintMessage
      const int padding, const int marginTop, const int lineNo,
      const bool top)
     {
-      // if(top)
-      // 	{
-      // 	  color.setColor(helpColorPair);
-      // 	  // Print left padding.
-      // 	  for(int yIter {}; yIter < padding; yIter++)
-      // 	    {
-      // 	      // Print left padding.
-      // 	      for(int iter {}; iter < padding; iter++)
-      // 		{
-      // 		  mvprintw(yIter + lineNo + marginTop + 1,
-      // 			   marginSingle + border + iter, " ");
-      // 		}
-      // 	      for(int xIter  {}; xIter < msgLineLength; xIter++)
-      // 		{
-      // 		  mvprintw
-      // 		    (yx{yIter + lineNo + marginTop + 1,
-      // 			xIter + marginSingle + border + padding}, " ");
-      // 		}
-      // 	      // Print right padding.
-      // 	      for(int iter {}; iter < padding; iter++)
-      // 		{
-      // 		  mvprintw(yIter + lineNo + marginTop + 1,
-      // 			   msgLineLength + marginSingle + padding + border + iter, " ");
-      // 		}
-      // 	    }
-      // 	}
       // Print left corner.
       colorMode.setRandomColor();
       mvprintw(lineNo + marginTop, marginSingle,
@@ -301,24 +270,25 @@ void progressivePrintMessage
 
   setColorMode color   	{};
   // This is for both sides and includes border characters.
-  const int lRMargin   	{5};
-  const int padding	{2};
+  const int lRMargin   	{4};
+  const int padding	{1};
   const int border	{1};
   const int msgLineLength
     			{170 - (lRMargin * 2) - ((padding + border) * 2)};
   const int msgLength  	{countVirtualLength(msgLineLength)};
   const int noOfLines	       	{msgLength / msgLineLength};
   const int marginTop
-    {(viewPortSize.y / 2) - (padding + border) - (noOfLines / 2)};
-  /* We need to move back to just after this point after printing the bottom
-     border for messages prompting for user input. */
-  yx lastMsgCharPos    	{};
+    {(viewPortSize.y / 2) - (padding + border) - (noOfLines / 2) +1};
   int charsPrinted     	{};
   int lines	       	{};
 
+  /* This lambda func is used for both padding and partially blank lines /
+     lines caused by new lines. When used for padding forNewLine should be set
+     to false. */
   auto printBlanksForRemainderOfLine =
     [lRMargin, border, msgLineLength, marginTop, & lines, & charsPrinted]
-    (const int msgLinePrintLoopControlVar, int & lineCharIter)
+    (const int msgLinePrintLoopControlVar, int & lineCharIter,
+     const bool forNewLine = true)
     {
       int virtualLineChars {lineCharIter};
       for( ; virtualLineChars < msgLineLength; virtualLineChars++)
@@ -327,7 +297,11 @@ void progressivePrintMessage
 	    (yx{lines + marginTop,
 		virtualLineChars + lRMargin + border + padding}, " ");
 	}
-      charsPrinted++;
+      if(forNewLine)
+	{
+	  // Count new line char.
+	  charsPrinted++;
+	}
       // We need to break out of the outer for loop.
       lineCharIter = msgLinePrintLoopControlVar;
     };
@@ -339,13 +313,13 @@ void progressivePrintMessage
   
   // Print top border.
   printHorizontalBorder
-    (msgLineLength, lRMargin, border, marginTop, lines -1,
+    (msgLineLength, lRMargin, padding, marginTop, lines -1,
      true);
   
   printProgressivelyFunc();
 
   // Print bulk of message (if it is one line or more.)
-  for( ; lines < noOfLines + (padding * 2); ++lines)
+  for( ; lines < noOfLines + (padding * 2); lines++)
     {
       // Print left vertical border character.
       color.setRandomColor();
@@ -358,20 +332,23 @@ void progressivePrintMessage
 	  mvprintw(lines + marginTop, lRMargin + border + iter, " ");
 	}
 
-      int lineCharIter {};
+      int lineCharIter	{};
+      yx msgCharPos	{};
       
       lineCharIter = 0;
-      if(lines < padding || lines > noOfLines)
+      if(lines < padding || lines > (noOfLines + padding -1))
 	{
+	  // Print top / bottom padding.
 	  printBlanksForRemainderOfLine
-	    (msgLineLength, lineCharIter);
+	    (msgLineLength, lineCharIter, false);
 	}
       else
 	{
+	  // Print actual message.
 	  for( ; lineCharIter < msgLineLength;
 	       lineCharIter++)
 	    {
-	      lastMsgCharPos = yx {lines + marginTop,
+	      msgCharPos = yx {lines + marginTop,
 				   lineCharIter + lRMargin + padding + border};
 
 	      switch(msg[charsPrinted])
@@ -386,12 +363,12 @@ void progressivePrintMessage
 		  if(charsPrinted > msg.size() -1)
 		    {
 		      mvprintw
-			(lastMsgCharPos, " ");
+			(msgCharPos, " ");
 		    }
 		  else
 		    {
 		      mvprintw
-			(lastMsgCharPos, concat("", msg[charsPrinted]).c_str());
+			(msgCharPos, concat("", msg[charsPrinted]).c_str());
 		    }
 		  charsPrinted++;
 		}
@@ -419,8 +396,12 @@ void progressivePrintMessage
     (msgLineLength, lRMargin, padding, marginTop, lines,
      false);
   
+  /* We need to move back to just after this point after printing the bottom
+     border for messages prompting for user input. */
   color.setColor(helpColorPair);
-  move(lastMsgCharPos.y, lastMsgCharPos.x +1);
+  move(noOfLines + padding + border + marginTop - 2,
+       msgLineLength - (msgLength - (int)msg.size())
+  + lRMargin + padding + border);
 
   refresh();
   sleep(afterMsgSleep);

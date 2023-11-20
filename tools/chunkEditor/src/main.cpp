@@ -23,11 +23,8 @@ int main(const int argc, const char * argv [])
   initialiseCurses(viewPortSize);
   const int mode {verifyCmdArgsAndGetMode(argc, argv)};
 
-  // progressivePrintMessage
-  //   ("Welcome to the chunk editor.", viewPortSize, printCharSpeed,
-  //    afterPrintSleep);
-    progressivePrintMessage
-    ("Test Cats!", viewPortSize, printCharSpeed,
+  progressivePrintMessage
+    ("Welcome to the chunk editor.", viewPortSize, printCharSpeed,
      afterPrintSleep);
   enterMode(mode, argv, viewPortSize);
     
