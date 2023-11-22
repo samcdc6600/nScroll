@@ -197,10 +197,31 @@ void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep, const bool clearScreen, const bool printProgressively)
 {
+  std::string msgNew {msg};
   setColorMode colorMode {};
+  struct colorInfo
+  {
+    int linearPos;
+    int color;
+  };
+  /* Stores any colors specified with the "\nX" construction, where X is a
+     positive integer number in the range [1, effectiveGameColorPairsNo].
+     And also stores the indexes in msgNew of the characters where the new color
+     is to be applied. */
+  std::vector<colorInfo> nonDefaultColors {};
+  int nonDefaultColorsPos {};	// Used to index into nonDefaultColors.
+
+  auto printProgressivelyFunc = [printProgressively, interCharacterSleep]()
+  {
+    if(printProgressively)
+      {
+	refresh();
+	sleep(interCharacterSleep);
+      }
+  };
   
   auto printHorizontalBorder =
-    [viewPortSize, & colorMode]
+    [printProgressivelyFunc, viewPortSize, & colorMode]
     (const int msgLineLength, const int marginSingle,
      const int padding, const int marginTop, const int lineNo,
      const bool top)
@@ -210,6 +231,7 @@ void progressivePrintMessage
       mvprintw(lineNo + marginTop, marginSingle,
 	       top? progressivePrintMessageTopLeftCornerBorderChar.c_str():
 	       progressivePrintMessageBottomLeftCornerBorderChar.c_str());
+      printProgressivelyFunc();
       // Print centre.
       int lineChars {};
       for( ; lineChars < msgLineLength + (padding * 2); lineChars++)
@@ -217,29 +239,91 @@ void progressivePrintMessage
 	  colorMode.setRandomColor();
 	  mvprintw(lineNo + marginTop, lineChars + 1 + marginSingle,
 		   progressivePrintMessageHorizBorderChar.c_str());
+	  printProgressivelyFunc();
 	}
       // Print right corner.
       colorMode.setRandomColor();
       mvprintw(lineNo+ marginTop, lineChars + 1 + marginSingle,
 	       top? progressivePrintMessageTopRightCornerBorderChar.c_str():
 	       progressivePrintMessageBottomRightCornerBorderChar.c_str());
+      printProgressivelyFunc();
   };
 
   /* Returns the number of characters ('\n' characters will be added to the
-     length returned.) We think there is still a small bug in this function. */
-  auto countVirtualLength = [msg]
+     length returned.) We think there is still a small bug in this function.
+     TODO: re-write this comment to include info about new functionality related
+     to nonDefaultColors].*/
+  auto countVirtualLength = [& msgNew, & nonDefaultColors]
     (const int msgLineLength)
   {
     int virtualLengthRet {};
     int currentLineLen {};
 
-    for(int iter {}; (size_t)iter < msg.size(); iter++)
+    for(int iter {}; (size_t)iter < msgNew.size(); iter++)
       {
-	switch(msg[iter])
+	switch(msgNew[iter])
 	  {
 	  case '\n':
 	    virtualLengthRet += msgLineLength;
 	    currentLineLen = 0;
+	    break;
+	    /* '\r' signifies a color code. A base 10 integer number should
+	       follow the \r. This will be used as the color of the next
+	       character (after the number). The '\r' and the following number
+	       will not be counted in the virtual length.  */
+	  case '\r':
+	    {
+	      std::size_t numEndPos {};
+	      try
+		{
+		  /* Will throw an out_of_range exception if iter is out of
+		     range. Stoi may throw an out_of_range exception or throw an
+		     invalid_argument exception. */
+		  iter++;	// Move past '\r'.
+		  nonDefaultColors.push_back
+		    (colorInfo{iter -1, std::stoi(msgNew.substr(iter),
+					       &numEndPos)});
+		  numEndPos += iter; // Stoi only stored the num length.
+		  if(nonDefaultColors.back().color < 1 ||
+		     nonDefaultColors.back().color >
+		     colorParams::effectiveGameColorPairsNo)
+		    {
+		      exit(concat
+			   ("Error: encountered color pair number (",
+			    nonDefaultColors.back().color, ") after \"\\r\" "
+			    "character that is outside of the range "
+			    "[1, ", colorParams::effectiveGameColorPairsNo, "]"
+			    " (in string passed to progressivePrintMessage().)"
+			    ), ERROR_COLOR_CODE_RANGE);
+		    }
+		  /* Yes this is very inefficient (iter -1 because we wan't to
+		     remove '\n' chars as well as the positions of the
+		     characters in msgNew associated with them are stored in
+		     nonDefaultcolors.) */
+		  msgNew = compactStr(msgNew, iter -1, numEndPos -1);
+		  // std::cout<<" msgNew = "<<msgNew<<"\n\n";
+		}
+	      catch(std::invalid_argument const & exception)
+		{
+		  exit(concat("Error (", exception.what(), "): encountered "
+			      "invalid sequence after \"\\r\" character in "
+			      "string passed to progressivePrintMessage() "
+			      "(expected a positive integer.)"),
+		       ERROR_MALFORMED_STRING);
+		}
+	      catch(std::out_of_range const & exception)
+		{
+		  exit(concat
+		       ("Error (", exception.what(), "): encountered out of "
+			"range color pair number after \"\\r\" character in "
+			"string passed to progressivePrintMessage() (expected "
+			"an integer in the range [1, ",
+			colorParams::effectiveGameColorPairsNo, "].) Or "
+			"Encountered end of string after \"\\r\" character in "
+			"string passed to progressivePrintMessage()) "),
+		       ERROR_MALFORMED_STRING);
+		}
+	    }
 	    break;
 	  default:
 	    currentLineLen++;
@@ -256,16 +340,12 @@ void progressivePrintMessage
 	virtualLengthRet += msgLineLength;
       }
 
-    return virtualLengthRet;
-  };
+    		  for(auto C: msgNew)
+		    if(C != '\r')
+		      std::cout<<C;
+		  exit(-1);
 
-  auto printProgressivelyFunc = [printProgressively, interCharacterSleep]()
-  {
-    if(printProgressively)
-      {
-	refresh();
-	sleep(interCharacterSleep);
-      }
+    return virtualLengthRet;
   };
 
   setColorMode color   	{};
@@ -286,7 +366,8 @@ void progressivePrintMessage
      lines caused by new lines. When used for padding forNewLine should be set
      to false. */
   auto printBlanksForRemainderOfLine =
-    [lRMargin, border, msgLineLength, marginTop, & lines, & charsPrinted]
+    [printProgressivelyFunc, lRMargin, border, msgLineLength, marginTop,
+     & lines, & charsPrinted]
     (const int msgLinePrintLoopControlVar, int & lineCharIter,
      const bool forNewLine = true)
     {
@@ -296,6 +377,7 @@ void progressivePrintMessage
 	  mvprintw
 	    (yx{lines + marginTop,
 		virtualLineChars + lRMargin + border + padding}, " ");
+	  printProgressivelyFunc();
 	}
       if(forNewLine)
 	{
@@ -306,6 +388,33 @@ void progressivePrintMessage
       lineCharIter = msgLinePrintLoopControlVar;
     };
 
+  auto setCurrentColor =[& nonDefaultColors, & nonDefaultColorsPos, & color,
+			 & charsPrinted](int & currentColor)
+  {
+    if(nonDefaultColors.size() > 0)
+      {
+	if(nonDefaultColorsPos < nonDefaultColors.size())
+	  {
+	    if(nonDefaultColors[nonDefaultColorsPos].linearPos == charsPrinted)
+	      {
+		currentColor =
+		  nonDefaultColors[nonDefaultColorsPos].color;
+		nonDefaultColorsPos++;
+	      }
+	  }
+	// else 
+	//   {
+	//     exit(concat
+	// 	 ("Error: encountered ", nonDefaultColorsPos + 1,
+	// 	  " '\\r' characters where only expecting ",
+	// 	  nonDefaultColors.size(), ". Note that this is "
+	// 	  "a logic bug in the program."),
+	// 	 ERROR_MALFORMED_STRING);
+	//   }
+      }
+    color.setColor(currentColor);
+  };
+
   if(clearScreen)
     {
       clear();
@@ -315,9 +424,8 @@ void progressivePrintMessage
   printHorizontalBorder
     (msgLineLength, lRMargin, padding, marginTop, lines -1,
      true);
-  
-  printProgressivelyFunc();
 
+  int currentColor {helpColorPair};
   // Print bulk of message (if it is one line or more.)
   for( ; lines < noOfLines + (padding * 2); lines++)
     {
@@ -325,11 +433,13 @@ void progressivePrintMessage
       color.setRandomColor();
       mvprintw(lines + marginTop, lRMargin,
 	       progressivePrintMessageVertBorderChar.c_str());
-      color.setColor(helpColorPair);
+      printProgressivelyFunc();
       // Print left padding.
+      color.setColor(helpColorPair);
       for(int iter {}; iter < padding; iter++)
 	{
 	  mvprintw(lines + marginTop, lRMargin + border + iter, " ");
+	  printProgressivelyFunc();
 	}
 
       int lineCharIter	{};
@@ -338,50 +448,55 @@ void progressivePrintMessage
       lineCharIter = 0;
       if(lines < padding || lines > (noOfLines + padding -1))
 	{
+	  color.setColor(helpColorPair);
 	  // Print top / bottom padding.
 	  printBlanksForRemainderOfLine
 	    (msgLineLength, lineCharIter, false);
 	}
       else
-	{
-	  // Print actual message.
-	  for( ; lineCharIter < msgLineLength;
-	       lineCharIter++)
+	{	  
+	  for( ; lineCharIter < msgLineLength; lineCharIter++)
 	    {
-	      msgCharPos = yx {lines + marginTop,
-				   lineCharIter + lRMargin + padding + border};
+	      msgCharPos = yx
+		{lines + marginTop, lineCharIter + lRMargin + padding + border};
+	      setCurrentColor(currentColor);
 
-	      switch(msg[charsPrinted])
+	      /* PrintBlanksForRemainderOfLine() may increment charsPrinted. So
+		 we must test for that here. */
+	      if(charsPrinted < msgNew.size())
 		{
-		case '\n':
-		  {
-		    printBlanksForRemainderOfLine
-		      (msgLineLength, lineCharIter);
-		  }
-		  break;
-		default:
-		  if(charsPrinted > msg.size() -1)
+		  switch(msgNew[charsPrinted])
 		    {
+		    case '\n':
+		      {
+			printBlanksForRemainderOfLine
+			  (msgLineLength, lineCharIter);
+		      }
+		      break;
+		    default:
 		      mvprintw
-			(msgCharPos, " ");
+			(msgCharPos, concat("", msgNew[charsPrinted]).c_str());
+		      charsPrinted++;
 		    }
-		  else
-		    {
-		      mvprintw
-			(msgCharPos, concat("", msg[charsPrinted]).c_str());
-		    }
-		  charsPrinted++;
 		}
-
+	      else
+		{
+		  /* End of line (after msg has been printed) will be printed in
+		     color of last character of msg. */
+		  mvprintw
+		    (msgCharPos, " ");
+		}
 	      printProgressivelyFunc();
 	    }
 	}
 
+      color.setColor(helpColorPair);
       // Print right padding.
       for(int iter {}; iter < padding; iter++)
 	{
 	  mvprintw(lines + marginTop, msgLineLength + lRMargin +
 		   padding + border + iter, " ");
+	  printProgressivelyFunc();
 	}
       // Print right vertical border character.
       color.setRandomColor();
@@ -389,12 +504,14 @@ void progressivePrintMessage
 	(lines + marginTop, msgLineLength + lRMargin + border +
 	 (padding * 2),
 	 progressivePrintMessageVertBorderChar.c_str());
+      printProgressivelyFunc();
     }
 
   // Print bottom border.
   printHorizontalBorder
     (msgLineLength, lRMargin, padding, marginTop, lines,
      false);
+  printProgressivelyFunc();
   
   /* We need to move back to just after this point after printing the bottom
      border for messages prompting for user input. */
@@ -1334,6 +1451,14 @@ void getMinMaxYAndX(const std::vector<yx> & coords, yx & minMaxY, yx & minMaxX)
       // Find max for x...
       minMaxX.x = coord.x > minMaxX.x? coord.x: minMaxX.x;
     }
+}
+
+
+std::string compactStr
+(const std::string & str, const size_t startIndex,
+ const size_t endIndex)
+{
+  return str.substr(0, startIndex) + str.substr(endIndex + 1);
 }
 
 

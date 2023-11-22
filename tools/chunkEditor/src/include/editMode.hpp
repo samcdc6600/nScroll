@@ -102,10 +102,10 @@ namespace editingSettings
 	("\t~H~E~L~P~!~\n"
 	 "In the main editing mode (viewing a background chunk.)\n",
 	 editChars::toggleHelpMsg,		":    to toggle this message."
-	 "\n",
+	 "\n\r501",
 	 editChars::cursorUp, ", ", editChars::cursorLeft, ", ",
 	 editChars::cursorDown, " or ", editChars::cursorRight, ":    "
-	 "to move the cursor down up, left, down or right respectively.\n",
+	 "\r74to move the cursor down up, left, down or right respectively.\n",
 	 "\"", editChars::performActionAtPos,	"\":    to perform an action "
 	 "at the current cursor position. The specific action performed "
 	 "depends on the context. The most important action is to change the "
@@ -122,7 +122,7 @@ namespace editingSettings
 	 editChars::bgLastCurrentChar,		":    to cycle backwards "
 	 "(last) through the recent cursor characters.\n",
 	 editChars::redo,			":    to cycle the chunk "
-	 "buffer position forward (redo). This cycles forward through the "
+	 "buffer position forward (redo). Th\r45is cycles forward through the "
 	 "chunk buffer. Every time a chunk is altered the chunk at the current "
 	 "position in the buffer is unchanged and a copy of that chunk is "
 	 "saved in the next buffer position where the change is made. The "

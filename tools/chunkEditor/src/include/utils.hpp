@@ -337,10 +337,6 @@ bool getCRChunk
 (std::fstream & file, char chunk[][xWidth],
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
  const bool multiChunkFile = false);
-// /* Attempts to read in the next background (starting at file.tellg()). */
-// bool getNextBgChunk
-// (std::fstream & file, backgroundChunkCharType chunk[][xWidth],
-//  const yx chunkSize, yx & chunkCoordconst std::string & fileName);
 void compressAndWriteOutBgChunk
 (const std::string & fileName, std::ofstream & file, const yx chunkCoord,
  const backgroundChunkCharInfo bgChunk[][xWidth], const yx chunkSize);
@@ -372,6 +368,10 @@ bool checkForPostfix(const char str [], const char postfix []);
    respectively. Does the same for x, only of course storing the values in
    minMaxX. This function assumes that coords is non empty. */
 void getMinMaxYAndX(const std::vector<yx> & coords, yx & minMaxY, yx & minMaxX);
+// Returns string with  [startIndex, endIndex] removed.
+std::string compactStr(const std::string &str, const size_t startIndex,
+                       const size_t endIndex);
+
 /* Calls endwin() then print's e to std::cerr and finally call's exit() with
    status */
 void exit(const std::string & e, const int status);

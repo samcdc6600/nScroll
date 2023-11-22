@@ -24,7 +24,7 @@ int main(const int argc, const char * argv [])
   const int mode {verifyCmdArgsAndGetMode(argc, argv)};
 
   progressivePrintMessage
-    ("Welcome to the chunk editor.", viewPortSize, printCharSpeed,
+    ("\r70Welcome\r33 to the chunk\r86 editor\r4.\r43", viewPortSize, printCharSpeed,
      afterPrintSleep);
   enterMode(mode, argv, viewPortSize);
     
