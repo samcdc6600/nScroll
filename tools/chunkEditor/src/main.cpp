@@ -22,12 +22,13 @@ int main(const int argc, const char * argv [])
   // Start and setup ncurses.
   initialiseCurses(viewPortSize);
   const int mode {verifyCmdArgsAndGetMode(argc, argv)};
-
+  // 38 / 29, 45, 47, 50, 51, 56, 59, 61, 62, 75
   progressivePrintMessage
-    ("\r70Welcome\r33 to the chunk\r86 editor\r4.\r43", viewPortSize, printCharSpeed,
+    ("Welcome to the chunk editor.", viewPortSize, printCharSpeed,
      afterPrintSleep);
+
   enterMode(mode, argv, viewPortSize);
-    
+  
   endwin();
   
   return 0;

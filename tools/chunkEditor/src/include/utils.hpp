@@ -186,8 +186,20 @@ constexpr int aSCIIChMaxEffective	{127 - lowerUnusedASCIIChNum};
 constexpr int maxCharNum		{158 - lowerUnusedASCIIChNum};
 constexpr int COLOR_CH_MAX		{63};
 constexpr int subMenuSleepTimeMs	{160};
+// MESSAGE COLORS START ========================================================
+// Should b kept up to date with the below strings.
 constexpr int helpColorPair		{1};
-constexpr int warningColor		{86};
+constexpr int warningColorPair		{86};
+constexpr int highlightColorPair       	{9};
+// constexpr int impactColor1Pair       {};
+// constexpr int impactColor2Pair	{};
+// Should be kept up to date with the above color pairs.
+constexpr char hlpColrPrntSeq []      	{"\r1"};
+// constexpr int warnColrPrntSeq []	{};
+constexpr char hiltColPrntSeq []      	{"\r9"};
+constexpr char impctCol1PrntSeq []	{"\r75"};
+constexpr char impctCol2PrntSeq []	{"\r56"};
+// MESSAGE COLORS END ==========================================================
 constexpr int ASCII_NUMBER_OFFSET 	{48};
 constexpr char ESC_CHAR			{27};
 constexpr char BACKGROUND_FILE_EXTENSION []	{".levbg"};
@@ -266,7 +278,13 @@ void progressivePrintMessage
    character is printed at which point the function will sleep for
    interCharacterSleep before the next character is printed. If clearScreen is
    true then the screen will be cleared before printing the message. Can handle
-   new lines, but not tabs. */
+   new lines, but not tabs. Character can be changed by using the following
+   construction: "\rN", where N is a number in the range
+   [1, colorParams::effectiveGameColorPairsNo]. The appearance of the above
+   construction in a string will cause all characters after it to be printed in
+   the specified color pair (unless the same construction is encountered again.)
+   Note that using placing two occurrences of this construction back to back
+   with no other intervening characters will lead to undefined behaviour. */
 void progressivePrintMessage
 (const std::string & msg, const yx viewPortSize, const int interCharacterSleep,
  const int afterMsgSleep, const bool clearScreen,

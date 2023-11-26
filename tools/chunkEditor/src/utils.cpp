@@ -273,17 +273,17 @@ void progressivePrintMessage
 	       will not be counted in the virtual length.  */
 	  case '\r':
 	    {
-	      std::size_t numEndPos {};
 	      try
 		{
 		  /* Will throw an out_of_range exception if iter is out of
 		     range. Stoi may throw an out_of_range exception or throw an
 		     invalid_argument exception. */
+		  std::size_t numLen {};
 		  iter++;	// Move past '\r'.
 		  nonDefaultColors.push_back
 		    (colorInfo{iter -1, std::stoi(msgNew.substr(iter),
-					       &numEndPos)});
-		  numEndPos += iter; // Stoi only stored the num length.
+					       &numLen)});
+		  
 		  if(nonDefaultColors.back().color < 1 ||
 		     nonDefaultColors.back().color >
 		     colorParams::effectiveGameColorPairsNo)
@@ -297,11 +297,9 @@ void progressivePrintMessage
 			    ), ERROR_COLOR_CODE_RANGE);
 		    }
 		  /* Yes this is very inefficient (iter -1 because we wan't to
-		     remove '\n' chars as well as the positions of the
-		     characters in msgNew associated with them are stored in
-		     nonDefaultcolors.) */
-		  msgNew = compactStr(msgNew, iter -1, numEndPos -1);
-		  // std::cout<<" msgNew = "<<msgNew<<"\n\n";
+		     remove '\n' chars.) */
+		  msgNew = compactStr(msgNew, iter -1, iter + numLen -1);
+		  iter -= 2;	// Iter was moved past '\r' and we removed '\r'.
 		}
 	      catch(std::invalid_argument const & exception)
 		{
@@ -340,18 +338,13 @@ void progressivePrintMessage
 	virtualLengthRet += msgLineLength;
       }
 
-    		  for(auto C: msgNew)
-		    if(C != '\r')
-		      std::cout<<C;
-		  exit(-1);
-
     return virtualLengthRet;
   };
 
   setColorMode color   	{};
   // This is for both sides and includes border characters.
   const int lRMargin   	{4};
-  const int padding	{1};
+  const int padding	{2};
   const int border	{1};
   const int msgLineLength
     			{170 - (lRMargin * 2) - ((padding + border) * 2)};
@@ -402,15 +395,6 @@ void progressivePrintMessage
 		nonDefaultColorsPos++;
 	      }
 	  }
-	// else 
-	//   {
-	//     exit(concat
-	// 	 ("Error: encountered ", nonDefaultColorsPos + 1,
-	// 	  " '\\r' characters where only expecting ",
-	// 	  nonDefaultColors.size(), ". Note that this is "
-	// 	  "a logic bug in the program."),
-	// 	 ERROR_MALFORMED_STRING);
-	//   }
       }
     color.setColor(currentColor);
   };
@@ -426,6 +410,9 @@ void progressivePrintMessage
      true);
 
   int currentColor {helpColorPair};
+  /* Was there a new line at the start of a new line (caused by
+     wraparound.) */
+  bool foundNLAtWraparound {false};
   // Print bulk of message (if it is one line or more.)
   for( ; lines < noOfLines + (padding * 2); lines++)
     {
@@ -443,7 +430,6 @@ void progressivePrintMessage
 	}
 
       int lineCharIter	{};
-      yx msgCharPos	{};
       
       lineCharIter = 0;
       if(lines < padding || lines > (noOfLines + padding -1))
@@ -454,7 +440,8 @@ void progressivePrintMessage
 	    (msgLineLength, lineCharIter, false);
 	}
       else
-	{	  
+	{
+	  yx msgCharPos	{};
 	  for( ; lineCharIter < msgLineLength; lineCharIter++)
 	    {
 	      msgCharPos = yx
@@ -469,13 +456,26 @@ void progressivePrintMessage
 		    {
 		    case '\n':
 		      {
-			printBlanksForRemainderOfLine
-			  (msgLineLength, lineCharIter);
+			if(lineCharIter != 0 || foundNLAtWraparound)
+			  {
+			    printBlanksForRemainderOfLine
+			      (msgLineLength, lineCharIter);
+			  }
+			else
+			  {
+			    /* We don't want to print a double new line on wrap
+			       around. Unfortunately this will increase the
+			       bottom padding size by 1.*/
+			    foundNLAtWraparound = true;
+			    charsPrinted++;
+			    lineCharIter--;
+			  }
 		      }
 		      break;
 		    default:
 		      mvprintw
 			(msgCharPos, concat("", msgNew[charsPrinted]).c_str());
+		      foundNLAtWraparound = false;
 		      charsPrinted++;
 		    }
 		}

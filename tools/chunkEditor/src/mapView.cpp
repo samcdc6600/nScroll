@@ -320,7 +320,7 @@ void viewChunk
     }
   else
     {
-      mapViewSettings::colorMode.setColor(warningColor);
+      mapViewSettings::colorMode.setColor(warningColorPair);
       progressivePrintMessage
 	(concat("\tError no chunk at current coordinate ", cursorPos, ".\t"),
 	 viewPortSize, printCharSpeed, afterPrintSleep);

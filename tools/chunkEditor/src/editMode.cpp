@@ -1983,8 +1983,8 @@ void showAndChangeCoordinates
     {
       progressivePrintMessage
 	(concat("Error: you must enter a chunk coordinate in the form of a "
-		"y and x coordinate seperated by a space. Please enter "
-		"coordinates: "), viewPortSize, printCharSpeed,
+		"y and x coordinate seperated by a space."), viewPortSize,
+	 printCharSpeed,
 	 editingSettings::afterIncorrectCoordInputSleep);
       progressivePrintMessage
 	(msg, viewPortSize, 0, 200, false, false);
