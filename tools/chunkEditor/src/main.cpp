@@ -285,7 +285,7 @@ void printHelp(const char * argv [])
 	  "\n\t    Example:\n\t\t", argv[0], " splendid",
 	  BACKGROUND_FILE_EXTENSION, " 11 -3"
 	  "\n\n"
-	  "    6th mode:\n\tThis mode is known as map View Mode. In this mode "
+	  "    6th mode:\n\tThis mode is known as Map View Mode. In this mode "
 	  "a ", BACKGROUND_FILE_EXTENSION, "\n\tfile or a ",
 	  COORD_RULES_FILE_EXTENSION, " file can be viewed in a zoomed out "
 	  "mammer,\n\twith one character corresponding to 1 chunk. If the "

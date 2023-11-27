@@ -103,228 +103,258 @@ namespace editingSettings
 	 impctCol2PrntSeq, "In the main editing mode (viewing a background "
 	 "chunk.)" , hlpColrPrntSeq, "\n",
 	 hiltColPrntSeq, editChars::toggleHelpMsg, hlpColrPrntSeq,
-	 ":    to toggle this message."
-	 "\n",
+	 ":    to toggle this message.\n",
 	 hiltColPrntSeq, editChars::cursorUp, hlpColrPrntSeq, ", ",
 	 hiltColPrntSeq, editChars::cursorLeft, hlpColrPrntSeq, ", ",
 	 hiltColPrntSeq, editChars::cursorDown, hlpColrPrntSeq, " or ",
 	 hiltColPrntSeq, editChars::cursorRight, hlpColrPrntSeq, ":    "
-	 "to move the cursor down up, left, down or right respectively.\n",
+	 "to move the cursor up, left, down or right respectively.\n",
 	 "\"", hiltColPrntSeq, editChars::performActionAtPos, hlpColrPrntSeq,
-	 "\":    to perform an action "
-	 "at the current cursor position. The specific action performed "
-	 "depends on the context. The most important action is to change the "
-	 "character under the cursor to the same character as the cursor.\n",
+	 "\":    to perform an action at the current cursor position. The "
+	 "specific action performed depends on the context. The most important "
+	 "action is to change the character under the cursor to the same "
+	 "character as the cursor.\n",
 	 hiltColPrntSeq, editChars::toggleBetweenCRandBg, hlpColrPrntSeq,
-	 ":    to toggle between "
-	 "background and character rules chunks.\n",
+	 ":    to toggle between background and character rules chunks.\n",
 	 hiltColPrntSeq, editChars::toggleReferenceChunkView, hlpColrPrntSeq,
-	 ":    to toggle the reference "
-	 "chunk view (this is only relevant when in mode 2, see -h for more "
-	 "info.)\n",
+	 ":    to toggle the reference chunk view (this is only relevant when "
+	 "in mode 2, see -h for more info.)\n",
 	 hiltColPrntSeq, editChars::bGToggleCharacterSelection, hlpColrPrntSeq,
 	 ":    to select a new "
 	 "character color and character for the cursor character.\n",
 	 hiltColPrntSeq, editChars::bgNextCurrentChar, hlpColrPrntSeq,
-	 ":    to cycle forward (next) "
-	 "through the recent cursor characters.\n",
+	 ":    to cycle forward (next) through the recent cursor characters.\n",
 	 hiltColPrntSeq, editChars::bgLastCurrentChar, hlpColrPrntSeq,
-	 ":    to cycle backwards "
-	 "(last) through the recent cursor characters.\n",
-	 hiltColPrntSeq, editChars::redo, hlpColrPrntSeq,			":    to cycle the chunk "
-	 "buffer position forward (redo). This cycles forward through the "
-	 "chunk buffer. Every time a chunk is altered the chunk at the current "
-	 "position in the buffer is unchanged and a copy of that chunk is "
-	 "saved in the next buffer position where the change is made. The "
-	 "current position is updated to the position of this new altered "
-	 "copy.\n",
-	 hiltColPrntSeq, editChars::undo, hlpColrPrntSeq,			":    to cycle the chunk "
-	 "buffer position back (undo). This cycles back through the chunk "
-	 "buffer. Every time a chunk is altered the chunk at the current "
-	 "position in the buffer is unchanged and a copy of that chunk is "
-	 "saved in the next buffer position where the change is made. The "
-	 "current position is updated to the position of this new altered copy."
+	 ":    to cycle backwards (last) through the recent cursor characters."
 	 "\n",
-	 hiltColPrntSeq, editChars::bgGetCharAtPos, hlpColrPrntSeq,		":    to set the cursor "
-	 "character to the background chunk character below it. This is only "
-	 "applicable if the character at the cursor pos has already been set."
-	 "\n",
-	 hiltColPrntSeq, editChars::toggleLineDrawMode, hlpColrPrntSeq,		":    to toggle line drawing. "
-	 "When line drawing is turned on any character the user moves the "
-	 "cursor over will be set to the current cursor fcharacter. This way "
-	 "lines can be drawn without having to constantly press \"",
-	 hiltColPrntSeq, editChars::performActionAtPos, hlpColrPrntSeq,		"\".\n",
-	 hiltColPrntSeq, editChars::floodFill, hlpColrPrntSeq,			":    to do a flood fill using "
-	 "the cursor character and starting at the current cursor pos.\n",
-	 hiltColPrntSeq, editChars::selectSelection, hlpColrPrntSeq,		":    to enter selection mode, "
-	 "where an area (selection) can be selected for copying and later "
-	 "pasting.\n",
-	 hiltColPrntSeq, editChars::pasteSelection, hlpColrPrntSeq,		":    to enter past mode, "
-	 "where ",
-	 selectionRingBufferSize,		" of the last selections made "
-	 "can be pasted.\n",
-	 hiltColPrntSeq, editChars::bgShowUnsetChars, hlpColrPrntSeq,		":    to print noise in "
-	 "locations where characters aren't set. This helps when trying to "
-	 "find unset background chunk characters. Note that the chunks cannot "
-	 "be saved if any of the background chunk characters are unset. Also "
-	 "note that when editing a new background chunk file all characters "
-	 "are initially unset.\n",
-	 hiltColPrntSeq, editChars::toggleCrosshairCursor, hlpColrPrntSeq,	":    to toggle crosshair "
-	 "cursor.\n",
-	 hiltColPrntSeq, editChars::changeCoordinates, hlpColrPrntSeq,		":    to change coordinates. "
-	 "This changes the coordinates of both the background chunk and rules "
-	 "character chunk as they are a set.\n",
-	 hiltColPrntSeq, editChars::saveChunks, hlpColrPrntSeq,			":    to save (output) both "
-	 "chunks.\n",
-	 hiltColPrntSeq, editChars::quit, hlpColrPrntSeq,			":    to quite the program.")
-      };
+	 hiltColPrntSeq, editChars::redo, hlpColrPrntSeq,
+	 ":    to cycle the chunk buffer position forward (redo). This cycles "
+	 "forward through the chunk buffer. Every time a chunk is altered the "
+	 "chunk at the current position in the buffer is unchanged and a copy "
+	 "of that chunk is saved in the next buffer position where the change "
+	 "is made. The current position is updated to the position of this new "
+	 "altered copy.\n",
+	 hiltColPrntSeq, editChars::undo, hlpColrPrntSeq,
+	 ":    to cycle the chunk buffer position back (undo). This cycles "
+	 "back through the chunk buffer. Every time a chunk is altered the "
+	 "chunk at the current position in the buffer is unchanged and a copy "
+	 "of that chunk is saved in the next buffer position where the change "
+	 "is made. The current position is updated to the position of this new "
+	 "altered copy.\n",
+	 hiltColPrntSeq, editChars::bgGetCharAtPos, hlpColrPrntSeq,
+	 ":    to set the cursor character to the background chunk character "
+	 "below it. This is only applicable if the character at the cursor pos "
+	 "has already been set.\n",
+	 hiltColPrntSeq, editChars::toggleLineDrawMode, hlpColrPrntSeq,
+	 ":    to toggle line drawing. When line drawing is turned on any "
+	 "character the user moves the cursor over will be set to the current "
+	 "cursor fcharacter. This way lines can be drawn without having to "
+	 "constantly press \"",
+	 hiltColPrntSeq, editChars::performActionAtPos, hlpColrPrntSeq, "\".\n",
+	 hiltColPrntSeq, editChars::floodFill, hlpColrPrntSeq,
+	 ":    to do a flood fill using the cursor character and starting at "
+	 "the current cursor pos.\n",
+	 hiltColPrntSeq, editChars::selectSelection, hlpColrPrntSeq,
+	 ":    to enter selection mode, where an area (selection) can be "
+	 "selected for copying and later pasting.\n",
+	 hiltColPrntSeq, editChars::pasteSelection, hlpColrPrntSeq,
+	 ":    to enter past mode, where ", selectionRingBufferSize,
+	 " of the last selections made can be pasted.\n",
+	 hiltColPrntSeq, editChars::bgShowUnsetChars, hlpColrPrntSeq,
+	 ":    to print noise in locations where characters aren't set. This "
+	 "helps when trying to find unset background chunk characters. Note "
+	 "that the chunks cannot be saved if any of the background chunk "
+	 "characters are unset. Also note that when editing a new background "
+	 "chunk file all characters are initially unset.\n",
+	 hiltColPrntSeq, editChars::toggleCrosshairCursor, hlpColrPrntSeq,
+	 ":    to toggle crosshair cursor.\n",
+	 hiltColPrntSeq, editChars::changeCoordinates, hlpColrPrntSeq,
+	 ":    to change coordinates. This changes the coordinates of both the "
+	 "background chunk and rules character chunk.\n",
+	 hiltColPrntSeq, editChars::saveChunks, hlpColrPrntSeq,
+	 ":    to save (output) both chunks.\n",
+	 hiltColPrntSeq, editChars::quit, hlpColrPrntSeq,
+	 ":    to quite the program.")};
     const std::string mainViewingCR
       {concat
        (impctCol1PrntSeq, "~H~E~L~P~!~", hlpColrPrntSeq, "\n",
 	impctCol2PrntSeq, "In the main editing mode (viewing a character rules"
 	"chunk.)", hlpColrPrntSeq, "\n", 
 	 hiltColPrntSeq, editChars::toggleHelpMsg, hlpColrPrntSeq,
-	":    to toggle this message."
-	"\n",
-	hiltColPrntSeq, editChars::cursorUp, hlpColrPrntSeq, ", ", hiltColPrntSeq, editChars::cursorLeft, hlpColrPrntSeq, ", ",
-	hiltColPrntSeq, editChars::cursorDown, hlpColrPrntSeq, " or ", hiltColPrntSeq, editChars::cursorRight, hlpColrPrntSeq, ":    "
-	"to move the cursor down up, left, down or right respectively.\n\"",
-	hiltColPrntSeq, editChars::performActionAtPos, hlpColrPrntSeq, 	"\":    to perform an action "
-	"at the current cursor position. The specific action performed depends "
-	"on the context. The most important action is to change the character "
-	"under the cursor to the same character as the cursor.\n",
-	hiltColPrntSeq, editChars::toggleBetweenCRandBg, hlpColrPrntSeq, 	":    to toggle between "
-	"background and character rules chunks.\n",
-	hiltColPrntSeq, editChars::toggleReferenceChunkView, hlpColrPrntSeq, 	":    to toggle the reference "
-	"chunk view (this is only relevant when in mode 2, see -h for more "
-	"info.)\n",
-	hiltColPrntSeq, editChars::cREraseCRChar, hlpColrPrntSeq, 		":    to set the cursor "
-	"character to the rules erase character. This allows for the erasure "
-	"of rules characters from the chunk.\n",
-	hiltColPrntSeq, editChars::cRSetCRCharToBorder, hlpColrPrntSeq, 		":    to set the cursor "
-	"character to the border character.\n",
-	hiltColPrntSeq, editChars::cRSetCRCharToPlatform, hlpColrPrntSeq, 	":    to set the cursor "
-	"character to the platform character.\n",
-	hiltColPrntSeq, editChars::redo, hlpColrPrntSeq, 			":    to cycle the chunk "
-	"buffer position forward (redo). This cycles forward through the chunk "
-	"buffer. Every time a chunk is altered the chunk at the current "
-	"position in the buffer is unchanged and a copy of that chunk is saved "
-	"in the next buffer position where the change is made. The current "
-	"position is updated to the position of this new altered copy.\n",
-	hiltColPrntSeq, editChars::undo, hlpColrPrntSeq, 			":    to cycle the chunk "
-	"buffer position back (undo). This cycles back through the chunk "
-	"buffer. Every time a chunk is altered the chunk at the current "
-	"position in the buffer is unchanged and a copy of that chunk is saved "
-	"in the next buffer position where the change is made. The current "
-	"position is updated to the position of this new altered copy.\n",
-	hiltColPrntSeq, editChars::toggleLineDrawMode, hlpColrPrntSeq,  		":    to toggle line drawing. "
-	"When line drawing is turned on any character the user moves the "
-	"cursor over will be set to the current cursor character. This way "
-	"lines can be drawn without having to constantly press \"",
-	hiltColPrntSeq, editChars::performActionAtPos, hlpColrPrntSeq, 		"\".\n",
-	hiltColPrntSeq, editChars::toggleCrosshairCursor, hlpColrPrntSeq, 	":    to toggle crosshair "
-	"cursor.\n",
-	hiltColPrntSeq, editChars::changeCoordinates, hlpColrPrntSeq, 		":    to change coordinates. "
-	"This changes the coordinates of both the background chunk and rules "
-	"character chunk as they are a set.\n",
-	hiltColPrntSeq, editChars::saveChunks,  hlpColrPrntSeq, 		":    to save (output) both "
-	  "chunks.\n",
-	hiltColPrntSeq, editChars::quit, hlpColrPrntSeq, 			":    to quite the program.")};
+	":    to toggle this message.\n",
+	hiltColPrntSeq, editChars::cursorUp, hlpColrPrntSeq, ", ",
+	hiltColPrntSeq, editChars::cursorLeft, hlpColrPrntSeq, ", ",
+	hiltColPrntSeq, editChars::cursorDown, hlpColrPrntSeq, " or ",
+	hiltColPrntSeq, editChars::cursorRight, hlpColrPrntSeq, ":    "
+	"to move the cursor up, left, down or right respectively.\n\"",
+	hiltColPrntSeq, editChars::performActionAtPos, hlpColrPrntSeq,
+	"\":    to perform an action at the current cursor position. The "
+	"specific action performed depends on the context. The most important "
+	"action is to change the character under the cursor to the same "
+	"character as the cursor.\n",
+	hiltColPrntSeq, editChars::toggleBetweenCRandBg, hlpColrPrntSeq,
+	":    to toggle between background and character rules chunks.\n",
+	hiltColPrntSeq, editChars::toggleReferenceChunkView, hlpColrPrntSeq,
+	":    to toggle the reference chunk view (this is only relevant when "
+	"in mode 2, see -h for more info.)\n",
+	hiltColPrntSeq, editChars::cREraseCRChar, hlpColrPrntSeq,
+	":    to set the cursor character to the rules erase character. This "
+	"allows for the erasure of rules characters from the chunk.\n",
+	hiltColPrntSeq, editChars::cRSetCRCharToBorder, hlpColrPrntSeq,
+	":    to set the cursor character to the border character.\n",
+	hiltColPrntSeq, editChars::cRSetCRCharToPlatform, hlpColrPrntSeq,
+	":    to set the cursor character to the platform character.\n",
+	hiltColPrntSeq, editChars::redo, hlpColrPrntSeq,
+	":    to cycle the chunk buffer position forward (redo). This cycles "
+	"forward through the chunk buffer. Every time a chunk is altered the "
+	"chunk at the current position in the buffer is unchanged and a copy "
+	"of that chunk is saved in the next buffer position where the change "
+	"is made. The current position is updated to the position of this new "
+	"altered copy.\n",
+	hiltColPrntSeq, editChars::undo, hlpColrPrntSeq,
+	":    to cycle the chunk buffer position back (undo). This cycles back "
+	"through the chunk buffer. Every time a chunk is altered the chunk at "
+	"the current position in the buffer is unchanged and a copy of that "
+	"chunk is saved in the next buffer position where the change is made. "
+	"The current position is updated to the position of this new altered "
+	"copy.\n",
+	hiltColPrntSeq, editChars::toggleLineDrawMode, hlpColrPrntSeq,
+	":    to toggle line drawing. When line drawing is turned on any "
+	"character the user moves the cursor over will be set to the current "
+	"cursor character. This way lines can be drawn without having to "
+	"constantly press \"",
+	hiltColPrntSeq, editChars::performActionAtPos, hlpColrPrntSeq, "\".\n",
+	hiltColPrntSeq, editChars::toggleCrosshairCursor, hlpColrPrntSeq,
+	":    to toggle crosshair cursor.\n",
+	hiltColPrntSeq, editChars::changeCoordinates, hlpColrPrntSeq,
+	":    to change coordinates. This changes the coordinates of both the "
+	"background chunk and rules character chunk as they are a set.\n",
+	hiltColPrntSeq, editChars::saveChunks,  hlpColrPrntSeq,
+	":    to save (output) both chunks.\n",
+	hiltColPrntSeq, editChars::quit, hlpColrPrntSeq,
+	":    to quite the program.")};
     const std::string refViewingBg
       {concat
-       ("\t~H~E~L~P~!~\t\t\t\t\t\tIn the reference chunk view mode (viewing a background chunk).\t\t\t\t\t",
-	editChars::toggleHelpMsg,	":    to toggle this message.\t\t\t",
-	editChars::cursorUp,		":    to move the cursor up.\t\t\t",
-	editChars::cursorDown,	":    to move the cursor down.\t\t\t",
-	editChars::cursorLeft,	":    to move the cursor left.\t\t\t",
-	editChars::cursorRight,	":    to move the cursor right.\t\t\t",
-	editChars::toggleBetweenCRandBg, ":    to toggle between background and character "
-	"rules chunks.\t\t\t",
-	editChars::toggleReferenceChunkView, ":    to toggle the reference chunk view (this is "
-	"only relevant when in mode 2, see -h for more info.)\t\t\t",
-	editChars::bgGetCharAtPos,	":    to set the cursor character to the background chunk "
-	"character below it.\t\t\t",
-	editChars::selectSelection,	":    to enter selection mode, where a an area (selection) "
-	"can be selected for copying and later pasting.\t\t\t",
-	editChars::toggleCrosshairCursor, ":    to toggle crosshair cursor.\t\t\t",
-	editChars::quit,		":    to quite the program.")};
+       (impctCol1PrntSeq, "~H~E~L~P~!~", hlpColrPrntSeq, "\n",
+	impctCol2PrntSeq, "In the reference chunk view mode (viewing a "
+	"background chunk).", hlpColrPrntSeq, "\n",
+	hiltColPrntSeq, editChars::toggleHelpMsg, hlpColrPrntSeq,
+	":    to toggle this message.\n",
+	hiltColPrntSeq, editChars::cursorUp, hlpColrPrntSeq, ", ",
+	hiltColPrntSeq, editChars::cursorLeft, hlpColrPrntSeq, ", ",
+	hiltColPrntSeq, editChars::cursorDown, hlpColrPrntSeq, " or ",
+	hiltColPrntSeq, editChars::cursorRight, hlpColrPrntSeq, ":    "
+	"to move the cursor up, left, down or right respectively.\n",
+	hiltColPrntSeq, editChars::toggleBetweenCRandBg, hlpColrPrntSeq,
+	":    to toggle between background and character rules chunks.\n",
+	hiltColPrntSeq, editChars::toggleReferenceChunkView, hlpColrPrntSeq,
+	":    to toggle the reference chunk view (this is only relevant when "
+	"in mode 2, see -h for more info.)\n",
+	hiltColPrntSeq, editChars::bgGetCharAtPos, hlpColrPrntSeq,
+	":    to set the cursor character to the background chunk character "
+	"below it.\n",
+	hiltColPrntSeq, editChars::selectSelection, hlpColrPrntSeq,
+	":    to enter selection mode, where an area (selection) can be "
+	"selected for copying and later pasting.\n",
+	hiltColPrntSeq, editChars::toggleCrosshairCursor, hlpColrPrntSeq,
+	":    to toggle crosshair cursor.\n",
+	hiltColPrntSeq, editChars::quit, hlpColrPrntSeq,
+	":    to quite the program.")};
     const std::string refViewingCR
       {concat
-       ("~H~E~L~P~!~\nIn the reference chunk view mode "
-	"(viewing a character rules chunk).\n",
-	editChars::toggleHelpMsg,		":    to toggle this "
-	"message.\n",
-	editChars::cursorUp, ", ", editChars::cursorLeft, ", ",
-	editChars::cursorDown, " or ", editChars::cursorRight, ":    "
-	"to move the cursor down up, left, down or right respectively.\n",
-	editChars::toggleBetweenCRandBg,	":    to toggle between "
-	"background and character rules chunks.\n",
-	editChars::toggleReferenceChunkView,	":    to toggle the reference "
-	"chunk view (this is only relevant when in mode 2, see -h for more "
-	"info.)\n",
-	editChars::toggleCrosshairCursor,	":    to toggle crosshair "
-	"cursor.\n",
-	editChars::quit,			":    to quite the program.")};
+       (impctCol1PrntSeq, "~H~E~L~P~!~", hlpColrPrntSeq, "\n",
+	impctCol2PrntSeq, "In the reference chunk view mode (viewing a "
+	"character rules chunk).", hlpColrPrntSeq, "\n",
+	hiltColPrntSeq, editChars::toggleHelpMsg, hlpColrPrntSeq,
+	":    to toggle this message.\n",
+	hiltColPrntSeq, editChars::cursorUp, hlpColrPrntSeq, ", ",
+	hiltColPrntSeq, editChars::cursorLeft, hlpColrPrntSeq, ", ",
+	hiltColPrntSeq, editChars::cursorDown, hlpColrPrntSeq, " or ",
+	hiltColPrntSeq, editChars::cursorRight, hlpColrPrntSeq, ":    "
+	"to move the cursor up, left, down or right respectively.\n",
+	hiltColPrntSeq, editChars::toggleBetweenCRandBg, hlpColrPrntSeq,
+	":    to toggle between background and character rules chunks.\n",
+	hiltColPrntSeq, editChars::toggleReferenceChunkView, hlpColrPrntSeq,
+	":    to toggle the reference chunk view (this is only relevant when "
+	"in mode 2, see -h for more info.)\n",
+	hiltColPrntSeq, editChars::toggleCrosshairCursor, hlpColrPrntSeq,
+	":    to toggle crosshair cursor.\n",
+	hiltColPrntSeq, editChars::quit, hlpColrPrntSeq,
+	":    to quite the program.")};
     const std::string showUnsetBgChars
       {concat
-       ("\t~H~E~L~P~!~\t\t\t\t\t\tIn show unset background characters "
-	"mode.\t\t\t\t\t",
-	"If a new chunk is being edited this mode will display random "
-	"colours "
-	"in any positions that have not yet had a character assigned to "
-	"them. "
+       (impctCol1PrntSeq, "~H~E~L~P~!~", hlpColrPrntSeq, "\n",
+	impctCol2PrntSeq, "In show unset background characters mode.",
+	hlpColrPrntSeq, "\n"
+	"If a new chunk is being edited this mode will display random colours "
+	"in any positions that have not yet had a character assigned to them. "
 	"This is useful because the background and corresponding character "
 	"rules chunk cannot be saved unless the background chunk has had a "
-	"character assigned to each position in the chunk.\t\t\t",
-	editChars::toggleHelpMsg, ":    to toggle this message.\t\t\t",
-	editChars::quit,       	":    to return to the main editing mode.")};
+	"character assigned to each position in the chunk.\n",
+	hiltColPrntSeq, editChars::toggleHelpMsg, hlpColrPrntSeq,
+	":    to toggle this message.\n",
+	hiltColPrntSeq, editChars::quit, hlpColrPrntSeq,
+	":    to return to the main editing mode.")};
     const std::string selectAndCopySelection
       {concat
-       ("\t~H~E~L~P~!~\t\t\t\t\t\tIn selection mode.\t\t\t\t\t",
-	editChars::toggleHelpMsg,	":    to toggle this message.\t\t\t",
-	editChars::cursorUp,		":    to move the cursor up.\t\t\t",
-	editChars::cursorDown,	":    to move the cursor down.\t\t\t",
-	editChars::cursorLeft,	":    to move the cursor left.\t\t\t",
-	editChars::cursorRight,	":    to move the cursor right.\t\t\t",
-	" \"", editChars::performActionAtPos, " \":    to select / deselect the character "
-	"under the cursor.\t\t\t",
-	editChars::toggleCrosshairCursor, ":    to toggle crosshair cursor.\t\t\t",
-	editChars::toggleLineDrawMode, ":    to toggle line drawing. When line drawing is "
-	"turned on any character the user moves the cursor over will be marked "
-	"to be copied (unless it is already marked in which case it will be "
-	"unmarked.) This way lines can be drawn "
-	"without having to constantly press \"", editChars::performActionAtPos,
-	"\".\t\t\t",
-	editChars::floodFill,	":    to do a flood fill starting at the current cursor "
-	"pos.\t\t\t",
-	editChars::selectSelection, ":    to save the current selection and exit the "
-	"selection mode.\t\t\t",
-	editChars::quit,		":    to quit selection mode and return to the main "
-	"editing mode.")
-      };
+       (impctCol1PrntSeq, "~H~E~L~P~!~", hlpColrPrntSeq, "\n",
+	impctCol2PrntSeq, "In selection mode.", hlpColrPrntSeq, "\n",
+	hiltColPrntSeq, editChars::toggleHelpMsg, hlpColrPrntSeq,
+	":    to toggle this message.\n",
+	hiltColPrntSeq, editChars::cursorUp, hlpColrPrntSeq, ", ",
+	hiltColPrntSeq, editChars::cursorLeft, hlpColrPrntSeq, ", ",
+	hiltColPrntSeq, editChars::cursorDown, hlpColrPrntSeq, " or ",
+	hiltColPrntSeq, editChars::cursorRight, hlpColrPrntSeq, ":    "
+	"to move the cursor up, left, down or right respectively.\n\"",
+	hiltColPrntSeq, editChars::performActionAtPos, hlpColrPrntSeq,
+	"\":    to select / deselect the character under the cursor.\n",
+	hiltColPrntSeq, editChars::toggleCrosshairCursor, hlpColrPrntSeq,
+	":    to toggle crosshair cursor.\n",
+	hiltColPrntSeq, editChars::toggleLineDrawMode, hlpColrPrntSeq,
+	":    to toggle line drawing. When line drawing is turned on any "
+	"character the user moves the cursor over will be marked to be copied "
+	"(unless it is already marked in which case it will be unmarked.) This "
+	"way lines can be drawn without having to constantly press \"",
+	hiltColPrntSeq, editChars::performActionAtPos, hlpColrPrntSeq,
+	"\".\n",
+	hiltColPrntSeq, editChars::floodFill, hlpColrPrntSeq,
+	":    to do a flood fill starting at the current cursor pos.\n",
+	hiltColPrntSeq, editChars::selectSelection, hlpColrPrntSeq,
+	":    to save the current selection and exit the selection mode.\n",
+	hiltColPrntSeq, editChars::quit, hlpColrPrntSeq,
+	":    to quit selection mode and return to the main editing mode.")};
     const std::string pasteSelection
       {concat
-       ("\t~H~E~L~P~!~\t\t\t\t\t\tIn paste mode.\t\t\t\t\t",
-	editChars::toggleHelpMsg,	":    to toggle this message.\t\t\t",
-	editChars::cursorUp,		":    to move the cursor up.\t\t\t",
-	editChars::cursorDown,	":    to move the cursor down.\t\t\t",
-	editChars::cursorLeft,	":    to move the cursor left.\t\t\t",
-	editChars::cursorRight,	":    to move\n the cursor right.\t\t\t",
-	" \"", editChars::performActionAtPos, " \":    to paste the current selection.\t\t\t",
-	editChars::rotateSelection,	":    to rotate the selection right 90 degrees.\t\t\t",
-	editChars::mirrorSelection,	":    to mirror the selection horizontally\t\t\t",
-	editChars::nextSelection,	":    to cycle to the next selection (if any)\t\t\t",
-	editChars::lastSelection,	":    to cycle to the last selection (if any)\t\t\t",
-	editChars::toggleCrosshairCursor, ":    to toggle crosshair cursor.\t\t\t",
-	editChars::quit,		":    to quit paste selection mode and return to the main "
-	"editing mode.")
-      };
+       (impctCol1PrntSeq, "~H~E~L~P~!~", hlpColrPrntSeq, "\n",
+	impctCol2PrntSeq, "In paste mode.", hlpColrPrntSeq, "\n",
+	hiltColPrntSeq, editChars::toggleHelpMsg, hlpColrPrntSeq,
+	":    to toggle this message.\n",
+	hiltColPrntSeq, editChars::cursorUp, hlpColrPrntSeq, ", ",
+	hiltColPrntSeq, editChars::cursorLeft, hlpColrPrntSeq, ", ",
+	hiltColPrntSeq, editChars::cursorDown, hlpColrPrntSeq, " or ",
+	hiltColPrntSeq, editChars::cursorRight, hlpColrPrntSeq, ":    "
+	"to move the cursor up, left, down or right respectively.\n",
+	"\"", hiltColPrntSeq, editChars::performActionAtPos, hlpColrPrntSeq,
+	"\":    to paste the current selection.\n",
+	hiltColPrntSeq, editChars::rotateSelection, hlpColrPrntSeq,
+	":    to rotate the selection right 90 degrees.\n",
+	hiltColPrntSeq, editChars::mirrorSelection, hlpColrPrntSeq,
+	":    to mirror the selection horizontally\n",
+	hiltColPrntSeq, editChars::nextSelection, hlpColrPrntSeq,
+	":    to cycle to the next selection (if any)\n",
+	hiltColPrntSeq, editChars::lastSelection, hlpColrPrntSeq,
+	":    to cycle to the last selection (if any)\n",
+	hiltColPrntSeq, editChars::toggleCrosshairCursor, hlpColrPrntSeq,
+	":    to toggle crosshair cursor.\n",
+	hiltColPrntSeq, editChars::quit, hlpColrPrntSeq,
+	":    to quit paste selection mode and return to the main editing mode."
+	)};
     const std::string getBgCharFgColorFromUser
-      {"\tPlease select a foreground color for the character."};
+      {"Please select a foreground color for the character."};
     const std::string getBgCharBgColorFromUser
-      {"\tPlease select a background color for the character."};
+      {"Please select a background color for the character."};
     const std::string getBgCharFromUser
-      {concat("\tPlease select a character.\t")};
+      {concat("Please select a character.")};
   }
 }
 

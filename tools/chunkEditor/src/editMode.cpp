@@ -995,17 +995,17 @@ void actOnInputLayer2
     if(!edState.refrenceChunkToggle)
       {
 	if(getConfirmation(chunkSize, edState,
-			   "\tdo you really want to save y/n?\t"))
+			   "do you really want to save y/n? "))
 	  {
 	    progressivePrintMessage
-	      (concat("\tSaving chunks...\t"),
+	      (concat("Saving chunks..."),
 	       chunkSize, 0, 0, false, false);
 	    if(writeOutChunks(bgChunkFileName, cRChunkFileName,
 			      chunkCoord, bgChunk.getChunk().data,
 			      cRChunk.getChunk().data, chunkSize))
 	      {
 		progressivePrintMessage
-		  (concat("\tChunks saved...\t"),
+		  (concat("Chunks saved..."),
 		   chunkSize, 0, afterPrintSleep, false, false);
 	      }
 	  }
@@ -1969,7 +1969,7 @@ void showAndChangeCoordinates
   using namespace editingSettings::editChars;
 
   std::string msg {concat
-      ("\tThe current chunk coordinates are ", chunkCoord, ". Please enter new "
+      ("The current chunk coordinates are ", chunkCoord, ". Please enter new "
        "chunk coordinates (note that these coordinates will not be saved until "
        "the chunks are saved.): ")};
   
@@ -2017,8 +2017,8 @@ bool writeOutChunks
   if(incompleateBgChunk)
     {
       progressivePrintMessage
-	("\tError: unable to save chunks as the background chunk is not "
-	 "complete! See help for more info.\t",
+	("Error: unable to save chunks as the background chunk is not "
+	 "complete! See help for more info.",
 	 chunkSize, 0, editingSettings::afterFileErrorPrintSleep, false, false);
     }
   else
@@ -2027,8 +2027,8 @@ bool writeOutChunks
       if (!file.is_open())
 	{
 	  progressivePrintMessage
-	    (concat("\tError: unable to save background chunk to file \"",
-		    bgChunkFileName, "\"\t"),
+	    (concat("Error: unable to save background chunk to file \"",
+		    bgChunkFileName, "\""),
 	     chunkSize, 0,
 	     editingSettings::editSubMenuSleepTimeMs, false, false);
 	}
@@ -2040,8 +2040,8 @@ bool writeOutChunks
       if (!file.is_open())
 	{
 	  progressivePrintMessage
-	    (concat("\tError: unable to save coord rules chunk to file \"",
-		    cRChunkFileName, "\"\t"),
+	    (concat("Error: unable to save coord rules chunk to file \"",
+		    cRChunkFileName, "\""),
 	     chunkSize, 0,
 	     editingSettings::editSubMenuSleepTimeMs, false, false);
 	}

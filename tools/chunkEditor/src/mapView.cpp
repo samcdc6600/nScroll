@@ -9,6 +9,53 @@ namespace mapViewSettings
 }
 
 
+namespace helpMsgs
+{
+  std::string mapView
+  {concat
+   (impctCol1PrntSeq, "~H~E~L~P~!~", hlpColrPrntSeq, "\n",
+    impctCol2PrntSeq, "In map view mode (viewing a map).", hlpColrPrntSeq,
+    "\n",
+    hiltColPrntSeq, mapViewSettings::mapViewChars::toggleHelpMsg,
+    hlpColrPrntSeq, ":    to toggle this message.\n",
+    hiltColPrntSeq, mapViewSettings::mapViewChars::cursorUp,
+    hlpColrPrntSeq, ", ",
+    hiltColPrntSeq, mapViewSettings::mapViewChars::cursorLeft,
+    hlpColrPrntSeq, ", ",
+    hiltColPrntSeq, mapViewSettings::mapViewChars::cursorDown,
+    hlpColrPrntSeq, " or ",
+    hiltColPrntSeq, mapViewSettings::mapViewChars::cursorRight,
+    hlpColrPrntSeq, ":    to move the cursor up, left, down or right "
+    "respectively. Note that the cursor always stays in the middle of the "
+    "screen and as such moving the cursor has the effect of moving the map "
+    "around the cursor. \n\"",
+    hiltColPrntSeq, mapViewSettings::mapViewChars::actionAtPos,
+    hlpColrPrntSeq, "\":    to toggle chunk view mode. If the cursor is over a "
+    "map chunk the chunk will be displayed (in a read only mode.)\n",
+    hiltColPrntSeq, mapViewSettings::mapViewChars::listMapCoords,
+    hlpColrPrntSeq, ":    to display the coordinates of all chunks in the map "
+    "file (note that this will also exit the program.)\n",
+    hiltColPrntSeq, mapViewSettings::mapViewChars::nextChunk, hlpColrPrntSeq,
+    ":    to move the cursor to the next map chunk. Essentially cycles through "
+    "chunk positions (this makes it easy to visit any disconnected chunks "
+    "and to visit all chunks in general in an ordered sequence (the order "
+    "they are stored in the map file.))\n",
+    hiltColPrntSeq, mapViewSettings::mapViewChars::quit, hlpColrPrntSeq,
+    ":    to quite the program.")};
+  std::string chunkView
+    {concat
+     (impctCol1PrntSeq, "~H~E~L~P~!~", hlpColrPrntSeq, "\n",
+      impctCol2PrntSeq, "In map view mode (viewing a map).", hlpColrPrntSeq,
+      "\n",
+      hiltColPrntSeq, mapViewSettings::mapViewChars::toggleHelpMsg,
+      hlpColrPrntSeq, ":    to toggle this message.\n",
+      "\"", hiltColPrntSeq, mapViewSettings::mapViewChars::actionAtPos,
+      hlpColrPrntSeq, "\":    to toggle chunk view mode.\n",
+      hiltColPrntSeq, mapViewSettings::mapViewChars::quit, hlpColrPrntSeq,
+      ":    to return to the main map view mode.")};
+}
+
+
 /* Shows either bgMap or cRMap on the screen (depending on the value of
    viewingBgMap) as a character for each chunk. If the displayed map is larger
    than the view port the user can pan with WASD. If the user moves the cursor
@@ -25,7 +72,7 @@ void viewMap
 bool updateCursorPos
 (const int input, yx & cursorPos, const yx minMaxY, const yx minMaxX,
  const yx viewPortSize);
-void printMapViewHelp(const yx viewPortSize);
+void printHelpMsg(std::string & msg, const yx viewPortSize);
 void viewChunk
 (bool viewingBgMap, yx & cursorPos, const std::vector<yx> & mapCoords,
  const std::vector<bgChunkStrt> & bgMap, const std::vector<cRChunkStrt> & cRMap,
@@ -145,7 +192,7 @@ void viewMap
 	  switch(input)
 	    {
 	    case toggleHelpMsg:
-	      printMapViewHelp(viewPortSize);
+	      printHelpMsg(helpMsgs::mapView, viewPortSize);
 	      break;
 	    case actionAtPos:
 	      curs_set(0);	// Turn off cursor visibility.
@@ -228,31 +275,12 @@ bool updateCursorPos
 }
 
 
-void printMapViewHelp(const yx viewPortSize)
+void printHelpMsg(std::string & msg, const yx viewPortSize)
 {
   using namespace mapViewSettings::mapViewChars;
   mapViewSettings::colorMode.setColor(mapViewSettings::helpColor);
   progressivePrintMessage
-    (concat
-     ("\t~H~E~L~P~!~\t\t\t\t\t\t",
-      toggleHelpMsg,	": to toggle this message.\t\t\t",
-      quit,		": to exit the program.\t\t\t",
-      cursorUp,		": to move the cursor up.\t\t\t",
-      cursorDown,	": to move the cursor down.\t\t\t",
-      cursorLeft,	": to move the cursor left.\t\t\t",
-      cursorRight,	": to move the cursor right.\t\t\t"
-      "Note that the cursor always stays in the middle of the screen and as "
-      "such moving the cursor has the effect of moving the map around the "
-      "cursor. ",
-      "\"", actionAtPos, "\": to toggle chunk view mode. If the cursor is over "
-      "a map chunk the chunk will be displayed (in a read only mode.)\t\t\t",
-      listMapCoords,	": to display the coordinates of all chunks in the "
-      "map file (note that this will also exit the program.)\t\t\t",
-      nextChunk,	": to move the cursor to the next map chunk. "
-      "Essentially cycles through chunk positions (this makes it easy to visit "
-      "any disconnected chunks and to visit all chunks in general in an "
-      "ordered sequence (the order they are stored in the map file.))\t\t\t"),
-     viewPortSize, printCharSpeed, afterPrintSleepMedium, false, false);
+    (msg, viewPortSize, printCharSpeed, afterPrintSleepMedium, false, false);
 
   int input {getch()};  
   while(input != quit &&
@@ -271,11 +299,11 @@ void viewChunk
  const std::vector<bgChunkStrt> & bgMap, const std::vector<cRChunkStrt> & cRMap,
  const yx viewPortSize)
 {
-  auto printMapViewHelpLocal = [viewPortSize](const int input)
+  auto printHelpMsgLocal = [viewPortSize](const int input)
   {
     if(input == mapViewSettings::mapViewChars::toggleHelpMsg)
       {
-	printMapViewHelp(viewPortSize);
+	printHelpMsg(helpMsgs::chunkView, viewPortSize);
       }
   };
   
@@ -302,7 +330,7 @@ void viewChunk
 	    {
 	      // MapCoords and (bgMap or cRMap) should always be the same size.
 	      printBgChunk(bgMap[mapCoordIndex].chunk, viewPortSize);
-	      printMapViewHelpLocal(input);
+	      printHelpMsgLocal(input);
 	      sleep(mapViewSettings::loopSleepTimeMs);
 	    }
 	}
@@ -313,7 +341,7 @@ void viewChunk
 	    {
 	      // MapCoords and (bgMap or cRMap) should always be the same size.
 	      printCRChunk(cRMap[mapCoordIndex].chunk, viewPortSize);
-	      printMapViewHelpLocal(input);
+	      printHelpMsgLocal(input);
 	      sleep(mapViewSettings::loopSleepTimeMs);
 	    }
 	}
