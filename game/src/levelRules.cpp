@@ -346,30 +346,30 @@ void checkForDefaultBgSpriteValues
 
 void rules::loadAndInitialiseCoordRules(const backgroundData & background)
 {
-    if(!checkForPostfix(&fileName[0], COORD_RULES_FILE_EXTENSION))
-    {
-      exit(concat
-	   ("Error: opening file \"", fileName, "\" as a coord rules "
-	    "file. Postfix for ", COORD_RULES_FILE_EXTENSION, " files should "
-	    "be \"", COORD_RULES_FILE_EXTENSION, "\"."), ERROR_OPENING_FILE);
-    }
+    // if(!checkForPostfix(&fileName[0], COORD_RULES_FILE_EXTENSION))
+    // {
+    //   exit(concat
+    // 	   ("Error: opening file \"", fileName, "\" as a coord rules "
+    // 	    "file. Postfix for ", COORD_RULES_FILE_EXTENSION, " files should "
+    // 	    "be \"", COORD_RULES_FILE_EXTENSION, "\"."), ERROR_OPENING_FILE);
+    // }
 
-    std::fstream cRFile(fileName, std::ios::in | std::ios::binary);
+  //   std::fstream cRFile(fileName, std::ios::in | std::ios::binary);
 
-  if(!cRFile)
-    {      exit(concat("Error: failed to open coord rules file \"",
-		       fileName, "\"."), ERROR_OPENING_FILE);
-    }
-  else if(cRFile.peek() == std::ifstream::traits_type::eof())
-    {
-      exit(concat("Error: coord rules file \"", fileName, "\" found to be "
-		  "empty. \"", COORD_RULES_FILE_EXTENSION, "\" files must not "
-		  "be empty."), ERROR_BACKGROUND);
-    }
+  // if(!cRFile)
+  //   {      exit(concat("Error: failed to open coord rules file \"",
+  // 		       fileName, "\"."), ERROR_OPENING_FILE);
+  //   }
+  // else if(cRFile.peek() == std::ifstream::traits_type::eof())
+  //   {
+  //     exit(concat("Error: coord rules file \"", fileName, "\" found to be "
+  // 		  "empty. \"", COORD_RULES_FILE_EXTENSION, "\" files must not "
+  // 		  "be empty."), ERROR_BACKGROUND);
+  //   }
   
-  initialiseCoordRules
-    (cRFile, chunkMap, background);
-  cRFile.close();
+  // initialiseCoordRules
+  //   (cRFile, chunkMap, background);
+  // cRFile.close();
 }
 
 
@@ -406,88 +406,88 @@ bool rules::getCRChunk
  const yx chunkSize, yx & chunkCoord, const std::string & fileName,
  const bool multiChunkFile) const
 {
-  const std::string eMsgStart
-    {concat("Error: trying to read in coord rules chunk file "
-	    "\"", fileName, "\". ")};
+ //  const std::string eMsgStart
+ //    {concat("Error: trying to read in coord rules chunk file "
+ // 	    "\"", fileName, "\". ")};
   
-  if(!readInChunkCoordFromFile(chunkCoord, fileName, file, !multiChunkFile))
-    {
-      return false;
-    }
+ //  if(!readInChunkCoordFromFile(chunkCoord, fileName, file, !multiChunkFile))
+ //    {
+ //      return false;
+ //    }
 
-  // Read in chunk body.
-  int yIter {}, xIter {};
-  char cRChar {};
-  int chunkCharsFound {};
-  while(file.read(&cRChar, sizeof(char)))
-    {
-      if(cRChar == cRRunLengthSequenceSignifier)
-	{
-	  char highByte {}, lowByte {};
-	  if(!file.read(&highByte, sizeof(char)))
-	    {
-	      exit(concat(eMsgStart, "File ends after run-length sequence "
-			  "signifier (or an IO error has occurred.)"),
-		   ERROR_MALFORMED_FILE);
-	    }
-	  if(!file.read(&lowByte, sizeof(char)))
-	    {
-	      exit(concat(eMsgStart, "File ends after run-length sequence "
-			  "signifier and first byte of length (or an IO error "
-			  "has occurred.)"), ERROR_MALFORMED_FILE);
-	    }
-	  if(!file.read(&cRChar, sizeof(char)))
-	    {
-	      exit(concat(eMsgStart, "File ends after run-length "
-			  "sequence signifier and length bytes (or an IO error "
-			  "has occurred.)"), ERROR_MALFORMED_FILE);
-	    }
-	  for(int iter {}; iter < ((static_cast<unsigned char>(highByte) << 8) |
-				   static_cast<unsigned char>(lowByte)); iter++)
-	    {
-	      if(!checkYOfVirtualNestedChunkLoop
-		 (xIter, yIter, chunkSize, multiChunkFile, eMsgStart))
-		{
-		  /* This is a multi chunk file and we've just read past the end of
-		     a chunk so we need to back up. */
-		  file.seekg(-sizeof(char), std::ios::cur);
-		  goto MEGA_BREAK;
-		}
-	      chunk.push_back(cRChar);
-	      chunkCharsFound++;
-	      updateVirtualNestedChunkYXLoop(xIter, yIter, chunkSize);
-	    }
-	}
-      else
-	{
-	  if(!checkYOfVirtualNestedChunkLoop
-	     (xIter, yIter, chunkSize, multiChunkFile, eMsgStart))
-	    {
-	      /* This is a multi chunk file and we've just read past the end of
-		 a chunk so we need to back up. */
-	      file.seekg(-sizeof(char), std::ios::cur);
-	      goto MEGA_BREAK;
-	    }
-	  chunk.push_back(cRChar);
-	  chunkCharsFound++;
-	  updateVirtualNestedChunkYXLoop(xIter, yIter, chunkSize);
-	}
-    }
+ //  // Read in chunk body.
+ //  int yIter {}, xIter {};
+ //  char cRChar {};
+ //  int chunkCharsFound {};
+ //  while(file.read(&cRChar, sizeof(char)))
+ //    {
+ //      if(cRChar == cRRunLengthSequenceSignifier)
+ // 	{
+ // 	  char highByte {}, lowByte {};
+ // 	  if(!file.read(&highByte, sizeof(char)))
+ // 	    {
+ // 	      exit(concat(eMsgStart, "File ends after run-length sequence "
+ // 			  "signifier (or an IO error has occurred.)"),
+ // 		   ERROR_MALFORMED_FILE);
+ // 	    }
+ // 	  if(!file.read(&lowByte, sizeof(char)))
+ // 	    {
+ // 	      exit(concat(eMsgStart, "File ends after run-length sequence "
+ // 			  "signifier and first byte of length (or an IO error "
+ // 			  "has occurred.)"), ERROR_MALFORMED_FILE);
+ // 	    }
+ // 	  if(!file.read(&cRChar, sizeof(char)))
+ // 	    {
+ // 	      exit(concat(eMsgStart, "File ends after run-length "
+ // 			  "sequence signifier and length bytes (or an IO error "
+ // 			  "has occurred.)"), ERROR_MALFORMED_FILE);
+ // 	    }
+ // 	  for(int iter {}; iter < ((static_cast<unsigned char>(highByte) << 8) |
+ // 				   static_cast<unsigned char>(lowByte)); iter++)
+ // 	    {
+ // 	      if(!checkYOfVirtualNestedChunkLoop
+ // 		 (xIter, yIter, chunkSize, multiChunkFile, eMsgStart))
+ // 		{
+ // 		  /* This is a multi chunk file and we've just read past the end of
+ // 		     a chunk so we need to back up. */
+ // 		  file.seekg(-sizeof(char), std::ios::cur);
+ // 		  goto MEGA_BREAK;
+ // 		}
+ // 	      chunk.push_back(cRChar);
+ // 	      chunkCharsFound++;
+ // 	      updateVirtualNestedChunkYXLoop(xIter, yIter, chunkSize);
+ // 	    }
+ // 	}
+ //      else
+ // 	{
+ // 	  if(!checkYOfVirtualNestedChunkLoop
+ // 	     (xIter, yIter, chunkSize, multiChunkFile, eMsgStart))
+ // 	    {
+ // 	      /* This is a multi chunk file and we've just read past the end of
+ // 		 a chunk so we need to back up. */
+ // 	      file.seekg(-sizeof(char), std::ios::cur);
+ // 	      goto MEGA_BREAK;
+ // 	    }
+ // 	  chunk.push_back(cRChar);
+ // 	  chunkCharsFound++;
+ // 	  updateVirtualNestedChunkYXLoop(xIter, yIter, chunkSize);
+ // 	}
+ //    }
 
- MEGA_BREAK:
-  if(chunkCharsFound < chunkSize.y * chunkSize.x)
-    {
-      if(multiChunkFile)
-	{
-	  return false;
-	}
-      else
-	{
-	  exit(concat(eMsgStart, "Chunk is too small (", chunkCharsFound, ") "
-		      "It should be ", chunkSize.y * chunkSize.x, "."),
-	       ERROR_MALFORMED_FILE);
-	}
-    }
+ // MEGA_BREAK:
+ //  if(chunkCharsFound < chunkSize.y * chunkSize.x)
+ //    {
+ //      if(multiChunkFile)
+ // 	{
+ // 	  return false;
+ // 	}
+ //      else
+ // 	{
+ // 	  exit(concat(eMsgStart, "Chunk is too small (", chunkCharsFound, ") "
+ // 		      "It should be ", chunkSize.y * chunkSize.x, "."),
+ // 	       ERROR_MALFORMED_FILE);
+ // 	}
+ //    }
 
   return true;
 }

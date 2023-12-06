@@ -1,6 +1,7 @@
 #include <sstream>
 #include <string>
 #include "include/initCurses.hpp"
+#include "include/initSDL.hpp"
 #include "include/utils.hpp"
 #include "include/background.hpp"
 #include "include/levelRules.hpp"
@@ -31,6 +32,7 @@ int main()
      future.) */
   yx viewPortSize;
   initialiseCurses(viewPortSize);	// Start and setup ncurses
+  createWindow();
   
   menu(viewPortSize);
   

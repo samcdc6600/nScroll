@@ -2,12 +2,17 @@ CXX	= clang++
 #CXX	= g++
 # fpermissive requred for compilation with g++.
 CXXFLAGS	= -std=c++20 -Wall -Wpedantic -Wextra -O2 #-D_XOPEN_SOURCE_EXTENDED
-LIBS	= -lncurses
-BIN_NAME	= nscrl
+# Here we also need to specify (using -L) the directory where "lSDL2"
+# (libSDL2.so) is, which is "/usr/local/lib".
+LIBS	= -lncurses -lSDL2 -L/usr/local/lib
+BIN_NAME	= scrollioExtremeo # nscrl
 SRC	= ./src
 IDIR	= $(SRC)/include
+# Here we need to specify (using -I) the directory where the SDL header/s are,
+# which is "/usr/local/include/SDL2". Extidir stands for EXTerior DIRectory.
+EXTIDIR = -I/usr/local/include/SDL2
 ODIR	= ./obj
-DEPS	= $(wildcard $(IDIR)/*.hpp)
+DEPS	= $(wildcard $(IDIR)/*.hpp) # $(EXTIDIR)
 CPP_DIRS	=  $(wildcard $(SRC)/*.cpp) # Get list of .cpp file directories.
 CPP_FILES	= $(subst $(SRC)/,,$(CPP_DIRS)) # Strip srings of paths.
 OBJ_FILES	= $(patsubst %.cpp,%.o,$(CPP_FILES)) # Replace .cpp with .o.
@@ -21,12 +26,12 @@ OBJ	= $(patsubst %,$(ODIR)/%,$(OBJ_FILES))
 # 
 # $(BIN_NAME) depends on $(OBJ).
 $(BIN_NAME): $(OBJ)
-	$(CXX) -o $@ $^ $(LIBS) -DNDEBUG
+	$(CXX) -o $@ $^ $(LIBS) -DNDEBUG $(EXTIDIR)
 
 
 # $(ODIR)/%.o depends on $(SRC)/%.cpp $(DEPS).
 $(ODIR)/%.o: $(SRC)/%.cpp $(DEPS)
-	$(CXX) -c -o $@ $< $(CXXFLAGS) $(DEBUG)
+	$(CXX) -c -o $@ $< $(CXXFLAGS) $(DEBUG) $(EXTIDIR)
 
 
 # Clean and debug targets won't update on files.

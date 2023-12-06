@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <SDL.h>
 #ifdef DEBUG
 /* This file should be included directly or indirectly be almost every other
    file. We put includes here because if building in debug mode we often need
